@@ -1,0 +1,10 @@
+{__NOLAYOUT__}
+<notempty name="menu['tab']">
+<ul class="nav nav-tabs" id="nav-tab">
+ <volist name="menu['tab']" id="vo" empty="" >
+	<li>
+		<a href="{:U($vo['link'])}" target="{$vo['target']}">{$vo['name']}</a>
+	</li>
+	</volist>
+</ul>
+</notempty>

@@ -1,0 +1,70 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="{:U('add')}" method="post" id='form'>
+<div class="form-group hidden">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="id"></label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+<input type="hidden" value="" name="id" id="id" class="form-control {required:true,digits:true,range:[0,4294967295]}" placeholder="">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="name">名称</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {maxlength:100,}"  value="" name="name" id="name" placeholder="">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="link">链接</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {maxlength:100,}"  value="" name="link" id="link" placeholder="">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="pid">父级</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+         {~$menus=R(MODULE_NAME.'/'.CONTROLLER_NAME.'/get_level_nodes')}
+         <select id="pid" name="pid" class="form-control selected" data-value="{:I('id')}">
+            <volist name="menus" id="vo">
+            <option value="{$key}">{$vo}</option>
+            </volist>
+         </select>
+        </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="queue">顺序</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {digits:true,range:[0,65535]}"  value="0" name="queue" id="queue" placeholder="">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="target">打开方式</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <select id="target" name="target" class="form-control selected" data-value="_self">
+            <option value ="_self">默认</option>
+            <option value ="_blank">新窗口</option>
+            <option value ="_parent">父窗口</option>
+            <option value ="_top">_top</option>
+        </select>
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="location">是否隐藏</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input name="show" id="show" class="{}" type="checkbox" >不显示
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="memo">备注</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {maxlength:100,}"  value="" name="memo" id="memo" placeholder="">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+</form>
+</div>

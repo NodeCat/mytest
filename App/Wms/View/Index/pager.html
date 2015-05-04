@@ -1,0 +1,20 @@
+<notempty name="page">
+<form class="form-inline  pagination-centered" action="" mothed="post">
+<ul id="page" class="pagination">
+    {$page}
+    <li class="jump-to hidden-xs" style="display:inline-block!important;">
+        <a id="jump_link">{$pageinfo} <input id="jump-p" name='p' type='text' class='input-page' />页 <input data-href="{$jump_url}" id='jump-btn' type='submit' class='btn btn-sm btn-default' value='确定' /></a>
+    </li>
+</ul>
+<script type="text/javascript">
+$(function(){
+	$('#jump-btn').on('click',function(){
+		var p=$('#jump-p').val();
+		var link=$(this).data('href');
+		$('#jump_link').attr('href',link+'&p='+p);
+		$('#jump_link').click();
+	});
+})
+</script>
+</form>
+</notempty>
