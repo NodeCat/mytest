@@ -1,0 +1,17 @@
+<div class="row">
+<script type="text/javascript">
+$(function(){
+    $('.tab-{$Think.ACTION_NAME}').parent().addClass('active'); 
+});
+</script>
+
+<ul class="nav nav-tabs" id="nav-tab">
+	<li><a class="tab-user" href="{:U('User/index')}">我的任务</a></li>
+	<li><a class="tab-user" href="{:U('User/index')}">已发任务</a></li>
+	<li><a class="tab-hero" href="{:U('Iuser/add')}">全部任务</a></li>
+</ul>
+<button type="button" class="btn btn-sm btn-primary">进行中(1)</button>
+<button type="button" class="btn btn-sm">已完成(3)</button>
+<button type="button" class="btn btn-sm">全部(4)</button>
+
+</div>

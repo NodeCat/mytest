@@ -1,0 +1,75 @@
+<notempty name="query">
+<div class="row-fluid">
+<form class="form-inline well well-small ajax" action="{:U('index')}" method="POST" id="table-searchbar">
+<div class="row-fluid">
+<volist name="query" id="vo">
+<if condition="(++$a % 5)==0 ">
+</div><br><div class="row-fluid">
+</if>
+    <eq name="i" value=""></div><br><div class="row-fluid"></eq>
+     <switch name="vo['control_type']">
+        <case value="null|text|area">{~$a++}
+            &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="form-control input-sm">
+        </case>
+        <case value="date|datetime|time">{~$a++}
+            {~$datetime_format=array('datetime'=>'yyyy-mm-dd hh:ii:ss','date'=>'yyyy-mm-dd','time'=>'hh:ii:ss')}
+            &nbsp;&nbsp;{$vo['title']} <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm" data-date-format="{$datetime_format[$vo['control_type']]}">
+            <eq name="vo['query_type']" value="between">{~$a++}
+                —&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm" data-date-format="{$datetime_format[$vo['control_type']]}">
+            </eq>
+        </case>
+        <case value="digit">{~$a++}
+            &nbsp;&nbsp;{$vo['title']} <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm">
+            <eq name="vo['query_type']" value="between">
+                 —&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm">
+            </eq>
+        </case>
+        <case value="checkbox" >{~$a++}
+            &nbsp;&nbsp;<label class="checkbox"><input type="checkbox" id="query[{$key}]" />{$vo['title']} </label>&nbsp;&nbsp;
+        </case>
+        <case value="select">{~$a++}
+            {~$items=explode(',',$vo['value'])}
+            &nbsp;&nbsp;{$vo['title']} 
+            <select name="query[{$key}]" class="form-control input-sm ">
+                <option value ="">全部</option>
+                <volist name="items" id="op">
+                    <option value ="{$key}">{$op}</option>
+                </volist>
+            </select>
+        </case>
+        <case value="refer">{~$a++}
+            &nbsp;&nbsp;{$vo['title']} 
+            {~$items=explode(',',$vo['value'])}
+            <div class="input-append" id="{$items[0]}-query">
+                <input type="hidden" value="" name="query[{$key}]" id="query[{$key}]" data-target="{$items[1]}" class="" placeholder="">
+                <input type="text" value="" data-target="{$items[2]}" class="input-small" placeholder="" readonly="">
+                <a data-href="{:U($items[3],'refer='.$items[0].'-query')}" data-target="#modal-refer" data-toggle="modal">
+                    <span class="add-on"><i class="icon-search"></i></span>
+                </a>
+            </div>
+        </case>
+        <case value="getField">{~$a++}
+            <php>
+                $_parm=explode('.',$vo['value']);
+                if(count($_parm)===2){
+                    $M=M($_parm[0]);
+                    $items=$M->getField($_parm[1]);
+                }
+            </php>
+            &nbsp;&nbsp;{$vo['title']} 
+            <select name="query[{$key}]" class="span2">
+                <option value ="">全部</option>
+                <volist name="items" id="op">
+                    <option value ="{$key}">{$op}</option>
+                </volist>
+            </select>
+        </case>
+        <default/>{~$a++}
+            &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="input-small">
+    </switch>
+</volist>
+   <button type="submit" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>
+   <button type="button" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-default btn-tool">显示全部</button>
+</form>
+</div>
+</notempty>

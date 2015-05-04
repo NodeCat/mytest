@@ -1,0 +1,187 @@
+<div class="row" id="module-content-{$type}">
+<form class="form-horizontal" action="{:U('save')}" method="POST">
+<div class="col-lg-12">
+    <div class="form-group">
+        <div class="col-lg-3">
+            <div class="input-group">
+              <span class="input-group-addon">表名</span>
+              <select id="modules" name="{$pk}" class="form-control selected" data-value="{$name}">
+                <volist name="modules" id="vo">
+                    <option value ="{$vo}">{$vo}</option>
+                </volist>
+              </select>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="btn-group">
+                <a href="{:U('refer',$pk.'='.$name)}" id="btn-build" class="btn btn-lg"><i class="glyphicon glyphicon-random"></i></a>
+                <a data-href="{:U('view',$pk.'='.$name)}" data-target="#add-modal" id="btn-view" class="btn btn-lg"><i class="glyphicon glyphicon-zoom-in"></i></a>
+
+                <a href="{:U('build',$pk.'='.$name)}" id="btn-build" class="btn btn-lg"><i class="glyphicon glyphicon-arrow-down"></i></a>
+                <a href="{:U('build_all')}" data-original-title="Build All" rel="tooltip"  data-placement="bottom" class="btn btn-lg hidden" ><i class="glyphicon glyphicon-download-alt"></i></a>
+                <a href="{:U('edit?refresh=true',$pk.'='.$name)}" role="button" data-original-title="Refresh" rel="tooltip"  data-placement="bottom" class="btn btn-lg" data-id=""><i class="glyphicon glyphicon-refresh"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-lg-12">
+  <div class="form-group">
+    <div class="col-lg-3">
+        <div class="input-group">
+            <span class="input-group-addon">分组</span>
+            <select id="groups" name="group" class="form-control selected" data-value="{$group}">
+            <volist name="groups" id="vo">
+                <option value ="{$vo}">{$vo}</option>
+            </volist>
+            </select>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="input-group">
+            <span class="input-group-addon">模块</span>
+            <input type="text" name="module" value="{$module}" class="form-control"/>
+        </div>
+        <input type="hidden" name="{$pk}" value="{$name}" class="form-control"/>
+    </div>
+  </div>
+</div>
+
+<div class="col-lg-12">
+<table  class="table table-condensed table-bordered table-striped table-hover" id="data-table">
+    <thead>
+        <tr>
+            <th colspan="6">字段</th>
+            <th colspan="4">列表</th>
+            <th colspan="5">添加</th>
+        </tr>
+        <tr>
+            <th>引用</th>
+            <th>名称</th>
+            <th>标题</th>
+            <th>类型</th>
+            <th>插入</th>
+            <th>更新</th>
+            <th>顺序</th>
+            <th>显示</th>
+            <th>查询</th>
+            <th>匹配方式</th>
+            <th>表单类型</th>
+            <th>显示</th>
+            <th>顺序</th>
+            <th>前台验证</th>
+            <th>提示</th>
+        <tr>
+    </thead>
+    <tbody>
+        <php>$checked=array('0'=>'','1'=>'checked');</php>
+        <volist name="data" id="vo">
+        <tr><td><a href='{:U("refer","module=$module&pk=".$pk."&fk=".$vo["field"])}' data-target="#add-modal" role="button" data-toggle="modal" data-original-title="Refer" rel="tooltip" data-placement="bottom" class=""><i class="icon-random"></i></a></td>
+            <td>{$vo['field']}
+                <input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][id]" value="{$vo.id}" />
+                <input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][field]" value="{$vo.field}" />
+                <input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][type]" value="{$vo.type}" />
+                <input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][pk]" value="{$vo.pk}" />
+                <input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][default]" value="{$vo.default}" />
+                <input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][empty]" value="{$vo.empty}" />
+            </td>
+            <td><input class="form-control input-sm" type="text" name="query[{$i-1}][title]" value="{$vo.title}" /></td>
+            <td>{$vo.type}<input class="form-control input-mini input-sm" type="hidden" name="query[{$i-1}][type]" value="{$vo.type}" /></td>
+            <td><input name="query[{$i-1}][insert_able]" type="checkbox" {$checked[$vo['insert_able']]}></td>
+            <td><input name="query[{$i-1}][update_able]" type="checkbox" {$checked[$vo['update_able']]}></td>
+            <td><input class="input-min form-control input-min input-sm" type="text" name="query[{$i-1}][list_order]" value="{$vo.list_order}" /></td>
+            <td><input name="query[{$i-1}][list_show]" type="checkbox" {$checked[$vo['list_show']]}></td>
+            <td><input name="query[{$i-1}][query_able]" type="checkbox" {$checked[$vo['query_able']]}></td>
+            <td>
+                <select name="query[{$i-1}][query_type]" class="form-control col-lg-12 selected" data-value="{$vo.query_type}">
+                    <option value ="eq" >等于</option>
+                    <option value ="like" >模糊匹配</option>
+                    <option value ="between" >区间匹配</option>
+                </select>
+            </td>
+            <td>
+                <select name="query[{$i-1}][control_type]" class="form-control col-lg-12 selected" data-value="{$vo.control_type}">
+                    <option value ="text" >文本框</option>
+                    <option value ="area" >多行文本框</option>
+                    <option value ="select" >列表框</option>
+                    <option value ="datetime" >日期时间</option>
+                    <option value ="date" >日期</option>
+                    <option value ="time" >时间</option>
+                    <option value ="checkbox" >复选框</option>
+                    <option value ="digit" >数字输入框</option>
+                    <option value ="hidden" >隐藏控件</option>
+                    <notempty name="refer[$vo['field']]">
+                        <option value="refer">引用框</option>
+                        <option value="getField">数据列表框</option>
+                    </notempty>
+                </select>
+            </td>
+            <td><input name="query[{$i-1}][add_show]" type="checkbox" {$checked[$vo['add_show']]}></td>
+            <td><input class="form-control input-min input-sm" type="text" name="query[{$i-1}][add_order]" value="{$vo.add_order}" /></td>
+            <td><input class="form-control input-mini input-sm" type="text" name="query[{$i-1}][validate]" value="{$vo.validate}" /></td>
+            <td><input class="form-control input-mini input-sm" type="text" name="query[{$i-1}][tips]" value="{$vo.tips}" /></td>
+        </tr>
+        </volist>
+    </tbody>
+</table>
+</div>
+
+<div class="col-lg-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="icon-th-list"></i><b class="break"></b><a>验证规则</a></h3>
+      </div>
+      <div class="panel-body">
+        <textarea rows="5" class="col-lg-12" name="validate">{$validate}</textarea>
+      </div>
+    </div>
+</div>
+
+<div class="col-lg-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="icon-th-list"></i><b class="break"></b><a>自动生成</a></h3>
+      </div>
+      <div class="panel-body">
+        <textarea rows="5" class="col-lg-12" name="auto">{$auto}</textarea>
+      </div>
+    </div>
+</div>
+
+<include file="Index:btn"/>
+</form>
+</div>
+
+
+<script type="text/javascript">
+$(function(){
+$('.selected').each(function(){
+    $(this).val($(this).data('value'));
+});
+$('#modules').on('change',function(){
+    var para=$(this).val();
+    $.ajax({
+        url: "{:U('edit')}",
+        datatype: "html",
+        type: "POST",
+        data:{{$pk}:para},
+        cache: false,
+        async:true,
+        success: function(html){
+            $("#module-content-{$type}").replaceWith(html);
+            return false;
+        }
+    });
+    return false;
+});
+
+$('#btn-view,#btn-edit').on('click',function(){
+        var href=$(this).data("href");
+        var target=$(this).data("target");
+        $( target +" .modal-body").load(href, function() { 
+             $(target).modal("show"); 
+             
+        });
+    });
+});
+</script>
