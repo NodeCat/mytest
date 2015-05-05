@@ -2,9 +2,9 @@
 
 function get_setting($table) {
 	$M = M('module_column');
-	$map['module'] = $table;
+	$map['module'] = strtolower($table);
 	$map['status'] = '1';
-	$res = $M->field('field,title,pk,list_show,list_order,query_able,query_type,control_type')
+	$res = $M->field('field,type,title,pk,list_show,list_order,query_able,query_type,control_type')
 			->order('list_order')
 			->where($map)
 			->select()
