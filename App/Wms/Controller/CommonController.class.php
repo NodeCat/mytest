@@ -6,7 +6,6 @@ class CommonController extends AuthController {
     public function index() {
     	$this->pk = $M->getPK();
         $condition = $pill;
-        $this->pill = array('status=1'=>'已启用','status=0'=>'已禁用');
         $condition = I('query');
         $map=array();
         if(!empty($condition)){
@@ -140,6 +139,7 @@ class CommonController extends AuthController {
         else {
             $this->error($M->getError());
         }
+        $M->where($map)->save($data);
     }
 
     public function delete() {
@@ -188,9 +188,173 @@ class CommonController extends AuthController {
         }
        
     }
+    public function import() {
+        $info = $this->upload();
+        $data = get_setting(CONTROLLER_NAME);
+        $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+        $sheet = $this->get_excel_sheet();
 
 
+    }
 
+    public function export() {
+        import("Common.Lib.PHPExcel");
+        import("Common.Lib.PHPExcel.IOFactory");
+        $Excel = new \PHPExcel(); 
+        $i = 1;
+        $res = get_setting(CONTROLLER_NAME);
+        $columns = $res['list'];
+        $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+        $Sheet = $this->get_excel_sheet($Excel);
+        foreach ($columns as $key  => $value) { 
+            $Sheet->setCellValue($ary[$i/27].$ary[$i%27].'1', $value);
+            $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setSize(14);
+            $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
+            ++$i;
+        }
+        $M  =  M(CONTROLLER_NAME);
+        $result = $M->select();
+        for($j  = 0;$j<count($result) ; ++$j){
+            $i  = 1;
+            foreach ($columns as $key  => $value){
+                $Sheet->setCellValue($ary[$i/27].$ary[$i%27].($j+2), $result[$j][$key]);
+                ++$i;
+            }
+        }
+        
+        if(ini_get('zlib.output_compression')) {
+            ini_set('zlib.output_compression', 'Off');
+        }
+        date_default_timezone_set("Asia/Shanghai"); 
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/download");
+        header("Content-Transfer-Encoding: binary");
+        header('Accept-Ranges: bytes');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition:attachment;filename = ".time().".xlsx");
+        header('Cache-Control: max-age=0');
+        header("Pragma:no-cache");
+        header("Expires:0");
+        header("Content-Length: ");
+        $objWriter  =  \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007'); 
+        $objWriter->save('php://output');
+        
+    }
+    protected function get_excel_sheet(&$Excel) {
+        $Excel->getProperties()
+        ->setCreator("Dachuwang")
+        ->setLastModifiedBy("Dachuwang")
+        ->setTitle("Dachuwang")
+        ->setSubject("Dachuwang")
+        ->setDescription("Dachuwang")
+        ->setKeywords("Dachuwang")
+        ->setCategory("Dachuwang");
+        $Excel->setActiveSheetIndex(0);
+        $Sheet  =  $Excel->getActiveSheet();  
+                
+        $Sheet->getDefaultColumnDimension()->setAutoSize(true);
+        $Sheet->getDefaultStyle()->getFont()->setName('Arial');
+        $Sheet->getDefaultStyle()->getFont()->setSize(13);
+        return $Sheet;
+    }
+
+    public function upload(){
+        import('ORG.Net.UploadFile');
+        $upload             = new UploadFile();
+        $upload->maxSize    = C('MAX_UPLOAD_FILE_SIZE');
+        $upload->allowExts  = array('jpg', 'gif', 'png', 'jpeg','xls','doc');
+        $upload->savePath   = __PUBLIC__.'/Upload/';
+        if(!$upload->upload()) {
+            $this->error($upload->getErrorMsg());
+            return null;
+        }else{
+            return $info;
+            $info = $upload->getUploadFileInfo();
+            $this->import($info);
+        }
+    }
+    function file_download($file, $name, $mime_type='') {
+    if(!is_readable($file)) die('File not found or inaccessible!');
+
+    $size = filesize($file);
+    $name = rawurldecode($name);
+
+    /* Figure out the MIME type (if not specified) */
+    $known_mime_types = get_known_mime_types();
+
+    if($mime_type==''){
+        $file_extension = strtolower(substr(strrchr($file,"."),1));
+
+        if(array_key_exists($file_extension, $known_mime_types)){
+            $mime_type=$known_mime_types[$file_extension];
+        } else {
+            $mime_type="application/force-download";
+        }
+    }
+
+    @ob_end_clean(); //turn off output buffering to decrease cpu usage
+
+    // required for IE, otherwise Content-Disposition may be ignored
+    if(ini_get('zlib.output_compression')) {
+        ini_set('zlib.output_compression', 'Off');
+    }
+
+    header('Content-Type: ' . $mime_type);
+    header('Content-Disposition: attachment; filename="'.$name.'"');
+    header("Content-Transfer-Encoding: binary");
+    header('Accept-Ranges: bytes');
+
+    /* The three lines below basically make the download non-cacheable */
+    header("Cache-control: private");
+    header('Pragma: private');
+    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+
+    // multipart-download and download resuming support
+    if(isset($_SERVER['HTTP_RANGE'])) {
+        list($a, $range) = explode("=",$_SERVER['HTTP_RANGE'],2);
+        list($range) = explode(",",$range,2);
+        list($range, $range_end) = explode("-", $range);
+        $range=intval($range);
+
+        if(!$range_end) {
+            $range_end=$size-1;
+        } else {
+            $range_end=intval($range_end);
+        }
+
+        $new_length = $range_end-$range+1;
+
+        header("HTTP/1.1 206 Partial Content");
+        header("Content-Length: $new_length");
+        header("Content-Range: bytes $range-$range_end/$size");
+    } else {
+        $new_length=$size;
+        header("Content-Length: ".$size);
+    }
+
+    /* output the file itself */
+    $chunksize = 1*(1024*1024); // 1MB, can be tweaked if needed
+    $bytes_send = 0;
+
+    if ($file = fopen($file, 'r')) {
+        if(isset($_SERVER['HTTP_RANGE'])) {
+            fseek($file, $range);
+        }
+
+        while(!feof($file) && (!connection_aborted()) && ($bytes_send<$new_length)) {
+            $buffer = fread($file, $chunksize);
+            print($buffer); //echo($buffer); // is also possible
+            flush();
+            $bytes_send += strlen($buffer);
+        }
+
+        fclose($file);
+    } else {
+        die('Error - can not open file.');
+    }
+
+    die();
+}
     public function _empty($action){
        $this->error('unknown',U('index'));
     }

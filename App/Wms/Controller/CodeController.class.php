@@ -709,23 +709,24 @@ class CodeController extends CommonController {
 		$M=M('module_refer');
 		$this->refers=$M->where("module='%s'",$module)->getField('fk,pk,id,module,module_refer,field_show');
 		
-		//$this->build_tpl($group,$module);
+		$this->build_tpl($group,$module);
 		$this->build_model($group,$module);
-		//$this->build_action($group,$module);
+		$this->build_action($group,$module);
+		exit();
 		//$this->build_config($group,$module);
 	}
 	protected function build_tpl($group,$module){
 		$path = APP_PATH."$group/View/$module/";
-		if(!file_exists($path)){
-    	    mkdirs($path);
-    	}
+		//if(!file_exists($path)){
+    	//    mkdirs($path);
+    	//}
     	layout(false);
     	$file = "add.html";
-		$content=$this->fetch('add');
-		file_put_contents($path.$file, $content);
+		$content=$this->fetch('add');dump($content);
+		//file_put_contents($path.$file, $content);
 		$file = "edit.html";
-		$content=$this->fetch('edit');
-		file_put_contents($path.$file, $content);
+		$content=$this->fetch('edit');dump($content);
+		//file_put_contents($path.$file, $content);
 	}
 	protected function build_model($group,$module){
 		$insert_fields=array();
@@ -807,19 +808,20 @@ class CodeController extends CommonController {
     	layout(false);
 		$file=$module."Model.class.php";
 		$content="<?php\n".$this->fetch('model');
-		dump($content);exit();
-		file_put_contents($path.$file, $content);
+		dump($content);
+		//file_put_contents($path.$file, $content);
 	}
 
 	protected function build_action($group,$module){
 		$path=APP_PATH."$group/Controller/";
-		if(!file_exists($path)){
-    	    mkdirs($path);
-    	}
+		//if(!file_exists($path)){
+    	//    mkdirs($path);
+    	//}
     	layout(false);
 		$file=$module."Controller.class.php";
 		$content="<?php\n".$this->fetch('controller');
-		file_put_contents($path.$file, $content);
+		dump($content);
+		//file_put_contents($path.$file, $content);
 	}
 	protected function build_config($group,$module){
 		$M=M('module_column');
