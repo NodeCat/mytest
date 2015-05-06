@@ -71,13 +71,24 @@ class CommonController extends AuthController {
         else {
             $filter = $this->filter;
         }
-
+        if(!is_array($data[0])){
+            $res = $data;
+            unset($data);
+            $data[0]= $res;
+            $res = 1;
+        }
         if(empty($filter)) return ;
         foreach ($data as $key => $val) {
             foreach ($filter as $k => $v) {
                 $data[$key][$k] = $v[$data[$key][$k]];
             }
         }
+        if($res == 1) {
+            $res = $data[0];
+            unset($data);
+            $data = $res;
+        }
+
     }
     protected function lists() {
         $M = D(CONTROLLER_NAME);
@@ -138,7 +149,7 @@ class CommonController extends AuthController {
     		$this->save();
     	}
     	else {
-            $M = M(CONTROLLER_NAME);
+            $M = D(CONTROLLER_NAME);
     		$pk = $M->getPk();
 	    	$id=I($pk);
 	      	if(empty($id)){
