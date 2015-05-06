@@ -353,7 +353,14 @@ function clear_form_data(id){
 		$(id+' form')[index].reset();
 	});
 }
-
+function refer_quote(source,data){
+	$('#'+source+" input").each(function(){
+		var field = $(this).data("target");
+		var result=data[field];
+		$(this).val(data[field]);
+	});
+	$('#modal-refer').modal('hide');
+}
 function removeRow(){
 	$("#data-table input:checked").parent().parent().parent().parent().html('');
 }
@@ -363,6 +370,15 @@ function getChecked(){
 		return $(this).attr('id');
 	}).get().join(',');
 	return list;
+}
+
+function setValue(obj){ 
+    for(var p in obj){  
+       if(typeof(obj[p])=="function"){        
+        }else{      
+            $("form #"+p).val(obj[p]);                 
+        }        
+    }
 }
 
 function get_list(addr,params,input_id,fun){
