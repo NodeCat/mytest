@@ -71,7 +71,7 @@ class CommonController extends AuthController {
         else {
             $filter = $this->filter;
         }
-        if(!is_array($data[0])){
+        if(!is_array(current($data))){
             $res = $data;
             unset($data);
             $data[0]= $res;
@@ -88,7 +88,6 @@ class CommonController extends AuthController {
             unset($data);
             $data = $res;
         }
-
     }
     protected function lists() {
         $M = D(CONTROLLER_NAME);
