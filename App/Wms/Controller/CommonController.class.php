@@ -90,8 +90,8 @@ class CommonController extends AuthController {
                 }
             }
         }
-        
     }
+
     protected function lists() {
         $M = D(CONTROLLER_NAME);
         $table = $M->tableName;

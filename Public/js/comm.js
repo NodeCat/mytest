@@ -35,6 +35,11 @@ $(function () {
 	    return false;
 	});
 */
+
+	$('.modal').on('hidden', function () {
+    	$(this).removeData();
+	});
+
 	$('.modal button[type=submit]').on('click',function(){
 		var modal = $(this).closest('.modal');
 		var addr,params;
