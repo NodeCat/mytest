@@ -98,6 +98,7 @@ class CommonController extends AuthController {
         $this->before($M,'lists');
         $data = $M->select();
         $this->filter_list($data);
+        $this->after($data,'lists');
         $this->data = $data;
         $count  = $M->scope('default')->where($map)->count();
         $this->page($count,$map);
