@@ -4,7 +4,8 @@ use Think\Controller;
 
 class CommonController extends AuthController {
     public function index() {
-        $this->before('','index');
+        $map ='';
+        $this->before($map,'index');
         $this->lists();
     }
 
