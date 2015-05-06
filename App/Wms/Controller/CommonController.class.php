@@ -6,11 +6,13 @@ class CommonController extends AuthController {
     public function index() {
         $this->lists();
     }
+
+    //如果需要自定义列表显示，请重写_before_index函数
     public function _before_index() {
         $this->table = array(
-            'toolbar'   => true,
-            'searchbar' => true, 
-            'checkbox'  => true, 
+            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+            'searchbar' => true, //是否显示搜索栏
+            'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => true, 
             'toolbar_tr'=> true
         );
