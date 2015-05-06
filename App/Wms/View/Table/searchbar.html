@@ -68,6 +68,7 @@
             &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="input-small">
     </switch>
 </volist>
+    <include file="Public:menu" />
    <button type="submit" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>
    <button type="button" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-default btn-tool">显示全部</button>
 </form>

@@ -187,6 +187,20 @@ function logs($id, $data, $action = ''){
 function get_time(){
     return date('Y-m-d H:i:s',NOW_TIME);
 }
+function mkdirs($dir){       
+    if(!is_dir($dir)){       
+        if(!mkdirs(dirname($dir))){       
+            return false;       
+        }
+        if(!file_exists($dir)){
+            if(!mkdir($dir,0777)){       
+                return false;       
+            }
+        }
+        return true; 
+    }
+    return true;       
+}
 function X($t, $id=null, $value = ''){
     if(empty($id)){
         return null;

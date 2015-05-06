@@ -557,7 +557,7 @@ class CodeController extends CommonController {
         $msg=$result?'Success':'Fail';
         $this->redirect('Code/edit',array('name' => $module),2,$msg);
 	}
-	protected function mapping_save(){ 
+	public function mapping_save(){ 
      	 
      	$data=I();
      	unset($data['_URL_']);
@@ -717,16 +717,16 @@ class CodeController extends CommonController {
 	}
 	protected function build_tpl($group,$module){
 		$path = APP_PATH."$group/View/$module/";
-		//if(!file_exists($path)){
-    	//    mkdirs($path);
-    	//}
+		if(!file_exists($path)){
+    	    mkdirs($path);
+    	}
     	layout(false);
-    	$file = "add.html";
+    	$file = "add.html".$this->ext;
 		$content=$this->fetch('add');dump($content);
-		//file_put_contents($path.$file, $content);
-		$file = "edit.html";
+		file_put_contents($path.$file, $content);
+		$file = "edit.html".$this->ext;
 		$content=$this->fetch('edit');dump($content);
-		//file_put_contents($path.$file, $content);
+		file_put_contents($path.$file, $content);
 	}
 	protected function build_model($group,$module){
 		$insert_fields=array();
@@ -806,22 +806,22 @@ class CodeController extends CommonController {
     	    mkdirs($path);
     	}
     	layout(false);
-		$file=$module."Model.class.php";
+		$file=$module."Model.class.php".$this->ext;
 		$content="<?php\n".$this->fetch('model');
 		dump($content);
-		//file_put_contents($path.$file, $content);
+		file_put_contents($path.$file, $content);
 	}
 
 	protected function build_action($group,$module){
 		$path=APP_PATH."$group/Controller/";
-		//if(!file_exists($path)){
-    	//    mkdirs($path);
-    	//}
+		if(!file_exists($path)){
+    	    mkdirs($path);
+    	}
     	layout(false);
-		$file=$module."Controller.class.php";
+		$file=$module."Controller.class.php".$this->ext;
 		$content="<?php\n".$this->fetch('controller');
 		dump($content);
-		//file_put_contents($path.$file, $content);
+		file_put_contents($path.$file, $content);
 	}
 	protected function build_config($group,$module){
 		$M=M('module_column');
@@ -879,7 +879,7 @@ class CodeController extends CommonController {
 	private $module_table='auth_authority';
 	private $module_folder='Controller';
 	private $module_ext='Controller.class.php';
-
+	private $ext = '.auto';
 	//生成模块结构信息 app/分组/模块/方法
 	public function fetch_module(){
 

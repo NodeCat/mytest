@@ -4,8 +4,13 @@ use Think\Controller;
 
 class CommonController extends AuthController {
     public function index() {
+        $M = D(CONTROLLER_NAME);
     	$this->pk = $M->getPK();
-        $condition = $pill;
+        $map = $this->search();
+        $this->page($M,$map);
+    }
+
+    public function search() {
         $condition = I('query');
         $map=array();
         if(!empty($condition)){
@@ -42,7 +47,11 @@ class CommonController extends AuthController {
                 }
             }
         }
-        $this->page($M,$map);
+        return $map;
+    }
+
+    protected function filter_list() {
+
     }
 
     public function _before_index (){
@@ -74,9 +83,11 @@ class CommonController extends AuthController {
         );
         $this->status_type='0';
     }
-    public function _before_view(){
-        
+    public function refer(){
+        $this->refer=I('refer');
+        $this->index();
     }
+
     public function view() {
         $this->display();
     }
@@ -130,14 +141,14 @@ class CommonController extends AuthController {
             $this->after($res);
             $this->after($res, 'save');
             if($res > 0) {
-                $this->msgReturn($res);
+                $this->msgReturn(1);
             }
             else{
-                $this->msgReturn($res);
+                $this->msgReturn(0);
             }
         }
         else {
-            $this->error($M->getError());
+            $this->msgReturn(0,$M->getError());
         }
         $M->where($map)->save($data);
     }
@@ -382,23 +393,13 @@ class CommonController extends AuthController {
                 $this->error('操作失败');
             }
     }
-    protected function page(&$select,$map='',$template){
-        $p              = I("p");
-        if(empty($p))$p = 1;
+    protected function page($data, $count, $map='',$template){
+        $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        if(isset($select)){
-            if($nopage){
-                $this->data = $select->where($map)->select();
-            }
-            else{
-                $this->data = $select->where($map)->page($p.','.$page_size)->select();
-                $count  = $select->where($map)->count();
-            }
-        }
-
+        $this->data = $data;
         $target = "table-content";
         $pagesId = 'page';
-        import("@.Lib");
+        import("Common.Lib.Page");
         $Page = new \Wms\Lib\Page($count, $page_size, $map,$target, $pagesId);
         $this->page     = $Page->show();
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
