@@ -94,7 +94,7 @@ class CommonController extends AuthController {
         $data = $M->page($p.','.$page_size)->where($map)->select();
         $this->filter_list($data);
         $this->data = $data;
-        $count  = $M->where($map)->count();
+        $count  = $M->scope('default')->where($map)->count();
         $this->page($count,$map);
     }
 
