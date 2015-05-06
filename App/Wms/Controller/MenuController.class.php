@@ -84,7 +84,6 @@ class MenuController extends CommonController {
         layout(!$this->isAjax());
     	$this->display('Index:sidebar');
     }
-    protected $filter  = array('status' => array('1'=>'号水电费'), );
     public function get_level_nodes(){
         $M=M(CONTROLLER_NAME);
         $condition=array('is_deleted'=>'0','status' =>'1');

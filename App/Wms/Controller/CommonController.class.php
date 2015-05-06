@@ -73,23 +73,24 @@ class CommonController extends AuthController {
         else {
             $filter = $this->filter;
         }
-        if(!is_array(current($data))){
-            $res = $data;
-            unset($data);
-            $data[0]= $res;
-            $res = 1;
-        }
         if(empty($filter)) return ;
-        foreach ($data as $key => $val) {
-            foreach ($filter as $k => $v) {
-                $data[$key][$k] = $v[$data[$key][$k]];
+        if(is_array(current($data))){
+            foreach ($data as $key => $val) {
+                foreach ($filter as $k => $v) {
+                    if(!empty($v[$data[$key][$k]])) {
+                        $data[$key][$k] = $v[$data[$key][$k]];
+                    }
+                }
             }
         }
-        if($res == 1) {
-            $res = $data[0];
-            unset($data);
-            $data = $res;
+        else{
+            foreach ($filter as $k => $v) {
+                if(!empty($v[$data[$k]])) {
+                    $data[$k] = $v[$data[$k]];
+                }
+            }
         }
+        
     }
     protected function lists() {
         $M = D(CONTROLLER_NAME);
@@ -106,13 +107,14 @@ class CommonController extends AuthController {
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $M = $M->scope('default')->page($p.','.$page_size)->where($map);
+        $map_default['is_deleted'] = 0; 
+        $M = $M->scope('default')->page($p.','.$page_size)->where($map)->where($map_default)->order($M->getPk().' desc');
         $this->before($M,'lists');
         $data = $M->select();
         $this->filter_list($data);
         $this->after($data,'lists');
         $this->data = $data;
-        $count  = $M->scope('default')->where($map)->count();
+        $count  = $M->scope('default')->where($map)->where($map_default)->count();
         $this->page($count,$map);
     }
 
@@ -197,16 +199,17 @@ class CommonController extends AuthController {
     }
 
     public function delete() {
+        $M      =   M(CONTROLLER_NAME);
         $pk     =   $M->getPK();
     	$ids    =   I($pk);
         $ids    =   explode(',', $ids);
         $ids    =   array_filter($ids);
         $ids    =   array_unique($ids);
-        $M      =   M(CONTROLLER_NAME);
         
         $map[$pk]   =   array('in',$ids);
-        $res = $M->where($map)->delete();
-        $this->msgReturn($result);
+        $data['is_deleted'] = 1;
+        $res = $M->where($map)->save($data);
+        $this->msgReturn($res);
     }
 
     public function setting(){

@@ -21,7 +21,7 @@ $(function () {
 	    $(this).parents('.input-group').find("input[type=text]").val($(this).text());
 	    $(this).parents('.input-group').find("input[type=hidden]").val($(this).attr('id'));
 	  });
-
+/*
 	$('.content').on('click', '[data-toggle=modal]',function (e) {
 		//if($(this).hasClass('btn-deleted') || $(this).hasClass('btn-edit'))return;
 	    e.preventDefault();
@@ -34,7 +34,7 @@ $(function () {
 	    });
 	    return false;
 	});
-
+*/
 	$('.modal button[type=submit]').on('click',function(){
 		var modal = $(this).closest('.modal');
 		var addr,params;
@@ -155,8 +155,6 @@ $('.modal').on('show.bs.modal', function (e) {
 			alert('请选中要操作的行。');
 			return false;
 		}
-		var  decide= confirm("确认删除?");
-		if(!decide)return false;
 		var addr=$(this).data('remote');
 		$.ajax({
 			url:addr,
@@ -167,7 +165,7 @@ $('.modal').on('show.bs.modal', function (e) {
 			success: function(msg){
 				alert(msg.msg);
 				if(msg.status==1)
-					removeRow(); 
+					remove_row(); 
 					refresh_list();
 			}
 		});
@@ -185,6 +183,7 @@ $('.modal').on('show.bs.modal', function (e) {
 			success: function(msg){
 				alert(msg.msg);
 				if(msg.status=='1'){
+
 					refresh_list();
 				}
 			}
@@ -210,6 +209,26 @@ $('.modal').on('show.bs.modal', function (e) {
 			success: function(msg){
 				alert(msg.msg);
 				if(msg.status=='1'){
+					refresh_list();
+				}
+			}
+		});
+		return false;
+	});
+	$('.content').on('click','.table-operate-btn .btn-delete',function(){
+		var addr=$(this).data('href');
+		var params = $(this).data('value');
+		if(!addr)return false;
+		$.ajax({
+			url:addr,
+			type:'post',
+			cache : false,
+			data:{id:params},
+			dataType:'json',
+			success: function(msg){
+				alert(msg.msg);
+				if(msg.status=='1'){
+					
 					refresh_list();
 				}
 			}
@@ -361,8 +380,8 @@ function refer_quote(source,data){
 	});
 	$('#modal-refer').modal('hide');
 }
-function removeRow(){
-	$("#data-table input:checked").parent().parent().parent().parent().html('');
+function remove_row(){
+	$(".data-table input:checked").parent().parent().parent().html('');
 }
 
 function getChecked(){
