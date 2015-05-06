@@ -4,24 +4,34 @@ use Think\Controller;
 
 class CommonController extends AuthController {
     public function index() {
-        $M = D(CONTROLLER_NAME);
-    	$this->pk = $M->getPK();
-        $map = $this->search();
-        $this->page($M,$map);
+        $this->lists();
+    }
+    public function _before_index() {
+        $this->table = array(
+            'toolbar'   => true,
+            'searchbar' => true, 
+            'checkbox'  => true, 
+            'status'    => true, 
+            'toolbar_tr'=> true
+        );
+        $this->toolbar_tr =array(
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+        );
+        $this->status =array(
+            array(
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+            ),
+        );
+        $this->status_type='0';
     }
 
-    public function search() {
+    public function search($query = '') {
         $condition = I('query');
-        $map=array();
         if(!empty($condition)){
-            $M = D(CONTROLLER_NAME);
-            $table = $M->tableName;
-            if(empty($table)) {
-                $table = strtolower(CONTROLLER_NAME);
-            }
-            $query = get_setting($table);
-
-            foreach ($query['query'] as $key => $v) {
+            foreach ($query as $key => $v) {
                 switch ($v['query_type']) {
                     case 'eq':
                         $map[$key]=array($v['query_type'],$condition[$key]);
@@ -47,45 +57,67 @@ class CommonController extends AuthController {
                 }
             }
         }
+        $this->after($map,'search');
         return $map;
     }
+    protected $filter =array(
+        'level' =>array(
+            '1' => '我要显示1',
+            '0' => '随意随意', 
+        ),
+    );
 
-    protected function filter_list() {
+    protected function filter_list(&$data) {
+        if(empty($this->filter)) {
+            $filter = C('FILTER.'.CONTROLLER_NAME);
+        }
+        else {
+            $filter = $this->filter;
+        }
 
+        if(empty($filter)) return ;
+        foreach ($data as $key => $val) {
+            foreach ($filter as $k => $v) {
+                $data[$key][$k] = $v[$data[$key][$k]];
+            }
+        }
     }
-
-    public function _before_index (){
+    protected function lists() {
         $M = D(CONTROLLER_NAME);
         $table = $M->tableName;
+        $this->pk = $M->getPK();
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
         $setting = get_setting($table);
         $this->columns = $setting['list'];
         $this->query = $setting['query'];
+
+        $map = $this->search($this->query);
+
+        $p              = I("p",1);
+        $page_size      = C('PAGE_SIZE');
+        $data = $M->page($p.','.$page_size)->where($map)->select();
+        $this->filter_list($data);
+        $this->data = $data;
+        $count  = $M->where($map)->count();
+        $this->page($count,$map);
+    }
+
+    public function refer(){
+        $this->refer=I('refer');
         $this->table = array(
-            'toolbar'   => true,
+            'toolbar'   => FALSE,
             'searchbar' => true, 
-            'checkbox'  => true, 
-            'status'    => true, 
+            'checkbox'  => FALSE, 
+            'status'    => FALSE, 
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
-        );
-        $this->status =array(
-            array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
-            ),
+            array('name'=>'refer', 'show' => !isset($auth['refer']),'new'=>'false'), 
         );
         $this->status_type='0';
-    }
-    public function refer(){
-        $this->refer=I('refer');
-        $this->index();
+        $this->lists();
     }
 
     public function view() {
@@ -393,10 +425,9 @@ class CommonController extends AuthController {
                 $this->error('操作失败');
             }
     }
-    protected function page($data, $count, $map='',$template){
-        $p              = I("p",1);
+    protected function page($count, $map='',$template){
+        $p              = I("p", 1);
         $page_size      = C('PAGE_SIZE');
-        $this->data = $data;
         $target = "table-content";
         $pagesId = 'page';
         import("Common.Lib.Page");

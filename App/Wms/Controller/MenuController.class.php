@@ -2,55 +2,7 @@
 namespace Wms\Controller;
 use Think\Controller;
 class MenuController extends CommonController {
-    public function index($pill =''){
-        $M = M('menu');
-        $setting = get_setting('menu');
-        $this->columns = $setting['list'];
-        $this->query = $setting['query'];
-        $this->status_type='0';
-        $this->pk = $M->getPK();
-        $condition = $pill;
-        $this->pill = array('status=1'=>'已启用','status=0'=>'已禁用');
-        $condition = I('query');
-        $map=array();
-        if(!empty($condition)){
-            $M = D(CONTROLLER_NAME);
-            $table = $M->tableName;
-            if(empty($table)) {
-                $table = strtolower(CONTROLLER_NAME);
-            }
-            $query = get_setting($table);
-
-            foreach ($query['query'] as $key => $v) {
-                switch ($v['query_type']) {
-                    case 'eq':
-                        $map[$key]=array($v['query_type'],$condition[$key]);
-                        break;
-                    case 'like':
-                        $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
-                        break;
-                    case 'between':
-                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key].'_1');
-                        break;
-                }
-            }
-            $map = queryFilter($map);
-        }
-        else{
-            $condition = I('pill');
-             if(!empty($condition)){
-                $para=explode('&', urldecode($condition));
-                foreach ($para as $key => $v) {
-                    $cond=explode('=', $v);
-                    if(count($cond)===2)
-                        $map[$cond[0]]=$cond[1];
-                }
-            }
-        }
-        //dump($map);exit();
-        $this->page($M,$map);
-    }
-
+    
     protected function before_add(&$M){
         $M->status = '1';
         $M->is_deleted = 0;

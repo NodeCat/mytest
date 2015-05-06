@@ -1,12 +1,6 @@
 <notempty name="toolbar_tr">
 <div class="btn-group table-operate-btn">
 <volist name="toolbar_tr" id="tool">
-	<if condition="($tool.name eq 'view' or $vo['status'] eq '0') or
-	($tool.name eq 'edit' AND $auth['audit'] AND ($vo['status'] eq '1' ))
-	">
-	<!-- 
-	有审核权限，能更改，归档后任何人都不能更改 
--->
 	<switch name="tool.name" >
 	<case value="view" break="1">
 	<eq name="tool.show" value="true"><eq name="tool.new" value="true">
@@ -40,8 +34,7 @@
 	</eq>
 	</case> 
 	<default />
-	</switch>		
-	</if>		
+	</switch>			
 </volist>
 </div>
 
