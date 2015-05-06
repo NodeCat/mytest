@@ -91,7 +91,9 @@ class CommonController extends AuthController {
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $data = $M->page($p.','.$page_size)->where($map)->select();
+        $M = $M->scope('default')->page($p.','.$page_size)->where($map);
+        $this->before($M,'lists');
+        $this->data = $M->select();
         $this->filter_list($data);
         $this->data = $data;
         $count  = $M->scope('default')->where($map)->count();
@@ -408,7 +410,7 @@ class CommonController extends AuthController {
         }
     }
     protected function msgReturn($res, $msg='', $data = null){
-        $msg = empty($msg)?(empty($res)?'操作成功':'操作失败'):$msg;
+        $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
             $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data' => $data));
         }
