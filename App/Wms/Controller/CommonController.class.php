@@ -107,14 +107,17 @@ class CommonController extends AuthController {
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $map_default['is_deleted'] = 0; 
-        $M = $M->scope('default')->page($p.','.$page_size)->where($map)->where($map_default)->order($M->getPk().' desc');
+        $map_default[$table.'.is_deleted'] = 0; 
+        $M = $M->where($map_default)->order($M->getPk().' desc')->scope('default')->page($p.','.$page_size);
+        if(!empty($map)) {
+            $M = $M->where($map);
+        }
         $this->before($M,'lists');
         $data = $M->select();
         $this->filter_list($data);
         $this->after($data,'lists');
         $this->data = $data;
-        $count  = $M->scope('default')->where($map)->where($map_default)->count();
+        $count  = $M->count();
         $this->page($count,$map);
     }
 
@@ -442,6 +445,27 @@ class CommonController extends AuthController {
             else{
                 $this->error('操作失败');
             }
+    }
+    protected function mpage($M, $map='',$template){
+        $p              = I("p", 1);
+        $page_size      = C('PAGE_SIZE');
+
+        $map_default['is_deleted'] = 0; 
+        $M = $M->scope('default')->page($p.','.$page_size)->where($map)->where($map_default)->order($M->getPk().' desc');
+        $data = $M->select();
+        $this->data = $data;
+        $count  = $M->scope('default')->where($map)->where($map_default)->count();
+        $target = "table-content";
+        $pagesId = 'page';
+        import("Common.Lib.Page");
+        $Page = new \Wms\Lib\Page($count, $page_size, $map,$target, $pagesId);
+        $this->page     = $Page->show();
+        $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
+        $this->jump_url = $Page->jump_url;
+        if(empty($template)){
+           $template= IS_AJAX ? 'Table:list':'Table:index';
+        }
+        $this->display($template);
     }
     protected function page($count, $map='',$template){
         $p              = I("p", 1);

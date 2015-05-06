@@ -157,7 +157,6 @@ class CodeController extends CommonController {
 		$this->data = $data;
 	}
 	public function auto() {
-		//dump(filemtime('index.php'));exit();
 		$module=I('name','menu');
         $M=M($module);
         $this->module=$module;
@@ -245,7 +244,7 @@ class CodeController extends CommonController {
 		}
 		$this->get_refer();
 		$this->showpk=1;
-    	$this->page($M);
+    	$this->mpage($M);
 	}
 
 	public function _before_index (){
@@ -464,8 +463,9 @@ class CodeController extends CommonController {
 
 	protected function get_refer(){
 		$M=M('module_refer');
+		$db = C('DB_NAME');
 		$data=$M->query("select TABLE_NAME module,COLUMN_NAME fk,REFERENCED_TABLE_NAME module_refer,REFERENCED_COLUMN_NAME pk from INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-					where TABLE_SCHEMA='commlib' and REFERENCED_TABLE_SCHEMA='commlib' and POSITION_IN_UNIQUE_CONSTRAINT=1"
+					where TABLE_SCHEMA='".$db."' and REFERENCED_TABLE_SCHEMA='".$db."' and POSITION_IN_UNIQUE_CONSTRAINT=1"
 		);
 		$pk = $M->getPk();
 
@@ -712,8 +712,7 @@ class CodeController extends CommonController {
 		$this->build_tpl($group,$module);
 		$this->build_model($group,$module);
 		$this->build_action($group,$module);
-		exit();
-		//$this->build_config($group,$module);
+		$this->build_config($group,$module);
 	}
 	protected function build_tpl($group,$module){
 		$path = APP_PATH."$group/View/$module/";
@@ -864,8 +863,15 @@ class CodeController extends CommonController {
 				);
 			}
 		}
-		$this->write_config($group,$module,$columns,'columns');
-		$this->write_config($group,$module,$query,'query');
+		$table = strtolower($module);
+		$map['name'] = $table;
+		unset($data);
+		$data['list'] = json_encode($columns);
+		$data['query'] = json_encode($query);
+
+		$M('module_table')->where($map)->save($data);
+		//$this->write_config($group,$module,$columns,'columns');
+		//$this->write_config($group,$module,$query,'query');
 	}
 	protected function write_config($group,$module,$value,$type){
 		if($type==='columns' || $type==='query'){
