@@ -35,9 +35,8 @@ $(function () {
 	    return false;
 	});
 */
-
-	$('.modal').on('hidden', function () {
-    	$(this).removeData();
+	$('.modal').on('hidden.bs.modal', function (e) {
+	  $(this).removeData();
 	});
 
 	$('.modal button[type=submit]').on('click',function(){
