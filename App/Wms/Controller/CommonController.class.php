@@ -118,7 +118,7 @@ class CommonController extends AuthController {
         $this->page($count,$map);
     }
 
-    public function refer(){
+    public function _before_refer() {
         $this->refer=I('refer');
         $this->table = array(
             'toolbar'   => FALSE,
@@ -131,6 +131,10 @@ class CommonController extends AuthController {
             array('name'=>'refer', 'show' => !isset($auth['refer']),'new'=>'false'), 
         );
         $this->status_type='0';
+    }
+
+    public function refer(){
+        $this->before($map,'refer');
         $this->lists();
     }
 
