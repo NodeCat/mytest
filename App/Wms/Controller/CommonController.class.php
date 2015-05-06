@@ -63,7 +63,8 @@ class CommonController extends AuthController {
 
     protected function filter_list(&$data) {
         if(empty($this->filter)) {
-            $filter = C('FILTER.'.CONTROLLER_NAME);
+            $file = strtolower(CONTROLLER_NAME);
+            $filter = C($file.'.filter');
         }
         else {
             $filter = $this->filter;
