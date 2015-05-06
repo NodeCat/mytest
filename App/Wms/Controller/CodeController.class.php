@@ -216,8 +216,8 @@ class CodeController extends CommonController {
 		$M= M('Module_table');
 		$count=$M->count();
 		$table_detail=$M->query('SHOW TABLE STATUS');
-        if($refresh)$M->where("name!=''")->setField('status','0');
-        if($refresh){$M->where("status='0'")->delete();}
+        //if($refresh)$M->where("name!=''")->setField('status','0');
+        //if($refresh){$M->where("status='0'")->delete();}
 		foreach ($table_detail as $k => $v) {
 			$data[$k]['name'] 			= $v['name'];
 			$data[$k]['title']			=$v['comment'];
@@ -225,14 +225,6 @@ class CodeController extends CommonController {
 			$data[$k]['group']			= 'Wms';
 			$data[$k]['build']			=0;
 			$data[$k]['status']			='1';
-			if($refresh && $count!=='0')
-				$result = $M->add($data[$k]);
-		}
-		if($count==='0') {$M->addAll($data);}
-		$data=array();
-		foreach ($table_detail as $k => $v) {
-			$data[$k]['name'] 			=$v['name'];
-			$data[$k]['title']			=$v['comment'];
 			$data[$k]['rows']			=$v['rows'];
 			$data[$k]['engine']			=$v['engine'];
 			$data[$k]['collation']		=$v['collation'];
@@ -713,6 +705,7 @@ class CodeController extends CommonController {
 		$this->build_model($group,$module);
 		$this->build_action($group,$module);
 		$this->build_config($group,$module);
+		exit();
 	}
 	protected function build_tpl($group,$module){
 		$path = APP_PATH."$group/View/$module/";
@@ -822,7 +815,8 @@ class CodeController extends CommonController {
 		dump($content);
 		file_put_contents($path.$file, $content);
 	}
-	protected function build_config($group,$module){
+	public function build_config($group,$module){
+
 		$M=M('module_column');
 		$data = $M->where("module='%s'",strtolower($module))->order('list_order')->select();
 		$M=M('module_refer');
@@ -863,7 +857,6 @@ class CodeController extends CommonController {
 				);
 			}
 		}
-		dump($query);exit();
 		$table = strtolower($module);
 		$map['name'] = $table;
 		unset($data);
@@ -871,6 +864,7 @@ class CodeController extends CommonController {
 		$data['query'] = json_encode($query);
 
 		M('module_table')->where($map)->save($data);
+		$this->msgReturn(1);
 		//$this->write_config($group,$module,$columns,'columns');
 		//$this->write_config($group,$module,$query,'query');
 	}

@@ -99,7 +99,7 @@ class CommonController extends AuthController {
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $setting = get_setting($table);
+        $setting = get_setting1($table);
         $this->columns = $setting['list'];
         $this->query = $setting['query'];
 
@@ -240,7 +240,7 @@ class CommonController extends AuthController {
                 //    $data[$k]['add_show']=false;
                 $result=$M->save($data[$k]);
             }
-            R('Code/build_config',array(CONTROLLER_NAME));
+            R('Code/build_config',array(MODULE_NAME,strtolower(CONTROLLER_NAME)));
             $this->ajaxReturn(array('data'=>0,'info'=>$result?'Success':'Fail','status'=>$result?'1':'0'));
         }
         else{
@@ -458,7 +458,7 @@ class CommonController extends AuthController {
         $target = "table-content";
         $pagesId = 'page';
         import("Common.Lib.Page");
-        $Page = new \Wms\Lib\Page($count, $page_size, $map,$target, $pagesId);
+        $Page = new \Common\Lib\Page($count, $page_size, $map,$target, $pagesId);
         $this->page     = $Page->show();
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;
@@ -473,7 +473,7 @@ class CommonController extends AuthController {
         $target = "table-content";
         $pagesId = 'page';
         import("Common.Lib.Page");
-        $Page = new \Wms\Lib\Page($count, $page_size, $map,$target, $pagesId);
+        $Page = new \Common\Lib\Page($count, $page_size, $map,$target, $pagesId);
         $this->page     = $Page->show();
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;

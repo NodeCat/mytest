@@ -31,9 +31,8 @@ function get_setting($table) {
 function get_setting1($table) {
 	$M = M('module_table');
 	$res = $M->field('list,query')->find(strtolower($table));
-	$list = (array)json_decode($res['list']);
-	$query = (array)json_decode($res['query']);
-	dump($list);dump($query);exit();
+	$list = json_decode($res['list'],TRUE);
+	$query = json_decode($res['query'],TRUE);
 	$data = array(
 			'list' => $list ,
 			'query'=> $query,
