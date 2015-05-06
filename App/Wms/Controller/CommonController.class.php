@@ -60,12 +60,6 @@ class CommonController extends AuthController {
         $this->after($map,'search');
         return $map;
     }
-    protected $filter =array(
-        'level' =>array(
-            '1' => '我要显示1',
-            '0' => '随意随意', 
-        ),
-    );
 
     protected function filter_list(&$data) {
         if(empty($this->filter)) {
