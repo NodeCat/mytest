@@ -241,7 +241,7 @@ class CommonController extends AuthController {
                 $result=$M->save($data[$k]);
             }
             R('Code/build_config',array(MODULE_NAME,strtolower(CONTROLLER_NAME)));
-            $this->ajaxReturn(array('data'=>0,'info'=>$result?'Success':'Fail','status'=>$result?'1':'0'));
+            $this->msgReturn(1);
         }
         else{
             $M =M('module_column');

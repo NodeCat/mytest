@@ -864,7 +864,7 @@ class CodeController extends CommonController {
 		$data['query'] = json_encode($query);
 
 		M('module_table')->where($map)->save($data);
-		$this->msgReturn(1);
+		
 		//$this->write_config($group,$module,$columns,'columns');
 		//$this->write_config($group,$module,$query,'query');
 	}
