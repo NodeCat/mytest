@@ -144,9 +144,8 @@ class CommonController extends AuthController {
 	      	if(empty($id)){
 	            $this->msgReturn(0,'param_error');
 			}
-	        $map = $M->default_map;
-	        $res = $M->where($map)->find($id);
-
+	        $res = $M->scope('default')->find($id);
+            $this->filter_list($res);
 	        if(!empty($res) && is_array($res)){
 	            //X(CONTROLLER_NAME, $id, $res);
 	            $this->data = $res;
