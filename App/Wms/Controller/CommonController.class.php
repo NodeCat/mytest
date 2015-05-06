@@ -107,17 +107,17 @@ class CommonController extends AuthController {
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $map_default[$table.'.is_deleted'] = 0; 
-        $M = $M->where($map_default)->order($M->getPk().' desc')->scope('default')->page($p.','.$page_size);
+        $M = $M->scope('default')->page($p.','.$page_size);
         if(!empty($map)) {
             $M = $M->where($map);
         }
         $this->before($M,'lists');
         $data = $M->select();
+        $count  = $M->count();
         $this->filter_list($data);
         $this->after($data,'lists');
         $this->data = $data;
-        $count  = $M->count();
+        
         $this->page($count,$map);
     }
 

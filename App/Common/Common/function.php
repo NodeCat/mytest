@@ -28,6 +28,18 @@ function get_setting($table) {
 			);
 	return $data;
 }
+function get_setting1($table) {
+	$M = M('module_table');
+	$res = $M->field('list,query')->find(strtolower($table));
+	$list = (array)json_decode($res['list']);
+	$query = (array)json_decode($res['query']);
+	dump($list);dump($query);exit();
+	$data = array(
+			'list' => $list ,
+			'query'=> $query,
+			);
+	return $data;
+}
 //POST数据处理
 //未输入值的txtbox为空，应当移除
 //复选框未选择，则不会出现在post中，应添加条件并赋值为false

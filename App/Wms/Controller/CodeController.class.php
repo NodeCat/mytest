@@ -212,7 +212,7 @@ class CodeController extends CommonController {
                     ."<td></td></tr>";
 		$this->msgReturn(1,'添加成功',$data);
 	}
-	public function index($refresh=true){
+	public function index($refresh=false){
 		$M= M('Module_table');
 		$count=$M->count();
 		$table_detail=$M->query('SHOW TABLE STATUS');
@@ -863,13 +863,14 @@ class CodeController extends CommonController {
 				);
 			}
 		}
+		dump($query);exit();
 		$table = strtolower($module);
 		$map['name'] = $table;
 		unset($data);
 		$data['list'] = json_encode($columns);
 		$data['query'] = json_encode($query);
 
-		$M('module_table')->where($map)->save($data);
+		M('module_table')->where($map)->save($data);
 		//$this->write_config($group,$module,$columns,'columns');
 		//$this->write_config($group,$module,$query,'query');
 	}

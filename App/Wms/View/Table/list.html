@@ -24,11 +24,11 @@
     <volist name="data" id="vo" key="row" empty="">
     <tr>
       <volist name="columns" id="col" offset="0" length='1'>
-          <td><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$key]}" data-id="{$pk}" /></eq>{$row}</label></td>
+          <td><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$pk]}" data-id="{$pk}" /></eq>{$row}</label></td>
           {~$values[$key]=$vo[$key]}
       </volist>
 
-      <volist name="columns" id="col" offset="isset($columns['id'])?1:0">
+      <volist name="columns" id="col" offset="isset($columns[$pk])?1:0">
               <td>{$vo[$key]}</td>
               {~$values[$key]=$vo[$key]}
       </volist>
