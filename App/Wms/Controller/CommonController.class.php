@@ -206,19 +206,18 @@ class CommonController extends AuthController {
             else {
                 $res = $M->save();
             }
-            $this->after($res, 'add');
-            $this->after($res, 'save');
             if($res > 0) {
+                $this->after($res, 'add');
+                $this->after($res, 'save');
                 $this->msgReturn(1);
             }
             else{
-                $this->msgReturn(0);
+                $this->msgReturn(0,$M->getError());
             }
         }
         else {
             $this->msgReturn(0,$M->getError());
         }
-        $M->where($map)->save($data);
     }
 
     public function delete() {
