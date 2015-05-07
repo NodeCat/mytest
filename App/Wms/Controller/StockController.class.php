@@ -66,7 +66,6 @@ class StockController extends CommonController {
 				//根据pid（区域id）查找对应的库位id
 				$location_ids_by_location_name = M('Location')->where('pid = '.$location_id_by_area)->getField('id',true);
 			}
-
 			//根据库位code location.code 查询对应库位id location.id
 			$location_code = I('location_code');
 			if(!empty($location_code)){
@@ -74,7 +73,6 @@ class StockController extends CommonController {
 				$location_map['code'] = array('LIKE',$location_code.'%');
 				$location_ids_by_code = M('Location')->where($location_map)->getField('id',true);
 			}
-
 			if(empty($location_ids_by_location_name)){
 				$location_ids_by_location_name = $location_ids_by_code;
 			}
@@ -83,12 +81,21 @@ class StockController extends CommonController {
 			}
 			//取得交集
 			$location_ids = array_intersect($location_ids_by_location_name,$location_ids_by_code);
-			
 			//添加map
 			if(!empty($location_ids)){
 				$map['stock.location_id'] = array('in',$location_ids);
 			}else{
 				$map['stock.location_id'] = array('eq',0);
+			}
+
+			//根据stock.status 查询对应stock记录
+			//添加map
+			$stock_status = I('status');
+			if($stock_status == 'qualified'){
+				$map['stock.status'] = array('eq','qualified');
+			}
+			if($stock_status == 'unqualified'){
+				$map['stock.status'] = array('eq','unqualified');
 			}
 		}
 	}
