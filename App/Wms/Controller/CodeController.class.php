@@ -849,7 +849,7 @@ class CodeController extends CommonController {
 			 	elseif($v['control_type']==='getField'){
 			 			$value=ucwords($refer[$v['field']]['module_refer']).'.'.$refer[$v['field']]['pk'].','.$refer[$v['field']]['field_show'];
 			 	}
-				$query[$v['field']]=array(
+				$query[strtolower($module).'.'.$v['field']]=array(
 					'title' => $v['title'], 
 					'query_type'	=>$v['query_type'],		//eq,between,like
 					'control_type'	=>$v['control_type'],	//input select checkboc refer getField
