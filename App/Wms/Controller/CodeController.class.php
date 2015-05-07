@@ -747,7 +747,7 @@ class CodeController extends CommonController {
 		$refers=$this->refers;
 		foreach ($refers as $key => $v) {
 			$scope[]='"inner join '.$v['module_refer'].' on '.$v['module'].'.'.$v['fk'].'='.$v['module_refer'].'.'.$v['pk'].' '.$v['condition'].'"';
-			$refer_fields[]=$v['module_refer'].'.'.$v['field_show'].'as '.$v['fk'];
+			$refer_fields[]=$v['module_refer'].'.'.$v['field_show'].' as '.$v['fk'];
 		}
 		if(count($scope)>0){
 			$data['scope']='"join"=>array('.implode(",", $scope)."),\n";
@@ -860,8 +860,8 @@ class CodeController extends CommonController {
 		$table = strtolower($module);
 		$map['name'] = $table;
 		unset($data);
-		$data['list'] = json_encode($columns);
-		$data['query'] = json_encode($query);
+		$data['list'] = var_export($columns, true);
+		$data['query'] = var_export($query, true);
 
 		M('module_table')->where($map)->save($data);
 		

@@ -99,7 +99,7 @@ class CommonController extends AuthController {
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $setting = get_setting1($table);
+        $setting = get_setting($table);
         $this->columns = $setting['list'];
         $this->query = $setting['query'];
 
