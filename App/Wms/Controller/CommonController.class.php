@@ -34,6 +34,7 @@ class CommonController extends AuthController {
 
     public function search($query = '') {
         $condition = I('query');
+        $this->filter_list($condition, '1');
         if(!empty($condition)){
             foreach ($query as $key => $v) {
                 switch ($v['query_type']) {
@@ -65,7 +66,7 @@ class CommonController extends AuthController {
         return $map;
     }
 
-    protected function filter_list(&$data) {
+    protected function filter_list(&$data,$type = '0') {
         if(empty($this->filter)) {
             $file = strtolower(CONTROLLER_NAME);
             $filter = C($file.'.filter');
@@ -74,6 +75,15 @@ class CommonController extends AuthController {
             $filter = $this->filter;
         }
         if(empty($filter)) return ;
+
+        if($type == '1') {
+            $table = strtolower(CONTROLLER_NAME);
+            foreach ($filter as $key => $val) {
+                $val = array_flip($val);
+                $filter[$table.'.'.$key] = $val ;
+                unset($filter[$key]);
+            }
+        }
         if(is_array(current($data))){
             foreach ($data as $key => $val) {
                 foreach ($filter as $k => $v) {
