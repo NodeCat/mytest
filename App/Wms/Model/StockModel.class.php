@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class StockModel extends Model {
 
-    protected $insertFields = array('id','wh_id','location_id','pro_code','batch_id','status','sotck_qty','assign_qty','prepare_qty','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('id','wh_id','location_id','pro_code','batch_id','status','sotck_qty','assign_qty','prepare_qty','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','wh_id','location_id','pro_code','batch','status','stock_qty','assign_qty','prepare_qty','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('id','wh_id','location_id','pro_code','batch','status','stock_qty','assign_qty','prepare_qty','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array();
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
@@ -24,12 +24,13 @@ class StockModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('is_deleted'=>'0'),
-            'order'=>'id DESC',
-            
+            'where'=>array('stock.is_deleted'=>'0'),
+            'order'=>'stock.id DESC',
+            "join"=>array("inner join location on stock.location_id=location.id ","inner join warehouse on stock.wh_id=warehouse.id "),
+"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.name as wh_id",
         ),
         'latest'=>array(
-            'where'=>array('is_deleted'=>'0'),
+            'where'=>array('stock.is_deleted'=>'0'),
             'order'=>'update_time DESC',
         ),
 

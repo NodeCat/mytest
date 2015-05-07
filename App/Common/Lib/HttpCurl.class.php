@@ -9,7 +9,7 @@ $re = $request->get('http://dachuwang.com');
 var_dump($re);exit;
 */
 class HttpCurl{
-	public function get($url, $args = array(), $option = array()){
+	public function get($url, $args = array(), $option = array(), $urlencode = false){
 		import("Common.Lib.HttpRequest");
 		$httpRequest = new \HttpRequest($url);
 		$httpRequest->set_method("GET");
