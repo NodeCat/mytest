@@ -462,6 +462,7 @@ class CommonController extends AuthController {
             else{
                 $this->error('操作失败');
             }
+        exit();
     }
     protected function mpage($M, $map='',$template){
         $p              = I("p", 1);
