@@ -194,14 +194,14 @@ class CommonController extends AuthController {
         $M = D(CONTROLLER_NAME);
         if($M->create()){
             $this->before($M, 'save');
-            $this->before($M);
+            $this->before($M, 'add');
             if(ACTION_NAME === 'add') {
                 $res = $M->add();
             }
             else {
                 $res = $M->save();
             }
-            $this->after($res);
+            $this->after($res, 'add');
             $this->after($res, 'save');
             if($res > 0) {
                 $this->msgReturn(1);
