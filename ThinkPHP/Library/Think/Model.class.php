@@ -39,7 +39,7 @@ class Model {
     //数据库配置
     protected $connection       =   '';
     // 数据表名（不包含表前缀）
-    public $tableName           =   '';
+    protected $tableName        =   '';
     // 实际数据表名（包含表前缀）
     protected $trueTableName    =   '';
     // 最近错误信息
