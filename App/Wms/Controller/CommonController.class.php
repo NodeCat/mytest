@@ -180,12 +180,11 @@ class CommonController extends AuthController {
 	      	if(empty($id)){
 	            $this->msgReturn(0,'param_error');
 			}
-            $map[$table.'.'.$pk] = $id; 
-            $res = $M->scope('default')->where($map)->find();
-	        
-            $this->filter_list($res);
+            $map['is_deleted'] = 0; 
+            $res = $M->where($map)->find($id);
+            $this->before($res,'edit');
 	        if(!empty($res) && is_array($res)){
-	            //X(CONTROLLER_NAME, $id, $res);
+                $this->filter_list($res);
 	            $this->data = $res;
 	        }
 	        else{

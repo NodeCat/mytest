@@ -136,6 +136,13 @@
   			<th>编号</th><th>名称</th><th>数量</th><th>规格</th><th>价格</th>
   		</thead>
   		<tbody>
+      <tr>
+        <td><input type="txt" id="pro_code" name="query[pro_code]" class="form-control input-sm"></td>
+        <td><input type="txt" id="pro_name" name="query[pro_name]" class="form-control input-sm"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
   			<tr>
   				<td>1001</td><td>东北大米</td><td>10.0</td><td>袋</td><td>¥100.00</td>
   			</tr>
@@ -154,3 +161,43 @@
 
   </div>
 </div>
+
+<script type="text/javascript">
+$(function(){
+
+
+  $('#pro_code').typeahead({ 
+    display: 'name',
+    val: 'id',
+    items:10,
+    ajax: {
+      url:"{:U('Product/match_code')}",
+      triggerLength: 1,
+      method: 'post',
+      preDispatch: function(data) {
+          return { 'q': data };
+      },
+      preProcess: function(data) {
+        return $.parseJSON(data); 
+      }
+    },
+    itemSelected:function(item,val,text) {
+        $('#pro_name').val(text);
+        $('#pro_id').val(val);
+        var fun=function(data){ 
+                $('#account_list').typeahead({
+                        source: data
+                });
+                //$('#account_list').val('');
+                $('#account_list1 li a').on('click',function(){
+                     $('#account_list').val($('#account_list').val()+ ' ' + $(this).text()+ ' ');
+                });
+        };
+        if(val >0 ) get_list("{:U('User/match_account')}",val,'#account_list1',fun);
+    }
+  });
+
+
+});
+
+</script>
