@@ -1,5 +1,10 @@
 <?php
-
+function get_type($type = '') {
+	$map['type'] = $type;
+	$map['is_deleted'] = 0 ;
+	$data = M('category')->where($map)->select();
+	return $data;
+}
 function get_setting($table) {
 	$M = M('module_table');
 	$res = $M->field('list,query')->find(strtolower($table));
