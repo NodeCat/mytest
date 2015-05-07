@@ -204,7 +204,9 @@ class CommonController extends AuthController {
                 $res = $M->add();
             }
             else {
-                $res = $M->save();
+                $pk = $M->getPk();
+                $map[$pk] = I($pk); 
+                $res = $M->where($map)->save();
             }
             if($res > 0) {
                 $this->after($res, 'add');
