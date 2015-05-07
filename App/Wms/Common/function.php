@@ -1,4 +1,15 @@
 <?php
+
+function getField($table,$fields,$condition=null){
+  $data=M($table)->where($condition)->getField($fields);
+  return $data;
+}
+function match($table,$field,$fields){
+  $id=I('q');
+  $map[$field] = array('like','%'.$id.'%');
+  $data = getField($$table,$fields,$map);
+  return json_encode($data);
+}
 function set_session($uid){
     $uid =$uid;
     $user = M('User')->find($uid);

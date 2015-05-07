@@ -1,38 +1,10 @@
 <?php
 
 function get_setting($table) {
-	$M = M('module_column');
-	$map['module'] = strtolower($table);
-	$map['status'] = '1';
-	$res = $M->field('field,type,title,pk,list_show,list_order,query_able,query_type,control_type')
-			->order('list_order')
-			->where($map)
-			->select()
-	;
-	$pk = $M->getPk();
-	foreach ($res as $key => $val) {
-		if($val['list_show'] == 1 || $val['pk'] === 'PRI') {
-			$list[$val['field']]	= $val['title'];
-		}
-		if($val['query_able'] == 1) {
-			$query[$val['field']]	= array(
-				'title' => $val['title'],
-				'query_type' => $val['query_type'],
-				'control_type' => $val['control_type'],
-			);
-		}
-	}
-	$data = array(
-			'list' => $list ,
-			'query'=> $query,
-			);
-	return $data;
-}
-function get_setting1($table) {
 	$M = M('module_table');
 	$res = $M->field('list,query')->find(strtolower($table));
-	$list = json_decode($res['list'],TRUE);
-	$query = json_decode($res['query'],TRUE);
+	eval('$list = '.$res['list'].';');
+	eval('$query = '.$res['query'].';');
 	$data = array(
 			'list' => $list ,
 			'query'=> $query,

@@ -26,13 +26,13 @@ class {$module}Model extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('is_deleted'=>'0'),
-            'order'=>'{$pk} DESC',
+            'where'=>array({:strtolower($module)}'.is_deleted'=>'0'),
+            'order'=>'{:strtolower($module)}.{$pk} DESC',
             {$data.scope}
 
         ),
         'latest'=>array(
-            'where'=>array('is_deleted'=>'0'),
+            'where'=>array({:strtolower($module)}.is_deleted'=>'0'),
             'order'=>'update_time DESC',
         ),
 

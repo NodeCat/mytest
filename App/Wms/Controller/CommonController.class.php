@@ -99,7 +99,7 @@ class CommonController extends AuthController {
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $setting = get_setting1($table);
+        $setting = get_setting($table);
         $this->columns = $setting['list'];
         $this->query = $setting['query'];
 
@@ -107,13 +107,14 @@ class CommonController extends AuthController {
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $M = $M->scope('default')->page($p.','.$page_size);
+        $M->scope('default')->page($p.','.$page_size);
         if(!empty($map)) {
-            $M = $M->where($map);
+            $M->where($map);
         }
         $this->before($M,'lists');
+        $M2 = clone $M;
         $data = $M->select();
-        $count  = $M->count();
+        $count  = $M2->count();
         $this->filter_list($data);
         $this->after($data,'lists');
         $this->data = $data;
@@ -241,7 +242,7 @@ class CommonController extends AuthController {
                 $result=$M->save($data[$k]);
             }
             R('Code/build_config',array(MODULE_NAME,strtolower(CONTROLLER_NAME)));
-            $this->ajaxReturn(array('data'=>0,'info'=>$result?'Success':'Fail','status'=>$result?'1':'0'));
+            $this->msgReturn(1);
         }
         else{
             $M =M('module_column');
