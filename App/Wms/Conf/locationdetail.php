@@ -1,10 +1,6 @@
 <?php
-return array('location'=>array(
+return array('locationdetail'=>array(
                 'filter'=>array(
-                    'status'=>array(
-                        '1'=>'合格状态',
-                        '2'=>'残次状态'
-                        ),
                     'is_mixed_pro'=>array(
                         '1'=>'是',
                         '2'=>'否'

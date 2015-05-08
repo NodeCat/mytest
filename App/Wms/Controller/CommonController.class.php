@@ -74,8 +74,6 @@ class CommonController extends AuthController {
         else {
             $filter = $this->filter;
         }
-        if(empty($filter)) return ;
-
         if($type == '1') {
             $table = strtolower(CONTROLLER_NAME);
             foreach ($filter as $key => $val) {
@@ -84,7 +82,9 @@ class CommonController extends AuthController {
                 unset($filter[$key]);
             }
         }
-        if(is_array(current($data))){
+        else {
+        }
+        if(is_array(reset($data))){
             foreach ($data as $key => $val) {
                 foreach ($filter as $k => $v) {
                     if(!empty($v[$data[$key][$k]])) {
