@@ -196,7 +196,7 @@ class CommonController extends AuthController {
             $res = $M->where($map)->find($id);
             $this->before($res,'edit');
 	        if(!empty($res) && is_array($res)){
-                $this->filter_list($res);
+                //$this->filter_list($res);
 	            $this->data = $res;
 	        }
 	        else{
