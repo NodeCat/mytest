@@ -33,30 +33,34 @@ class LocationController extends CommonController {
             unset($data); 
             $data["id"] = '';
             $data["wh_id"] = '仓库标识';
-            $data["code"] = '区域标识';
-            $data["name"] = '库位标识';
+            $data["area_code"] = '区域标识';
+            $data["code"] = '库位标识';
             $data['picking_line'] = '拣货路线';
             $data['putaway_line'] = '上架线路';
-            $data['type_id'] = '库位类型名称';
+            $data['type_name'] = '库位类型名称';
             $data['is_mixed_pro'] = '混放货品';
             $data['is_mixed_batch'] = '混放批次';
             $data['status'] = '库位状态';
             $this->columns = $data;
     }
       
-    protected function after_lists($data) {
+    protected function after_lists(&$data) {
          $location_detail = M('location_detail');
          $location_type = M('location_type');
-         foreach($data as &$val) {dump($val);
+         $location_area = M('location');
+         foreach($data as &$val) {
             $list = $location_detail->getByLocation_id($val['id']);
             $val['picking_line'] = $list['picking_line'];
             $val['putaway_line'] = $list['putaway_line'];
             $val['is_mixed_pro'] = $list['is_mixed_pro'];
             $val['is_mixed_batch'] = $list['is_mixed_batch'];
-            //$type = $location_type->getById($val['']);
-            //$data['type'] = $type['name'];
+            
+            $type = $location_type->getById($list['type_id']);
+            $val['type_name'] = $type['name'];
+
+            $area = $location_area->getById($val['pid']);
+            $val['area_code'] = $area['code'];
          }
-         dump($data);exit;
     }
 
     protected function after_add($id) {
