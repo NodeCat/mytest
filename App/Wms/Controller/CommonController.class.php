@@ -102,14 +102,14 @@ class CommonController extends AuthController {
         }
     }
 
-    public function get_list($field = '') {
-        $M = D(CONTROLLER_NAME);
+    public function get_list($controller,$field = '') {
+        $M = D($controller);
         $table = $M->tableName;
         
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $data = $M->scope('default')->getField($field,true);
+        $data = $M->getField($field,true);
         return $data;
     }
     protected function lists() {
@@ -214,7 +214,6 @@ class CommonController extends AuthController {
             $this->before($M, 'save');
             $this->before($M, 'add');
             if(ACTION_NAME === 'add') {
-                dump($M->data());exit();
                 $res = $M->add();
 
             }
