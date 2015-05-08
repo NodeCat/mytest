@@ -209,13 +209,11 @@ class CommonController extends AuthController {
 
     protected function save() {
         $M = D(CONTROLLER_NAME);
-
         if($M->create()){
             $this->before($M, 'save');
             $this->before($M, 'add');
             if(ACTION_NAME === 'add') {
                 $res = $M->add();
-
             }
             else {
                 $pk = $M->getPk();

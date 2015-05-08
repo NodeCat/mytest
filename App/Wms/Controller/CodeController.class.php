@@ -212,6 +212,40 @@ class CodeController extends CommonController {
                     ."<td></td></tr>";
 		$this->msgReturn(1,'添加成功',$data);
 	}
+	public function setting(){
+        $table = 'module_table';
+        if(IS_POST){
+            $M =M('module_column');
+            $data=$_POST["query"];
+            foreach ($data as $k => $v) {
+                $data[$k]['id']=$v['id'];
+                $data[$k]['title']=$v['title'];
+                if ($v['query_able']==='on')
+                    $data[$k]['query_able']=true;
+                else
+                    $data[$k]['query_able']=false;
+                if ($v['list_show']==='on')
+                    $data[$k]['list_show']=true;
+                else
+                    $data[$k]['list_show']=false;
+                //if ($v['add_show']==='on')
+                //    $data[$k]['add_show']=true;
+                //else
+                //    $data[$k]['add_show']=false;
+                $result=$M->save($data[$k]);
+            }
+            R('Code/build_config',array(MODULE_NAME,$table));
+            $this->msgReturn(1);
+        }
+        else{
+            $M =M('module_column');
+            $map['module']=$table;
+            $this->data=$M->where($map)->order('list_order')->select();
+            $this->display('Code:setting');
+
+        }
+       
+    }
 	public function index($refresh=false){
 		$M= M('Module_table');
 		$count=$M->count();
