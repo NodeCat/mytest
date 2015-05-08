@@ -137,8 +137,8 @@ class CommonController extends AuthController {
         $M2 = clone $M;
         $data = $M->select();
         $count  = $M2->count();
-        $this->filter_list($data);
         $this->after($data,'lists');
+        $this->filter_list($data);
         $this->data = $data;
         
         $this->page($count,$map);
