@@ -9,7 +9,9 @@ class AuthController extends Controller {
         if(!is_login()){
             $this->redirect('Login/index', 'please login'); 
         }
-
+        if(!defined('UID')) {
+            define('UID',session('user.uid'));
+        }
         if(!check_maintain()){
             destory_session();
             layout(FALSE);

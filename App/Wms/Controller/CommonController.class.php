@@ -102,13 +102,25 @@ class CommonController extends AuthController {
         }
     }
 
-    protected function lists() {
+    public function get_list($field = '') {
         $M = D(CONTROLLER_NAME);
         $table = $M->tableName;
-        $this->pk = $M->getPK();
+        
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
+        $data = $M->getField($field,true);
+        return $data;
+    }
+    protected function lists() {
+        $M = D(CONTROLLER_NAME);
+        $table = $M->tableName;
+        
+        if(empty($table)) {
+            $table = strtolower(CONTROLLER_NAME);
+        }
+        $this->pk = $M->getPK();
+
         $setting = get_setting($table);
         $this->columns = $setting['list'];
         $this->query = $setting['query'];
@@ -197,11 +209,14 @@ class CommonController extends AuthController {
 
     protected function save() {
         $M = D(CONTROLLER_NAME);
+
         if($M->create()){
             $this->before($M, 'save');
             $this->before($M, 'add');
             if(ACTION_NAME === 'add') {
+                dump($M->data());exit();
                 $res = $M->add();
+
             }
             else {
                 $pk = $M->getPk();
@@ -214,16 +229,18 @@ class CommonController extends AuthController {
                 $this->msgReturn(1);
             }
             else{
+
                 $this->msgReturn(0,$M->getError());
             }
         }
         else {
             $this->msgReturn(0,$M->getError());
         }
+
     }
 
     public function delete() {
-        $M      =   M(CONTROLLER_NAME);
+        $M      =   D(CONTROLLER_NAME);
         $pk     =   $M->getPK();
     	$ids    =   I($pk);
         $ids    =   explode(',', $ids);
@@ -237,6 +254,7 @@ class CommonController extends AuthController {
     }
 
     public function setting(){
+        $table = get_tablename();
         if(IS_POST){
             $M =M('module_column');
             $data=$_POST["query"];
@@ -257,12 +275,12 @@ class CommonController extends AuthController {
                 //    $data[$k]['add_show']=false;
                 $result=$M->save($data[$k]);
             }
-            R('Code/build_config',array(MODULE_NAME,strtolower(CONTROLLER_NAME)));
+            R('Code/build_config',array(MODULE_NAME,$table));
             $this->msgReturn(1);
         }
         else{
             $M =M('module_column');
-            $map['module']=CONTROLLER_NAME;
+            $map['module']=$table;
             $this->data=$M->where($map)->order('list_order')->select();
             $this->display('Code:setting');
 
@@ -485,7 +503,7 @@ class CommonController extends AuthController {
         }
         $this->display($template);
     }
-    protected function page($count, $map='',$template){
+    protected function page($count, $map='',$template=''){
         $p              = I("p", 1);
         $page_size      = C('PAGE_SIZE');
         $target = "table-content";
