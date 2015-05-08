@@ -1,5 +1,21 @@
 <?php
-
+function get_type($type = '') {
+	$map['type'] = $type;
+	$map['is_deleted'] = 0 ;
+	$data = M('category')->where($map)->select();
+	return $data;
+}
+function get_sn($type = '') {
+	return $type.NOW_TIME;
+}
+function get_tablename() {
+	$M = D(CONTROLLER_NAME);
+    $table = $M->tableName;
+    if(empty($table)) {
+        $table = strtolower(CONTROLLER_NAME);
+    }
+    return $table;
+}
 function get_setting($table) {
 	$M = M('module_table');
 	$res = $M->field('list,query')->find(strtolower($table));

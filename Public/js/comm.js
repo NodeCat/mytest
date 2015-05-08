@@ -278,6 +278,7 @@ function init(){
 	$('.selected').each(function (){
 		$(this).val($(this).data('value'));
 	});
+
 /*
 	$("select").select2({
     });
@@ -290,7 +291,7 @@ function init(){
 	    e.preventDefault();
 	    var target=$(this).data('target');
 	    if(target ==null)return;
-	    $(  target+ " .modal-body").load($(this).data("href"), function(response,status,xhr) { 
+	    $(target+ " .modal-body").load($(this).data("href"), function(response,status,xhr) { 
 	    	if (status == "success") {
 		        $(target).modal("show");
 		    }
@@ -302,7 +303,7 @@ function init(){
 	    $(this).parents('.input-group').find("input[type=text]").val($(this).text());
 	    $(this).parents('.input-group').find("input[type=hidden]").val($(this).attr('id'));
 	  });
-/*
+
 	$('.form_datetime').datetimepicker({
         language:  'zh-CN',
         weekStart: 1,
@@ -334,7 +335,7 @@ function init(){
 		maxView: 1,
 		forceParse: 0
     });
-*/
+
 }
 
 function refresh_page(){

@@ -839,8 +839,11 @@ class CodeController extends CommonController {
 			if($v['query_able']==1){
 				if(empty($refer[$v['field']])){
 				 	if($v['control_type']==="select"){
-				 		if(strpos($v['type'],'enum')!==false){
+				 		if(strpos($v['type'],'enum')!=false){
 				 			$value= str_replace("'",'',substr($v['type'],5,-1));
+				 		}
+				 		else{
+				 			$value='';
 				 		}
 				 	}
 				}
