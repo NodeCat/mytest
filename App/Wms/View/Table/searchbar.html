@@ -41,7 +41,6 @@
             &nbsp;&nbsp;{$vo['title']} 
             {~$items=explode(',',$vo['value'])}
             <div class="input-group" id="{$items[0]}-query">
-                
                 <input type="text" value="" data-target="{$items[2]}" class="input-sm" placeholder="" readonly="">
                 <input type="hidden" value="" name="query[{$key}]" id="query[{$key}]" data-target="{$items[1]}" class="" placeholder="">
                 <span class="input-group-btn">
@@ -53,8 +52,8 @@
             <php>
                 $_parm=explode('.',$vo['value']);
                 if(count($_parm)===2){
-                    $M=M($_parm[0]);
-                    $items=$M->getField($_parm[1]);
+                    $A=A($_parm[0]);
+                    $items=$A->get_list($_parm[0],$_parm[1]);
                 }
             </php>
             &nbsp;&nbsp;{$vo['title']} 
