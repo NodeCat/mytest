@@ -136,8 +136,7 @@ class Page{
                     break;
                 }
             }else{
-                if($page > 0 && $this->totalPages != 1){
-                    //$link_page .= '<li><a class="cur">' . $page . '</a></li>';
+                if($page > 0){
                     $link_page .= '<li><a  id="cur_page" class="cur"  href="' . $this->url($page) . '">' . $page . '</a></li>';
                 }
             }
