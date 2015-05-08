@@ -109,7 +109,7 @@ class CommonController extends AuthController {
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $data = $M->getField($field,true);
+        $data = $M->scope('default')->getField($field,true);
         return $data;
     }
     protected function lists() {
