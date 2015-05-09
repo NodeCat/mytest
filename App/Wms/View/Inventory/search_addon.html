@@ -1,0 +1,61 @@
+<a href="#" id='check_is_diff' class="btn btn-sm btn-default btn-tool">差异确认</a>
+<a href="#" id='diff_inventory_again' class="btn btn-sm btn-default btn-tool">差异复盘</a>
+<a href="#" id='inventory_closed' class="btn btn-sm btn-default btn-tool">关闭</a>
+<script type="text/javascript">
+$(function(){
+	$('#check_is_diff').on('click',function(){
+		//获得盘点单id
+		var ids = getChecked();
+		$.ajax({
+			url:'/inventory/checkIsDiff',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:'ids='+ids,
+			success: function(json){
+				if(json.status=='1'){
+					refresh_list();
+				}
+				if(json.status=='0'){
+					alert(json.msg);
+				}
+			}
+		});
+		return true;
+	})
+	$('#inventory_closed').on('click',function(){
+		//获得盘点单id
+		var ids = getChecked();
+		$.ajax({
+			url:'/inventory/closed',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:'ids='+ids,
+			success: function(json){
+				if(json.status=='1'){
+					refresh_list();
+				}
+			}
+		});
+		return true;
+	})
+	$('#diff_inventory_again').on('click',function(){
+		//获得盘点单id
+		var ids = getChecked();
+		$.ajax({
+			url:'/inventory/diffInventoryAgain',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:'ids='+ids,
+			success: function(json){
+				if(json.status=='1'){
+					refresh_list();
+				}
+			}
+		});
+		return true;
+	})
+})
+</script>

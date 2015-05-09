@@ -20,6 +20,7 @@ class StockController extends CommonController {
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
+        $this->search_addon = true;
     }
 	//lists方法执行前，执行该方法
 	protected function before_lists(&$M){
@@ -118,29 +119,83 @@ class StockController extends CommonController {
 			$location_code = M('Location')->where('id = '.$data['location_id'])->getField('code');
 			$data['location_name'] = $location_code;
 		}
-		//view 展示
-		else{
-			switch($data['status']){
-				case 'unqualified':
-					$data['status_name'] = '不合格';
-					break;
-				case 'qualified':
-					$data['status_name'] = '合格';
-					break;
-				default:
-					break;
-			}
+		//view edit 展示
+		switch($data['status']){
+			case 'unqualified':
+				$data['status_name'] = '不合格';
+				break;
+			case 'qualified':
+				$data['status_name'] = '合格';
+				break;
+			default:
+				break;
 		}
 	}
 
 	//save方法之前，执行该方法
 	protected function before_save(&$M){
-		//对比状态是否改变，如果没有改变，报错
-		//根据stock.id 查询对应stock.status
-		$data = $M->data();
-		$old_stock_status = M('Stock')->where('id = '.$data['id'])->getField('status');
-		if($old_stock_status === $data['status']){
-			$this->msgReturn(0,'请修改库存状态或者库位信息');
+		if(IS_POST){
+			//对比状态是否改变，如果没有改变，报错
+			//根据stock.id 查询对应stock.status
+			$data = $M->data();
+			$old_stock_info = M('Stock')->where('id = '.$data['id'])->getField('id,status,location_id');
+			
+			if(I('editStatus')){
+				if($old_stock_info[$data['id']]['status'] === $data['status']){
+					$this->msgReturn(0,'请修改库存状态');
+				}
+			}
+
+			if(I('editStockMove')){
+				if($old_stock_info[$data['id']]['location_id'] === $data['location_id']){
+					$this->msgReturn(0,'请修改库位信息');
+				}
+			}
 		}
+	}
+
+	//save方法之后，执行该方法
+	protected function after_save($res){
+		if(IS_POST){
+			//调整状态完成后触发的方法
+			if(I('editStatus')){
+				//创建库存调整单
+				$adjustment_code = get_sn('adjust');
+				$adjustment_data = array(
+					'code' => $adjustment_code,
+					'type' => 'move',
+					);
+				M('Stock_adjustment')->data($adjustment_data)->add();
+
+				//创建库存调整单详情
+				$adjustment_detail_data = array(
+					'adjustment_code' => $adjustment_code,
+					'pro_code' => I('pro_code'),
+					'origin_qty' => I('stock_qty'),
+					'adjusted_qty' => 0,
+					'origin_status' => I('origin_status'),
+					'adjust_status' => I('status'),
+					);
+				M('Stock_adjustment_detail')->data($adjustment_detail_data)->add();
+			}
+
+			//库存移动完成后触发的方法
+			if(I('editStockMove')){
+				//创建库存移动记录
+				
+			}
+		}
+	}
+
+	//调整状态按钮触发的方法
+	public function editStatus(){
+		$this->editStatus = true;
+		$this->edit();
+	}
+
+	//库存移动按钮触发的方法
+	public function editStockMove(){
+		$this->editStockMove = true;
+		$this->edit();
 	}
 }

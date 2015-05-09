@@ -4,7 +4,7 @@ use Think\Controller;
 class InventoryController extends CommonController {
 	//页面展示数据映射关系 例如取出数据是Qualified 显示为合格
 	protected $filter = array(
-			'type' => array('fast' => '快速盘点'),
+			'type' => array('fast' => '快速盘点','again' => '复盘'),
 			'is_diff' => array('0' => '无', '1' => '有'),
 			'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
 		);
@@ -12,8 +12,34 @@ class InventoryController extends CommonController {
 	public function index(){
 		$tmpl = IS_AJAX ? 'Table:list':'index';
 		$this->before_index();
+		$this->search_addon = true;
 		$this->lists($tmpl);
 	}
+
+	//lists方法执行前，执行该方法
+	protected function before_lists(&$M){
+		//整理显示项
+		foreach($this->columns as $key => $column){
+			$columns[$key] = $column;
+		}
+		$columns['count_location'] = '总库位数';
+		$columns['remark'] = '备注';
+		$columns['created_user'] = '创建人';
+		$columns['created_time'] = '创建时间';
+		$this->columns = $columns;
+	}
+
+	//lists方法执行后，执行该方法
+	protected function after_lists(&$data){
+		//整理数据项
+		foreach($data as $key => $data_detail){
+			//根据inventory_code 查询对应的inventory_detail总数
+			$count_location = M('stock_inventory_detail')->where('inventory_code = "'.$data_detail['code'].'"')->count();
+			$data[$key]['count_location'] = $count_location;
+		}
+
+	}
+
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -61,8 +87,15 @@ class InventoryController extends CommonController {
 		}
 		//view展示
 		else{
-			if($data['type'] == 'fast'){
-				$data['type'] = '快速盘点';
+			switch($data['type']){
+				case 'fast':
+					$data['type'] = '快速盘点';
+					break;
+				case 'again':
+					$data['type'] = '复盘';
+					break;
+				default:
+					break;
 			}
 			switch($data['status']){
 				case 'noinventory':

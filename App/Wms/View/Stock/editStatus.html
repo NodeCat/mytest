@@ -1,0 +1,81 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="{:U('edit')}" method="post" id='form'>
+
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="id"></label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+            <input type="hidden" value="{$data.id}" name="id" id="id" class="form-control {required:true,digits:true,range:[0,4294967295]}"  placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="wh_id">仓库</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+        <div class="input-group" id="stock-wh_id-warehouse-id">
+                <input type="hidden" value="{$data.wh_id}" name="wh_id" id="wh_id" data-target="id" class="form-control {required:true,digits:true,range:[0,4294967295]}" placeholder="">
+                <input type="text" value="{$data.wh_name}" data-target="name" class="form-control {required}" placeholder="" readonly="">
+            </div>
+    
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="location_id">库位</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+        <div class="input-group" id="stock-location_id-location-id">
+                <input type="hidden" value="{$data.location_id}" name="location_id" id="location_id" data-target="id" class="form-control {required:true,digits:true,range:[0,4294967295]}" placeholder="">
+                <input type="text" value="{$data.location_name}" data-target="name" class="form-control {required}" placeholder="" readonly="">
+            </div>
+    
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="pro_code">产品编号</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.pro_code}" name="pro_code" id="pro_code" placeholder="" readonly="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="batch">批次号</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:32,}"  value="{$data.batch}" name="batch" id="batch" placeholder="" readonly="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">库存状态</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+            <select class="form-control selected" data-value="{$data.status}" name="status">
+                <option value="qualified">合格</option>
+                <option value="unqualified">不合格</option>
+            </select>
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+        <input type="hidden" name="origin_status" value="{$data.status}"/>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="stock_qty">库存量</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {digits:true,range:[0,4294967295]}"  value="{$data.stock_qty}" name="stock_qty" id="stock_qty" placeholder="" readonly="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="assign_qty">分配量</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {digits:true,range:[0,4294967295]}"  value="{$data.assign_qty}" name="assign_qty" id="assign_qty" placeholder="" readonly="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="prepare_qty">待上架量</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {digits:true,range:[0,4294967295]}"  value="{$data.prepare_qty}" name="prepare_qty" id="prepare_qty" placeholder="" readonly="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <input type="hidden" name="editStatus" value="1"/>
+</form>
+</div>
