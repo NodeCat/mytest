@@ -121,11 +121,13 @@ class CommonController extends AuthController {
             $table = strtolower(CONTROLLER_NAME);
         }
         $this->pk = $M->getPK();
-
         $setting = get_setting($table);
-        $this->columns = $setting['list'];
-        $this->query = $setting['query'];
-
+        if(empty($this->columns)) {
+            $this->columns = $setting['list'];
+        }
+        if(empty($this->query)){
+            $this->query = $setting['query'];
+        }
         $map = $this->search($this->query);
 
         $p              = I("p",1);
