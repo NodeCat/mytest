@@ -4,7 +4,7 @@ use Think\Controller;
 class StockController extends CommonController {
 	//页面展示数据映射关系 例如取出数据是Qualified 显示为合格
 	protected $filter = array(
-			//'status' => array('qualified' => '合格','unqualified' => '不合格'),
+			'status' => array('qualified' => '合格','unqualified' => '不合格'),
 		);
 	//设置列表页选项
 	public function before_index() {
@@ -14,6 +14,11 @@ class StockController extends CommonController {
             'checkbox'  => true, 
             'status'    => false, 
             'toolbar_tr'=> true
+        );
+        $this->toolbar_tr =array(
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
     }
 	//lists方法执行前，执行该方法
@@ -43,11 +48,11 @@ class StockController extends CommonController {
 			//库位
 			$data[$key]['location_code'] = $data_detail['location_code'];
 			//转换库存状态显示
-			if($data_detail['status'] == 'qualified'){
+			/*if($data_detail['status'] == 'qualified'){
 				$data[$key]['status'] = '合格';
 			}else{
 				$data[$key]['status'] = '不合格';
-			}
+			}*/
 		}
 
 		//查询所有库位信息
@@ -112,6 +117,19 @@ class StockController extends CommonController {
 			//根据location.id 查询库位code
 			$location_code = M('Location')->where('id = '.$data['location_id'])->getField('code');
 			$data['location_name'] = $location_code;
+		}
+		//view 展示
+		else{
+			switch($data['status']){
+				case 'unqualified':
+					$data['status_name'] = '不合格';
+					break;
+				case 'qualified':
+					$data['status_name'] = '合格';
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
