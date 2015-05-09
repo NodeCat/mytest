@@ -59,11 +59,14 @@ $(function () {
 			success: function(msg){
 				alert(msg.msg); 
 				if(msg.status=='1'){
+					modal.modal('hide');
 					refresh_list();
+				}
+				else{
+
 				}
 			}
 		});
-		modal.modal('hide');
 	});
 
 	$('form.ajax button[type=submit]').on('click',function(){
