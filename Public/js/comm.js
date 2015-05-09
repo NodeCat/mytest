@@ -101,6 +101,7 @@ $(function () {
 	});
 
 init();
+$('rel=[datepicker]').datepicker()
 $('.modal').on('show.bs.modal', function (e) {
 	init();
 });

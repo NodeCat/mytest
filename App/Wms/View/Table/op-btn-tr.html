@@ -11,14 +11,14 @@
 	</case> 
 	<case value="add" break="1">
 	<eq name="tool.show" value="true"><eq name="tool.new" value="true">
-		<a data-href="{:U('add?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-add" data-title="添加" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-plus"></i> </a>
+		<a href="{:U('add?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-add" data-title="添加" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-plus"></i> </a>
 	<else/>
 		<a data-href="{:U('add?'.$pk.'='.$vo[$pk])}" data-target="#modal" data-toggle="modal" class="btn btn-xs btn-add" data-title="添加" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-plus"></i> </a>
 	</eq></eq>
 	</case> 
 	<case value="edit" break="1">
 	<eq name="tool.show" value="true"><eq name="tool.new" value="true">
-		<a data-href="{:U('edit?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-edit"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> </a>
+		<a href="{:U('edit?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-edit"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> </a>
 	<else/>
 		<a data-href="{:U('edit?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-edit" data-target="#modal" data-toggle="modal"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> </a>
 	</eq></eq>
