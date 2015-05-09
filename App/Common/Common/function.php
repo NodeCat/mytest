@@ -6,6 +6,10 @@ function get_type($type = '') {
 	return $data;
 }
 function get_sn($type = '') {
+    $M = M('numbs');
+    $res = $M->find($type);
+    $sn = $res['sn'];
+    $numb =$res['prefix'].$res['mid'].$res['surffix'].$res['sn'];
 	return $type.NOW_TIME;
 }
 function get_tablename() {
