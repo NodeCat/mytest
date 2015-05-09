@@ -8,6 +8,12 @@ class InventoryController extends CommonController {
 			'is_diff' => array('0' => '无', '1' => '有'),
 			'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
 		);
+	//重载index方法
+	public function index(){
+		$tmpl = IS_AJAX ? 'Table:list':'index';
+		$this->before_index();
+		$this->lists($tmpl);
+	}
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -75,7 +81,7 @@ class InventoryController extends CommonController {
 					break;
 			}
 
-			$inventory_detail_list = M('stock_inventory_detail')->where('inventory_code = '.$data['code'])->select();
+			$inventory_detail_list = M('stock_inventory_detail')->where('inventory_code = "'.$data['code'].'"')->select();
 			foreach($inventory_detail_list as $key => $inventory_detail){
 				$inventory_detail_list[$key]['location_code'] = M('location')->where('id = '.$inventory_detail['location_id'])->getField('code');
 			}
@@ -152,11 +158,174 @@ class InventoryController extends CommonController {
 				//写入数据
 				M('stock_inventory_detail')->addAll($data_list);
 			}
-			if(ACTION_NAME == 'edit'){
-				//修改盘点单时，进行以下操作
-				//如果是有差异，则需要生成调整单，同时关闭盘点单
-				
+		}
+	}
+
+	//执行add方法前，执行该方法
+	public function _before_add(){
+		$inventory_sn = get_sn('inventory');
+		$this->inventory_sn = $inventory_sn;
+	}
+
+	//差异确认 对某个盘点单进行差异确认，确认后，生成库存调整单，调整库存量
+	public function checkIsDiff(){
+		if(IS_AJAX){
+			$ids = I('ids');
+			$map = array('id' => array('in',$ids));
+			//根据盘点单ids 查询inventory_info
+			$inventory_infos = M('stock_inventory')->where($map)->select();
+			//检查是否存在 已经有差异的盘点单，如果有，则提示错误
+			foreach($inventory_infos as $inventory_info){
+				if($inventory_info['is_diff'] == 1 || $inventory_info['status'] == 'closed'){
+					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'已经经过差异确认，或者盘点单已经关闭');
+				}
 			}
+			//开始处理盘点单
+			foreach($inventory_infos as $inventory_info){
+				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
+				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+
+				//如果有盘点差异，则新建库存调整单
+				$create_adjust_flag = $inventory_is_diff = false;
+				foreach($inventory_details as $inventory_detail){
+					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
+						$create_adjust_flag = $inventory_is_diff = true;
+						$refer_code = $inventory_detail['inventory_code'];
+						break;
+					}
+				}
+				if($create_adjust_flag){
+					//新建库存调整单
+					$adjustment_code = get_sn('adjust');
+					$adjust_data = array(
+						'code'=>$adjustment_code,
+						'type'=>'inventory',
+						'refer_code'=>$refer_code,
+						);
+					M('stock_adjustment')->data($adjust_data)->add();
+				}
+
+
+				foreach($inventory_details as $inventory_detail){
+					//如果实盘量和库存量不同，处理库存变化
+					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
+						//根据pro_code location_id 更新库存表
+						M('stock')->where('pro_code = "'.$inventory_detail['pro_code'].'" and location_id = '.$inventory_detail['location_id'])->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
+						//添加库存移动表记录
+						//to do ....
+						//新建库存调整单详情
+						$adjusted_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
+						$adjust_detail_data = array(
+							'adjustment_code' => $adjustment_code,
+							'pro_code' => $inventory_detail['pro_code'],
+							'origin_qty' => $inventory_detail['theoretical_qty'],
+							'adjusted_qty' => $adjusted_qty,
+							);
+						M('stock_adjustment_detail')->data($adjust_detail_data)->add();
+						unset($adjust_detail_data);
+						unset($adjusted_qty);
+					}
+					//根据stock_inventory_detail_id 更新对应的status为done
+					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
+				}
+
+				if($inventory_is_diff){
+					$inventory_is_diff = 1;
+				}else{
+					$inventory_is_diff = 0;
+				}
+				//更新为有差异
+				M('stock_inventory')->where('id = '.$inventory_info['id'])->data(array('is_diff' => $inventory_is_diff,'status'=>'closed'))->save();
+			}
+			$this->msgReturn(1);
+		}
+	}
+
+	//差异确认 对某个盘点单进行差异确认，确认后，生成库存调整单，调整库存量
+	public function closed(){
+		if(IS_AJAX){
+			$ids = I('ids');
+			$map = array('id' => array('in',$ids));
+			//根据盘点单ids 查询inventory_info
+			$inventory_infos = M('stock_inventory')->where($map)->select();
+			
+			//将对应盘点单置为closed
+			foreach($inventory_infos as $inventory_info){
+				M('stock_inventory')->where('id = '.$inventory_info['id'])->data(array('status'=>'closed'))->save();
+
+				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
+				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				//根据stock_inventory_detail_id 更新对应的status为done
+				foreach($inventory_details as $inventory_detail){
+					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
+				}
+			}
+		}
+		$this->msgReturn(1);
+	}
+
+	//差异复盘，如果有差异，则针对差异，创建新的盘点单，同时关闭之前的盘点单
+	public function diffInventoryAgain(){
+		if(IS_AJAX){
+			$ids = I('ids');
+			$map = array('id' => array('in',$ids));
+			//根据盘点单ids 查询inventory_info
+			$inventory_infos = M('stock_inventory')->where($map)->select();
+
+			foreach($inventory_infos as $inventory_info){
+				$inventory_is_diff = false;
+				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
+				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				//判断是否有差异，如果有则新建复盘单，以及复盘详情
+				foreach($inventory_details as $inventory_detail){
+					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
+						$inventory_is_diff = true;
+						//$refer_code = $inventory_detail['inventory_code'];
+						break;
+					}
+				}
+
+				if($inventory_is_diff){
+					//新建复盘单
+					$inventory_code = get_sn('inventory');
+					$inventory_data = array(
+						'location_id' => $inventory_info['location_id'],
+						'code' => $inventory_code,
+						'type' => 'again',
+						'status' => 'noinventory',
+						);
+					M('stock_inventory')->data($inventory_data)->add();
+					
+					//创建复盘单详情
+					foreach($inventory_details as $inventory_detail){
+						if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
+							$inventory_detail_data = array(
+								'inventory_code' => $inventory_code,
+								'pro_code' => $inventory_detail['pro_code'],
+								'location_id' => $inventory_detail['location_id'],
+								'pro_qty' => 0,
+								'theoretical_qty' => $inventory_detail['theoretical_qty'],
+								);
+							M('stock_inventory_detail')->data($inventory_detail_data)->add();
+							unset($inventory_detail_data);
+						}
+					}
+					unset($inventory_data);
+					unset($inventory_code);
+					unset($inventory_details);
+				}
+
+				//将原盘点单状态置为closed
+				M('stock_inventory')->where('id = '.$inventory_info['id'])->data(array('status'=>'closed'))->save();
+
+				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
+				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				//根据stock_inventory_detail_id 更新对应的status为done
+				foreach($inventory_details as $inventory_detail){
+					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
+				}
+			}
+			$this->msgReturn(1);
 		}
 	}
 }

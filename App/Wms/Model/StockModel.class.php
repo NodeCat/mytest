@@ -27,7 +27,7 @@ class StockModel extends Model {
             'where'=>array('stock.is_deleted'=>'0'),
             'order'=>'stock.id DESC',
             "join"=>array("inner join location on stock.location_id=location.id ","inner join warehouse on stock.wh_id=warehouse.id "),
-"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.name as wh_id",
+"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.name as warehouse_name",
         ),
         'latest'=>array(
             'where'=>array('stock.is_deleted'=>'0'),
