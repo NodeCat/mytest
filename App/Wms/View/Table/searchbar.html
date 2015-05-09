@@ -1,13 +1,9 @@
 <notempty name="query">
-<div class="row-fluid">
-<form class="form-inline well well-small ajax" action="{:U('index')}" method="POST" id="table-searchbar">
+<form class="form-inline well well-sm ajax" action="{:U('index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
 <div class="row-fluid">
 <include file="search" />
 <volist name="query" id="vo">
-<if condition="(++$a % 5)==0 ">
-</div><br><div class="row-fluid">
-</if>
-    <eq name="i" value=""></div><br><div class="row-fluid"></eq>
+    <eq name="i%5" value="4"></div><br><div class="row-fluid"></eq>
      <switch name="vo['control_type']">
         <case value="null|text|area">{~$a++}
             &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="form-control input-sm">
@@ -32,7 +28,7 @@
             &nbsp;&nbsp;{$vo['title']} 
             <select name="query[{$key}]" class="form-control input-sm ">
                 <option value ="">全部</option>
-                <volist name="$vo['value']" id="op">
+                <volist name="vo['value']" id="op">
                     <option value ="{$key}">{$op}</option>
                 </volist>
             </select>
@@ -41,10 +37,10 @@
             &nbsp;&nbsp;{$vo['title']} 
             {~$items=explode(',',$vo['value'])}
             <div class="input-group" id="{$items[0]}-query">
-                <input type="text" value="" data-target="{$items[2]}" class="input-sm" placeholder="" readonly="">
+                <input type="text" value="" data-target="{$items[2]}" class="input-sm form-control" placeholder="" readonly="">
                 <input type="hidden" value="" name="query[{$key}]" id="query[{$key}]" data-target="{$items[1]}" class="" placeholder="">
                 <span class="input-group-btn">
-                <a data-href="{:U($items[3],'refer='.$items[0].'-query')}" data-target="#modal-refer" data-toggle="modal" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></a>
+                <a data-href="{:U(end($items),'refer='.$items[0].'-query')}" data-target="#modal-refer" data-toggle="modal" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-search"></i></a>
                 </span>
             </div>
         </case>
@@ -70,7 +66,7 @@
 </volist>
     
    <button type="submit" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>
-   <a href="{:U('__ACTION__')}"  class="btn btn-sm btn-default btn-tool">显示全部</a>
-</form>
+   <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
 </div>
+</form>
 </notempty>
