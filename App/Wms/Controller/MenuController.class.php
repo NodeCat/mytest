@@ -39,6 +39,7 @@ class MenuController extends CommonController {
         else {
             $M->level = 0 ;
         }
+        exit(dump($M->data()));
     }
 
     public function role_authority(){

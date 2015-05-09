@@ -3,16 +3,16 @@
 <div class="row-fluid">
 <include file="search" />
 <volist name="query" id="vo">
-    <eq name="i%5" value="4"></div><br><div class="row-fluid"></eq>
+    <eq name="i%6" value="5"></div><br><div class="row-fluid"></eq>
      <switch name="vo['control_type']">
         <case value="null|text|area">{~$a++}
             &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="form-control input-sm">
         </case>
         <case value="date|datetime|time">{~$a++}
             {~$datetime_format=array('datetime'=>'yyyy-mm-dd hh:ii:ss','date'=>'yyyy-mm-dd','time'=>'hh:ii:ss')}
-            &nbsp;&nbsp;{$vo['title']} <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm" data-date-format="{$datetime_format[$vo['control_type']]}">
+            &nbsp;&nbsp;{$vo['title']} <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
             <eq name="vo['query_type']" value="between">{~$a++}
-                —&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm" data-date-format="{$datetime_format[$vo['control_type']]}">
+                —&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
             </eq>
         </case>
         <case value="digit">{~$a++}
