@@ -40,7 +40,7 @@
                 <input type="text" value="" data-target="{$items[2]}" class="input-sm form-control" placeholder="" readonly="">
                 <input type="hidden" value="" name="query[{$key}]" id="query[{$key}]" data-target="{$items[1]}" class="" placeholder="">
                 <span class="input-group-btn">
-                <a data-href="{:U($items[3],'refer='.$items[0].'-query')}" data-target="#modal-refer" data-toggle="modal" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-search"></i></a>
+                <a data-href="{:U(end($items),'refer='.$items[0].'-query')}" data-target="#modal-refer" data-toggle="modal" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-search"></i></a>
                 </span>
             </div>
         </case>
