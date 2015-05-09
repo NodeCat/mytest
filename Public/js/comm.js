@@ -77,7 +77,24 @@ $(function () {
 			dataType:'html',
 			data:params,
 			success: function(msg){
-					$('.table-content').html(msg);
+				$('.table-content').html(msg);
+			}
+		}); 
+		return false;
+	});
+
+	$('.form-ajax button[type=submit]').on('click',function(){
+		var addr,params;
+		params=$(this).parents('form').serialize();
+		addr=$(this).parents('form').attr('action');
+		$.ajax({
+			url:addr,
+			type:'post',
+			cache : false,
+			dataType:'html',
+			data:params,
+			success: function(msg){
+				alert(msg.msg);
 			}
 		}); 
 		return false;

@@ -781,7 +781,16 @@ class CodeController extends CommonController {
 		$refers=$this->refers;
 		foreach ($refers as $key => $v) {
 			$scope[]='"inner join '.$v['module_refer'].' on '.$v['module'].'.'.$v['fk'].'='.$v['module_refer'].'.'.$v['pk'].' '.$v['condition'].'"';
-			$refer_fields[]=$v['module_refer'].'.'.$v['field_show'].' as '.$v['fk'];
+			$fs = explode(',',$v['field_show']);
+			if(is_array($fs)) {
+				foreach ($fs as $k => $value) {
+					$refer_fields[]=$v['module_refer'].'.'.$value.' as '.$v['module_refer'].'_'.$value;
+				}
+			}
+			else{
+				$refer_fields[]=$v['module_refer'].'.'.$v['field_show'].' as '.$v['module_refer'].'_'.$v['field_show'];
+			}
+			
 		}
 		if(count($scope)>0){
 			$data['scope']='"join"=>array('.implode(",", $scope)."),\n";
@@ -850,26 +859,40 @@ class CodeController extends CommonController {
 		file_put_contents($path.$file, $content);
 	}
 	public function build_config($group,$module){
-
+		$M=M('module_refer');
+		$refer=$M->where("module='%s'",$module)->getField('fk,pk,id,module,module_refer,field_show');
 		$M=M('module_column');
 		$data = $M->where("module='%s'",strtolower($module))->order('list_order')->select();
-		$M=M('module_refer');
-		$refer = $this->refers;
-
 		$columns=array();
 		$query=array();
 		$join=array();
-		foreach ($this->refers as $key => $v) {
-			$join[$v['fk']]=$v['field_show'];
+		foreach ($refer as $key => $v) {
+			$fs = explode(',',$v['field_show']);
+			if(is_array($fs)) {
+				foreach ($fs as $k => $value) {
+					$join[$v['fk']][]=$v['module_refer'].'_'.$value;
+				}
+			}
+			else{
+				$join[$v['fk']][]=$v['module_refer'].'_'.$v['field_show'];
+			}
 		}
 		foreach ($data as $key => $v) {
 			if($v['list_show']==1 || $v['pk']=='PRI'){
-				if(isset($join[$v['field']]))
-					$columns[$join[$v['field']]]=$v['title'];
-				else
-				$columns[$v['field']]=$v['title'];
+				if(isset($join[$v['field']])) {
+					if(count($join[$v['field']]) == 1 ){
+						$columns[$join[$v['field']][0]]=$v['title'];
+					}else
+					foreach ($join[$v['field']] as $value) {
+						$fk_id = str_replace('_','.',$value);
+						$t = $M->field('title')->find($fk_id);
+						$columns[$value]=$t['title'];
+					}
+				}
+				else{
+					$columns[$v['field']]=$v['title'];
+				}
 			}
-
 			if($v['query_able']==1){
 				if(empty($refer[$v['field']])){
 				 	if($v['control_type']==="select"){
@@ -894,12 +917,13 @@ class CodeController extends CommonController {
 				);
 			}
 		}
+		
 		$table = strtolower($module);
 		$map['name'] = $table;
 		unset($data);
 		$data['list'] = var_export($columns, true);
 		$data['query'] = var_export($query, true);
-
+		dump($data);
 		M('module_table')->where($map)->save($data);
 		
 		//$this->write_config($group,$module,$columns,'columns');

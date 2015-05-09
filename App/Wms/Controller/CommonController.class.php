@@ -67,6 +67,7 @@ class CommonController extends AuthController {
     }
 
     protected function filter_list(&$data,$type = '0') {
+        if(!is_array($data)) return;
         if(empty($this->filter)) {
             $file = strtolower(CONTROLLER_NAME);
             $filter = C($file.'.filter');
@@ -112,7 +113,7 @@ class CommonController extends AuthController {
         $data = $M->getField($field,true);
         return $data;
     }
-    protected function lists() {
+    protected function lists($template='') {
         $M = D(CONTROLLER_NAME);
         $table = $M->tableName;
         
@@ -141,7 +142,7 @@ class CommonController extends AuthController {
         $this->filter_list($data);
         $this->data = $data;
         
-        $this->page($count,$map);
+        $this->page($count,$map,$template);
     }
 
     public function _before_refer() {
@@ -165,7 +166,7 @@ class CommonController extends AuthController {
     }
 
     public function view() {
-        $this->display();
+        $this->edit();
     }
 
     public function add() {
@@ -192,10 +193,11 @@ class CommonController extends AuthController {
 	      	if(empty($id)){
 	            $this->msgReturn(0,'param_error');
 			}
-            $map['is_deleted'] = 0; 
-            $res = $M->where($map)->find($id);
-            $this->before($res,'edit');
+            $map[$table.'.'.'is_deleted'] = 0; 
+            $map[$table.'.'.$pk] = $id;
+            $res = $M->scope('default')->where($map)->find();
 	        if(!empty($res) && is_array($res)){
+                $this->before($res,'edit');
                 //$this->filter_list($res);
 	            $this->data = $res;
 	        }
@@ -226,7 +228,6 @@ class CommonController extends AuthController {
                 $this->msgReturn(1);
             }
             else{
-
                 $this->msgReturn(0,$M->getError());
             }
         }
@@ -254,7 +255,7 @@ class CommonController extends AuthController {
         $table = get_tablename();
         if(IS_POST){
             $M =M('module_column');
-            $data=$_POST["query"];
+            $data=I("query");
             foreach ($data as $k => $v) {
                 $data[$k]['id']=$v['id'];
                 $data[$k]['title']=$v['title'];
@@ -272,7 +273,8 @@ class CommonController extends AuthController {
                 //    $data[$k]['add_show']=false;
                 $result=$M->save($data[$k]);
             }
-            R('Code/build_config',array(MODULE_NAME,$table));
+            $A= A('Code');
+            $A->build_config(MODULE_NAME,$table);
             $this->msgReturn(1);
         }
         else{
@@ -369,88 +371,7 @@ class CommonController extends AuthController {
             $this->import($info);
         }
     }
-    function file_download($file, $name, $mime_type='') {
-    if(!is_readable($file)) die('File not found or inaccessible!');
-
-    $size = filesize($file);
-    $name = rawurldecode($name);
-
-    /* Figure out the MIME type (if not specified) */
-    $known_mime_types = get_known_mime_types();
-
-    if($mime_type==''){
-        $file_extension = strtolower(substr(strrchr($file,"."),1));
-
-        if(array_key_exists($file_extension, $known_mime_types)){
-            $mime_type=$known_mime_types[$file_extension];
-        } else {
-            $mime_type="application/force-download";
-        }
-    }
-
-    @ob_end_clean(); //turn off output buffering to decrease cpu usage
-
-    // required for IE, otherwise Content-Disposition may be ignored
-    if(ini_get('zlib.output_compression')) {
-        ini_set('zlib.output_compression', 'Off');
-    }
-
-    header('Content-Type: ' . $mime_type);
-    header('Content-Disposition: attachment; filename="'.$name.'"');
-    header("Content-Transfer-Encoding: binary");
-    header('Accept-Ranges: bytes');
-
-    /* The three lines below basically make the download non-cacheable */
-    header("Cache-control: private");
-    header('Pragma: private');
-    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-
-    // multipart-download and download resuming support
-    if(isset($_SERVER['HTTP_RANGE'])) {
-        list($a, $range) = explode("=",$_SERVER['HTTP_RANGE'],2);
-        list($range) = explode(",",$range,2);
-        list($range, $range_end) = explode("-", $range);
-        $range=intval($range);
-
-        if(!$range_end) {
-            $range_end=$size-1;
-        } else {
-            $range_end=intval($range_end);
-        }
-
-        $new_length = $range_end-$range+1;
-
-        header("HTTP/1.1 206 Partial Content");
-        header("Content-Length: $new_length");
-        header("Content-Range: bytes $range-$range_end/$size");
-    } else {
-        $new_length=$size;
-        header("Content-Length: ".$size);
-    }
-
-    /* output the file itself */
-    $chunksize = 1*(1024*1024); // 1MB, can be tweaked if needed
-    $bytes_send = 0;
-
-    if ($file = fopen($file, 'r')) {
-        if(isset($_SERVER['HTTP_RANGE'])) {
-            fseek($file, $range);
-        }
-
-        while(!feof($file) && (!connection_aborted()) && ($bytes_send<$new_length)) {
-            $buffer = fread($file, $chunksize);
-            print($buffer); //echo($buffer); // is also possible
-            flush();
-            $bytes_send += strlen($buffer);
-        }
-
-        fclose($file);
-    } else {
-        die('Error - can not open file.');
-    }
-
-    die();
-}
+   
     public function _empty($action){
        $this->error('unknown',U('index'));
     }
@@ -466,16 +387,16 @@ class CommonController extends AuthController {
             $this->$func($res);
         }
     }
-    protected function msgReturn($res, $msg='', $data = null){
+    protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
             $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data' => $data));
         }
-        else if($result){ 
-                $this->success('操作成功');
+        else if($res){ 
+                $this->success('操作成功',$url);
             }
             else{
-                $this->error('操作失败');
+                $this->error('操作失败',$url);
             }
         exit();
     }
