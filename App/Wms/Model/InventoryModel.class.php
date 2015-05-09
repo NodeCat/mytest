@@ -32,7 +32,7 @@ class InventoryModel extends Model {
         'default'=>array(
             'where'=>array('stock_inventory.is_deleted'=>'0'),
             'order'=>'stock_inventory.id DESC',
-            "join"=>array("inner join location on stock_inventory.location_id=location.id "),
+            "join"=>array("left join location on stock_inventory.location_id=location.id "),
 "field"=>"stock_inventory.*,location.name as location_name",
         ),
         'latest'=>array(

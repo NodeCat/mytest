@@ -126,17 +126,20 @@ class InventoryController extends CommonController {
 	//add方式执行之前，执行该方法
 	protected function before_add(&$M){
 		$data = $M->data();
-		//根据区域location_id 查询stock中所有在该区域location_id的pro_code
-		$location_ids = M('location')->where('pid = '.$data['location_id'].' and type = 2')->getField('id',true);
-		if(empty($location_ids)){
-			$this->msgReturn(0,'该区域id:'.$data['location_id'].'不存在库位');
+		if(!empty($data['location_id'])){
+			//根据区域location_id 查询stock中所有在该区域location_id的pro_code
+			$location_ids = M('location')->where('pid = '.$data['location_id'].' and type = 2')->getField('id',true);
+			if(empty($location_ids)){
+				$this->msgReturn(0,'该区域id:'.$data['location_id'].'不存在库位');
+			}
+			//根据区域内的所有库位id，查询对应的库存
+			$map = array('location_id' => array('in',$location_ids));
+			$stock_pro_codes = M('Stock')->where($map)->getField('pro_code',true);
+			if(empty($stock_pro_codes)){
+				$this->msgReturn(0,'该区域id:'.$data['location_id'].'中，没有任何sku');
+			}
 		}
-		//根据区域内的所有库位id，查询对应的库存
-		$map = array('location_id' => array('in',$location_ids));
-		$stock_pro_codes = M('Stock')->where($map)->getField('pro_code',true);
-		if(empty($stock_pro_codes)){
-			$this->msgReturn(0,'该区域id:'.$data['location_id'].'中，没有任何sku');
-		}
+		
 		//获得页面传递过来的pro_codes，如果不为空，则需要匹配，pro_codes是否在提交过来的location_id范围内
 		$browser_pro_codes = I('pro_codes');
 		if(!empty($browser_pro_codes)){
@@ -147,15 +150,18 @@ class InventoryController extends CommonController {
 					continue;
 				}
 				$browser_pro_codes[$key] = $browser_pro_code = trim($browser_pro_code);
-				if(!in_array($browser_pro_code, $stock_pro_codes)){
+				if(!empty($data['location_id']) && !in_array($browser_pro_code, $stock_pro_codes)){
 					$this->msgReturn(0,$browser_pro_code.'不在对应区域id:'.$data['location_id'].'中，请重新确认');
 				}
 			}
 		}
 
 		//合并要盘点的pro_codes
+		//如果浏览器中传递的pro_code为空，则直接返回区域中得pro_code
 		if(empty($browser_pro_codes)){
 			$inventory_pro_codes = $stock_pro_codes;
+		}elseif(!empty($browser_pro_codes) && empty($data['location_id'])){
+			$inventory_pro_codes = $browser_pro_codes;
 		}else{
 			$inventory_pro_codes = array_intersect($browser_pro_codes,$stock_pro_codes);
 		}
@@ -172,7 +178,7 @@ class InventoryController extends CommonController {
 				//根据inventory_id 查询inventory_code
 				$inventory_code = M('stock_inventory')->where('id = '.$id)->getField('code');
 				//获得区域id
-				$location_id = I('location_id');
+				//$location_id = I('location_id');
 				//获得所有要盘点的pro_codes
 				//根据inventory_pro_codes 查询对应的库存量stock_qty
 				$map['pro_code'] = array('in', $this->inventory_pro_codes);
@@ -181,10 +187,10 @@ class InventoryController extends CommonController {
 				foreach($stock_lists as $pro_code => $stock_list){
 					$data_list[] = array(
 						'inventory_code'=>$inventory_code,
-						'pro_code'=>$pro_code,
+						//'pro_code'=>$pro_code,
 						'location_id'=>$stock_list['location_id'],
-						'pro_qty'=>0,
-						'theoretical_qty'=>$stock_list['stock_qty'],
+						//'pro_qty'=>0,
+						//'theoretical_qty'=>$stock_list['stock_qty'],
 						);
 				}
 
