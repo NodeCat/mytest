@@ -615,11 +615,13 @@ class CodeController extends CommonController {
 
 	public function view(){
 		$M=M('module_table');
+
 		$this->pk=$M->getPk();
 		$this->modules = $M->getField($M->getPk(),true);
 		$module=I($M->getPk());
 		$result=$M->find($module);
-		
+		$A= A('Code');
+        $A->build_config(MODULE_NAME,$module);
 		if(!empty($result)){
 			$this->group=$result['group'];
 			$M=M('module_column');
@@ -634,7 +636,7 @@ class CodeController extends CommonController {
 			$this->edit_show=$this->fetch('edit');
 			$this->add= htmlentities($this->add_show,ENT_NOQUOTES,"utf-8");
 			$this->edit=htmlentities($this->edit_show,ENT_NOQUOTES,"utf-8");
-			$this->action=htmlentities($this->fetch('controller'),ENT_NOQUOTES,"utf-8");
+			
 			$data=$this->data;
 			foreach ($data as $key => $v) {
 				if($v['insert_able']==1 || $v['pk']=='PRI'){
@@ -649,7 +651,7 @@ class CodeController extends CommonController {
 			}
 
 			$M=M('module_table');
-			$module=$name;
+			//$module=$name;
 			$result=$M->getByModule($module);
 			$data['validate']=$result['validate'];
 			$data['auto']=$result['auto'];
@@ -672,10 +674,19 @@ class CodeController extends CommonController {
 			$this->data=$data;
 			$this->model=htmlentities($this->fetch('model'),ENT_NOQUOTES,"utf-8");
 			$M=M($module);
-			$this->data=$M->limit(10)->select();
+			$this->data=$M->limit(1)->select();
 			$this->module   = $module;
-	        $this->columns  = C("columns.".$module);
-	        $this->query    = C("query.".$module);
+			$set = get_setting($module);
+			$conf['columns']  = var_export($set['list'],true);
+	        $conf['query']    = var_export($set['query'],true);
+	        $this->columns = $conf['columns'];
+	        $this->query = $conf['query'];
+	        $data = $this->data;
+	        $this->data = $set;
+	        $this->action=htmlentities($this->fetch('controller'),ENT_NOQUOTES,"utf-8");
+	        $this->data = $data;
+	        $this->columns = $set['list'];
+	        $this->query = $set['query'];
 	        $this->toolbar_tr =array(
     	  		'view',
     	  		'edit',
@@ -685,7 +696,7 @@ class CodeController extends CommonController {
     	  	$M=M('module_table');
 			$this->pk=$M->getPk();
 		}
-
+		layout(!IS_AJAX);
 		$this->display();
 	}
 
@@ -737,8 +748,9 @@ class CodeController extends CommonController {
 		
 		$this->build_tpl($group,$module);
 		$this->build_model($group,$module);
-		$this->build_action($group,$module);
 		$this->build_config($group,$module);
+		$this->build_action($group,$module);
+		
 		exit();
 	}
 	protected function build_tpl($group,$module){
@@ -923,7 +935,8 @@ class CodeController extends CommonController {
 		unset($data);
 		$data['list'] = var_export($columns, true);
 		$data['query'] = var_export($query, true);
-		dump($data);
+		$this->columns =$data['list'];
+		$this->query = $data['query'];
 		M('module_table')->where($map)->save($data);
 		
 		//$this->write_config($group,$module,$columns,'columns');
