@@ -261,7 +261,7 @@ $('.modal').on('shown.bs.modal', function (e) {
 		return false;
 	});
 	
-	$('.table-toolbar .btn-edit').on('click',function(e){
+	$('.table-toolbar .btn-edit, #search-addon-edit').on('click',function(e){
 		e.preventDefault();
 		var n=$('.content table input:checked').length;
 		if(!n){
