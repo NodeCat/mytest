@@ -21,7 +21,7 @@
     <label class="control-label col-lg-3" for="pid">父级</label>
     <div class="col-lg-5">
         {~$menus=R(MODULE_NAME.'/'.CONTROLLER_NAME.'/get_level_nodes')}
-        <select id="pid" name="pid" class="form-control selected" data-value="{$data.pid}">
+        <select id="pid" name="pid" class="form-control selected" value="{$data.pid}" data-value="{$data.pid}">
             <volist name="menus" id="vo">
             <option value="{$key}">{$vo}</option>
             </volist>

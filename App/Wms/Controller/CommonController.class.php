@@ -132,18 +132,18 @@ class CommonController extends AuthController {
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $M->scope('default')->page($p.','.$page_size);
+        $M->scope('default');
         if(!empty($map)) {
             $M->where($map);
         }
         $this->before($M,'lists');
         $M2 = clone $M;
+        $M->page($p.','.$page_size);
         $data = $M->select();
-        $count  = $M2->count();
+        $count  = $M2->page()->limit()->count();
         $this->after($data,'lists');
         $this->filter_list($data);
         $this->data = $data;
-        
         $this->page($count,$map,$template);
     }
 
