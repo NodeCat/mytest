@@ -42,6 +42,7 @@ class StockController extends CommonController {
 	protected function after_lists(&$data){
 		//整理数据项
 		foreach($data as $key => $data_detail){
+			$data[$key] = $data_detail;
 			//可用量=库存量-配送量
 			$data[$key]['available_qty'] = $data_detail['stock_qty'] - $data_detail['assign_qty'];
 			//区域标识
@@ -55,6 +56,9 @@ class StockController extends CommonController {
 				$data[$key]['status'] = '不合格';
 			}*/
 		}
+
+		//添加pro_name字段
+        $data = A('Pms','Logic')->add_fields($data,'pro_name');
 
 		//查询所有库位信息
 		$location_info = M('Location')->where('type = 1')->getField('id,name,code');
@@ -130,6 +134,12 @@ class StockController extends CommonController {
 			default:
 				break;
 		}
+
+		//根据pro_code 查询对应的pro_name
+		$pro_codes = array($data['pro_code']);
+
+		$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes($pro_codes);
+		$data['pro_name'] = $SKUs['list'][0]['name'];
 	}
 
 	//save方法之前，执行该方法

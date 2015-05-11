@@ -23,9 +23,14 @@ class AdjustmentController extends CommonController {
 		//替换编辑页面的展示信息
 		if(!IS_AJAX){
 			$adjustment_detail_list = M('stock_adjustment_detail')->where('adjustment_code = "'.$data['code'].'"')->select();
-			foreach($adjustment_detail_list as $key => $adjustment_detail){
+
+            foreach($adjustment_detail_list as $key => $adjustment_detail){
 				//$adjustment_detail_list[$key]['location_code'] = M('location')->where('id = '.$inventory_detail['location_id'])->getField('code');
-			}
+                $adjustment_detail_list[$key] = $adjustment_detail;
+            }
+
+            //添加pro_name字段
+            $adjustment_detail_list = A('Pms','Logic')->add_fields($adjustment_detail_list,'pro_name');
 
 			$this->adjustment_detail_list = $adjustment_detail_list;
 		}
