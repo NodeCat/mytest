@@ -379,6 +379,9 @@ class HttpRequest {
     	if(empty($query_data)){
     		return '';
     	}
+        if(!is_array($query_data)){
+            return $query_data;
+        }
     	$pairs = array();
     	foreach ($query_data as $key => $value){
     		$pairs[] = "{$key}={$value}";
@@ -533,17 +536,22 @@ class HttpRequest {
         else{
         	curl_setopt($this->ch, CURLOPT_POSTFIELDS, self::http_build_query($this->post_fields));
         }
-        foreach ($this->post_fields as $name => $value) {
-            if ($this->has_upload) {
-                $this->curl_cli .= " --form \"" . $name . '=' . $value . "\"";
-            } else {
-                $pairs[] = $name . '=' . $value;
+        if(!is_array($this->post_fields)){
+            $this->curl_cli .= " -d \"" . $this->post_fields . "\"";
+        }else{
+            foreach ($this->post_fields as $name => $value) {
+                if ($this->has_upload) {
+                    $this->curl_cli .= " --form \"" . $name . '=' . $value . "\"";
+                } else {
+                    $pairs[] = $name . '=' . $value;
+                }
+            }
+            
+            if (!empty($pairs)) {
+                $this->curl_cli .= " -d \"" . implode('&', $pairs) . "\"";
             }
         }
         
-        if (!empty($pairs)) {
-            $this->curl_cli .= " -d \"" . implode('&', $pairs) . "\"";
-        }
     }
     
     private function load_referer(){

@@ -10,6 +10,10 @@ class InventoryController extends CommonController {
 		);
 	//重载index方法
 	public function index(){
+		//$SKU = A('Product','Logic')->get_SKU_by_pro_code('1000123');
+		$SKU = A('Product','Logic')->get_SKU_by_pro_name('桃');
+		var_dump($SKU);exit;
+
 		$tmpl = IS_AJAX ? 'Table:list':'index';
 		$this->before_index();
 		$this->search_addon = true;
