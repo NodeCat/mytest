@@ -4,7 +4,6 @@ use Think\Controller;
 
 class CommonController extends AuthController {
     public function index() {
-        $map ='';
         $this->before($map,'index');
         $this->lists();
     }
@@ -15,7 +14,7 @@ class CommonController extends AuthController {
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
-            'status'    => true, 
+            'status'    => false, 
             'toolbar_tr'=> true,
             'statusbar' => false
         );

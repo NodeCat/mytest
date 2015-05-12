@@ -28,6 +28,7 @@ function set_session($uid){
         'uid'             => $user['id'],
         'username'        => $user['nickname'],
         'role'            => $roles,
+        'wh_id'           => 1,
     );
 
     session('user', $auth);
