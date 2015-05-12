@@ -50,9 +50,18 @@ class InventoryController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'Inventorydetail/index'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
     }
 
@@ -191,10 +200,10 @@ class InventoryController extends CommonController {
 				foreach($stock_lists as $pro_code => $stock_list){
 					$data_list[] = array(
 						'inventory_code'=>$inventory_code,
-						//'pro_code'=>$pro_code,
+						'pro_code'=>$pro_code,
 						'location_id'=>$stock_list['location_id'],
-						//'pro_qty'=>0,
-						//'theoretical_qty'=>$stock_list['stock_qty'],
+						'pro_qty'=>0,
+						'theoretical_qty'=>$stock_list['stock_qty'],
 						);
 				}
 
@@ -379,6 +388,7 @@ class InventoryController extends CommonController {
 
 		$data['status'] = 1;
 		$data['data'] = $inventory_detail_infos;
+
 		$this->ajaxReturn($data);
 	}
 

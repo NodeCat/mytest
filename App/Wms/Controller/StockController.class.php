@@ -20,6 +20,15 @@ class StockController extends CommonController {
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
+        );
         $this->search_addon = true;
     }
 	//lists方法执行前，执行该方法
@@ -94,9 +103,9 @@ class StockController extends CommonController {
 			//添加map
 			if(!empty($location_ids)){
 				$map['stock.location_id'] = array('in',$location_ids);
-			}else{
-				$map['stock.location_id'] = array('eq',0);
-			}
+			}//else{
+				//$map['stock.location_id'] = array('eq',0);
+			//}
 
 			//根据stock.status 查询对应stock记录
 			//添加map
@@ -106,6 +115,16 @@ class StockController extends CommonController {
 			}
 			if($stock_status == 'unqualified'){
 				$map['stock.status'] = array('eq','unqualified');
+			}
+
+			//根据pro_name 查询对应的pro_code
+			$pro_name = I('pro_name');
+			if(!empty($pro_name)){
+				$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($pro_name);
+				foreach($SKUs['list'] as $SKU){
+					$pro_codes[] = $SKU['sku_number'];
+				}
+				$map['stock.pro_code'] = array('in',$pro_codes);
 			}
 		}
 	}
