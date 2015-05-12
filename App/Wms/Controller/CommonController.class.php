@@ -24,6 +24,15 @@ class CommonController extends AuthController {
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false'),
+            array('name'=>'import' ,'show' => !isset($auth['import']),'new'=>'false'),
+            array('name'=>'export' ,'show' => !isset($auth['export']),'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => !isset($auth['setting']),'new'=>'false'),
+        );
         $this->status =array(
             array(
                 array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
