@@ -144,6 +144,9 @@ table td,table th{
 	background-color: #fff;
 	*/
 }
+table th{
+	border-right: solid 1px #ccc;
+}
 .content .table{
 	font-size: 13px;
 }
@@ -173,9 +176,21 @@ table {
 	padding: 6px 8px;
 	font-size: 16px;
 }
-.table-toolbar{
+.table-toolbar,.table-pill{
 	border-left:solid 1px #ccc;
 	border-right:solid 1px #ccc;
+	border-bottom:solid 1px #ccc;
+}
+.table-pill{
+	padding: 10px 5px;
+}
+.table-pill .btn{
+	margin-left: 15px;
+	font-size: 13px;
+}
+.table-pill .badge{
+	color: #eee;
+	background-color: #777;
 }
 .table-toolbar a,.table-operate-btn a{
 	color:#555;
@@ -547,4 +562,27 @@ background-color:#000000}
 100%{
 background-color:#FFFFFF}
 
+}
+
+.form-view .form-group .control-label:last-child{
+  font-weight: normal;
+}
+.form-view .form-group .control-label:first-child{
+  padding-right: 0px;
+  font-weight: normal;
+  font-size: 13px;
+}
+.form-view .form-group{
+  margin-bottom: 0px;
+}
+.table-search {
+	border-right: solid 1px #ccc;
+	border-left: solid 1px #ccc;
+	padding-top:10px;
+}
+.table-search .form-group{
+	margin-bottom: 10px;
+}
+.table-search label{
+	padding-right: 0px;
 }

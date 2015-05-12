@@ -299,6 +299,9 @@ function init(){
 	$('.selected').each(function (){
 		$(this).val($(this).data('value'));
 	});
+	$('select').each(function (){
+		$(this).val($(this).attr('value'));
+	});
 
 /*
 	$("select").select2({
