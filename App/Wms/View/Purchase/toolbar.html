@@ -1,0 +1,36 @@
+<div class="table-toolbar hidden">
+	<div class="col-lg-9 col-sm-9 col-md-9 col-xs-12">
+		<div class="btn-group ">
+			<a href="{:U('add')}" role="button"  data-title="添加" rel="tooltip" data-placement="bottom" class="btn btn-add btn-lg btn-tool"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+			<a href="{:U('edit')}" data-title="编辑" rel="tooltip"  data-placement="bottom" class="btn btn-lg btn-tool" data-id=""><i class="glyphicon glyphicon-edit"></i> 修改</a>
+			<a data-remote="{:U('delete')}" data-title="删除" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-delete btn-tool"><i class="glyphicon glyphicon-remove"></i> 删除</a>
+		</div>
+		<div class="btn-group">
+			<a data-href="{:U('upload')}" data-target="#modal" data-toggle="modal" data-title="导入" rel="tooltip" data-placement="bottom" class="btn btn-lg"><i class="glyphicon  glyphicon-open"></i> 导入
+			</a>
+			<a href="{:U('export')}" data-target="#modal" data-title="导出" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-tool"><i class="glyphicon glyphicon-save"></i> 导出
+			</a>
+			<a data-href="{:U('print')}" data-target="#modal" data-title="打印" rel="tooltip" data-placement="bottom" class="btn btn-lg"><i class="glyphicon glyphicon-print"></i> 打印
+				</a>
+			<a data-href="{:U('setting')}" data-target="#modal" data-toggle="modal" data-title="设置" rel="tooltip" data-placement="bottom" class="btn  btn-lg btn-tool"><i class="glyphicon glyphicon-wrench"></i> 设置
+			</a>
+		</div>
+
+	</div>
+	<div class="col-lg-3 col-sm-3 col-md-3 col-xs-12 text-inline">
+		<include file="Table:pill" />
+		<div class="btn-group pull-right">
+			<a id="prev-page" data-original-data="Newer" data-title="上一页"  rel="tooltip" data-placement="bottom" class="btn btn-lg" disabled="disabled"><i class="glyphicon glyphicon-chevron-left"></i>上一页</a>
+			<a id="next-page" data-original-data="Older" data-title="下一页"  rel="tooltip" data-placement="bottom" class="btn btn-lg" disabled="disabled"><i class="glyphicon glyphicon-chevron-right"></i>下一页</a>
+		</div>
+	</div>
+	<div class="clearfix"></div>
+</div>
+<script type="text/javascript">
+$(function(){
+	$('.dropdown-menu input, .dropdown-menu label').click(function(e) {
+        e.stopPropagation();
+    });
+    refresh_page();
+});
+</script>

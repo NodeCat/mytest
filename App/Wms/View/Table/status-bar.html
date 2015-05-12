@@ -1,0 +1,39 @@
+<notempty name="pill">
+<div class="table-pill row-fluid">
+<div class="col-lg-12">
+
+  <a href="{:U('index')}#" class="btn btn-default btn-sm"> &nbsp;&nbsp;全部&nbsp;&nbsp; </a>
+  <volist name="pill" id="p">
+  {~$k=$key}
+  <volist name="p" id="vo">
+<a href="{:U('index','q='.$k.'%3D'.$vo['value'])}" class="btn btn-{$vo['class']} btn-sm">{$vo.title} {$vo.count}</a>
+</volist>
+</volist>
+
+<script type="text/javascript">
+$(function(){
+	$('.table-pill a').on('click',function(){
+		$('.table-pill .active').removeClass('active');
+		$(this).parent('li').addClass('active');
+		
+        var link=$(this).attr('href');
+        if(!link)return false;
+        $.ajax({
+            url: link,
+            dataType: "html",
+            type: "GET",
+            cache: false,
+            async:true,
+            success: function(html){
+                $(".table-content").html(html);
+            }
+        });
+		return false;
+	});
+});
+</script>
+</div>
+
+<div class="clearfix"></div>
+</div>
+</notempty>
