@@ -207,7 +207,7 @@ class CommonController extends AuthController {
 	        }
 	        else{
                 $msg = ' '.$M->getError().' '.$M->_sql();
-	            $this->msgReturn(0,'not_found'.$msg);
+	            $this->msgReturn(0,'没有找到该记录，请检查表关联或者纪录状态'.$msg);
 	        }
 	        $this->pk = $pk;
 			$this->display();
@@ -233,7 +233,7 @@ class CommonController extends AuthController {
                 $this->msgReturn(1);
             }
             else{
-                $msg = ' '.$M->getError().' '.$M->_sql();
+                $msg = '保存失败，错误和sql：'.$M->getError().' '.$M->_sql();
                 $this->msgReturn(0,$msg);
             }
         }
