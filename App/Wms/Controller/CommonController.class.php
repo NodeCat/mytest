@@ -4,7 +4,6 @@ use Think\Controller;
 
 class CommonController extends AuthController {
     public function index() {
-        $map ='';
         $this->before($map,'index');
         $this->lists();
     }
@@ -15,7 +14,7 @@ class CommonController extends AuthController {
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
-            'status'    => true, 
+            'status'    => false, 
             'toolbar_tr'=> true,
             'statusbar' => false
         );
@@ -208,11 +207,11 @@ class CommonController extends AuthController {
 			}
             $map[$table.'.'.'is_deleted'] = 0; 
             $map[$table.'.'.$pk] = $id;
-            $res = $M->scope('default')->where($map)->find();
+            $res = $M->scope('default')->where($map)->limit(1)->select();
 	        if(!empty($res) && is_array($res)){
-                $this->before($res,'edit');
+                $this->before($res[0],'edit');
                 //$this->filter_list($res);
-	            $this->data = $res;
+	            $this->data = $res[0];
 	        }
 	        else{
                 $msg = ' '.$M->getError().' '.$M->_sql();
@@ -405,7 +404,7 @@ class CommonController extends AuthController {
     protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
-            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data' => $data));
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
         }
         else if($res){ 
                 $this->success('操作成功',$url);
