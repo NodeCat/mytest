@@ -1,26 +1,36 @@
 <div class="table-toolbar">
 	<div class="col-lg-9 col-sm-9 col-md-9 col-xs-12">
-		<div class="btn-group ">
+	<div class="btn-group ">
+	<volist name="toolbar" id="tool">
+	<switch name="tool.name" >
+		<case value="add" break="1">
+		<eq name="tool.show" value="true">
 			<a data-href="{:U('add')}" data-target="#modal" data-toggle="modal" role="button"  data-title="添加" rel="tooltip" data-placement="bottom" class="btn btn-add btn-lg btn-tool"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+		</eq></case><case value="edit" break="1">
+		<eq name="tool.show" value="true">
 			<a data-remote="{:U('edit')}" data-target="#modal" role="button" data-title="编辑" rel="tooltip"  data-placement="bottom" class="btn btn-lg btn-edit btn-tool" data-id=""><i class="glyphicon glyphicon-edit"></i> 修改</a>
+		</eq></case><case value="delete" break="1">
+		<eq name="tool.show" value="true">
 			<a data-remote="{:U('delete')}" data-title="删除" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-delete btn-tool"><i class="glyphicon glyphicon-remove"></i> 删除</a>
-		</div>
-		<!--
-		<div class="btn-group">
-			<a href="{:U('folder')}" data-target="#modal" data-toggle="modal" data-title="Folder" rel="tooltip" data-placement="bottom" class="btn btn-lg"><i class="glyphicon glyphicon-folder-close"></i></a>
-			<a href="{:U('flag')}" data-target="#modal" data-toggle="modal" data-title="Flag" rel="tooltip" data-placement="bottom" class="btn btn-lg"><i class="glyphicon glyphicon-flag"></i></a>
-			<a href="{:U('tag')}" data-target="#modal" data-toggle="modal" data-title="Tags" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-tool"><i class="glyphicon glyphicon-tags"></i></a>
-		</div>
-		-->
-		<div class="btn-group">
+		</eq></case><case value="import" break="1">
+		<eq name="tool.show" value="true">
 			<a data-href="{:U('upload')}" data-target="#modal" data-toggle="modal" data-title="导入" rel="tooltip" data-placement="bottom" class="btn btn-lg "><i class="glyphicon  glyphicon-open"></i> 导入
 			</a>
+		</eq></case><case value="export" break="1">
+		<eq name="tool.show" value="true">
 			<a href="{:U('export')}" data-target="#modal" data-title="导出" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-tool"><i class="glyphicon glyphicon-save"></i> 导出
 			</a>
+		</eq></case><case value="print" break="1">
+		<eq name="tool.show" value="true">
 			<a data-href="{:U('print')}" data-target="#modal" data-title="打印" rel="tooltip" data-placement="bottom" class="btn btn-lg"><i class="glyphicon glyphicon-print"></i> 打印
 				</a>
+			</eq></case><case value="setting" break="1">
+		<eq name="tool.show" value="true">
 			<a data-href="{:U('setting')}" data-target="#modal" data-toggle="modal" data-title="设置" rel="tooltip" data-placement="bottom" class="btn  btn-lg btn-tool "><i class="glyphicon glyphicon-wrench"></i> 设置
 			</a>
+		</eq>
+		</case></switch>
+		</volist>
 		</div>
 		
 		<div class="btn-group hidden ">
