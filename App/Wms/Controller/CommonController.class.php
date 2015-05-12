@@ -207,11 +207,11 @@ class CommonController extends AuthController {
 			}
             $map[$table.'.'.'is_deleted'] = 0; 
             $map[$table.'.'.$pk] = $id;
-            $res = $M->scope('default')->where($map)->find();
+            $res = $M->scope('default')->where($map)->limit(1)->select();
 	        if(!empty($res) && is_array($res)){
-                $this->before($res,'edit');
+                $this->before($res[0],'edit');
                 //$this->filter_list($res);
-	            $this->data = $res;
+	            $this->data = $res[0];
 	        }
 	        else{
                 $msg = ' '.$M->getError().' '.$M->_sql();
@@ -404,7 +404,7 @@ class CommonController extends AuthController {
     protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
-            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data' => $data));
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
         }
         else if($res){ 
                 $this->success('操作成功',$url);
