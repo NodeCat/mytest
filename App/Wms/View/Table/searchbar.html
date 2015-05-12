@@ -1,31 +1,39 @@
 <notempty name="query">
-<form class="form-inline well well-sm ajax" action="{:U('index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
-<div class="row-fluid">
+<form class="form-horizontal ajax table-search" action="{:U('index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
+<div class="row">
 <include file="search" />
 <volist name="query" id="vo">
-    <eq name="i%6" value="5"></div><br><div class="row-fluid"></eq>
+<eq name="i%5" value="4"></div><div class="row"></eq>
+<div class="form-group  col-lg-3">
+<neq name="vo['control_type']" value="checkbox">
+<label class="control-label col-lg-4 col-sm-4 col-xs-4">{$vo.title}</label>
+</neq>
+<div class="col-lg-8 col-sm-8 col-xs-8">
      <switch name="vo['control_type']">
         <case value="null|text|area">{~$a++}
-            &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="form-control input-sm">
+            <input type="txt" name="query[{$key}]" class="form-control input-sm">
         </case>
         <case value="date|datetime|time">{~$a++}
             {~$datetime_format=array('datetime'=>'yyyy-mm-dd hh:ii:ss','date'=>'yyyy-mm-dd','time'=>'hh:ii:ss')}
-            &nbsp;&nbsp;{$vo['title']} <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
+            <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
             <eq name="vo['query_type']" value="between">{~$a++}
-                —&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
+            </div></div>
+            <div class="form-group  col-lg-3">
+            <label class="control-label col-lg-4 col-sm-4 col-xs-4">&nbsp;&nbsp;—&nbsp;&nbsp;</label>
+            <div class="col-lg-8 col-sm-8 col-xs-8">
+                <input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
             </eq>
         </case>
         <case value="digit">{~$a++}
-            &nbsp;&nbsp;{$vo['title']} <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm">
+            <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm">
             <eq name="vo['query_type']" value="between">
-                 —&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm">
+                 &nbsp;&nbsp;—&nbsp;&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm">
             </eq>
         </case>
         <case value="checkbox" >{~$a++}
             &nbsp;&nbsp;<label class="checkbox"><input type="checkbox" id="query[{$key}]" />{$vo['title']} </label>&nbsp;&nbsp;
         </case>
         <case value="select">{~$a++}
-            &nbsp;&nbsp;{$vo['title']} 
             <select name="query[{$key}]" class="form-control input-sm ">
                 <option value ="">全部</option>
                 <volist name="vo['value']" id="op">
@@ -34,7 +42,6 @@
             </select>
         </case>
         <case value="refer">{~$a++}
-            &nbsp;&nbsp;{$vo['title']} 
             {~$items=explode(',',$vo['value'])}
             <div class="input-group" id="{$items[0]}-query">
                 <input type="text" value="" data-target="{$items[2]}" class="input-sm form-control" placeholder="" readonly="">
@@ -52,7 +59,6 @@
                     $items=$A->get_list($_parm[0],$_parm[1]);
                 }
             </php>
-            &nbsp;&nbsp;{$vo['title']} 
             <select name="query[{$key}]" class="form-control input-sm">
                 <option value ="">全部</option>
                 <volist name="items" id="op">
@@ -61,15 +67,21 @@
             </select>
         </case>
         <default/>{~$a++}
-            &nbsp;&nbsp;{$vo['title']} <input type="txt" name="query[{$key}]" class="input-sm">
+            <label class="control-label col-lg-4 col-sm-4 col-xs-4">{$vo.title}</label><input type="txt" name="query[{$key}]" class="input-sm">
     </switch>
+</div>
+</div>
 </volist>
-    
-   <button type="submit" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>
+<div class="form-group  col-lg-3">
+<div class="col-lg-10 col-lg-offset-2">
+   <button type="submit" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
    <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
+</div>
+</div>
    <eq name="search_addon" value="TRUE">
    <include file="search_addon" />
    </eq>
 </div>
+<div class="clearfix"></div>
 </form>
 </notempty>

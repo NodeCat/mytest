@@ -266,7 +266,13 @@ class CodeController extends CommonController {
 			$data[$k]['index_length']	=$v['index_length'];
 			$data[$k]['create_time']	=$v['create_time'];
 			$data[$k]['update_time']	=$v['update_time'];
-			$M->save($data[$k]);
+			$res = $M->field('name')->find($v['name']);
+			if(empty($res)) {
+				$M->add($data[$k]);
+			}else {
+				$M->save($data[$k]);
+			}
+			
 		}
 		$this->get_refer();
 		$this->showpk=1;

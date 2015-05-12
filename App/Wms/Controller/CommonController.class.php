@@ -16,7 +16,8 @@ class CommonController extends AuthController {
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => true, 
-            'toolbar_tr'=> true
+            'toolbar_tr'=> true,
+            'statusbar' => false
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
@@ -34,7 +35,7 @@ class CommonController extends AuthController {
 
     public function search($query = '') {
         $condition = I('query');
-        $this->filter_list($condition, '1');
+        !empty($condition) && $this->filter_list($condition, '1');
         if(!empty($condition)){
             foreach ($query as $key => $v) {
                 switch ($v['query_type']) {
@@ -52,16 +53,18 @@ class CommonController extends AuthController {
             $map = queryFilter($map);
         }
         else{
-            $condition = I('pill');
+            $condition = I('q');
              if(!empty($condition)){
                 $para=explode('&', urldecode($condition));
+                $table = get_tablename();
                 foreach ($para as $key => $v) {
                     $cond=explode('=', $v);
                     if(count($cond)===2)
-                        $map[$cond[0]]=$cond[1];
+                        $map[$table.'.'.$cond[0]]=$cond[1];
                 }
             }
         }
+        
         $this->after($map,'search');
         return $map;
     }
@@ -129,7 +132,6 @@ class CommonController extends AuthController {
             $this->query = $setting['query'];
         }
         $map = $this->search($this->query);
-
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
         $M->scope('default');
@@ -204,7 +206,8 @@ class CommonController extends AuthController {
 	            $this->data = $res;
 	        }
 	        else{
-	            $this->msgReturn(0,'not_found');
+                $msg = ' '.$M->getError().' '.$M->_sql();
+	            $this->msgReturn(0,'not_found'.$msg);
 	        }
 	        $this->pk = $pk;
 			$this->display();
@@ -230,7 +233,8 @@ class CommonController extends AuthController {
                 $this->msgReturn(1);
             }
             else{
-                $this->msgReturn(0,$M->getError());
+                $msg = ' '.$M->getError().' '.$M->_sql();
+                $this->msgReturn(0,$msg);
             }
         }
         else {
@@ -246,7 +250,7 @@ class CommonController extends AuthController {
         $ids    =   explode(',', $ids);
         $ids    =   array_filter($ids);
         $ids    =   array_unique($ids);
-        
+        $this->before($ids,'delete');
         $map[$pk]   =   array('in',$ids);
         $data['is_deleted'] = 1;
         $res = $M->where($map)->save($data);

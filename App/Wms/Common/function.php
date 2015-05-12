@@ -1,5 +1,4 @@
 <?php
-
 function getField($table,$fields,$condition=null){
   $data=M($table)->where($condition)->getField($fields);
   return $data;

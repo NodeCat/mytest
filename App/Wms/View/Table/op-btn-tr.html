@@ -23,6 +23,23 @@
 		<a data-href="{:U('edit?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-edit" data-target="#modal" data-toggle="modal"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> </a>
 	</eq></eq>
 	</case> 
+	<case value="audit" break="1">
+	<eq name="tool.show" value="true">
+	<eq name="tool.new" value="true">
+		<a href="{:U('audit?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit"  data-title="审核" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+	<else/>
+		<a data-href="{:U('audit?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit" data-target="#modal" data-toggle="modal"  data-title="审核" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+	</eq></eq>
+	</case>
+	<case value="close" break="1">
+	<eq name="tool.show" value="true">
+	<eq name="tool.new" value="true">
+		<a href="{:U('close?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-close"  data-title="关闭" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+	<else/>
+		<a data-href="{:U('close?'.$pk.'='.$vo[$pk])}" class="btn btn-xs btn-close" data-target="#modal" data-toggle="modal"  data-title="关闭" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ban-circle"></i> </a>
+	</eq></eq>
+	</case>
+	
 	<case value="delete" break="1">
 	<eq name="tool.show" value="true">
 		<a data-href="{:U('delete')}" data-value="{$vo[$pk]}" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-remove"></i> </a>

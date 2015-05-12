@@ -52,9 +52,10 @@ class MenuWidget extends Controller {
         $menu = $data;
         
 		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>2 );
-		$pid=M('Menu')->where($cond)->getField('pid');
-        $menu['tab'] = $menu[2][$pid];
-        $menu['pid'] =$pid;
+		$cur=M('Menu')->field('pid,name')->where($cond)->find();
+        $menu['tab'] = $menu[2][$cur['pid']];
+        $menu['pid'] =$cur['pid'];
+        $menu['title'] = $cur['name'];
         return $menu;
    }
 
