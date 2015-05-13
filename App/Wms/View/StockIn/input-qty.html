@@ -1,0 +1,80 @@
+<include file="Pda:nav-cur" />
+<form class="form-horizontal form-pda form-scan" action="{:U('in')}" method="POST">
+  <input type="hidden" name="t" value="input_qty" />
+  <input type="hidden" name="id" value="{$id}" />
+  <input type="hidden" name="code" value="{$pro_code}" />
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">入库单编号</label>
+      <label for="code" class="col-lg-10 col-md-10 col-sm-10 col-xs-10 control-label">{$code}</label>
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品号</label>
+    <label for="code" class="col-lg-10 col-md-10 col-sm-10 col-xs-10 control-label">{$pro_code}</label>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品名称</label>
+      <label for="pro_names" class="col-lg-10 col-md-10 col-sm-10 col-xs-10 control-label">{$pro_names}</label>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">预期量</label>
+      <label for="pro_qty" class="col-lg-10 col-md-10 col-sm-10 col-xs-10 control-label">{$pro_qty}</label>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">已验收量</label>
+      <label for="pro_qty" class="col-lg-10 col-md-10 col-sm-10 col-xs-10 control-label">{$moved_qty}</label>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">本次验收量</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input autocomplete="off" type="text" class="form-control input-lg input-pda" value="" id="code" name="qty" placeholder="请输入本次验收数量">
+    </div>
+  </div>
+  <br>
+
+
+   <include file="Pda:btn" />
+</form>
+<script type="text/javascript">
+$(function(){
+  $('.input-pda').on('focus',function(){
+    $(this).select();
+  });
+  $('.form-pda button[type=submit]').on('click',function(){
+    $(this).prop('disabled', true);
+    var addr,params;
+    params=$(this).parents('form').serialize();
+    addr=$(this).parents('form').attr('action');
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        $('.form-pda button[type=submit]').prop('disabled', false);
+        alert(msg.msg);
+        if(msg.status == 0){
+            $('.input-pda').focus();
+        }
+        if(msg.url != null) {
+          setTimeout(function() {document.location=msg.url}, 0);
+        }
+        if(msg.data != null){
+            $('.content').html(msg.data);
+        }
+      }
+    }); 
+    return false;
+  });
+  
+});
+</script>

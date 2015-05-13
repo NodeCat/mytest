@@ -41,6 +41,7 @@ class CommonController extends AuthController {
     }
 
     public function search($query = '') {
+        $this->before($query,'search');
         $condition = I('query');
         !empty($condition) && $this->filter_list($condition, '1');
         if(!empty($condition)){
@@ -138,14 +139,17 @@ class CommonController extends AuthController {
         if(empty($this->query)){
             $this->query = $setting['query'];
         }
+        
         $map = $this->search($this->query);
-        $p              = I("p",1);
-        $page_size      = C('PAGE_SIZE');
-        $M->scope('default');
         if(!empty($map)) {
             $M->where($map);
         }
+
+        $p              = I("p",1);
+        $page_size      = C('PAGE_SIZE');
+        $M->scope('default');
         $this->before($M,'lists');
+
         $M2 = clone $M;
         $M->page($p.','.$page_size);
         $data = $M->select();
@@ -408,7 +412,13 @@ class CommonController extends AuthController {
     protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
-            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
+            if(empty($url)) {
+                $data = array('status'=>$res,'msg'=>$msg,'data'=>$data);
+            }
+            else {
+                $data = array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url);
+            }
+            $this->ajaxReturn($data);
         }
         else if($res){ 
                 $this->success('操作成功',$url);

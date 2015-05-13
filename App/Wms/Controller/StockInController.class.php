@@ -32,15 +32,22 @@ class StockInController extends CommonController {
 			$this->display($tmpl);
 		}
 		else if(IS_POST){
-			$inCode = I('post.code');
+			$code = I('post.code');
 			$id = I('post.id');
 			$type = I('post.t');
 			if($type == 'scan_procode') {
-				//get_pro_name_qty_by_code()//根据采购单ID和sku获取货品名称和预计量和已验收量
-				
+				$A = A('StockIn','Logic');
+				$data = $A->getQty($id,$code);
+				$this->assign($data);
+				layout(false);
+				$data = $this->fetch('StockIn:input-qty');
+				$this->msgReturn(1,'查询成功。',$data);
+			}
+			if($type == 'input-qty') {
+				$qty = I('post.qty');
 			}
 			$map['is_deleted'] = 0;
-			$map['code'] = $inCode;
+			$map['code'] = $code;
 			$res = M('stock_bill_in')->where($map)->find();
 			if(!empty($res)) {
 				if(true){
@@ -59,6 +66,7 @@ class StockInController extends CommonController {
 					if($res['status'] == '53'){
 						$this->msgReturn(0,'查询失败，该单据已完成。');
 					}
+					$this->msgReturn(0,'查询失败，该单据状态异常。');
 				}
 				else {
 					$this->msgReturn(0,'查询失败，您没有权限。');
