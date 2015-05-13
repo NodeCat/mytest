@@ -2,5 +2,121 @@
 namespace Wms\Controller;
 use Think\Controller;
 class LocationController extends CommonController {
+    
+    protected function before_lists(&$M) {
+            $map['location.type'] = '2';
+            $M = $M->where($map);
+            
+            $data = $this->columns;
+            unset($data); 
+            $data["id"] = '';
+            $data["warehouse_code"] = '仓库标识';
+            $data["area_code"] = '区域标识';
+            $data["code"] = '库位标识';
+            $data['picking_line'] = '拣货路线';
+            $data['putaway_line'] = '上架线路';
+            $data['type_name'] = '库位类型名称';
+            $data['is_mixed_pro'] = '混放货品';
+            $data['is_mixed_batch'] = '混放批次';
+            $data['status'] = '库位状态';
+            $this->columns = $data;
+    }
 
+    protected function before_search(&$query) { 
+            $location = M('location');
+            $wh_id = session('user.wh_id');
+           
+            $location_area = $location->where('type=1 AND wh_id=' . $wh_id)->select();
+            $area_name = array_column($location_area, 'name', 'id');
+            
+            $query = $this->query;
+            $query['location.pid'] = array(
+                'title' => '区域',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => $area_name
+            );
+            $query = array_reverse($query,ture);
+            $this->query = $query;
+    }
+      
+    protected function after_lists(&$data) {
+         $location_detail = M('location_detail');
+         $location_type = M('location_type')->getField('id,name');
+         //$location_area = M('location');
+         //dump($location_type);exit;
+         foreach($data as &$val) {
+            //$val['picking_line'] = $list['picking_line'];
+            //$val['putaway_line'] = $list['putaway_line'];
+            //$val['is_mixed_pro'] = $list['is_mixed_pro'];
+            //$val['is_mixed_batch'] = $list['is_mixed_batch'];
+            
+            $type_name = $location_type[$val['type_id']];
+            $val['type_name'] = $type_name;
+            //$area = $location_area->getById($val['pid']);
+            //$val['area_code'] = $area['code'];
+         }
+    }
+
+    protected function before_add($M) {
+        //dump($post_data);
+        //dump($M->data());exit;
+    }
+    
+    protected function after_add($data) {
+        $post_data = I('post.');
+        $location_detail = M('location_detail');
+        $location = M('location'); 
+        if($data) {
+            $list['location_id'] = $data;
+            $list['picking_line'] = $post_data['picking_line'];
+            $list['putaway_line'] = $post_data['putaway_line'];
+            $list['type_id'] = $post_data['type_id'];
+            $list['is_mixed_pro'] = $post_data['is_mixed_pro'];
+            $list['is_mixed_batch'] = $post_data['is_mixed_batch'];
+
+            $location_detail->data($list)->add();
+        }
+            
+            //$location_data['status'] = '1'; 
+            $location_data['pid'] = $post_data['area_id'];
+            $location_data['path'] = $post_data['area_id'] . '.' . $data  . '.'; 
+            $location->where('id='.$data)->save($location_data); 
+    }
+    
+    protected function after_save() {
+        if(ACTION_NAME == 'edit') {
+            
+            $post_data = I('post.');       
+            $location_detail = M('location_detail');
+            $list['location_id'] = $post_data['id'];
+            $list['picking_line'] = $post_data['picking_line'];
+            $list['putaway_line'] = $post_data['putaway_line'];
+            $list['type_id'] = $post_data['type_id'];
+            $list['is_mixed_pro'] = $post_data['is_mixed_pro'];
+            $list['is_mixed_batch'] = $post_data['is_mixed_batch'];
+            $location_detail->where('location_id=' . $post_data['id'])->save($list);
+        
+            $location = M('location');
+            $location_data['path'] = $post_data['pid'] . '.' . $post_data['id']; 
+            $location->where('id='.$post_data['id'])->save($location_data); 
+        }
+    }
+
+    protected function before_edit(&$data) {
+        //$warehouse = M('warehouse');
+        //$wh_code = $warehouse->where('id=' . $data['wh_id'])->getField('warehouse.code');
+        //$data['wh_id'] = $wh_code;
+    }
+    
+    protected function before_delete ($ids) {
+        $location = M('location'); 
+        foreach ($ids as $val) {
+            $res = $location->where('type=2 AND is_deleted=0 AND pid=' . $val)->count();
+            if($res) {
+	            $this->msgReturn(0,'库存内有库存量，无法删除');
+            }
+            
+        }
+    }
 }
