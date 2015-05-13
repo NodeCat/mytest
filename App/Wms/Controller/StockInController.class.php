@@ -37,7 +37,7 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				//get_pro_name_qty_by_code()//根据采购单ID和sku获取货品名称和预计量和已验收量
-
+				
 			}
 			$map['is_deleted'] = 0;
 			$map['code'] = $inCode;
