@@ -3,7 +3,7 @@
 <body>
 <style type="text/css">
 	.message {
-		top:150px;
+		top:130px;
 	}
 </style>
 <include file="Pda:nav-top" />
@@ -23,5 +23,21 @@
 	<include file="Index:modal"/>
 	<include file="Index:msg"/>
 	<include file="Index:footer"/>
+<script type="text/javascript">
+function alert_success(msg){
+	var alert=$('.alert-success');
+	alert.text(msg);
+	alert.removeClass('hidden');
+	//alert.fadeIn(500).delay(4000).fadeOut(1000);
+}
+function alert_error(msg){
+	$('.alert').addClass('hidden');
+	var alert=$('.alert-danger');
+	alert.text(msg);
+	alert.removeClass('hidden');
+	//alert.fadeIn(500).delay(4000).fadeOut(1000);
+}
+</script>
+
 </body>
 </html>

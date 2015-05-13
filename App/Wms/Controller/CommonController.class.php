@@ -412,13 +412,7 @@ class CommonController extends AuthController {
     protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
-            if(empty($url)) {
-                $data = array('status'=>$res,'msg'=>$msg,'data'=>$data);
-            }
-            else {
-                $data = array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url);
-            }
-            $this->ajaxReturn($data);
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
         }
         else if($res){ 
                 $this->success('操作成功',$url);
