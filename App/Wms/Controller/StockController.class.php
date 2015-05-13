@@ -243,9 +243,71 @@ class StockController extends CommonController {
 	}
 
 
-	//PDA 库存查询页面
-	public function pdaStockSearch(){
+	//PDA 库存查询首页
+	public function pdaStockIndex(){
 		C('LAYOUT_NAME','pda');
-		$this->display('Stock:'.'pdaStockSearch');
+		$this->display('Stock:'.'pdaStockIndex');
+	}
+
+	//PDA 库存查询接口
+	public function pdaStockSearch(){
+		if(IS_AJAX){
+			$params['pro_code'] = I('pro_code');
+			$params['pro_name'] = I('pro_name');
+			$params['location_code'] = I('location_code');
+			$params['stock_status'] = I('status');
+
+			$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
+			$count = count($stock_infos);
+
+			if(empty($stock_infos)){
+				$data['status'] = 0;
+				$data['msg'] = '没有找到任何数据';
+			}else{
+				$data['status'] = 1;
+				$data['data']['redirect_url'] = "/stock/pdaStockShow?pro_name={$params['pro_name']}&pro_code={$params['pro_code']}&location_code={$params['location_code']}&status={$params['stock_status']}&count={$count}";
+			}
+			
+			$this->ajaxReturn($data);
+		}
+	}
+
+	//PDA 库存展示页面
+	public function pdaStockShow(){
+		$params['pro_code'] = I('pro_code');
+		$params['pro_name'] = I('pro_name');
+		$params['location_code'] = I('location_code');
+		$params['stock_status'] = I('status');
+		//总共多少条记录
+		$count = I('count');
+		//当前记录
+		$number = I('number');
+		$number = ($number) ? $number : 1;
+
+
+		if(empty($params['pro_code']) && empty($params['pro_name']) && empty($params['location_code']) && empty($params['stock_status'])){
+			return false;
+		}
+
+		//查询库存信息
+		$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
+		$stock_info = $stock_infos[$number];
+		$stock_info['available_qty'] = $stock_info['stock_qty'] = $stock_info['assign_qty'];
+
+		$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes(array($stock_info['pro_code']));
+		$stock_info['pro_name'] = $SKUs[$stock_info['pro_code']]['wms_name'];
+
+		//查询库位code
+		$location_info = M('Location')->where('id = '.$stock_info['location_id'])->find();
+		$stock_info['location_code'] = $location_info['code'];
+
+		$data['count'] = $count;
+		$data['number'] = $number;
+		$data['stock_info'] = $stock_info;
+
+		$this->assign($data);
+
+		C('LAYOUT_NAME','pda');
+		$this->display('Stock:'.'pdaStockShow');
 	}
 }
