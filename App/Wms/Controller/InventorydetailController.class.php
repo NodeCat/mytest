@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Controller;
 use Think\Controller;
-class AdjustmentController extends CommonController {
+class InventoryDetailController extends CommonController {
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -18,7 +18,7 @@ class AdjustmentController extends CommonController {
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
-            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
             array('name'=>'export' ,'show' => false,'new'=>'false'),
@@ -27,21 +27,30 @@ class AdjustmentController extends CommonController {
         );
     }
 
-    //edit方法执行前，执行该方法
-	protected function before_edit(&$data){
-		//替换编辑页面的展示信息
-		if(!IS_AJAX){
-			$adjustment_detail_list = M('stock_adjustment_detail')->where('adjustment_code = "'.$data['code'].'"')->select();
+    //lists方法执行前，执行该方法
+	protected function before_lists(&$M){
+        $this->columns = array (
+			'id' => '',
+			'inventory_code' => '盘点单单号',
+			'pro_code' => '产品标识',
+			'location_code' => '库位',
+			'pro_qty' => '盘点数量',
+			'theoretical_qty' => '理论仓库数',
+			'diff_qty' => '差异量',
+		);
 
-            foreach($adjustment_detail_list as $key => $adjustment_detail){
-				//$adjustment_detail_list[$key]['location_code'] = M('location')->where('id = '.$inventory_detail['location_id'])->getField('code');
-                $adjustment_detail_list[$key] = $adjustment_detail;
-            }
+		//根据inventory_id 查询对应code
+		$inventory_id = I('id');
+		$inventory_code = M('stock_inventory')->where('id = '.$inventory_id)->getField('code');
+		$map['inventory_code'] = $inventory_code;
+		$M->where($map);
+    }
 
-            //添加pro_name字段
-            $adjustment_detail_list = A('Pms','Logic')->add_fields($adjustment_detail_list,'pro_name');
-
-			$this->adjustment_detail_list = $adjustment_detail_list;
+    //lists方法执行后，执行该方法
+	protected function after_lists(&$data){
+		//整理数据项
+		foreach($data as $key => $data_detail){
+			$data[$key]['diff_qty'] = $data_detail['theoretical_qty'] - $data_detail['pro_qty'];
 		}
 	}
 }

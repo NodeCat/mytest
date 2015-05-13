@@ -20,6 +20,15 @@ class StockController extends CommonController {
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
+        );
         $this->search_addon = true;
     }
 	//lists方法执行前，执行该方法
@@ -94,9 +103,9 @@ class StockController extends CommonController {
 			//添加map
 			if(!empty($location_ids)){
 				$map['stock.location_id'] = array('in',$location_ids);
-			}else{
-				$map['stock.location_id'] = array('eq',0);
-			}
+			}//else{
+				//$map['stock.location_id'] = array('eq',0);
+			//}
 
 			//根据stock.status 查询对应stock记录
 			//添加map
@@ -106,6 +115,16 @@ class StockController extends CommonController {
 			}
 			if($stock_status == 'unqualified'){
 				$map['stock.status'] = array('eq','unqualified');
+			}
+
+			//根据pro_name 查询对应的pro_code
+			$pro_name = I('pro_name');
+			if(!empty($pro_name)){
+				$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($pro_name);
+				foreach($SKUs['list'] as $SKU){
+					$pro_codes[] = $SKU['sku_number'];
+				}
+				$map['stock.pro_code'] = array('in',$pro_codes);
 			}
 		}
 	}
@@ -192,7 +211,21 @@ class StockController extends CommonController {
 			//库存移动完成后触发的方法
 			if(I('editStockMove')){
 				//创建库存移动记录
-				
+				//根据pro_code 查询产品信息
+				$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
+				$SKU = $SKUs['list'][0];
+				$stock_move_data = array(
+					'type' => 'move_location',
+					'batch' => I('batch'),
+					'pro_code' => I('pro_code'),
+					'move_qty' => I('stock_qty'),
+					'price_unit' => 0,
+					'src_wh_id' => I('wh_id'),
+					'dest_wh_id' => I('wh_id'),
+					'src_location_id' => I('location_id'),
+					'dest_location_id' => I('location_id'),
+					);
+				M('stock_move')->data($stock_move_data)->add();
 			}
 		}
 	}
@@ -207,5 +240,74 @@ class StockController extends CommonController {
 	public function editStockMove(){
 		$this->editStockMove = true;
 		$this->edit();
+	}
+
+
+	//PDA 库存查询首页
+	public function pdaStockIndex(){
+		C('LAYOUT_NAME','pda');
+		$this->display('Stock:'.'pdaStockIndex');
+	}
+
+	//PDA 库存查询接口
+	public function pdaStockSearch(){
+		if(IS_AJAX){
+			$params['pro_code'] = I('pro_code');
+			$params['pro_name'] = I('pro_name');
+			$params['location_code'] = I('location_code');
+			$params['stock_status'] = I('status');
+
+			$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
+			$count = count($stock_infos);
+
+			if(empty($stock_infos)){
+				$data['status'] = 0;
+				$data['msg'] = '没有找到任何数据';
+			}else{
+				$data['status'] = 1;
+				$data['data']['redirect_url'] = "/stock/pdaStockShow?pro_name={$params['pro_name']}&pro_code={$params['pro_code']}&location_code={$params['location_code']}&status={$params['stock_status']}&count={$count}";
+			}
+			
+			$this->ajaxReturn($data);
+		}
+	}
+
+	//PDA 库存展示页面
+	public function pdaStockShow(){
+		$params['pro_code'] = I('pro_code');
+		$params['pro_name'] = I('pro_name');
+		$params['location_code'] = I('location_code');
+		$params['stock_status'] = I('status');
+		//总共多少条记录
+		$count = I('count');
+		//当前记录
+		$number = I('number');
+		$number = ($number) ? $number : 1;
+
+
+		if(empty($params['pro_code']) && empty($params['pro_name']) && empty($params['location_code']) && empty($params['stock_status'])){
+			return false;
+		}
+
+		//查询库存信息
+		$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
+		$stock_info = $stock_infos[$number];
+		$stock_info['available_qty'] = $stock_info['stock_qty'] = $stock_info['assign_qty'];
+
+		$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes(array($stock_info['pro_code']));
+		$stock_info['pro_name'] = $SKUs[$stock_info['pro_code']]['wms_name'];
+
+		//查询库位code
+		$location_info = M('Location')->where('id = '.$stock_info['location_id'])->find();
+		$stock_info['location_code'] = $location_info['code'];
+
+		$data['count'] = $count;
+		$data['number'] = $number;
+		$data['stock_info'] = $stock_info;
+
+		$this->assign($data);
+
+		C('LAYOUT_NAME','pda');
+		$this->display('Stock:'.'pdaStockShow');
 	}
 }
