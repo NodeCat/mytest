@@ -1,0 +1,124 @@
+<div role="tabpanel">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">货品</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
+  		<thead>
+  			<th>名称</th><th>数量</th><th>计量单位</th><th>单价</th><th>小记</th><th>操作</th>
+  		</thead>
+  		<tbody>
+      <tr class="hidden tr-tpl">
+      <td style="width:50%;">
+      <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" ><input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" ><input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+      <input type="text" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
+        <td  style="width:10%;">
+          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="1" class="pro_qty form-control input-sm text-right" autocomplete="off">
+        </td>
+        <td style="width:10%;">
+          <select name="pros[pro_uom][]" class="form-control input-sm">
+            <option value="箱">箱</option>
+            <option value="件">件</option>
+          </select>
+        </td>
+        <td style="width:10%;">
+          <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="0.00" class="form-control input-sm text-right">
+        </td>
+        <td style="width:10%;" class="text-right">
+          0.00
+        </td>
+        <td style="width:10%;" class="text-center">
+          <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+        </td>
+      </tr>
+  			<tr>
+  				<td colspan="6"><a class="add-pro" href="#">添加一个产品</a></td>
+  			</tr>
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+
+</div>
+
+  </div>
+</div>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>
+<script type="text/javascript">
+
+$(function(){
+
+typehead();
+$('.add-pro').on('click',function(){
+    $('.tr-cur').removeClass('tr-cur');
+    var tr = $('#table-pro tr.tr-tpl').clone();
+    tr.removeClass('tr-tpl');
+    tr.addClass('tr-cur');
+    tr.removeClass('hidden');
+    $('#table-pro tr:eq(2)').after(tr);
+    typehead();
+    $('#table-pro tr.tr-cur .pro_name').focus();
+    
+});
+
+});
+
+function typehead() {
+$('#table-pro .pro_names').on('focus',function(){
+  $(this).parent().addClass('tr-active');
+});
+$('.tr-cur input').on('focus',function(){
+  $(this).select();
+});
+$('.tr-cur .pro_names').typeahead({ 
+    display: 'name',
+    val: 'val',
+    items:10,
+    ajax: {
+      url:"{:U('Product/match_code')}",
+      triggerLength: 1,
+      method: 'post',
+      preDispatch: function(data) {
+          return { 'q': data };
+      },
+      preProcess: function(data) {
+        var n =$.parseJSON(data);
+        $.each(n,function(a,b){
+          n[a]['val'] = JSON.stringify(b['val']);
+        }); 
+        return n;
+      }
+    },
+    itemSelected:function(item,val,text) {
+        val = $.parseJSON(val);
+        $('#table-pro .tr-active .pro_code').val(val['code']);
+        $('#table-pro .tr-active .pro_name').val(val['name']);
+        $('#table-pro .tr-active .pro_attrs').val(val['attrs']);
+        $('.tr-active').removeClass('tr-active');
+    }
+  });
+}
+</script>
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

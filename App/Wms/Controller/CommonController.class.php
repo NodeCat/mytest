@@ -7,7 +7,6 @@ class CommonController extends AuthController {
         $this->before($map,'index');
         $this->lists();
     }
-
     //如果需要自定义列表显示，请重写_before_index函数
     public function _before_index() {
         $this->table = array(
@@ -207,11 +206,11 @@ class CommonController extends AuthController {
 			}
             $map[$table.'.'.'is_deleted'] = 0; 
             $map[$table.'.'.$pk] = $id;
-            $res = $M->scope('default')->where($map)->limit(1)->select();
+            $res = $M->scope('default')->where($map)->limit(1)->find();
 	        if(!empty($res) && is_array($res)){
-                $this->before($res[0],'edit');
+                $this->before($res,'edit');
                 //$this->filter_list($res);
-	            $this->data = $res[0];
+	            $this->data = $res;
 	        }
 	        else{
                 $msg = ' '.$M->getError().' '.$M->_sql();
@@ -226,8 +225,8 @@ class CommonController extends AuthController {
         $M = D(CONTROLLER_NAME);
         if($M->create()){
             $this->before($M, 'save');
-            $this->before($M, 'add');
             if(ACTION_NAME === 'add') {
+                $this->before($M, 'add');
                 $res = $M->add();
             }
             else {
@@ -236,8 +235,10 @@ class CommonController extends AuthController {
                 $res = $M->where($map)->save();
             }
             if($res > 0) {
-                $this->after($res, 'add');
-                $this->after($res, 'save');
+                if(ACTION_NAME === 'add') {
+                    $this->after($res, 'add');
+                }
+                $this->after($pid, 'save');
                 $this->msgReturn(1);
             }
             else{

@@ -1,0 +1,44 @@
+<include file="Pda:nav-cur" />
+<form class="form-horizontal form-pda form-scan" action="{:U('in')}" method="POST">
+  <input type="hidden" name="t" value="scan_incode" />
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">编号</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入编号">
+    </div>
+  </div>
+   <br>
+   <include file="Pda:btn" />
+</form>
+<script type="text/javascript">
+$(function(){
+  $('.input-pda').on('focus',function(){
+    $(this).select();
+  });
+  $('.form-pda button[type=submit]').on('click',function(){
+    $(this).prop('disabled', true);
+    var addr,params;
+    params=$(this).parents('form').serialize();
+    addr=$(this).parents('form').attr('action');
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        $(this).prop('disabled', false);
+        alert(msg.msg);
+        if(msg.status == 0){
+            $('.input-pda').focus();
+        }
+        if(msg.data != null){
+            $('.content').html(msg.data);
+        }
+      }
+    }); 
+    return false;
+  });
+  
+});
+</script>

@@ -1,0 +1,27 @@
+{~$menu=W('Common/Menu/getlist')}
+<include file="Index:header"/>
+<body>
+<style type="text/css">
+	.message {
+		top:150px;
+	}
+</style>
+<include file="Pda:nav-top" />
+<div class="container-fluid">
+	<div class="row">
+	<div class="content col-lg-12 col-sm-12 col-md-12 col-xs-12">
+			<block name="content">{__CONTENT__}</block>
+<br>
+<br>
+		<div class="clearfix"></div>
+	</div>
+	</div>
+</div>
+<br>
+<br>
+	<include file="Pda:nav-bottom" />
+	<include file="Index:modal"/>
+	<include file="Index:msg"/>
+	<include file="Index:footer"/>
+</body>
+</html>
