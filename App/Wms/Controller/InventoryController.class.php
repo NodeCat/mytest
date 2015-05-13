@@ -115,9 +115,13 @@ class InventoryController extends CommonController {
 			}
 
 			$inventory_detail_list = M('stock_inventory_detail')->where('inventory_code = "'.$data['code'].'"')->select();
+			
 			foreach($inventory_detail_list as $key => $inventory_detail){
 				$inventory_detail_list[$key]['location_code'] = M('location')->where('id = '.$inventory_detail['location_id'])->getField('code');
 			}
+
+			//添加pro_name字段
+			$inventory_detail_list = A('Pms','Logic')->add_fields($inventory_detail_list,'pro_name');
 
 			$this->inventory_detail_list = $inventory_detail_list;
 		}
@@ -367,4 +371,16 @@ class InventoryController extends CommonController {
 			$this->msgReturn(1);
 		}
 	}
+
+	//手持设备扫描盘点 根据inventory_code返回对应详情
+	public function getInvDetailByInvCode(){
+		$inventory_code = I('inventory_code');
+		$inventory_detail_infos = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_code.'"')->select();
+
+		$data['status'] = 1;
+		$data['data'] = $inventory_detail_infos;
+		$this->ajaxReturn($data);
+	}
+
+	//
 }
