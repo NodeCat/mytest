@@ -155,10 +155,10 @@ class StockController extends CommonController {
 		}
 
 		//根据pro_code 查询对应的pro_name
-		$pro_codes = array($data['pro_code']);
+		//$pro_codes = array($data['pro_code']);
 
-		$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes($pro_codes);
-		$data['pro_name'] = $SKUs['list'][0]['name'];
+		//$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+		//$data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];
 	}
 
 	//save方法之前，执行该方法
