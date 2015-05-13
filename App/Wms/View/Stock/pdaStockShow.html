@@ -4,7 +4,7 @@
 </ol>
 
 <div class="page-header text-center">
-  <h1>{$title} <small>共{$count}条记录，当前显示第{$number}条</small></h1>
+  <h1>{$title} <small>共{$count}条记录，当前显示第{$cur_page}条</small></h1>
 </div>
 <form class="form-horizontal">
   <div class="form-group">
@@ -72,13 +72,13 @@
 
   <div class="form-group">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
-      <button class="btn btn-lg btn-primary  btn-block" id="submit_search">上一页</button>
+      <a href="{$pre_page_url}" class="btn btn-lg btn-primary  btn-block">上一页</a>
     </div>
   </div>
 
   <div class="form-group">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
-      <button class="btn btn-lg btn-primary  btn-block" id="submit_search">下一页</button>
+      <a href="{$next_page_url}" class="btn btn-lg btn-primary  btn-block">下一页</a>
     </div>
   </div>
 

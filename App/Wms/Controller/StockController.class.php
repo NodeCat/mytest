@@ -281,8 +281,8 @@ class StockController extends CommonController {
 		//总共多少条记录
 		$count = I('count');
 		//当前记录
-		$number = I('number');
-		$number = ($number) ? $number : 1;
+		$cur_page = I('cur_page');
+		$cur_page = ($cur_page) ? $cur_page : 1;
 
 
 		if(empty($params['pro_code']) && empty($params['pro_name']) && empty($params['location_code']) && empty($params['stock_status'])){
@@ -291,7 +291,7 @@ class StockController extends CommonController {
 
 		//查询库存信息
 		$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
-		$stock_info = $stock_infos[$number];
+		$stock_info = $stock_infos[$cur_page - 1];
 		$stock_info['available_qty'] = $stock_info['stock_qty'] = $stock_info['assign_qty'];
 
 		$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes(array($stock_info['pro_code']));
@@ -302,8 +302,12 @@ class StockController extends CommonController {
 		$stock_info['location_code'] = $location_info['code'];
 
 		$data['count'] = $count;
-		$data['number'] = $number;
+		$data['cur_page'] = $cur_page;
 		$data['stock_info'] = $stock_info;
+		$pre_page = ($cur_page > 1) ? $cur_page - 1 : 1;
+		$next_page = ($cur_page >= $count) ? 1 : $cur_page + 1;
+		$data['pre_page_url'] = "/stock/pdaStockShow?pro_name={$params['pro_name']}&pro_code={$params['pro_code']}&location_code={$params['location_code']}&status={$params['stock_status']}&count={$count}&cur_page={$pre_page}";
+		$data['next_page_url'] = "/stock/pdaStockShow?pro_name={$params['pro_name']}&pro_code={$params['pro_code']}&location_code={$params['location_code']}&status={$params['stock_status']}&count={$count}&cur_page={$next_page}";
 
 		$this->assign($data);
 
