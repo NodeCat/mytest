@@ -254,7 +254,7 @@ class InventoryController extends CommonController {
 						'type'=>'inventory',
 						'refer_code'=>$refer_code,
 						);
-					M('stock_adjustment')->data($adjust_data)->add();
+					//M('stock_adjustment')->data($adjust_data)->add();
 				}
 
 
@@ -263,8 +263,22 @@ class InventoryController extends CommonController {
 					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
 						//根据pro_code location_id 更新库存表
 						M('stock')->where('pro_code = "'.$inventory_detail['pro_code'].'" and location_id = '.$inventory_detail['location_id'])->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
+						//根据pro_code 查询库存信息
+						/*$stock_info = M('stock')->where('pro_code = "'.$inventory_detail['pro_code'].'"')->find();
+						var_dump($stock_info,$inventory_detail);exit;
 						//添加库存移动表记录
-						//to do ....
+						$stock_move_data = array(
+							'type' => 'inventory_checkdiff',
+							'batch' => $stock_info['batch'],
+							'pro_code' => $inventory_detail['pro_code'],
+							'move_qty' => $stock_info['stock_qty'],
+							'price_unit' => 0,
+							'src_wh_id' => $stock_info['wh_id'],
+							'dest_wh_id' => $stock_info['wh_id'],
+							'src_location_id' => $stock_info['location_id'],
+							'dest_location_id' => '999', //目标
+							);
+						M('stock_move')->data($stock_move_data)->add();*/
 						//新建库存调整单详情
 						$adjusted_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
 						$adjust_detail_data = array(
@@ -276,6 +290,7 @@ class InventoryController extends CommonController {
 						M('stock_adjustment_detail')->data($adjust_detail_data)->add();
 						unset($adjust_detail_data);
 						unset($adjusted_qty);
+						unset($stock_info);
 					}
 					//根据stock_inventory_detail_id 更新对应的status为done
 					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
