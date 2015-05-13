@@ -1,5 +1,5 @@
 <?php
-namespace Develop\Logic;
+namespace Wms\Logic;
 
 class StockLogic{
 	/**
@@ -54,5 +54,58 @@ class StockLogic{
 		}
 		
 		return true;
+	}
+
+	/**
+	* 根据货品号，货品名称，库位编号，库存状态，查询库存记录
+	* $params = array(
+	*	'pro_code' => 'xxxx',
+	*	'pro_name' => 'xxxx',
+	*	'location_code' => 'xxxx',
+	*	'status' => 'xxxxx',
+	* )
+	* return array $stock_infos
+	*/
+	public function get_stock_infos_by_condition($params = array()){
+		$pro_code = $params['pro_code'];
+		$pro_name = $params['pro_name'];
+		$location_code = $params['location_code'];
+		$stock_status = $params['stock_status'];
+
+		$map = array();
+		//根据pro_code添加map
+		if($pro_code){
+			$map['stock.pro_code'] = array('LIKE','%'.$pro_code.'%');
+		}
+		//根据pro_name查询对应的pro_code
+		if($pro_name){
+			$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($pro_name);
+			$pro_codes = array();
+			foreach($SKUs['list'] as $SKU){
+				$pro_codes[] = $SKU['sku_number'];
+			}
+			$map['stock.pro_code'] = array('in',$pro_codes);
+		}
+		//根据库位编号 查询对应的location_id
+		if($location_code){
+			$location_map['code'] = array('LIKE','%'.$location_code.'%');
+			$location_ids = M('Location')->where($location_map)->getField('id',true);
+			if(empty($location_ids)){
+				$location_ids = array(0);
+			}
+
+			$map['stock.location_id'] = array('in',$location_ids);
+		}
+
+		if($stock_status == 'qualified'){
+			$map['stock.status'] = array('eq','qualified');
+		}
+		if($stock_status == 'unqualified'){
+			$map['stock.status'] = array('eq','unqualified');
+		}
+
+		$stock_infos = M('Stock')->where($map)->select();
+
+		return $stock_infos;
 	}
 }
