@@ -64,7 +64,7 @@ class PurchaseController extends CommonController {
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
-		}
+		}dump($pid);exit();
 		$n = count($pros['pro_code']);
 		$M = D('PurchaseDetail');
 		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
