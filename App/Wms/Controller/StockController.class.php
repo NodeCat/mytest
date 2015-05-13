@@ -241,4 +241,11 @@ class StockController extends CommonController {
 		$this->editStockMove = true;
 		$this->edit();
 	}
+
+
+	//PDA 库存查询页面
+	public function pdaStockSearch(){
+		C('LAYOUT_NAME','pda');
+		$this->display('Stock:'.'pdaStockSearch');
+	}
 }

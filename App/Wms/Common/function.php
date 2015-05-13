@@ -99,3 +99,17 @@ function validator($vo){
 
         return $type;
     }
+
+function where_array_to_str($where = array(), $relation = 'AND'){
+    if(empty($where)){
+        return false;
+    }
+    
+    foreach($params['where'] as $condition => $val){
+        $where_str .= $condition.' = '.$val.' '.$relation.' ';
+    }
+    
+    $where_str = substr($where_str, 0, strlen($where_str) - 4);
+    
+    return $where_str;
+}
