@@ -43,6 +43,7 @@ class CommonController extends AuthController {
     public function search($query = '') {
         $this->before($query,'search');
         $condition = I('query');
+        $condition = queryFilter($condition);
         !empty($condition) && $this->filter_list($condition, '1');
         if(!empty($condition)){
             foreach ($query as $key => $v) {
@@ -139,15 +140,14 @@ class CommonController extends AuthController {
         if(empty($this->query)){
             $this->query = $setting['query'];
         }
-        
         $map = $this->search($this->query);
-        if(!empty($map)) {
-            $M->where($map);
-        }
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
         $M->scope('default');
+        if(!empty($map)) {
+            $M->where($map);
+        }
         $this->before($M,'lists');
 
         $M2 = clone $M;
