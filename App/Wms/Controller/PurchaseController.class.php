@@ -64,7 +64,7 @@ class PurchaseController extends CommonController {
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
-		}dump($pid);exit();
+		}
 		$n = count($pros['pro_code']);
 		$M = D('PurchaseDetail');
 		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
@@ -171,14 +171,28 @@ class PurchaseController extends CommonController {
 		$data['company_id'] = $res['company_id'];
 		$data['partner_id'] = $res['partner_id'];
 		$Min = D('StockIn');
-		$bill = $Min->relation(true)->create($data);
-		$bill['code'] = get_sn('purchase');
-		$bill['type'] = 'purchase';
-		$bill['status'] = '1';
+		
+		$bill = $Min->create($data);
+		$bill['code'] = get_sn('in');
+		$bill['type'] = 'in';
+		$bill['status'] = '21';
 		$bill['batch_code'] = 'batch'.NOW_TIME;
-		$res = $Min->add($bill);
+
+		foreach ($res['detail'] as $key => $val) {
+			$v['pro_code'] = $val['pro_code'];
+			$v['pro_name'] = $val['pro_name'];
+			$v['pro_attrs'] = $val['pro_attrs'];
+			$v['pro_uom'] = $val['pro_uom'];
+			$v['pro_qty'] = $val['pro_qty'];
+			$v['wh_id'] = $data['wh_id'];
+			$v['type'] = 'in';
+			$v['refer_code'] = $bill['code'];
+			$bill['detail'][] = $v;
+		}
+
+		$res = $Min->relation(true)->add($bill);
 		if($res == true){
-			$purchase['status'] = '2';
+			$purchase['status'] = '11';
 			$M->where($map)->save($purchase);
 			$this->msgReturn($res,'','',U('StockIn/view','id='.$res));
 		}

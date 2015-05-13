@@ -14,7 +14,7 @@ class StockInModel extends RelationModel {
     protected $_link = array(
         "Detail" => array(
             'mapping_type' => self::HAS_MANY, 
-            'class_name'  => 'StockMove',
+            'class_name'  => 'StockBillDetail',
             'foreign_key' => 'pid',
             'mapping_name' => 'detail',
         ),

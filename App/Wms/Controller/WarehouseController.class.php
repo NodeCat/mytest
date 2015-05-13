@@ -2,27 +2,16 @@
 namespace Wms\Controller;
 use Think\Controller;
 class WarehouseController extends CommonController {
-   
-    public function _before_index() {
-        $this->table = array(
-            'toolbar'   => true,
-            'searchbar' => true, 
-            'checkbox'  => true, 
-            'status'    => false, 
-            'toolbar_tr'=> true
-        );
-        $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
-        );
-        $this->status =array(
-            array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
-            ),
-        );
-        $this->status_type='0';
+    protected function before_delete ($ids) {
+        $location_area = M('location'); 
+        foreach ($ids as $val) {
+            $res = $location_area->where('type=1 AND is_deleted=0 AND wh_id=' . $val)->count();
+            if($res) {
+	            $this->msgReturn(0,'仓库下存在区域，无法删除');
+            }
+            
+        }
     }
+    
 
 }

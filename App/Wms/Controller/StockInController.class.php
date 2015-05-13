@@ -20,9 +20,9 @@ class StockInController extends CommonController {
 					$tmpl = 'StockIn:scan-incode';
 					break;
 				case 'scan_procode':
-					$id = I('post.id');
-					$code = I('post.code');
-					$res = M('stock_bill_in')->where($map)->find();
+					$id = I('id');
+					$code = I('code');
+					
 					$tmpl = 'StockIn:scan-procode';
 					break;
 				default:
@@ -32,40 +32,74 @@ class StockInController extends CommonController {
 			$this->display($tmpl);
 		}
 		else if(IS_POST){
-			$inCode = I('post.code');
+			$code = I('post.code');
 			$id = I('post.id');
 			$type = I('post.t');
 			if($type == 'scan_procode') {
-				//get_pro_name_qty_by_code()//根据采购单ID和sku获取货品名称和预计量和已验收量
+				$A = A('StockIn','Logic');
+				$data = $A->getQty($id,$code);
+				if(!empty($data)) {
+					$this->assign($data);
+					layout(false);
+					$this->msg = '查询成功。';
+					$this->title = '录入验收数量';
+					$data = $this->fetch('StockIn:input-qty');
+					$this->msgReturn(1,'查询成功。',$data);
+				}
+				else {
+					$this->msgReturn(0,'查询失败。');
+				}
 				
 			}
-			$map['is_deleted'] = 0;
-			$map['code'] = $inCode;
-			$res = M('stock_bill_in')->where($map)->find();
-			if(!empty($res)) {
-				if(true){
-					if($res['status'] =='21' || $res['status'] =='22') {
-						$data['id'] = $res['id'];
-						$data['code'] = $res['code'];
-						$data['title'] = '扫描货品';
-						$this->assign($data);
-						layout(false);
-						$data = $this->fetch('StockIn:scan-procode');
-						$this->msgReturn(1,'查询成功。',$data);
+			if($type == 'input_qty') {
+				$qty = I('post.qty');
+				$res = A('StockIn','Logic')->in($id,$code,$qty);
+				if(!empty($res)) {
+					$data['msg'] = '收货成功。'.$res;
+					$res = M('stock_bill_in')->field('id,code')->find($id);
+					$data['id'] = $res['id'];
+					$data['code'] = $res['code'];
+					$this->assign($data);
+					$this->title = '扫描货品';
+					$data = $this->fetch('StockIn:scan-procode');
+					$this->msgReturn(1,'验收成功。',$data);
+				}
+				else {
+					$this->msgReturn(0,'验收失败。');
+				}
+			}
+			if($type == 'scan_incode') {
+				$map['is_deleted'] = 0;
+				$map['code'] = $code;
+				$res = M('stock_bill_in')->where($map)->find();
+				if(!empty($res)) {
+					if(true){
+						if($res['status'] =='21' || $res['status'] =='22') {
+							$data['id'] = $res['id'];
+							$data['code'] = $res['code'];
+							$data['title'] = '扫描货品';
+							$this->assign($data);
+							layout(false);
+							$this->msg = '查询成功。';
+							$this->title = '扫描货品';
+							$data = $this->fetch('StockIn:scan-procode');
+							$this->msgReturn(1,'查询成功。',$data);
+						}
+						if($res['status'] == '31' || $res['status'] =='32') {
+							$this->msgReturn(0,'查询失败，该单据已入库。');
+						}
+						if($res['status'] == '53'){
+							$this->msgReturn(0,'查询失败，该单据已完成。');
+						}
+						$this->msgReturn(0,'查询失败，该单据状态异常。');
 					}
-					if($res['status'] == '31' || $res['status'] =='32') {
-						$this->msgReturn(0,'查询失败，该单据已入库。');
-					}
-					if($res['status'] == '53'){
-						$this->msgReturn(0,'查询失败，该单据已完成。');
+					else {
+						$this->msgReturn(0,'查询失败，您没有权限。');
 					}
 				}
 				else {
-					$this->msgReturn(0,'查询失败，您没有权限。');
+					$this->msgReturn(0,'查询失败，未找到该单据。');
 				}
-			}
-			else {
-				$this->msgReturn(0,'查询失败，未找到该单据。');
 			}
 		}
 		

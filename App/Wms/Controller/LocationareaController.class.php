@@ -2,64 +2,78 @@
 namespace Wms\Controller;
 use Think\Controller;
 class LocationareaController extends CommonController {
-   
-    public function _before_index() {
-        $this->table = array(
-            'toolbar'   => true,
-            'searchbar' => true, 
-            'checkbox'  => true, 
-            'status'    => false, 
-            'toolbar_tr'=> true
-        );
-        $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
-        );
-        $this->status =array(
-            array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
-            ),
-        );
-        $this->status_type='0';
+
+    protected function before_delete ($ids) {
+        $location = M('location'); 
+        foreach ($ids as $val) {
+            $res = $location->where('type=2 AND is_deleted=0 AND pid=' . $val)->count();
+            if($res) {
+	            $this->msgReturn(0,'区域下存在库位，无法删除');
+            }
+            
+        }
     }
 
     protected function before_lists(&$M) {
-        if(ACTION_NAME == 'index') {
-            $map['type'] = '1';
-            $M = $M->where($map);
-        }else if (ACTION_NAME == 'index_location') {
-            $map['type'] = '2';
-            $M = $M->where($map);
-            $data = $this->columns;
-            
-            $data["id"] = '';
-            $data["wh_id"] = '仓库标识';
-            $data["code"] = '区域标识';
-            $data["name"] = '库位标识';
-            $data['picking_line'] = '拣货路线';
-            $data['putaway_line'] = '上架线路';
-            $data['type'] = '库位类型名称';
-            $data['is_mixed_pro'] = '混放货品';
-            $data['is_mixed_batch'] = '混放批次';
-            $data['status'] = '区域状态';
-            $this->columns = $data;
+        $wh_id = I('get.wh_id');
+        if($wh_id) {
+            $map['wh_id'] = $wh_id;
         }
+        $map['type'] = '1';
+        $M = $M->where($map);
+        $data = $this->columns;
+        unset($data);
+        $data['wh_code'] = '仓库标识';
+        $data['code'] = '区域标识'; 
+        $data['status'] = '库存状态';
+        $this->columns = $data;
     }
-       
+     
+    protected function after_lists(&$data) {
+        /*$warehouse = M('warehouse');
+        foreach($data as &$val) {
+            $list = $warehouse->getById($val['wh_id']);
+            $val['warehouse_code'] = $list['code'];
+        }*/
+        //dump($data);exit;
+    }
+
     protected function after_add($id) {
-        $location = M('locationarea');
+        $location = M('location');
         $data['path'] = $id . '.';
         $location->where('id=' . $id)->save($data);
 
     }
-
-    protected function before_edit(&$data) {
-        $warehouse = M('warehouse');
-        $wh_code = $warehouse->where('id=' . $data['wh_id'])->getField('code');
-        $data['wh_code'] = $wh_code;
-    }
-
-
+    
+    protected function before_search(&$query) { 
+            $location = M('location');
+            $wh_id = session('user.wh_id');
+            unset($query['location.code']); 
+            $location_area = $location->where('is_deleted=0 AND type=1 AND wh_id=' . $wh_id)->select();
+            $area_code = array_column($location_area, 'code', 'id');
+            $status = array(
+                '0' =>'请选择',
+                '1' =>'合格状态',
+                '2' =>'残次状态'
+            );
+            $query['location.id'] = array(
+                'title' => '区域标识',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => $area_code
+            );
+            $query['location.name'] = array(
+                'title' => '区域名称',
+                'query_type' => 'like',
+                'control_type' => 'text',
+                'value' => '' 
+            );
+            $query['location.status'] = array(
+                'title' => '库存状态',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => $status
+            );
+            $this->query = $query;
+    } 
 }
