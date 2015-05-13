@@ -47,7 +47,7 @@ class StockLogic{
 				//待上量减少
 				M('Stock')->where($where)->setDec('assign_qty',$param['variable_qty']);
 				//库存量增加
-				M('Stock')->where($where)->setDec('stock_qty',$param['variable_qty']);
+				M('Stock')->where($where)->setInc('stock_qty',$param['variable_qty']);
 			}
 			//添加库存移动记录
 			//to do .....
