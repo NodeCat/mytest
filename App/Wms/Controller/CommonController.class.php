@@ -238,7 +238,10 @@ class CommonController extends AuthController {
                 if(ACTION_NAME === 'add') {
                     $this->after($res, 'add');
                 }
-                $this->after($map[$pk], 'save');
+                else {
+                    $res = $map[$pk];
+                }
+                $this->after($res, 'save');
                 $this->msgReturn(1);
             }
             else{
