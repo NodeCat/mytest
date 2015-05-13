@@ -6,6 +6,10 @@
 <div class="page-header text-center">
   <h1>{$title} <small></small></h1>
 </div>
+<notempty name="msg">
+<div class="alert alert-success text-center" role="alert">{$msg}</div>
+</notempty>
+<div class="alert alert-danger text-center hidden" role="alert"></div>
 <form class="form-horizontal">
   <div class="form-group">
     <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品号</label>
@@ -59,7 +63,7 @@ $(function(){
     var _location_code = $('#location_code').val();
     var _status = $('#status').val();
     if(_pro_name == "" && _pro_code == "" && _location_code == ""){
-      alert('请至少输入货品号，货品名称，库位编号其中一个查询条件');
+      alert_error('请至少输入货品号，货品名称，库位编号其中一个查询条件');
       return false;
     }
 
