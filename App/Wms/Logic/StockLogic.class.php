@@ -16,14 +16,16 @@ class StockLogic{
 	 * 			)
 	 * )
 	 */
-	public function adjust_stock_by_shelves($params){
-		$stock_model = D('Stock');
+	public function adjust_stock_by_shelves($params = array()){
+		$stock_model = M('Stock');
 		foreach($params as $param){
 			//查看是否有记录
-			$where_str = '';
-			$where_str = where_array_to_str($param['where']);
-			$stock_info = $stock_model->where($where_str)->find();
-			
+			$map['wh_id'] = $param['where']['wh_id'];
+			$map['location_id'] = $param['where']['location_id'];
+			$map['pro_code'] = $param['where']['pro_code'];
+			$map['batch'] = $param['where']['batch'];
+			$stock_info = $stock_model->where($map)->find();
+
 			//如果没有记录，新建一条数据
 			if(empty($stock_info)){
 				$add_data['location_id'] = $param['where']['location_id'];
@@ -41,13 +43,11 @@ class StockLogic{
 				if(empty($param['where'])){
 					continue;
 				}
-
-				$where_str = where_array_to_str($param['where']);
 				
 				//待上量减少
-				M('Stock')->where($where)->setDec('assign_qty',$param['variable_qty']);
+				M('Stock')->where($map)->setDec('assign_qty',$param['variable_qty']);
 				//库存量增加
-				M('Stock')->where($where)->setInc('stock_qty',$param['variable_qty']);
+				M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
 			}
 			//添加库存移动记录
 			//to do .....
@@ -55,6 +55,106 @@ class StockLogic{
 		
 		return true;
 	}
+
+	/**
+	 * 入库，待上架时，库存表变化，调整库存量
+	 * @param 
+	 * $params = array(
+	 * 		0 => array(
+	 * 			'variable_qty' => 50,
+	 * 			'where' => array('pro_code'=>xxxxx,'batch'=>xxxx),
+	 * 			)
+	 *		1 => array(
+	 * 			'variable_qty' => 80,
+	 * 			'where' => array('pro_code'=>xxxxx,'batch'=>xxxx),
+	 * 			)
+	 * )
+	 */
+	public function adjust_stock_by_prepare($params = array()){
+		foreach($params as $param){
+			//查看是否有记录
+			$map['pro_code'] = $param['where']['pro_code'];
+			$map['batch'] = $param['where']['batch'];
+			$stock_info = M('Stock')->where($map)->find();
+
+			//如果没有记录，新建一条数据
+			if(empty($stock_info)){
+				$add_data['wh_id'] = 0;
+				$add_data['location_id'] = 0;
+				$add_data['batch'] = $param['where']['batch'];
+				$add_data['status'] = 'unknow';
+				$add_data['pro_code'] = $param['where']['pro_code'];
+				$add_data['store_qty'] = 0;
+				$add_data['assign_qty'] = 0;
+				$add_data['prepare_qty'] = $param['variable_qty'];
+
+				M('Stock')->data($add_data)->add();
+			}else{
+				//待上量增加
+				M('Stock')->where($map)->setInc('prepare_qty',$param['variable_qty']);
+			}
+			//添加库存移动记录
+			//to do .....
+		}
+		
+		return true;
+	}
+
+	/**
+	* 移库操作 库存表变化，调整库存量
+	* @param 
+	* $params = array(
+	* 		0 => array(
+	* 			'variable_qty' => 50,
+	* 			'where' => array('wh_id'=>'xxx','src_location_id'=>xxxx,'dest_location_id'=>xxxx,'pro_code'=>xxxxx,'batch'=>xxxx),
+	* 			)
+	*		1 => array(
+	* 			'variable_qty' => 80,
+	* 			'where' => array('wh_id'=>'xxx','src_location_id'=>xxxx,'dest_location_id'=>xxxx,'pro_code'=>xxxxx,'batch'=>xxxx),
+	* 			)
+	* )
+	*/
+	public function adjust_stock_by_move($params = array()){
+		foreach($params as $param){
+			//判断目标库位上是否有商品
+			$map['location_id'] = $param['where']['dest_location_id'];
+			$map['pro_code'] = $param['where']['pro_code'];
+			$map['batch'] = $param['where']['batch'];
+			$dest_stock_info = M('Stock')->where($map)->find();
+			unset($map);
+
+			//如果没有记录，则新加一条记录
+			if(empty($dest_stock_info)){
+				$add_info['wh_id'] = $param['where']['wh_id'];
+				$add_info['location_id'] = $param['where']['dest_location_id'];
+				$add_info['pro_code'] = $param['where']['pro_code'];
+				$add_info['batch'] = $param['where']['batch'];
+				$add_info['status'] = 'qualified';
+				$add_info['stock_qty'] = $param['variable_qty'];
+				$add_info['assign_qty'] = 0;
+				$add_info['prepare_qty'] = 0;
+
+				M('Stock')->data($add_info)->add();
+			}
+			//如果有记录，则更新记录
+			else{
+				//如果变化量大于0 增加目标库存 减少原库存
+				if($param['variable_qty'] > 0){
+					//增加目标库存
+					$map['location_id'] = $param['where']['dest_location_id'];
+					$map['pro_code'] = $param['where']['pro_code'];
+					$map['batch'] = $param['where']['batch'];
+					M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
+
+					//减少原库存
+					$map['location_id'] = $param['where']['src_location_id'];
+					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+					unset($map);
+				}
+			}
+		}
+	}
+
 
 	/**
 	* 根据货品号，货品名称，库位编号，库存状态，查询库存记录
