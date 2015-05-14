@@ -8,10 +8,10 @@ class WarehouseModel extends Model {
     protected $readonlyField = array('id');
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-            //array('code','required','仓库标识必填'),
-            //array('code','','此仓库标识已存在',1,'unique',0),
+            array('code','require','仓库标识必填'),
+            array('code','','此仓库标识已存在',1,'unique',0),
             array('name','require','仓库名称必填'),
-            //array('name','','此仓库名称已存在',1,'unique',0)
+            array('name','','此仓库名称已存在',1,'unique',0)
             );
 
     //array(填充字段,填充内容,[填充条件,附加规则])

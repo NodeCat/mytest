@@ -1,0 +1,108 @@
+<ol class="breadcrumb">
+  <li><a href="{:U('stockin/test')}">首页</a></li>
+  <li class="active">移库</li>
+</ol>
+
+<div class="page-header text-center">
+  <h1>{$title} <small></small></h1>
+</div>
+
+<div class="alert alert-danger text-center hidden" role="alert"></div>
+<form class="form-horizontal form-view" method="POST">
+<input type="hidden" name="wh_id" value="{$wh_id}"/>
+<input type="hidden" name="location_code" value="{$location_code}"/>
+<input type="hidden" name="batch" value="{$batch}"/>
+<input type="hidden" name="variable_qty" value="{$variable_qty}"/>
+
+  <div class="form-group">
+    <label for="location" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">从库位</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$location_code}</label>
+    </div>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品号</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$pro_code}</label>
+    </div>
+  </div>
+  <br>
+  
+  <div class="form-group">
+    <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品名称</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$pro_name}</label>
+    </div>
+  </div>
+  <br>
+ 
+  <div class="form-group">
+    <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">可移动数量</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$variable_qty}</label>
+    </div>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="batch" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">到库位</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input type="text" class="form-control input-lg" name="dest_location_code" id="dest_location_code" placeholder="请输目的库位编号">
+    </div>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <label for="batch" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">移动数量</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input type="text" class="form-control input-lg" name="variable_qty" id="variable_qty" value="{$variable_qty}" disabled>
+    </div>
+  </div>
+  <br>
+
+  <div class="form-group">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+      <button type="submit" class="btn btn-lg btn-primary  btn-block" id="submit_search">确定</button>
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12  text-right">
+      <a class="btn btn-lg btn-default btn-block">返回</a>
+    </div>
+  </div>
+</form>
+
+<script type="text/javascript">
+$(function(){
+  $('#submit_search').click(function(){
+    var _location_dest = $('#location_dest').val();
+    if(_location_dest == ""){
+      alert_error('请输入完整信息');
+      return false;
+    }
+    
+    $('.form-view').attr('action','/StockMove/pda_stock');
+    $('.form-view').submit();
+    /*$.ajax({
+      url:'/StockMove/check_stock_move',
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:'location_code='+_location_code,
+      success: function(json){
+        if(json.status=='1'){
+            $('.form-view').attr('action','/StockMove/pda_stock');
+            $('.form-view').submit();
+        }
+        if(json.status=='0'){
+          alert(json.msg);
+        }
+      }
+    });*/
+    return false;
+  })
+})
+</script>

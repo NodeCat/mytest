@@ -10,7 +10,10 @@ class LocationareaModel extends Model {
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-
+                array('name','require','区域名称必填'),
+                array('code','require','区域标识必填'),
+                array('wh_id','require','仓库标识必选'),
+                array('status','require','区域状态必选'),
             );
 
     //array(填充字段,填充内容,[填充条件,附加规则])
