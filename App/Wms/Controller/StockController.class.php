@@ -81,9 +81,13 @@ class StockController extends CommonController {
 			//根据区域name location.name 查询对应库位id location.id
 			$location_name = I('area');
 			if(!empty($location_name)){
-				$location_id_by_area = M('Location')->where('name = "'.$location_name.'"')->getField('id');
+				$map_tmp['name'] = $location_name;
+				$location_id_by_area = M('Location')->where($map_tmp)->getField('id');
+				unset($map_tmp);
 				//根据pid（区域id）查找对应的库位id
-				$location_ids_by_location_name = M('Location')->where('pid = '.$location_id_by_area)->getField('id',true);
+				$map_tmp['pid'] = $location_id_by_area;
+				$location_ids_by_location_name = M('Location')->where($map_tmp)->getField('id',true);
+				unset($map_tmp);
 			}
 			//根据库位code location.code 查询对应库位id location.id
 			$location_code = I('location_code');
@@ -119,7 +123,7 @@ class StockController extends CommonController {
 
 			//根据pro_name 查询对应的pro_code
 			$pro_name = I('pro_name');
-			if(!empty($pro_name)){
+			if(!empty($pro_name) && empty($map['stock.pro_code'])){
 				$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($pro_name);
 				foreach($SKUs['list'] as $SKU){
 					$pro_codes[] = $SKU['sku_number'];
@@ -135,11 +139,15 @@ class StockController extends CommonController {
 			$is_stock_move = I('is_stock_move');
 			//替换edit显示数据
 			//根据warehouse.id 查询仓库name
-			$warehouse_name = M('Warehouse')->where('id = '.$data['wh_id'])->getField('name');
+			$map['id'] = $data['wh_id'];
+			$warehouse_name = M('Warehouse')->where($map)->getField('name');
+			unset($map);
 			$data['wh_name'] = $warehouse_name;
 
 			//根据location.id 查询库位code
-			$location_code = M('Location')->where('id = '.$data['location_id'])->getField('code');
+			$map['id'] = $data['location_id'];
+			$location_code = M('Location')->where($map)->getField('code');
+			unset($map);
 			$data['location_name'] = $location_code;
 		}
 		//view edit 展示
@@ -155,10 +163,10 @@ class StockController extends CommonController {
 		}
 
 		//根据pro_code 查询对应的pro_name
-		$pro_codes = array($data['pro_code']);
+		//$pro_codes = array($data['pro_code']);
 
-		$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes($pro_codes);
-		$data['pro_name'] = $SKUs['list'][0]['name'];
+		//$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+		//$data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];
 	}
 
 	//save方法之前，执行该方法
@@ -167,8 +175,10 @@ class StockController extends CommonController {
 			//对比状态是否改变，如果没有改变，报错
 			//根据stock.id 查询对应stock.status
 			$data = $M->data();
-			$old_stock_info = M('Stock')->where('id = '.$data['id'])->getField('id,status,location_id');
-			
+			$map['id'] = $data['id'];
+			$old_stock_info = M('Stock')->where($map)->getField('id,status,location_id');
+			unset($map);
+
 			if(I('editStatus')){
 				if($old_stock_info[$data['id']]['status'] === $data['status']){
 					$this->msgReturn(0,'请修改库存状态');
@@ -281,8 +291,8 @@ class StockController extends CommonController {
 		//总共多少条记录
 		$count = I('count');
 		//当前记录
-		$number = I('number');
-		$number = ($number) ? $number : 1;
+		$cur_page = I('cur_page');
+		$cur_page = ($cur_page) ? $cur_page : 1;
 
 
 		if(empty($params['pro_code']) && empty($params['pro_name']) && empty($params['location_code']) && empty($params['stock_status'])){
@@ -291,19 +301,39 @@ class StockController extends CommonController {
 
 		//查询库存信息
 		$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
-		$stock_info = $stock_infos[$number];
+		$stock_info = $stock_infos[$cur_page - 1];
 		$stock_info['available_qty'] = $stock_info['stock_qty'] = $stock_info['assign_qty'];
 
 		$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes(array($stock_info['pro_code']));
 		$stock_info['pro_name'] = $SKUs[$stock_info['pro_code']]['wms_name'];
 
 		//查询库位code
-		$location_info = M('Location')->where('id = '.$stock_info['location_id'])->find();
+		$map['id'] = $stock_info['location_id'];
+		$location_info = M('Location')->where($map)->find();
+		unset($map);
 		$stock_info['location_code'] = $location_info['code'];
 
+		//替换库存状态显示
+		switch($stock_info['status']){
+			case 'qualified':
+				$stock_info['status'] = '合格';
+				break;
+			case 'unqualified':
+				$stock_info['status'] = '不合格';
+				break;
+			default:
+				break;
+		}
+		if($stock_info['status'])
+
 		$data['count'] = $count;
-		$data['number'] = $number;
+		$data['cur_page'] = $cur_page;
 		$data['stock_info'] = $stock_info;
+		$pre_page = ($cur_page > 1) ? $cur_page - 1 : 1;
+		$next_page = ($cur_page >= $count) ? 1 : $cur_page + 1;
+		$data['pre_page_url'] = "/stock/pdaStockShow?pro_name={$params['pro_name']}&pro_code={$params['pro_code']}&location_code={$params['location_code']}&status={$params['stock_status']}&count={$count}&cur_page={$pre_page}";
+		$data['next_page_url'] = "/stock/pdaStockShow?pro_name={$params['pro_name']}&pro_code={$params['pro_code']}&location_code={$params['location_code']}&status={$params['stock_status']}&count={$count}&cur_page={$next_page}";
+
 
 		$this->assign($data);
 

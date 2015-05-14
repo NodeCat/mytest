@@ -72,11 +72,11 @@ class PmsLogic{
 			}
 
 			//根据pro_code 接口查询SKU
-			$SKUs = $this->get_SKU_by_pro_codes($pro_codes);
+			$SKUs = $this->get_SKU_field_by_pro_codes($pro_codes);
 
 			//整理数据
-			foreach($SKUs['list'] as $SKU){
-				$prepare_data[$SKU['sku_number']]['pro_name'] = $SKU['name'];
+			foreach($SKUs as $pro_code => $SKU){
+				$prepare_data[$pro_code]['pro_name'] = $SKU['wms_name'];
 			}
 
 			return $prepare_data;

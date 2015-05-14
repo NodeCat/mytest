@@ -27,21 +27,28 @@ class InventoryDetailController extends CommonController {
         );
     }
 
+    public function index() {
+        //$this->before($map,'index');
+        $this->before_index();
+        $this->lists('index');
+    }
+
     //lists方法执行前，执行该方法
 	protected function before_lists(&$M){
         $this->columns = array (
 			'id' => '',
-			'inventory_code' => '盘点单单号',
 			'pro_code' => '产品标识',
 			'location_code' => '库位',
 			'pro_qty' => '盘点数量',
-			'theoretical_qty' => '理论仓库数',
+			'theoretical_qty' => '理论库存量',
 			'diff_qty' => '差异量',
 		);
 
 		//根据inventory_id 查询对应code
 		$inventory_id = I('id');
-		$inventory_code = M('stock_inventory')->where('id = '.$inventory_id)->getField('code');
+        $map['id'] = $inventory_id;
+		$inventory_code = M('stock_inventory')->where($map)->getField('code');
+        unset($map);
 		$map['inventory_code'] = $inventory_code;
 		$M->where($map);
     }
@@ -52,5 +59,8 @@ class InventoryDetailController extends CommonController {
 		foreach($data as $key => $data_detail){
 			$data[$key]['diff_qty'] = $data_detail['theoretical_qty'] - $data_detail['pro_qty'];
 		}
+        $this->invetory_code = $data[0]['inventory_code'];
 	}
+
+
 }

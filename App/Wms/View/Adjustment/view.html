@@ -36,15 +36,14 @@
     <volist name="adjustment_detail_list" id="adjustment_detail">
         <tr class="odd">
             
-          
             <td>{$adjustment_detail.id}</td>
             <td>{$adjustment_detail.pro_code}</td>
             <td>{$adjustment_detail.pro_name}</td>
             <td>已执行</td>
             <td>{$adjustment_detail.origin_qty}</td>
             <td>{$adjustment_detail.adjusted_qty}</td>
-            <td>{$adjustment_detail.origin_status}</td>
-            <td>{$adjustment_detail.adjust_status}</td>
+            <td>{:en_to_cn($adjustment_detail['origin_status'])}</td>
+            <td>{:en_to_cn($adjustment_detail['adjust_status'])}</td>
         </tr>
     </volist>
   </tbody>
