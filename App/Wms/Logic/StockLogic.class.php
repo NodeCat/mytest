@@ -124,6 +124,14 @@ class StockLogic{
 	*/
 	public function adjust_stock_by_move($params = array()){
 		foreach($params as $param){
+			if($param['variable_qty'] == 0 || 
+				empty($param['wh_id']) || 
+				empty($param['src_location_id']) || 
+				empty($param['dest_location_id']) || 
+				empty($param['pro_code']) || 
+				empty($param['batch'])){
+				continue;
+			}
 			//判断目标库位上是否有商品
 			$map['location_id'] = $param['dest_location_id'];
 			$map['pro_code'] = $param['pro_code'];
