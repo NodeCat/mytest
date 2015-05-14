@@ -15,10 +15,7 @@ class StockInController extends CommonController {
 			'00'=>'已关闭'
 		),
 	);
-	public function test($t="index"){
-		C('LAYOUT_NAME','pda');
-		$this->display('Pda:'.$t);
-	}
+	
 	public function on($t='scan_incode'){
 		$this->cur = '上架';
 		if(IS_GET) {
@@ -37,7 +34,7 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$data = $A->getinQty($id,$code);
+				$data = $A->getOnQty($id,$code);
 				if(!empty($data)) {
 					$this->assign($data);
 					layout(false);
@@ -52,9 +49,11 @@ class StockInController extends CommonController {
 				
 			}
 		
-		if($type == 'input_qty') {
+			if($type == 'input_qty') {
 				$qty = I('post.qty');
-				$res = A('StockIn','Logic')->in($id,$code,$qty);
+				$location = I('post.location');
+				$status = I('post.status');
+				$res = A('StockIn','Logic')->on($id,$code,$qty,5,$status);
 				if(!empty($res)) {
 					$data['msg'] = '上架成功。'.$res;
 					$res = M('stock_bill_in')->field('id,code')->find($id);
@@ -139,6 +138,7 @@ class StockInController extends CommonController {
 			if($type == 'input_qty') {
 				$qty = I('post.qty');
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
+
 				if(!empty($res)) {
 					$data['msg'] = '收货成功。'.$res;
 					$res = M('stock_bill_in')->field('id,code')->find($id);
@@ -189,9 +189,7 @@ class StockInController extends CommonController {
 		}
 		
 	}
-	public function testin(){
-		A('StockIn','Logic')->checkIn();
-	}
+	
 	protected function before_edit(&$data) {
 		$M = D('StockIn');
 		$id = I($M->getPk());

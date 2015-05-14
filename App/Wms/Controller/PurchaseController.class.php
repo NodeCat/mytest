@@ -213,7 +213,7 @@ class PurchaseController extends CommonController {
 		$id = I($pk);
 		$map[$M->tableName.'.'.$pk] = $id;
 		$res = $M->relation(true)->where($map)->find();
-		if($res['status']!='0') {
+		if($res['status']!='11') {
 			$this->msgReturn(0);
 		}
 		$data['refer_code'] = $res['code'];

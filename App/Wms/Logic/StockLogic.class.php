@@ -3,7 +3,7 @@ namespace Wms\Logic;
 
 class StockLogic{
 	/**
-	 * 入库，上架时，库存表变化，调整库存量
+	 * 入库上架时，库存表变化，调整库存量
 	 * @param 
 	 * $params = array(
 	 * 		0 => array(
@@ -57,7 +57,7 @@ class StockLogic{
 	}
 
 	/**
-	 * 入库，待上架时，库存表变化，调整库存量
+	 * 入库收货时，库存表变化，调整库存量
 	 * @param 
 	 * $params = array(
 	 * 		0 => array(
