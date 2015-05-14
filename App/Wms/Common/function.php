@@ -113,3 +113,13 @@ function where_array_to_str($where = array(), $relation = 'AND'){
     
     return $where_str;
 }
+
+//英文转中文
+function en_to_cn($str){
+    $filter = array(
+        'qualified' => '合格',
+        'unqualified' => '不合格',
+        );
+
+    return $filter[$str];
+}

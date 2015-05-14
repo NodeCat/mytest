@@ -46,7 +46,9 @@ class InventoryDetailController extends CommonController {
 
 		//根据inventory_id 查询对应code
 		$inventory_id = I('id');
-		$inventory_code = M('stock_inventory')->where('id = '.$inventory_id)->getField('code');
+        $map['id'] = $inventory_id;
+		$inventory_code = M('stock_inventory')->where($map)->getField('code');
+        unset($map);
 		$map['inventory_code'] = $inventory_code;
 		$M->where($map);
     }
@@ -57,7 +59,7 @@ class InventoryDetailController extends CommonController {
 		foreach($data as $key => $data_detail){
 			$data[$key]['diff_qty'] = $data_detail['theoretical_qty'] - $data_detail['pro_qty'];
 		}
-        $data['invetory_code'] = $data[0]['inventory_code'];
+        $this->invetory_code = $data[0]['inventory_code'];
 	}
 
 

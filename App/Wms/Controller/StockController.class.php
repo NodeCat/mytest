@@ -81,9 +81,13 @@ class StockController extends CommonController {
 			//根据区域name location.name 查询对应库位id location.id
 			$location_name = I('area');
 			if(!empty($location_name)){
-				$location_id_by_area = M('Location')->where('name = "'.$location_name.'"')->getField('id');
+				$map_tmp['name'] = $location_name;
+				$location_id_by_area = M('Location')->where($map_tmp)->getField('id');
+				unset($map_tmp);
 				//根据pid（区域id）查找对应的库位id
-				$location_ids_by_location_name = M('Location')->where('pid = '.$location_id_by_area)->getField('id',true);
+				$map_tmp['pid'] = $location_id_by_area;
+				$location_ids_by_location_name = M('Location')->where($map_tmp)->getField('id',true);
+				unset($map_tmp);
 			}
 			//根据库位code location.code 查询对应库位id location.id
 			$location_code = I('location_code');
@@ -135,11 +139,15 @@ class StockController extends CommonController {
 			$is_stock_move = I('is_stock_move');
 			//替换edit显示数据
 			//根据warehouse.id 查询仓库name
-			$warehouse_name = M('Warehouse')->where('id = '.$data['wh_id'])->getField('name');
+			$map['id'] = $data['wh_id'];
+			$warehouse_name = M('Warehouse')->where($map)->getField('name');
+			unset($map);
 			$data['wh_name'] = $warehouse_name;
 
 			//根据location.id 查询库位code
-			$location_code = M('Location')->where('id = '.$data['location_id'])->getField('code');
+			$map['id'] = $data['location_id'];
+			$location_code = M('Location')->where($map)->getField('code');
+			unset($map);
 			$data['location_name'] = $location_code;
 		}
 		//view edit 展示
@@ -167,8 +175,10 @@ class StockController extends CommonController {
 			//对比状态是否改变，如果没有改变，报错
 			//根据stock.id 查询对应stock.status
 			$data = $M->data();
-			$old_stock_info = M('Stock')->where('id = '.$data['id'])->getField('id,status,location_id');
-			
+			$map['id'] = $data['id'];
+			$old_stock_info = M('Stock')->where($map)->getField('id,status,location_id');
+			unset($map);
+
 			if(I('editStatus')){
 				if($old_stock_info[$data['id']]['status'] === $data['status']){
 					$this->msgReturn(0,'请修改库存状态');
@@ -298,7 +308,9 @@ class StockController extends CommonController {
 		$stock_info['pro_name'] = $SKUs[$stock_info['pro_code']]['wms_name'];
 
 		//查询库位code
-		$location_info = M('Location')->where('id = '.$stock_info['location_id'])->find();
+		$map['id'] = $stock_info['location_id'];
+		$location_info = M('Location')->where($map)->find();
+		unset($map);
 		$stock_info['location_code'] = $location_info['code'];
 
 		//替换库存状态显示
