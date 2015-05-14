@@ -1,20 +1,33 @@
 <include file="Pda:nav-cur" />
-<form class="form-horizontal form-pda form-scan" action="{:U('in')}" method="POST">
+<form class="form-horizontal form-pda form-scan" action="{:U('__ACTION__')}" method="POST">
   <input type="hidden" name="t" value="scan_incode" />
   <div class="form-group">
     <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">编号</label>
     <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-      <input autocomplete="off" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入编号">
+      <input autocomplete="off" value="ASN150513000014" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入编号">
     </div>
   </div>
    <br>
-   <include file="Pda:btn" />
+
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+    <button type="submit" class="btn btn-lg btn-primary  btn-block">确定</button>
+  </div>
+</div>
+<br>
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12  text-right">
+    <a href="{:U('StockIn/test')}" class="btn btn-lg btn-default btn-block">返回</a>
+  </div>
+</div>
+
 </form>
 <script type="text/javascript">
 $(function(){
   $('.input-pda').on('focus',function(){
     $(this).select();
   });
+  $('.input-pda').focus();
   $('.form-pda button[type=submit]').on('click',function(){
     $(this).prop('disabled', true);
     var addr,params;
@@ -28,11 +41,15 @@ $(function(){
       data:params,
       success: function(msg){
         $('.form-pda button[type=submit]').prop('disabled', false);
-        alert(msg.msg);
+        
         if(msg.status == 0){
+            alert_error(msg.msg);
             $('.input-pda').focus();
         }
-        if(msg.data != null){
+        else {
+          alert_success(msg.msg);
+        }
+        if(msg.data != '' && msg.data != null ){
             $('.content').html(msg.data);
         }
       }

@@ -572,6 +572,9 @@ background-color:#FFFFFF}
   font-weight: normal;
   font-size: 13px;
 }
+.form-view .panel{
+	border-top:none;
+}
 .form-view .form-group{
   margin-bottom: 0px;
 }
