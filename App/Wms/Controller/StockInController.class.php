@@ -20,6 +20,7 @@ class StockInController extends CommonController {
 		$this->display('Pda:'.$t);
 	}
 	public function on($t='scan_incode'){
+		$this->cur = '上架';
 		if(IS_GET) {
 			C('LAYOUT_NAME','pda');
 			switch ($t) {
@@ -104,6 +105,7 @@ class StockInController extends CommonController {
 		}
 	}
 	public function in($t='scan_incode'){
+		$this->cur = '收货';
 		if(IS_GET) {
 			C('LAYOUT_NAME','pda');
 			switch ($t) {
