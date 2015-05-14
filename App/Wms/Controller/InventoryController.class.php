@@ -34,7 +34,9 @@ class InventoryController extends CommonController {
 		//整理数据项
 		foreach($data as $key => $data_detail){
 			//根据inventory_code 查询对应的inventory_detail总数
-			$count_location = M('stock_inventory_detail')->where('inventory_code = "'.$data_detail['code'].'"')->count();
+			$map['inventory_code'] = $data_detail['code'];
+			$count_location = M('stock_inventory_detail')->where($map)->count();
+			unset($map);
 			$data[$key]['count_location'] = $count_location;
 		}
 
@@ -50,9 +52,18 @@ class InventoryController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'Inventorydetail/index'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
     }
 
@@ -82,7 +93,9 @@ class InventoryController extends CommonController {
 		//替换编辑页面的展示信息
 		if(IS_AJAX){
 			//根据warehouse.id 查询仓库name
-			$location_name = M('location')->where('id = '.$data['location_id'])->getField('name');
+			$map['id'] = $data['location_id'];
+			$location_name = M('location')->where($map)->getField('name');
+			unset($map);
 			$data['location_name'] = $location_name;
 		}
 		//view展示
@@ -114,10 +127,14 @@ class InventoryController extends CommonController {
 					break;
 			}
 
-			$inventory_detail_list = M('stock_inventory_detail')->where('inventory_code = "'.$data['code'].'"')->select();
-			
+			$map['inventory_code'] = $data['code'];
+			$inventory_detail_list = M('stock_inventory_detail')->where($map)->select();
+			unset($map);
+
 			foreach($inventory_detail_list as $key => $inventory_detail){
-				$inventory_detail_list[$key]['location_code'] = M('location')->where('id = '.$inventory_detail['location_id'])->getField('code');
+				$map['id'] = $inventory_detail['location_id'];
+				$inventory_detail_list[$key]['location_code'] = M('location')->where($map)->getField('code');
+				unset($map);
 			}
 
 			//添加pro_name字段
@@ -132,13 +149,17 @@ class InventoryController extends CommonController {
 		$data = $M->data();
 		if(!empty($data['location_id'])){
 			//根据区域location_id 查询stock中所有在该区域location_id的pro_code
-			$location_ids = M('location')->where('pid = '.$data['location_id'].' and type = 2')->getField('id',true);
+			$map['pid'] = $data['location_id'];
+			$map['type'] = 2;
+			$location_ids = M('location')->where($map)->getField('id',true);
+			unset($map);
 			if(empty($location_ids)){
 				$this->msgReturn(0,'该区域id:'.$data['location_id'].'不存在库位');
 			}
 			//根据区域内的所有库位id，查询对应的库存
 			$map = array('location_id' => array('in',$location_ids));
 			$stock_pro_codes = M('Stock')->where($map)->getField('pro_code',true);
+			unset($map);
 			if(empty($stock_pro_codes)){
 				$this->msgReturn(0,'该区域id:'.$data['location_id'].'中，没有任何sku');
 			}
@@ -180,21 +201,24 @@ class InventoryController extends CommonController {
 			if(ACTION_NAME == 'add'){
 				//盘点单创建完毕，准备写入盘点单详情
 				//根据inventory_id 查询inventory_code
-				$inventory_code = M('stock_inventory')->where('id = '.$id)->getField('code');
+				$map['id'] = $id;
+				$inventory_code = M('stock_inventory')->where($map)->getField('code');
+				unset($map);
 				//获得区域id
 				//$location_id = I('location_id');
 				//获得所有要盘点的pro_codes
 				//根据inventory_pro_codes 查询对应的库存量stock_qty
 				$map['pro_code'] = array('in', $this->inventory_pro_codes);
 				$stock_lists = M('Stock')->where($map)->getField('pro_code,stock_qty,location_id',true);
+				unset($map);
 				//插入盘点详情表，stock_inventory_detail
 				foreach($stock_lists as $pro_code => $stock_list){
 					$data_list[] = array(
 						'inventory_code'=>$inventory_code,
-						//'pro_code'=>$pro_code,
+						'pro_code'=>$pro_code,
 						'location_id'=>$stock_list['location_id'],
-						//'pro_qty'=>0,
-						//'theoretical_qty'=>$stock_list['stock_qty'],
+						'pro_qty'=>0,
+						'theoretical_qty'=>$stock_list['stock_qty'],
 						);
 				}
 
@@ -217,6 +241,7 @@ class InventoryController extends CommonController {
 			$map = array('id' => array('in',$ids));
 			//根据盘点单ids 查询inventory_info
 			$inventory_infos = M('stock_inventory')->where($map)->select();
+			unset($map);
 			//检查是否存在 已经有差异的盘点单，如果有，则提示错误
 			foreach($inventory_infos as $inventory_info){
 				if($inventory_info['is_diff'] == 1 || $inventory_info['status'] == 'closed'){
@@ -226,7 +251,9 @@ class InventoryController extends CommonController {
 			//开始处理盘点单
 			foreach($inventory_infos as $inventory_info){
 				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
-				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				$map['inventory_code'] = $inventory_info['code'];
+				$inventory_details = M('Stock_inventory_detail')->where($map)->select();
+				unset($map);
 
 				//如果有盘点差异，则新建库存调整单
 				$create_adjust_flag = $inventory_is_diff = false;
@@ -252,10 +279,27 @@ class InventoryController extends CommonController {
 				foreach($inventory_details as $inventory_detail){
 					//如果实盘量和库存量不同，处理库存变化
 					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
+						$map['pro_code'] = $inventory_detail['pro_code'];
+						$map['location_id'] = $inventory_detail['location_id'];
 						//根据pro_code location_id 更新库存表
-						M('stock')->where('pro_code = "'.$inventory_detail['pro_code'].'" and location_id = '.$inventory_detail['location_id'])->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
-						//添加库存移动表记录
-						//to do ....
+						M('stock')->where($map)->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
+						unset($map);
+
+						//根据pro_code 查询库存信息
+						$stock_info = M('stock')->where('pro_code = "'.$inventory_detail['pro_code'].'"')->find();
+						/*//添加库存移动表记录
+						$stock_move_data = array(
+							'type' => 'inventory_checkdiff',
+							'batch' => $stock_info['batch'],
+							'pro_code' => $inventory_detail['pro_code'],
+							'move_qty' => $stock_info['stock_qty'],
+							'price_unit' => 0,
+							'src_wh_id' => $stock_info['wh_id'],
+							'dest_wh_id' => $stock_info['wh_id'],
+							'src_location_id' => $stock_info['location_id'],
+							'dest_location_id' => '999', //目标
+							);
+						M('stock_move')->data($stock_move_data)->add();*/
 						//新建库存调整单详情
 						$adjusted_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
 						$adjust_detail_data = array(
@@ -263,13 +307,18 @@ class InventoryController extends CommonController {
 							'pro_code' => $inventory_detail['pro_code'],
 							'origin_qty' => $inventory_detail['theoretical_qty'],
 							'adjusted_qty' => $adjusted_qty,
+							'origin_status' => $stock_info['status'],
+							'adjust_status' => $stock_info['status'],
 							);
 						M('stock_adjustment_detail')->data($adjust_detail_data)->add();
 						unset($adjust_detail_data);
 						unset($adjusted_qty);
+						unset($stock_info);
 					}
 					//根据stock_inventory_detail_id 更新对应的status为done
-					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
+					$map['id'] = $inventory_detail['id'];
+					M('stock_inventory_detail')->where($map)->data(array('status'=>'done'))->save();
+					unset($map);
 				}
 
 				if($inventory_is_diff){
@@ -278,29 +327,38 @@ class InventoryController extends CommonController {
 					$inventory_is_diff = 0;
 				}
 				//更新为有差异
-				M('stock_inventory')->where('id = '.$inventory_info['id'])->data(array('is_diff' => $inventory_is_diff,'status'=>'closed'))->save();
+				$map['id'] = $inventory_info['id'];
+				M('stock_inventory')->where($map)->data(array('is_diff' => $inventory_is_diff,'status'=>'closed'))->save();
+				unset($map);
 			}
 			$this->msgReturn(1);
 		}
 	}
 
-	//差异确认 对某个盘点单进行差异确认，确认后，生成库存调整单，调整库存量
+	//关闭盘点单 库存不变化
 	public function closed(){
 		if(IS_AJAX){
 			$ids = I('ids');
 			$map = array('id' => array('in',$ids));
 			//根据盘点单ids 查询inventory_info
 			$inventory_infos = M('stock_inventory')->where($map)->select();
+			unset($map);
 			
 			//将对应盘点单置为closed
 			foreach($inventory_infos as $inventory_info){
-				M('stock_inventory')->where('id = '.$inventory_info['id'])->data(array('status'=>'closed'))->save();
+				$map['id'] = $inventory_info['id'];
+				M('stock_inventory')->where($map)->data(array('status'=>'closed'))->save();
+				unset($map);
 
 				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
-				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				$map['inventory_code'] = $inventory_info['code'];
+				$inventory_details = M('stock_inventory_detail')->where($map)->select();
+				unset($map);
 				//根据stock_inventory_detail_id 更新对应的status为done
 				foreach($inventory_details as $inventory_detail){
-					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
+					$map['id'] = $inventory_detail['id'];
+					M('stock_inventory_detail')->where($map)->data(array('status'=>'done'))->save();
+					unset($map);
 				}
 			}
 		}
@@ -314,11 +372,14 @@ class InventoryController extends CommonController {
 			$map = array('id' => array('in',$ids));
 			//根据盘点单ids 查询inventory_info
 			$inventory_infos = M('stock_inventory')->where($map)->select();
+			unset($map);
 
 			foreach($inventory_infos as $inventory_info){
 				$inventory_is_diff = false;
 				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
-				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				$map['inventory_code'] = $inventory_info['code'];
+				$inventory_details = M('stock_inventory_detail')->where($map)->select();
+				unset($map);
 				//判断是否有差异，如果有则新建复盘单，以及复盘详情
 				foreach($inventory_details as $inventory_detail){
 					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
@@ -359,13 +420,19 @@ class InventoryController extends CommonController {
 				}
 
 				//将原盘点单状态置为closed
-				M('stock_inventory')->where('id = '.$inventory_info['id'])->data(array('status'=>'closed'))->save();
+				$map['id'] = $inventory_info['id'];
+				M('stock_inventory')->where($map)->data(array('status'=>'closed'))->save();
+				unset($map);
 
 				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
-				$inventory_details = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_info['code'].'"')->select();
+				$map['inventory_code'] = $inventory_info['code'];
+				$inventory_details = M('stock_inventory_detail')->where($map)->select();
+				unset($map);
 				//根据stock_inventory_detail_id 更新对应的status为done
 				foreach($inventory_details as $inventory_detail){
-					M('stock_inventory_detail')->where('id = '.$inventory_detail['id'])->data(array('status'=>'done'))->save();
+					$map['id'] = $inventory_detail['id'];
+					M('stock_inventory_detail')->where($map)->data(array('status'=>'done'))->save();
+					unset($map);
 				}
 			}
 			$this->msgReturn(1);
@@ -375,10 +442,13 @@ class InventoryController extends CommonController {
 	//手持设备扫描盘点 根据inventory_code返回对应详情
 	public function getInvDetailByInvCode(){
 		$inventory_code = I('inventory_code');
-		$inventory_detail_infos = M('stock_inventory_detail')->where('inventory_code = "'.$inventory_code.'"')->select();
+		$map['inventory_code'] = $inventory_code;
+		$inventory_detail_infos = M('stock_inventory_detail')->where($map)->select();
+		unset($map);
 
 		$data['status'] = 1;
 		$data['data'] = $inventory_detail_infos;
+
 		$this->ajaxReturn($data);
 	}
 

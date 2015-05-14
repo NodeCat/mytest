@@ -23,6 +23,7 @@ class LocationareaController extends CommonController {
         $M = $M->where($map);
         $data = $this->columns;
         unset($data);
+        $data['id'] = '区域id';
         $data['wh_code'] = '仓库标识';
         $data['code'] = '区域标识'; 
         $data['status'] = '库存状态';

@@ -2,6 +2,13 @@
 namespace Wms\Controller;
 use Think\Controller;
 class AdjustmentController extends CommonController {
+    //页面展示数据映射关系 例如取出数据是Qualified 显示为合格
+    protected $filter = array(
+        //'type' => array('fast' => '快速盘点','again' => '复盘'),
+        //'is_diff' => array('0' => '无', '1' => '有'),
+        //'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
+        'status' => array('qualified' => '合格'),
+    );
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -16,13 +23,24 @@ class AdjustmentController extends CommonController {
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => false,'new'=>'false'), 
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
+        );
     }
 
     //edit方法执行前，执行该方法
 	protected function before_edit(&$data){
 		//替换编辑页面的展示信息
 		if(!IS_AJAX){
-			$adjustment_detail_list = M('stock_adjustment_detail')->where('adjustment_code = "'.$data['code'].'"')->select();
+            $map['adjustment_code'] = $data['code'];
+			$adjustment_detail_list = M('stock_adjustment_detail')->where($map)->select();
+            unset($map);
 
             foreach($adjustment_detail_list as $key => $adjustment_detail){
 				//$adjustment_detail_list[$key]['location_code'] = M('location')->where('id = '.$inventory_detail['location_id'])->getField('code');
@@ -35,4 +53,5 @@ class AdjustmentController extends CommonController {
 			$this->adjustment_detail_list = $adjustment_detail_list;
 		}
 	}
+
 }
