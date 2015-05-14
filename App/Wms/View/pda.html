@@ -5,6 +5,9 @@
 	.message {
 		top:130px;
 	}
+	.page-header{
+		margin-top: 20px;
+	}
 </style>
 <include file="Pda:nav-top" />
 <div class="container-fluid">
@@ -25,6 +28,7 @@
 	<include file="Index:footer"/>
 <script type="text/javascript">
 function alert_success(msg){
+	$('.alert').addClass('hidden');
 	var alert=$('.alert-success');
 	alert.text(msg);
 	alert.removeClass('hidden');

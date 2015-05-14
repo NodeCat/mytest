@@ -13,16 +13,19 @@ class PurchaseController extends CommonController {
 		'picking_status' => array(
 			'0' => '未入库', 
 		),
-		'company_id' => array(
-			'1' => '大楚网',
-			'2' => '大过往',
-		),
 		'status' => array(
-			'0' => '待审核',
-			'1' => '待入库',
-			'2' => '待上架'
+			'0' => '草稿',
+			'11'=>'待审核',
+			'13' => '已生效',
+			'23' => '已完成',
+			'04' => '已作废',
+			'14' => '已驳回'
 		)
 	);
+	public function view() {
+        $this->_before_index();
+        $this->edit();
+    }
 	public function index() {
 		$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists($tmpl);
@@ -37,10 +40,10 @@ class PurchaseController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true'), 
-            array('name'=>'audit' ,'show' => !isset($auth['audit']),'new'=>'false'),
-            array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'false')
+            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11,13")
         );
         $this->status =array(
             array(
@@ -59,7 +62,9 @@ class PurchaseController extends CommonController {
 		$M->invoice_status = '0';
 		$M->picking_status = '0';
 	}
-
+	public function before_save(&$M) {
+		$M->status= '11';
+	}
 	public function after_save($pid){
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
@@ -117,46 +122,91 @@ class PurchaseController extends CommonController {
 		$pill = array(
 			'status'=> array(
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
-				array('value'=>'20','title'=>'待入库','class'=>'primary'),
-				array('value'=>'30','title'=>'待上架','class'=>'info'),
-				array('value'=>'51','title'=>'已完成','class'=>'success'),
-				array('value'=>'01','title'=>'已关闭','class'=>''),
+				array('value'=>'21','title'=>'待入库','class'=>'primary'),
+				array('value'=>'31','title'=>'待上架','class'=>'info'),
+				array('value'=>'53','title'=>'已完成','class'=>'success'),
+				array('value'=>'04','title'=>'已关闭','class'=>''),
 			)
 		);
 		//0 草稿 1审核 2入库 3上架 4付款 5完成
-		//0 否 1待 2部分 3完成
+		// 1待 2部分 3完成 4否
 		$pill = array(
 			'status'=> array(
-				array('value'=>'0','title'=>'草稿','class'=>'default'),
-				//array('value'=>'01','title'=>'已发送','class'=>'default'),
-				//array('value'=>'10','title'=>'待审核','class'=>'info'),
-				array('value'=>'11','title'=>'已生效','class'=>'info'),//已审核
-				//array('value'=>'20','title'=>'待入库','class'=>'info'),
-				array('value'=>'21','title'=>'已完成','class'=>'success'),//已入库
-				//array('value'=>'22','title'=>'已拒收','class'=>'success'),
-				//array('value'=>'30','title'=>'待上架','class'=>'info'),
-				//array('value'=>'31','title'=>'已上架','class'=>'success'),
-				//array('value'=>'32','title'=>'未上架','class'=>'success'),
-				//array('value'=>'40','title'=>'待付款','class'=>'success'),
-				//array('value'=>'41','title'=>'已结算','class'=>'success'),
-				//array('value'=>'42','title'=>'未付款','class'=>'success'),
-				//array('value'=>'51','title'=>'已完成','class'=>'success'),
-				array('value'=>'12','title'=>'已驳回','class'=>'danger'),
-				array('value'=>'00','title'=>'已作废','class'=>'warning'),
+				//'0'=> array('value'=>'0','title'=>'草稿','class'=>'default'),
+				//array('value'=>'03','title'=>'已发送','class'=>'default'),
+				'11'=>array('value'=>'11','title'=>'待审核','class'=>'default'),
+				'13'=> array('value'=>'13','title'=>'已生效','class'=>'info'),//已审核
+				//array('value'=>'21','title'=>'待入库','class'=>'info'),
+				'23'=> array('value'=>'23','title'=>'已完成','class'=>'success'),//已入库
+				//array('value'=>'20','title'=>'已拒收','class'=>'success'),
+				//array('value'=>'31','title'=>'待上架','class'=>'info'),
+				//array('value'=>'33','title'=>'已上架','class'=>'success'),
+				//array('value'=>'30','title'=>'未上架','class'=>'success'),
+				//array('value'=>'41','title'=>'待付款','class'=>'success'),
+				//array('value'=>'43','title'=>'已结算','class'=>'success'),
+				//array('value'=>'40','title'=>'未付款','class'=>'success'),
+				//array('value'=>'53','title'=>'已完成','class'=>'success'),
+				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
 			)
 		);
 		$M = M('stock_purchase');
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $key => $val) {
-			$pill['status'][$key]['count'] = $val['qty'];
+			$pill['status'][$val['status']]['count'] = $val['qty'];
 		}
 		$this->pill = $pill;
 		$query = $this->query;
 		$query['stock_purchase.company_id']['value'] = array('1' => '大楚网' , '2'=>'大果王' );
 		$this->query = $query;
 	}
+	public function reject(){
+		$M = D(CONTROLLER_NAME);
+		$pk = $M->getPk();
+		$id = I('get.'.$pk);
+		$map[$M->tableName.'.'.$pk] = $id;
+		$res = $M->field('code,status')->where($map)->find();
+		
+		if(empty($res) || ($res['status']!='0')) {
+			$this->msgReturn(0);
+		}
+		$data['status'] = '14';
+		$res = $M->where($map)->save($data);
 
+		$this->msgReturn($res);
+	}
+	public function close(){
+		$M = D(CONTROLLER_NAME);
+		$pk = $M->getPk();
+		$id = I('get.'.$pk);
+		$map[$M->tableName.'.'.$pk] = $id;
+		$res = $M->field('code,status')->where($map)->find();
+		
+		if(empty($res) || ($res['status']!='0' && $res['status']!='13')) {
+			$this->msgReturn(0);
+		}
+		else {
+			if($res['status'] == '0'){
+				$data['status'] = '04';		
+			}
+			else{
+				$A = A('StockIn','Logic');
+				$res = $A->checkIn($id);
+				if($res){
+					$A->finishByPurchase($id);
+					$this->msgReturn($res);
+				}
+				else{
+					$data['status'] == '14';	
+				}
+			}
+		}
+		
+		$res = $M->where($map)->save($data);
+		dump($M->_sql());
+		$this->msgReturn($res);
+	}
 	public function pass(){
 		$M = D(CONTROLLER_NAME);
 		$pk = $M->getPk();
@@ -174,7 +224,7 @@ class PurchaseController extends CommonController {
 		
 		$bill = $Min->create($data);
 		$bill['code'] = get_sn('in');
-		$bill['type'] = 'in';
+		$bill['type'] = 'purchase';
 		$bill['status'] = '21';
 		$bill['batch_code'] = 'batch'.NOW_TIME;
 
@@ -192,7 +242,7 @@ class PurchaseController extends CommonController {
 
 		$res = $Min->relation(true)->add($bill);
 		if($res == true){
-			$purchase['status'] = '11';
+			$purchase['status'] = '13';
 			$M->where($map)->save($purchase);
 			$this->msgReturn($res,'','',U('StockIn/view','id='.$res));
 		}

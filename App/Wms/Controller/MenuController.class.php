@@ -3,7 +3,7 @@ namespace Wms\Controller;
 use Think\Controller;
 class MenuController extends CommonController {
     
-    public function _before_index() {
+    public function before_index() {
         $this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 

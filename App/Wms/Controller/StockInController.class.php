@@ -6,27 +6,110 @@ class StockInController extends CommonController {
 		'type' => array(
 			'purchase' => '采购入库'
 		),
+		'status' => array(
+			'0'	=> '草稿',
+			'21'=>'待入库',
+			'31'=>'待上架',
+			'23'=>'已入库',
+			'53'=>'已完成',
+			'00'=>'已关闭'
+		),
 	);
 	public function test($t="index"){
 		C('LAYOUT_NAME','pda');
 		$this->display('Pda:'.$t);
+	}
+	public function on($t='scan_incode'){
+		if(IS_GET) {
+			C('LAYOUT_NAME','pda');
+			switch ($t) {
+				case 'scan_incode':
+					$this->title = '扫描入库单';
+					$tmpl = 'StockIn:scan-incode';
+					break;
+			}
+			$this->display($tmpl);
+		}
+		elseif(IS_POST) {
+			$code = I('post.code');
+			$id = I('post.id');
+			$type = I('post.t');
+			if($type == 'scan_procode') {
+				$A = A('StockIn','Logic');
+				$data = $A->getinQty($id,$code);
+				if(!empty($data)) {
+					$this->assign($data);
+					layout(false);
+					$this->msg = '查询成功。';
+					$this->title = '录入上架量';
+					$data = $this->fetch('StockIn:on-qty');
+					$this->msgReturn(1,'查询成功。',$data);
+				}
+				else {
+					$this->msgReturn(0,'查询失败。');
+				}
+				
+			}
+		
+		if($type == 'input_qty') {
+				$qty = I('post.qty');
+				$res = A('StockIn','Logic')->in($id,$code,$qty);
+				if(!empty($res)) {
+					$data['msg'] = '上架成功。'.$res;
+					$res = M('stock_bill_in')->field('id,code')->find($id);
+					$data['id'] = $res['id'];
+					$data['code'] = $res['code'];
+					$this->assign($data);
+					$this->title = '扫描货品号';
+					$data = $this->fetch('StockIn:scan-procode');
+					$this->msgReturn(1,'上架成功。',$data);
+				}
+				else {
+					$this->msgReturn(0,'上架失败。');
+				}
+			}
+			if($type == 'scan_incode') {
+				$map['is_deleted'] = 0;
+				$map['code'] = $code;
+				$res = M('stock_bill_in')->where($map)->find();
+				if(!empty($res)) {
+					if(true){
+						if($res['status'] =='21' || $res['status'] =='22') {
+							$data['id'] = $res['id'];
+							$data['code'] = $res['code'];
+							$data['title'] = '扫描货品';
+							$this->assign($data);
+							layout(false);
+							$this->msg = '查询成功。';
+							$this->title = '扫描货品';
+							$data = $this->fetch('StockIn:scan-procode');
+							$this->msgReturn(1,'查询成功。',$data);
+						}
+						if($res['status'] == '31' || $res['status'] =='32') {
+							$this->msgReturn(0,'查询失败，该单据已入库。');
+						}
+						if($res['status'] == '53'){
+							$this->msgReturn(0,'查询失败，该单据已完成。');
+						}
+						$this->msgReturn(0,'查询失败，该单据状态异常。');
+					}
+					else {
+						$this->msgReturn(0,'查询失败，您没有权限。');
+					}
+				}
+				else {
+					$this->msgReturn(0,'查询失败，未找到该单据。');
+				}
+			}
+		}
 	}
 	public function in($t='scan_incode'){
 		if(IS_GET) {
 			C('LAYOUT_NAME','pda');
 			switch ($t) {
 				case 'scan_incode':
-					$this->title = '扫描到货单';
+					$this->title = '扫描入库单';
 					$tmpl = 'StockIn:scan-incode';
-					break;
-				case 'scan_procode':
-					$id = I('id');
-					$code = I('code');
-					
-					$tmpl = 'StockIn:scan-procode';
-					break;
-				default:
-					# code...
 					break;
 			}
 			$this->display($tmpl);
@@ -37,12 +120,12 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$data = $A->getQty($id,$code);
+				$data = $A->getInQty($id,$code);
 				if(!empty($data)) {
 					$this->assign($data);
 					layout(false);
 					$this->msg = '查询成功。';
-					$this->title = '录入验收数量';
+					$this->title = '录入到货量';
 					$data = $this->fetch('StockIn:input-qty');
 					$this->msgReturn(1,'查询成功。',$data);
 				}
@@ -60,7 +143,7 @@ class StockInController extends CommonController {
 					$data['id'] = $res['id'];
 					$data['code'] = $res['code'];
 					$this->assign($data);
-					$this->title = '扫描货品';
+					$this->title = '扫描货品号';
 					$data = $this->fetch('StockIn:scan-procode');
 					$this->msgReturn(1,'验收成功。',$data);
 				}
@@ -105,8 +188,7 @@ class StockInController extends CommonController {
 		
 	}
 	public function testin(){
-		C('LAYOUT_NAME','pda');
-		$this->msgReturn(1,'操作成功咯','',U('next'));
+		A('StockIn','Logic')->checkIn();
 	}
 	protected function before_edit(&$data) {
 		$M = D('StockIn');
@@ -141,5 +223,14 @@ class StockInController extends CommonController {
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
+        $pill = array(
+			'status'=> array(
+				array('value'=>'0','title'=>'草稿','class'=>'warning'),
+				array('value'=>'21','title'=>'待入库','class'=>'primary'),
+				array('value'=>'31','title'=>'待上架','class'=>'info'),
+				array('value'=>'53','title'=>'已完成','class'=>'success'),
+				array('value'=>'00','title'=>'已关闭','class'=>''),
+			)
+		);
     }
 }
