@@ -16,7 +16,7 @@ class StockLogic{
 	 * 			)
 	 * )
 	 */
-	public function adjust_stock_by_shelves($params = array()){
+	public function adjustStockByShelves($params = array()){
 		$stock_model = M('Stock');
 		foreach($params as $param){
 			//查看是否有记录
@@ -70,7 +70,7 @@ class StockLogic{
 	 * 			)
 	 * )
 	 */
-	public function adjust_stock_by_prepare($params = array()){
+	public function adjustStockByPrepare($params = array()){
 		foreach($params as $param){
 			//查看是否有记录
 			$map['pro_code'] = $param['where']['pro_code'];
@@ -122,7 +122,7 @@ class StockLogic{
 	* 			)
 	* )
 	*/
-	public function adjust_stock_by_move($params = array()){
+	public function adjustStockByMove($params = array()){
 		foreach($params as $param){
 			if($param['variable_qty'] == 0 || 
 				empty($param['wh_id']) || 
@@ -191,7 +191,7 @@ class StockLogic{
 	* )
 	* return array $stock_infos
 	*/
-	public function get_stock_infos_by_condition($params = array()){
+	public function getStockInfosByCondition($params = array()){
 		$pro_code = $params['pro_code'];
 		$pro_name = $params['pro_name'];
 		$location_code = $params['location_code'];

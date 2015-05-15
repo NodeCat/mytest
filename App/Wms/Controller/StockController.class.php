@@ -267,7 +267,7 @@ class StockController extends CommonController {
 			$params['location_code'] = I('location_code');
 			$params['stock_status'] = I('status');
 
-			$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
+			$stock_infos = A('Stock','Logic')->getStockInfosByCondition($params);
 			$count = count($stock_infos);
 
 			if(empty($stock_infos)){
@@ -300,7 +300,7 @@ class StockController extends CommonController {
 		}
 
 		//查询库存信息
-		$stock_infos = A('Stock','Logic')->get_stock_infos_by_condition($params);
+		$stock_infos = A('Stock','Logic')->getStockInfosByCondition($params);
 		$stock_info = $stock_infos[$cur_page - 1];
 		$stock_info['available_qty'] = $stock_info['stock_qty'] = $stock_info['assign_qty'];
 
