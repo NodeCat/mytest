@@ -165,8 +165,9 @@ class StockLogic{
 	*/
 	public function adjustStockByMove($params = array()){
 		//返回信息
-		$result = array();
+		$result = array('status'=>0,'msg'=>'参数有误');
 		foreach($params as $param){
+			unset($result);
 			if($param['variable_qty'] == 0 || 
 				empty($param['wh_id']) || 
 				empty($param['src_location_id']) || 
