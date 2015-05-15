@@ -39,7 +39,7 @@
   <div class="form-group">
     <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">库存状态</label>
     <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-      <input value="{$stock_info.status}" type="text" class="form-control input-lg" name="status" id="status" placeholder="" readonly="">
+      <input value="{:en_to_cn($stock_info['status'])}" type="text" class="form-control input-lg" name="status" id="status" placeholder="" readonly="">
     </div>
   </div>
 
@@ -85,7 +85,7 @@
 
   <div class="form-group">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12  text-right">
-      <a class="btn btn-lg btn-default btn-block">返回</a>
+      <a href="{:U('stock/pdaStockIndex')}" class="btn btn-lg btn-default btn-block">返回</a>
     </div>
   </div>
 </form>

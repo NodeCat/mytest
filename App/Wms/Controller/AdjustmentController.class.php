@@ -4,7 +4,7 @@ use Think\Controller;
 class AdjustmentController extends CommonController {
     //页面展示数据映射关系 例如取出数据是Qualified 显示为合格
     protected $filter = array(
-        //'type' => array('fast' => '快速盘点','again' => '复盘'),
+        'type' => array('inventory' => '盘点','move' => '库存移动'),
         //'is_diff' => array('0' => '无', '1' => '有'),
         //'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
         'status' => array('qualified' => '合格'),
@@ -54,4 +54,11 @@ class AdjustmentController extends CommonController {
 		}
 	}
 
+    //在search方法执行后，执行该方法
+    protected function after_search(&$map){
+        //替换调整单type查询条件
+        if($map['stock_adjustment.type'][1]){
+            $map['stock_adjustment.type'][1] = cn_to_en($map['stock_adjustment.type'][1]);
+        }
+    }
 }
