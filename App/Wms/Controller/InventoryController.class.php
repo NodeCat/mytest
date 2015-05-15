@@ -52,7 +52,7 @@ class InventoryController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'Inventorydetail/index'), 
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
