@@ -136,10 +136,16 @@ class CommonController extends AuthController {
         $this->pk = $M->getPK();
         $setting = get_setting($table);
         if(empty($this->columns)) {
-            $this->columns = $setting['list'];
+            $this->assign('columns',$setting['list']);
+        }
+        else {
+            $this->assign('columns',$this->columns);
         }
         if(empty($this->query)){
-            $this->query = $setting['query'];
+            $this->assign('query',$setting['query']);
+        }
+        else {
+            $this->assign('query',$this->query);
         }
         $map = $this->search($this->query);
 

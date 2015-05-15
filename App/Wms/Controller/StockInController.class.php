@@ -15,7 +15,19 @@ class StockInController extends CommonController {
 			'00'=>'已关闭'
 		),
 	);
-	
+	protected $columns = array (   
+		'code' => '到货单号',   
+		'refer_code' => '采购单号',  
+		'company_name' => '所属系统',  
+		'warehouse_name' => '目的仓库', 
+		//'type' => '单据类型',   
+		'partner_name' => '供货商',
+		'qty_total' =>'预计到货件数',
+		'cat_total' =>'SKU种数',
+		'sp_created_user' => '采购人',
+  		'sp_created_time' => '采购时间',
+		'status' => '状态', 
+	);
 	public function on($t='scan_incode'){
 		$this->cur = '上架';
 		if(IS_GET) {
@@ -205,7 +217,11 @@ class StockInController extends CommonController {
 		unset($map);
 		$map['pid'] = $purchase['id'];
 		$pros = M('stock_purchase_detail')->where($map)->select();
+		$A = A('StockIn','Logic');
+
 		foreach ($pros as $key => $val) {
+			$qty = $A->getQtyForIn($id,$val['pro_code']);
+			$pros[$key]['moved_qty'] = $val['pro_qty'] - $qty;
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
@@ -220,8 +236,6 @@ class StockInController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
         $pill = array(
 			'status'=> array(

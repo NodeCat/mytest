@@ -39,8 +39,14 @@ class StockInModel extends RelationModel {
         'default'=>array(
             'where'=>array('stock_bill_in.is_deleted'=>'0'),
             'order'=>'stock_bill_in.id DESC',
-            "join"=>array("inner join warehouse on stock_bill_in.id=warehouse.id ","inner join company on stock_bill_in.company_id=company.id ","inner join partner on stock_bill_in.partner_id=partner.id "),
-"field"=>"stock_bill_in.*,warehouse.name as warehouse_name,company.name as company_name,partner.name as partner_name",
+            "join"=>array("inner join warehouse on stock_bill_in.id=warehouse.id ",
+                "inner join company on stock_bill_in.company_id=company.id ",
+                "inner join partner on stock_bill_in.partner_id=partner.id ",
+                "inner join stock_purchase sp on stock_bill_in.refer_code = sp.code",
+                "inner join user u on sp.created_user = u.id"
+            ),
+"field"=>"stock_bill_in.*,warehouse.name as warehouse_name,company.name as company_name,
+partner.name as partner_name,u.nickname as sp_created_user,sp.created_time as sp_created_time,sp.cat_total,sp.qty_total",
             
         ),
         'latest'=>array(
