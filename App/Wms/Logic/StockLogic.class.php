@@ -5,15 +5,12 @@ class StockLogic{
 	/**
 	 * 入库上架时，库存表变化，调整库存量
 	 * @param 
-	 * $params = array(
-	 * 		0 => array(
-	 * 			'variable_qty' => 50,
-	 * 			'where' => array('wh_id'=>xxxx,'location_id'=>xxxx,'pro_code'=>xxxxx,'batch'=>xxxx,'status'=>xxxxx),
-	 * 			)
-	 *		1 => array(
-	 * 			'variable_qty' => 80,
-	 * 			'where' => array('wh_id'=>xxxx,'location_id'=>xxxx,'pro_code'=>xxxxx,'batch'=>xxxx,'status'=>xxxxx),
-	 * 			)
+	 * $wh_id 仓库id
+	 * $refer_code 关联单号
+	 * $pro_code sku编号
+	 * $pro_qty 产品数量
+	 * $pro_uom 产品计量单位
+	 * $status 库存状态
 	 * )
 	 */
 
@@ -68,15 +65,13 @@ class StockLogic{
 	/**
 	 * 入库收货时，库存表变化，调整库存量
 	 * @param 
-	 * $params = array(
-	 * 		0 => array(
-	 * 			'variable_qty' => 50,
-	 * 			'where' => array('pro_code'=>xxxxx,'batch'=>xxxx),
-	 * 			)
-	 *		1 => array(
-	 * 			'variable_qty' => 80,
-	 * 			'where' => array('pro_code'=>xxxxx,'batch'=>xxxx),
-	 * 			)
+	 * $wh_id 仓库id
+	 * $location_id 库位id
+	 * $refer_code 关联单号
+	 * $pro_code sku编号
+	 * $pro_qty 产品数量
+	 * $pro_uom 产品计量单位
+	 * $status 库存状态
 	 * )
 	 */
 	public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status){
@@ -169,6 +164,8 @@ class StockLogic{
 	* )
 	*/
 	public function adjustStockByMove($params = array()){
+		//返回信息
+		$result = array();
 		foreach($params as $param){
 			if($param['variable_qty'] == 0 || 
 				empty($param['wh_id']) || 
@@ -176,6 +173,9 @@ class StockLogic{
 				empty($param['dest_location_id']) || 
 				empty($param['pro_code']) || 
 				empty($param['batch'])){
+
+				//添加错误信息
+				$result[] = array('status'=>0,'msg'=>'参数有误');
 				continue;
 			}
 			//判断目标库位上是否有商品
@@ -191,39 +191,55 @@ class StockLogic{
 				$add_info['location_id'] = $param['dest_location_id'];
 				$add_info['pro_code'] = $param['pro_code'];
 				$add_info['batch'] = $param['batch'];
-				$add_info['status'] = 'qualified';
+				$add_info['status'] = $param['status'];
 				$add_info['stock_qty'] = $param['variable_qty'];
 				$add_info['assign_qty'] = 0;
 				$add_info['prepare_qty'] = 0;
 
-				M('Stock')->data($add_info)->add();
+				try{
+					M('Stock')->data($add_info)->add();
 
-				//减少原库存量
-				$map['location_id'] = $param['src_location_id'];
-				$map['pro_code'] = $param['pro_code'];
-				$map['batch'] = $param['batch'];
-				M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
-				unset($map);
+					//减少原库存量
+					$map['location_id'] = $param['src_location_id'];
+					$map['pro_code'] = $param['pro_code'];
+					$map['batch'] = $param['batch'];
+				
+					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+					unset($map);
+					$result[] = array('status'=>1);
+				}catch(Exception $e){
+					//添加错误信息
+					$result[] = array('status'=>0,'msg'=>'添加库存记录错误');
+				}
+				
 			}
 			//如果有记录，则更新记录
 			else{
 				//如果变化量大于0 增加目标库存 减少原库存
 				if($param['variable_qty'] > 0){
-					//增加目标库存
-					$map['location_id'] = $param['dest_location_id'];
-					$map['pro_code'] = $param['pro_code'];
-					$map['batch'] = $param['batch'];
-					M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
+					try{
+						//增加目标库存
+						$map['location_id'] = $param['dest_location_id'];
+						$map['pro_code'] = $param['pro_code'];
+						$map['batch'] = $param['batch'];
+						M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
 
-					//减少原库存
-					$map['location_id'] = $param['src_location_id'];
-					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
-					unset($map);
+						//减少原库存
+						$map['location_id'] = $param['src_location_id'];
+						M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+						unset($map);
+						$result[] = array('status'=>1);
+					}catch(Exception $e){
+						//添加错误信息
+						$result[] = array('status'=>0,'msg'=>'变更数量错误');
+					}
 				}
 			}
+
+
 		}
 
-		return true;
+		return $result;
 	}
 
 
