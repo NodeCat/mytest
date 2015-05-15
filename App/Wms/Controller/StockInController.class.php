@@ -28,6 +28,7 @@ class StockInController extends CommonController {
   		'sp_created_time' => '采购时间',
 		'status' => '状态', 
 	);
+	
 	public function on($t='scan_incode'){
 		$this->cur = '上架';
 		if(IS_GET) {
@@ -232,19 +233,30 @@ class StockInController extends CommonController {
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => false, 
-            'toolbar_tr'=> true
+            'toolbar_tr'=> true,
+            'statusbar' => true
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
         );
-        $pill = array(
+        
+    }
+    public function before_lists(){
+    	$pill = array(
 			'status'=> array(
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				array('value'=>'21','title'=>'待入库','class'=>'primary'),
 				array('value'=>'31','title'=>'待上架','class'=>'info'),
 				array('value'=>'53','title'=>'已完成','class'=>'success'),
-				array('value'=>'00','title'=>'已关闭','class'=>''),
+				array('value'=>'04','title'=>'已关闭','class'=>''),
 			)
 		);
+		$M = M('stock_bill_in');
+		$map['is_deleted'] = 0;
+		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+		foreach ($res as $key => $val) {
+			$pill['status'][$val['status']]['count'] = $val['qty'];
+		}
+		$this->pill = $pill;
     }
 }
