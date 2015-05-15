@@ -206,10 +206,10 @@ class StockLogic{
 				
 					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
 					unset($map);
-					$result[] = array('status'=>1);
+					$result[] = array('status'=>'succ');
 				}catch(Exception $e){
 					//添加错误信息
-					$result[] = array('status'=>0,'msg'=>'添加库存记录错误');
+					$result[] = array('status'=>'err','msg'=>'添加库存记录错误');
 				}
 				
 			}
@@ -228,10 +228,10 @@ class StockLogic{
 						$map['location_id'] = $param['src_location_id'];
 						M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
 						unset($map);
-						$result[] = array('status'=>1);
+						$result[] = array('status'=>'succ');
 					}catch(Exception $e){
 						//添加错误信息
-						$result[] = array('status'=>0,'msg'=>'变更数量错误');
+						$result[] = array('status'=>'err','msg'=>'变更数量错误');
 					}
 				}
 			}
