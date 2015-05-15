@@ -47,7 +47,7 @@
     <div class="form-group ">
         <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">库存状态</label>
         <div class="col-lg-5 col-sm-5 col-xs-5">
-            <input type="text" class="form-control {required:true,maxlength:32,}"  value="{$data.status_name}" name="status_name" id="status_name" placeholder="" readonly="">
+            <input type="text" class="form-control {required:true,maxlength:32,}"  value="{:en_to_cn($data['status'])}" name="status_name" id="status_name" placeholder="" readonly="">
         </div>
         <label class="control-label col-lg-4" for=""></label>
     </div>

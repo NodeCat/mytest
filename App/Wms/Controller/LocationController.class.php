@@ -10,7 +10,7 @@ class LocationController extends CommonController {
             $data = $this->columns;
             unset($data); 
             $data["id"] = '';
-            $data["warehouse_code"] = '仓库标识';
+            $data["wh_id"] = '仓库标识';
             $data["area_code"] = '区域标识';
             $data["code"] = '库位标识';
             $data['picking_line'] = '拣货路线';
@@ -42,19 +42,20 @@ class LocationController extends CommonController {
       
     protected function after_lists(&$data) {
          $location_detail = M('location_detail');
-         $location_type = M('location_type')->getField('id,name');
-         //$location_area = M('location');
-         //dump($location_type);exit;
+         $location_type = M('location_type');
+         $location_area = M('location');
          foreach($data as &$val) {
-            //$val['picking_line'] = $list['picking_line'];
-            //$val['putaway_line'] = $list['putaway_line'];
-            //$val['is_mixed_pro'] = $list['is_mixed_pro'];
-            //$val['is_mixed_batch'] = $list['is_mixed_batch'];
+            $list = $location_detail->getByLocation_id($val['id']);
+            $val['picking_line'] = $list['picking_line'];
+            $val['putaway_line'] = $list['putaway_line'];
+            $val['is_mixed_pro'] = $list['is_mixed_pro'];
+            $val['is_mixed_batch'] = $list['is_mixed_batch'];
             
-            $type_name = $location_type[$val['type_id']];
-            $val['type_name'] = $type_name;
-            //$area = $location_area->getById($val['pid']);
-            //$val['area_code'] = $area['code'];
+            $type = $location_type->getById($list['type_id']);
+            $val['type_name'] = $type['name'];
+
+            $area = $location_area->getById($val['pid']);
+            $val['area_code'] = $area['code'];
          }
     }
 
@@ -77,8 +78,6 @@ class LocationController extends CommonController {
 
             $location_detail->data($list)->add();
         }
-            
-            //$location_data['status'] = '1'; 
             $location_data['pid'] = $post_data['area_id'];
             $location_data['path'] = $post_data['area_id'] . '.' . $data  . '.'; 
             $location->where('id='.$data)->save($location_data); 
@@ -110,9 +109,11 @@ class LocationController extends CommonController {
     }
     
     protected function before_delete ($ids) {
-        $location = M('location'); 
+        $location = M('stock'); 
         foreach ($ids as $val) {
-            $res = $location->where('type=2 AND is_deleted=0 AND pid=' . $val)->count();
+            $map['location_id'] = $val;
+
+            $res = $location->where($map)->count();
             if($res) {
 	            $this->msgReturn(0,'库存内有库存量，无法删除');
             }

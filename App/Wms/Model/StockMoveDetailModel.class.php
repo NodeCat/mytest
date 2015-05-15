@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Model;
 use Think\Model;
-class StockMoveModel extends Model {
+class StockMoveDetailModel extends Model {
 
     protected $insertFields = array('id','refer_code','pid','type','batch','pro_code','pro_uom','move_qty','price_unit','src_wh_id','dest_wh_id','src_location_id','dest_location_id','status','created_time','updated_time','created_user','updated_user','is_deleted');
     protected $updateFields = array('refer_code','pid','type','batch','pro_code','pro_uom','move_qty','price_unit','src_wh_id','dest_wh_id','src_location_id','dest_location_id','status','created_time','updated_time','created_user','updated_user','is_deleted');

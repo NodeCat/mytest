@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Controller;
 use Think\Controller;
-class LocationareaController extends CommonController {
+class LocationAreaController extends CommonController {
 
     protected function before_delete ($ids) {
         $location = M('location'); 
