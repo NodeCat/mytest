@@ -55,7 +55,7 @@ class CommonController extends AuthController {
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
                     case 'between':
-                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key].'_1');
+                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
                         break;
                 }
             }
@@ -75,6 +75,7 @@ class CommonController extends AuthController {
         }
         
         $this->after($map,'search');
+        dump($map);
         return $map;
     }
 
