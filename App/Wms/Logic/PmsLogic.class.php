@@ -41,6 +41,24 @@ class PmsLogic{
 		return json_decode($result,true);
 	}
 
+	//根据pro_code 模糊查询对应的SKU
+	public function get_SKU_by_pro_codes_fuzzy($pro_code){
+		if(empty($pro_codes)){
+			return false;
+		}
+		import("Common.Lib.HttpCurl");
+		$request = new \HttpCurl();
+		$data = array(
+			'currentPage' => 1,
+			'itemsPerPage' => 10,
+			'where' => array('like'=>array('sku_number'=>$pro_code)),
+			);
+		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$json_data = json_encode($data);
+		$result = $request->post($url,$json_data);
+		return json_decode($result,true);
+	}
+
 	//根据pro_name 模糊查询对应的SKU
 	public function get_SKU_by_pro_name($pro_name){
 		import("Common.Lib.HttpCurl");
