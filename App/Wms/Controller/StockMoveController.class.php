@@ -6,7 +6,7 @@ class StockMoveController extends CommonController {
     public function pdaStockMove() {
         if(IS_POST ) {
             $data = I('post.');
-            if(empty($data['location_code']) || empty($data['pro_code'] || empty($data['batch']))) {
+            if(empty($data['location_code']) || empty($data['pro_code'])) {
                return false; 
             }
             //获取用户登录的仓库ID 
@@ -19,14 +19,8 @@ class StockMoveController extends CommonController {
             $map['wh_id'] = $wh_id;
             $location_id = $location->where($map)->getField('id');
             $data['wh_id'] = $wh_id;
-
-            /*$map['pro_code'] = $data['pro_code'];
-            $map['location_id'] = $src_location_id;
-            $stock_info = $stock->where($map)->find();
-            if(empty($stock_info)){
-                return false;
-            }*/
-
+            $data['location_id'] = $location_id;
+                        
             //获取产品信息
             $pro_codes = array($data['pro_code']);
             $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
@@ -35,8 +29,11 @@ class StockMoveController extends CommonController {
             unset($map);
             $map['location_id'] = $location_id;
             $map['pro_code'] = $data['pro_code'];
-            $stock_info = $stock->where($map)->find();
-            $data['variable_qty'] = $stock_info['stock_qty'] - $stock_info['assign_qty'];
+            $stock_info_list = $stock->where($map)->select();
+            
+            //合并移库量
+            $variable_qty = $stock->field('sum(stock_qty - assign_qty) as stock_qty')->group('pro_code')->where($map)->find();
+            $data['variable_qty'] = $variable_qty['stock_qty'];
             
             $this->assign($data); 
             C('LAYOUT_NAME','pda');
@@ -89,30 +86,42 @@ class StockMoveController extends CommonController {
 
     public function pdaStock() {
         $data = I('post.');
+        if(empty($data['wh_id']) || empty($data['location_id']) || empty($data['pro_code']) || empty($data['dest_location_code'])) {
+            return false;
+        }
         $location = M('location');
-        $map['code'] = $data['location_code'];
+        $stock = M('stock');
+        $dat = $data['stock_move_data'][0];
+       
         $map['wh_id'] = $data['wh_id'];
-        $src_location_id = $location->where($map)->getField('id');
         $map['code'] = $data['dest_location_code'];
-        $dest_location_id = $location->where($map)->getField('id');
+        $dest_location = $location->field('id,status')->where($map)->find();
         
-        $list['wh_id'] = $data['wh_id'];
-        $list['src_location_id'] = $src_location_id;
-        $list['dest_location_id'] = $dest_location_id;
-        $list['batch'] = $data['batch'];
-        $list['variable_qty'] = $data['variable_qty'];
-        $list['pro_code'] = $data['pro_code']; 
-        $list_arr = array($list);
+        $map['wh_id'] = $data['wh_id'];
+        $map['location_id'] = $data['location_id'];
+        $map['pro_code'] = $data['pro_code'];
 
-        $stock = A('Stock','Logic')->adjust_stock_by_move($list_arr);
-        
-        
+        $stock_info_list = $stock->field('batch,stock_qty-assign_qty as variable_qty')->where($map)->select();
+        foreach($stock_info_list as &$val) {
+            $val['wh_id'] = $data['wh_id'];
+            $val['src_location_id'] = $data['location_id'];
+            $val['dest_location_id'] = $dest_location['id'];
+            $val['pro_code'] = $data['pro_code'];
+            $val['status'] = $dest_location['status'];
+        }
+
+        $stock_info_list[0]['status'] = 0;
+        $stock = A('Stock','Logic')->adjustStockByMove($stock_info_list);
+        foreach($stock as $val){
+            if($val['status'] == 'err') {
+               $this->msg = $val['msg'];
+               $this->display('/StockMove/pdaStockMove'); 
+               return true;
+            }
+        }
         $this->msg = '操作成功';
-        //$r = $this->fetch('pdaStockMove');
-
         $this->display('/StockMove/pdaStockMove'); 
         //header('Location:/StockMove/pda_stock_move');
-        //dump($dest_location_id);exit;
     }
 
 }
