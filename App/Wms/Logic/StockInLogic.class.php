@@ -24,6 +24,7 @@ class StockInLogic{
 		$detail['moved_qty'] = $detail['pro_qty'] - $this->getQtyForIn($inId,$code);
 		return $detail;
 	}
+
 	public function getOnQty($inId,$code) {
 		if(empty($inId) || empty($code)) {
 			return false;
@@ -46,6 +47,7 @@ class StockInLogic{
 
 		return $detail;
 	}
+
 	public function getCode($barcode){
 		$map['barcode'] = $barcode;
 		$map['is_deleted'] = 0;
@@ -57,6 +59,7 @@ class StockInLogic{
 			return $res['pro_code'];
 		}
 	}
+
 	public function on($inId,$code,$qty,$location_code,$status){
 		if(empty($inId) || empty($code)  || empty($location_code) || empty($status)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
@@ -66,6 +69,7 @@ class StockInLogic{
 		}
 		//获取入库单信息
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
+
 		if(empty($in)) {
 			return array('res'=>false,'msg'=>'未找到该入库单。');
 		}
@@ -76,6 +80,7 @@ class StockInLogic{
 		if($qtyForOn < $qty) {
 			return array('res'=>false,'msg'=>'本次上架数量不能大于该货品待上架数量');
 		}
+
 		//检查库位
 		$map['wh_id'] = $in['wh_id'];
 		$map['code'] = $location_code;
@@ -90,74 +95,36 @@ class StockInLogic{
 		}
 		unset($map);
 		//检查库位上的货品
-		$map['location'] = $location_id;
+		$map['location_id'] = $location_id;
 		$map['wh_id'] = $in['wh_id'];
+		$map['stock_qty'] = array('neq','0');
 		$map['is_deleted'] = 0;
 		$res = M('stock')->field('pro_code,stock_qty')->where($map)->find();
+
 		if(!empty($res)) {
-			if(!empty($res['stock_qty']) && $res['pro_code']!=$code) {
+			if(!empty($res['stock_qty']) && $res['pro_code'] != $code) {
 				return array('res'=>false,'msg'=>'不允许混放货品。');
 			}
 		}
 
 		//写库存
-		$row['wh_id'] = $in['wh_id'];
-		$row['location_id'] = 0;
-		$row['pro_code'] = $code;
-		$row['batch'] = $in['code'];
-		$row['status'] = 'unknown';
-
-		$stock = M('Stock');
-		$prepare = $stock->field('id,prepare_qty')->where($row)->find();
-
-		$row['location_id'] = $location_id;
-		$row['status'] = $status;
-		$res = $stock->where($row)->find();
-
-		if(empty($res)) {
-			$row['stock_qty'] = $qty;
-			$row['prepare_qty'] = 0;
-			$row['assign_qty'] = 0;	
-			$data = $stock->create($row);
-			$stock->add($data);
-		}
-		else {
-			$data['stock_qty'] =$res['stock_qty'] + $qty;
-			$map['id'] = $res['id'];
-			$stock->where($map)->save($data);
-		}
-
-		unset($row);
-		unset($map);
-		unset($data);
-		$map['id'] = $prepare['id'];
-		$data['prepare_qty'] = $prepare['prepare_qty'] - $qty;
-		$stock->where($map)->save($data);
-
-		$detail = $this->getLine($inId,$code);
-
-		//写库存移动记录
-		$M = D('StockMove');
-		$row['refer_code'] = $in['code'];
-		$row['type'] = 'on';
-		$row['pid'] = $in['id'];
-		$row['pro_code'] = $detail['pro_code'];
-		$row['pro_uom'] = $detail['pro_uom'];
-		$row['move_qty'] = $qty;
-		$row['src_wh_id'] = 0;
-		$row['src_location_id'] = 0;
-		$row['dest_wh_id'] = $in['wh_id'];
-		$row['dest_location_id'] = $location_id;
-		$row['status'] = '1';
-		$row['is_deleted'] = '0';
-		$data = $M->create($row);
-		$res = $M->add($data);
+		$line = $this->getLine($inId,$code);
+		$pro_code = $line['pro_code'];
+		$pro_uom = $line['pro_uom'];
+		$pro_qty = $qty;
+		$refer_code = $in['code'];
+		$wh_id = $in['wh_id'];
+		$batch   = $in['code'];
+		$status  = 'unknown';
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status);
+		
 		if($res == true){
-			return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$qty.'</strong> '.$detail['pro_uom'].'。名称：['.$detail['pro_code'] .'] '. $detail['pro_name'] .'（'. $detail['pro_attrs'].'）');
+			return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$pro_qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
 		}
 		return array('res'=>false,'msg'=>'添加上架记录失败。');
 
 	}
+
 	public function in($inId,$code,$qty) {
 		if(empty($inId) || empty($code) ||  !is_numeric($qty) || empty($qty) || $qty < 0) {
 			return false;
@@ -167,52 +134,19 @@ class StockInLogic{
 		if(empty($qtyForIn) || $qtyForIn < $qty) {
 			return false;
 		}
+
+		$line = $this->getLine($inId,$code);
+		$pro_uom = $line['pro_uom'];
+
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
-		//@todo 检查入库单状态
+		$refer_code = $in['code'];
+		$batch   = $in['code'];
+		$status  = 'unknown';
+		$wh_id = $in['wh_id'];
+		$res = A('Stock','Logic')->adjustStockByPrepare($wh_id,$refer_code,$code,$qty,$pro_uom,$status);
 		
-		//写库存
-		$stock = M('stock');
-		$row['wh_id'] = $in['wh_id'];
-		$row['location_id'] = 0;
-		$row['pro_code'] = $code;
-		$row['batch'] = $in['code'];
-		$row['status'] ='unknown';
-		$res = $stock->where($row)->find();
-		if(!empty($res)) {
-			$map['id'] = $res['id'];
-			$data['prepare_qty'] = $res['prepare_qty'] + $qty;
-			$stock->where($map)->save($data);
-		}
-		else{
-			$row['prepare_qty'] = $qty;
-			$row['stock_qty'] = 0;
-			$row['assign_qty'] = 0;	
-			
-			$data = $stock->create($row);
-			$stock->add($data);
-		}
-
-		$detail = $this->getLine($inId,$code);
-
-		unset($row);
-		//写库存移动记录
-		$M = D('StockMove');
-		$row['refer_code'] = $in['code'];
-		$row['type'] = 'in';
-		$row['pid'] = $in['id'];
-		$row['pro_code'] = $code;
-		$row['pro_uom'] = $detail['pro_uom'];
-		$row['move_qty'] = $qty;
-		$row['src_wh_id'] = 0;
-		$row['src_location_id'] = 0;
-		$row['dest_wh_id'] = $in['wh_id'];
-		$row['dest_location_id'] = 0;
-		$row['status'] = '0';
-		$row['is_deleted'] = '0';
-		$data = $M->create($row);
-		$res = $M->add($data);
 		if($res == true){
-			$res = '数量：<strong>'.$qty.'</strong> '.$detail['pro_uom'].'。名称：['.$detail['pro_code'] .'] '. $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
+			$res = '数量：<strong>'.$qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）';
 			return $res;
 		}
 		return false;
@@ -224,7 +158,9 @@ class StockInLogic{
 		if(!empty($pro_code)) {
 			$map['pro_code'] = $pro_code;
 		}
-		$in = $M->group('pro_code')->where($map)->getField('pro_code,sum(pro_qty) as qty_total');
+		$in = $M->group('pro_code')->where($map)->getField('refer_code,pro_code,sum(pro_qty) as qty_total');
+		unset($map['pid']);
+		$map['refer_code'] = $in['refer_code'];
 		$map['status'] = '0';
 		$moved = M('stock_move')->where($map)->getField('pro_code,sum(move_qty) as qty_total');
 		foreach ($in as $key => $val) {
@@ -246,11 +182,13 @@ class StockInLogic{
 		$map['pid'] = $inId;
 		$map['pro_code'] = $pro_code;
 		//待入库量
-		$in = $M->field('pro_code,sum(pro_qty) as qty_total')->group('pro_code')->where($map)->find();
+		$in = $M->field('refer_code,pro_code,sum(pro_qty) as qty_total')->group('pro_code')->where($map)->find();
 		
 		if(empty($in)) {
 			return 0;
 		}
+		unset($map['pid']);
+		$map['refer_code'] = $in['refer_code'];
 		$map['type'] = 'in';
 		$map['status'] = '0';
 		$moved = M('stock_move')->field('pro_code,sum(move_qty) as qty_total')->group('pro_code')->where($map)->find();
@@ -264,7 +202,7 @@ class StockInLogic{
 	}
 
 	public function getQtyForOn($batch,$pro_code){
-		//$map['wh_id'] = $wh_id;
+		$map['location_id'] = '0';
 		$map['pro_code'] = $pro_code;
 		$map['batch'] = $batch;
 		$res = M('stock')->field('stock_qty,prepare_qty')->where($map)->find();

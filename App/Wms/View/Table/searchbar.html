@@ -54,6 +54,7 @@
         <case value="getField">{~$a++}
             <php>
                 $_parm=explode('.',$vo['value']);
+                
                 if(count($_parm)===2){
                     $A=A($_parm[0]);
                     $items=$A->get_list($_parm[0],$_parm[1]);

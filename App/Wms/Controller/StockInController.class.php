@@ -46,7 +46,6 @@ class StockInController extends CommonController {
 				else {
 					$this->msgReturn(0,'查询失败。');
 				}
-				
 			}
 		
 			if($type == 'input_qty') {

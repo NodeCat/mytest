@@ -157,9 +157,7 @@ class PurchaseController extends CommonController {
 			$pill['status'][$val['status']]['count'] = $val['qty'];
 		}
 		$this->pill = $pill;
-		$query = $this->query;
-		$query['stock_purchase.company_id']['value'] = array('1' => '大楚网' , '2'=>'大果王' );
-		$this->query = $query;
+		
 	}
 	public function reject(){
 		$M = D(CONTROLLER_NAME);
