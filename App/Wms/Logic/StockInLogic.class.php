@@ -57,18 +57,47 @@ class StockInLogic{
 			return $res['pro_code'];
 		}
 	}
-	public function on($inId,$code,$qty,$location_id,$status){
-		if(empty($inId) || empty($code) ||  !is_numeric($qty) || empty($qty) || empty($location_id) || empty($status)) {
-			return false;
+	public function on($inId,$code,$qty,$location_code,$status){
+		if(empty($inId) || empty($code)  || empty($location_code) || empty($status)) {
+			return array('res'=>false,'msg'=>'必填字段不能为空。');
+		}
+		if(!is_numeric($qty)|| empty($qty)) {
+			return array('res'=>false,'msg'=>'上架数量有误。');
 		}
 		//获取入库单信息
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
 		if(empty($in)) {
-			return false;
+			return array('res'=>false,'msg'=>'未找到该入库单。');
 		}
 		$qtyForOn = $this->getQtyForOn($in['code'],$code);
-		if(empty($qtyForOn) || $qtyForOn < $qty) {
-			return false;
+		if(empty($qtyForOn)) {
+			return array('res'=>false,'msg'=>'该货品没有可待上架量。');
+		}
+		if($qtyForOn < $qty) {
+			return array('res'=>false,'msg'=>'本次上架数量不能大于该货品待上架数量');
+		}
+		//检查库位
+		$map['wh_id'] = $in['wh_id'];
+		$map['code'] = $location_code;
+		$map['type'] = '2';
+		$map['is_deleted'] = 0;
+		$res = M('location')->field('id')->where($map)->find();
+		if(empty($res)) {
+			return array('res'=>false,'msg'=>'库位不存在。');
+		}
+		else {
+			$location_id = $res['id'];
+		}
+		unset($map);
+		//检查库位上的货品
+		$map['location'] = $location_id;
+		$map['wh_id'] = $in['wh_id'];
+		$map['is_deleted'] = 0;
+		$res = M('stock')->field('pro_code,stock_qty')->where($map)->find();
+		if(!empty($res)) {
+			if(!empty($res['stock_qty']) && $res['pro_code']!=$code) {
+				return array('res'=>false,'msg'=>'不允许混放货品。');
+			}
 		}
 
 		//写库存
@@ -124,10 +153,9 @@ class StockInLogic{
 		$data = $M->create($row);
 		$res = $M->add($data);
 		if($res == true){
-			$res = '数量：<strong>'.$qty.'</strong> '.$detail['pro_uom'].'。名称：['.$detail['pro_code'] .'] '. $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
-			return $res;
+			return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$qty.'</strong> '.$detail['pro_uom'].'。名称：['.$detail['pro_code'] .'] '. $detail['pro_name'] .'（'. $detail['pro_attrs'].'）');
 		}
-		return false;
+		return array('res'=>false,'msg'=>'添加上架记录失败。');
 
 	}
 	public function in($inId,$code,$qty) {

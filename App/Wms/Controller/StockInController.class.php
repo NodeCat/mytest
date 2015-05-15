@@ -53,9 +53,10 @@ class StockInController extends CommonController {
 				$qty = I('post.qty');
 				$location = I('post.location');
 				$status = I('post.status');
-				$res = A('StockIn','Logic')->on($id,$code,$qty,5,$status);
-				if(!empty($res)) {
-					$data['msg'] = '上架成功。'.$res;
+
+				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
+				if($res['res'] == true) {
+					$data['msg'] = '上架成功。'.$res['msg'];
 					$res = M('stock_bill_in')->field('id,code')->find($id);
 					$data['id'] = $res['id'];
 					$data['code'] = $res['code'];
@@ -65,7 +66,7 @@ class StockInController extends CommonController {
 					$this->msgReturn(1,'上架成功。',$data);
 				}
 				else {
-					$this->msgReturn(0,'上架失败。');
+					$this->msgReturn(0,'上架失败。'.$res['msg']);
 				}
 			}
 			if($type == 'scan_incode') {
