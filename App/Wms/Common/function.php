@@ -129,6 +129,9 @@ function cn_to_en($str){
     $filter = array(
         '盘点' => 'inventory',
         '库存移动' => 'move',
+        '收货' => 'in',
+        '上架' => 'on',
+        '库存移动' => 'move_location',
         );
 
     return $filter[$str];
