@@ -1,11 +1,11 @@
 <ol class="breadcrumb">
   <li><a href="{:U('StockIn/test')}">首页</a></li>
-  <li><a href="#">收货</a></li>
-  <li class="active">收货详情</li>
+  <li><a href="{:U('__ACTION__')}">{$cur}</a></li>
+  <li class="active">详情</li>
 </ol>
 
 <div class="page-header text-center">
-  <h1>{$title} <small></small></h1>
+  <h3>{$title} <small></small></h3>
 </div>
 <notempty name="msg">
 <div class="alert alert-success text-center" role="alert">{$msg}</div>

@@ -5,7 +5,7 @@ class MenuWidget extends Controller {
     public function getlist(){
         $M=M('Menu');
         $map = array('status'=>'1','is_deleted'=>0);
-        $result= $M->field("id,name,level,pid,icon,link,target")->where($map)->order('pid,queue,id')->select();
+        $result= $M->field("id,name,level,pid,icon,link,target,show")->where($map)->order('pid,queue,id')->select();
         foreach ($result as $k => $v) {
             //$result[$k]['link'] = strtolower($v['link']);
             $result[$k]['link'] = $v['link'];
@@ -52,9 +52,10 @@ class MenuWidget extends Controller {
         $menu = $data;
         
 		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>2 );
-		$cur=M('Menu')->field('pid,name')->where($cond)->find();
+		$cur=M('Menu')->field('id,pid,name')->where($cond)->find();
         $menu['tab'] = $menu[2][$cur['pid']];
         $menu['pid'] =$cur['pid'];
+        $menu['cur'] = $cur['id'];
         $menu['title'] = $cur['name'];
         return $menu;
    }
