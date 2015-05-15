@@ -75,7 +75,7 @@ class CommonController extends AuthController {
         }
         
         $this->after($map,'search');
-        dump($map);
+        
         return $map;
     }
 
