@@ -78,8 +78,6 @@ class LocationController extends CommonController {
 
             $location_detail->data($list)->add();
         }
-            
-            //$location_data['status'] = '1'; 
             $location_data['pid'] = $post_data['area_id'];
             $location_data['path'] = $post_data['area_id'] . '.' . $data  . '.'; 
             $location->where('id='.$data)->save($location_data); 

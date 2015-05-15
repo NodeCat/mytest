@@ -7,6 +7,9 @@
   <h1>{$title} <small></small></h1>
 </div>
 
+<notempty name="msg">
+<div class="alert alert-success text-center" role="alert">{$msg}</div>
+</notempty>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
 <form class="form-horizontal form-view" method="POST">
 <input type="hidden" name="wh_id" value="{$wh_id}"/>

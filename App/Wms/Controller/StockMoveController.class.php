@@ -91,17 +91,20 @@ class StockMoveController extends CommonController {
         }
         $location = M('location');
         $stock = M('stock');
-        $dat = $data['stock_move_data'][0];
-       
+      
+        //查询目的库位的id和状态
         $map['wh_id'] = $data['wh_id'];
         $map['code'] = $data['dest_location_code'];
         $dest_location = $location->field('id,status')->where($map)->find();
         
+        //查询相关库存的批次和移库量
+        unset($map);
         $map['wh_id'] = $data['wh_id'];
         $map['location_id'] = $data['location_id'];
         $map['pro_code'] = $data['pro_code'];
-
         $stock_info_list = $stock->field('batch,stock_qty-assign_qty as variable_qty')->where($map)->select();
+        
+        //组装数据
         foreach($stock_info_list as &$val) {
             $val['wh_id'] = $data['wh_id'];
             $val['src_location_id'] = $data['location_id'];
@@ -110,16 +113,19 @@ class StockMoveController extends CommonController {
             $val['status'] = $dest_location['status'];
         }
 
-        $stock_info_list[0]['status'] = 0;
+        //$stock_info_list[0]['status'] = 0;
         $stock = A('Stock','Logic')->adjustStockByMove($stock_info_list);
         foreach($stock as $val){
             if($val['status'] == 'err') {
-               $this->msg = $val['msg'];
+               $this->error_msg = $val['msg'];
+               C('LAYOUT_NAME','pda');
                $this->display('/StockMove/pdaStockMove'); 
-               return true;
+               return;
             }
         }
+
         $this->msg = '操作成功';
+        C('LAYOUT_NAME','pda');
         $this->display('/StockMove/pdaStockMove'); 
         //header('Location:/StockMove/pda_stock_move');
     }
