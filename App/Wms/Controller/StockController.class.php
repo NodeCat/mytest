@@ -2,9 +2,9 @@
 namespace Wms\Controller;
 use Think\Controller;
 class StockController extends CommonController {
-	//页面展示数据映射关系 例如取出数据是Qualified 显示为合格
+	//页面展示数据映射关系 例如取出数据是qualified 显示为合格
 	protected $filter = array(
-			'status' => array('qualified' => '合格','unqualified' => '不合格'),
+			'status' => array('qualified' => '合格','unqualified' => '残次'),
 		);
 	//设置列表页选项
 	public function before_index() {
@@ -13,7 +13,7 @@ class StockController extends CommonController {
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
-            'toolbar_tr'=> true
+            'toolbar_tr'=> false,
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
@@ -58,12 +58,6 @@ class StockController extends CommonController {
 			$data[$key]['area'] = $data_detail['location_name'];
 			//库位
 			$data[$key]['location_code'] = $data_detail['location_code'];
-			//转换库存状态显示
-			/*if($data_detail['status'] == 'qualified'){
-				$data[$key]['status'] = '合格';
-			}else{
-				$data[$key]['status'] = '不合格';
-			}*/
 		}
 
 		//添加pro_name字段
@@ -153,7 +147,7 @@ class StockController extends CommonController {
 		//view edit 展示
 		switch($data['status']){
 			case 'unqualified':
-				$data['status_name'] = '不合格';
+				$data['status_name'] = '残次';
 				break;
 			case 'qualified':
 				$data['status_name'] = '合格';
@@ -313,17 +307,6 @@ class StockController extends CommonController {
 		unset($map);
 		$stock_info['location_code'] = $location_info['code'];
 
-		//替换库存状态显示
-		switch($stock_info['status']){
-			case 'qualified':
-				$stock_info['status'] = '合格';
-				break;
-			case 'unqualified':
-				$stock_info['status'] = '不合格';
-				break;
-			default:
-				break;
-		}
 		if($stock_info['status'])
 
 		$data['count'] = $count;

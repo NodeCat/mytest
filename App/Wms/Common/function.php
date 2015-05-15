@@ -118,7 +118,17 @@ function where_array_to_str($where = array(), $relation = 'AND'){
 function en_to_cn($str){
     $filter = array(
         'qualified' => '合格',
-        'unqualified' => '不合格',
+        'unqualified' => '残次',
+        );
+
+    return $filter[$str];
+}
+
+//中文转英文
+function cn_to_en($str){
+    $filter = array(
+        '盘点' => 'inventory',
+        '库存移动' => 'move',
         );
 
     return $filter[$str];
