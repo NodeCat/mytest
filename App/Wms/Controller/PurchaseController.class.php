@@ -22,6 +22,30 @@ class PurchaseController extends CommonController {
 			'14' => '已驳回'
 		)
 	);
+	public function match_code() {
+        $code=I('q');
+        $A = A('Pms',"Logic");
+        G('start');
+        $res = $A->get_SKU_by_pro_codes_fuzzy($code);
+        G('end');
+        if(!empty($res['list'])){
+              $i = 0;
+              foreach ($res['list'] as $key => $val) {
+                    $data[$i]['val']['code'] = $val['sku_number'];
+                    $data[$i]['val']['name'] = $val['name'];
+                    
+                    foreach ($val['description'] as $k => $v) {
+                          $attrs[]= $v['name'].':'.$v['val'];
+                    }
+                    $data[$i]['val']['attrs'] = implode(',',$attrs);
+                    $data[$i]['name'] = '['.$val['sku_number'].'] '.$val['name'] .'（'. $data[$i]['val']['attrs'].'）';
+                    unset($attrs);
+                    $i++;
+              }
+        }
+        if(empty($data))$data['']='';
+        echo json_encode($data);
+      }
 	public function view() {
         $this->_before_index();
         $this->edit();
