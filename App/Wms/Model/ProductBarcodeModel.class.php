@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Model;
 use Think\Model;
-class ProductbarcodeModel extends Model {
+class ProductBarcodeModel extends Model {
 
     public $tableName = 'product_barcode';
     protected $insertFields = array('id','pro_code','pro_uom','barcode','created_time','updated_time','created_user','updated_user','is_deleted');

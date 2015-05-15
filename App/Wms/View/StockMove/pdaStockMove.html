@@ -7,6 +7,9 @@
   <h1>{$title} <small></small></h1>
 </div>
 
+<notempty name="msg">
+<div class="alert alert-success text-center" role="alert">{$msg}</div>
+</notempty>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
 <form class="form-horizontal form-view" method="POST">
   <div class="form-group">
@@ -58,14 +61,14 @@ $(function(){
     }
 
     $.ajax({
-      url:'/StockMove/check_stock_move',
+      url:'/StockMove/checkStockMove',
       type:'post',
       cache : false,
       dataType:'json',
       data:'location_code='+_location_code+'&pro_code='+_pro_code+'&batch='+_batch,
       success: function(json){
         if(json.status=='1'){
-            $('.form-view').attr('action','/StockMove/pda_stock_move');
+            $('.form-view').attr('action','/StockMove/pdaStockMove');
             $('.form-view').submit();
         }
         if(json.status=='0'){

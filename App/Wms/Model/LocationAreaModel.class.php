@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Model;
 use Think\Model;
-class LocationareaModel extends Model {
+class LocationAreaModel extends Model {
     
     public $tableName = 'location'; 
     protected $insertFields = array('id','name','code','pid','type','path','status','wh_id','created_time','updated_time','created_user','updated_user','is_deleted','notes');

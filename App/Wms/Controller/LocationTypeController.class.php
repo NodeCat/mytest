@@ -1,9 +1,8 @@
 <?php
 namespace Wms\Controller;
 use Think\Controller;
-class ProductbarcodeController extends CommonController {
-  
+class LocationTypeController extends CommonController {
+   
     
-
 
 }

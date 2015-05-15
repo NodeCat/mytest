@@ -13,6 +13,7 @@
 <input type="hidden" name="location_code" value="{$location_code}"/>
 <input type="hidden" name="batch" value="{$batch}"/>
 <input type="hidden" name="variable_qty" value="{$variable_qty}"/>
+<input type="hidden" name="pro_code" value="{$pro_code}"/>
 
   <div class="form-group">
     <label for="location" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">从库位</label>
@@ -84,7 +85,7 @@ $(function(){
       return false;
     }
     
-    $('.form-view').attr('action','/StockMove/pda_stock');
+    $('.form-view').attr('action','/StockMove/pdaStock');
     $('.form-view').submit();
     /*$.ajax({
       url:'/StockMove/check_stock_move',
