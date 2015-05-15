@@ -43,7 +43,7 @@ class PmsLogic{
 
 	//根据pro_code 模糊查询对应的SKU
 	public function get_SKU_by_pro_codes_fuzzy($pro_code){
-		if(empty($pro_codes)){
+		if(empty($pro_code)){
 			return false;
 		}
 		import("Common.Lib.HttpCurl");
