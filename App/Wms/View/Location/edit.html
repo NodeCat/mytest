@@ -50,7 +50,7 @@
 <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="type_id">类型</label>
 <div class="col-lg-5 col-sm-5 col-xs-5">
 <php>
-$_parm=explode('.','locationtype.id,name');
+$_parm=explode('.','LocationType.id,name');
 if(count($_parm)===2){
     $A=A($_parm[0]);
     $items=$A->get_list($_parm[0],$_parm[1]);
