@@ -226,10 +226,12 @@ class StockController extends CommonController {
 					'price_unit' => 0,
 					'src_wh_id' => I('wh_id'),
 					'dest_wh_id' => I('wh_id'),
-					'src_location_id' => I('location_id'),
+					'src_location_id' => I('src_location_id'),
 					'dest_location_id' => I('location_id'),
 					);
-				M('stock_move')->data($stock_move_data)->add();
+				$stock_move = D('stock_move');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
 			}
 		}
 	}

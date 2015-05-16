@@ -6,6 +6,20 @@ class StockMoveDetailController extends CommonController {
 	protected $filter = array(
 			'type' => array('in' => '收货','on' => '上架','move_location' => '库存移动'),
 		);
+
+    protected $columns = array('id' => '',
+           'refer_code' => '关联单据',
+            'type' => '类型',
+            'batch' => '批次',   
+            'pro_code' => '产品编号',   
+            'pro_uom' => '计量单位',   
+            'move_qty' => '移动量',   
+            'price_unit' => '单价',   
+            'src_wh_name' => '源仓库',   
+            'dest_wh_name' => '目标仓库',   
+            'src_location_name' => '源库位',   
+            'dest_location_name' => '目标库位', 
+            );
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -38,4 +52,5 @@ class StockMoveDetailController extends CommonController {
             $map['stock_move.type'][1] = cn_to_en($map['stock_move.type'][1]);
         }
     }
+
 }
