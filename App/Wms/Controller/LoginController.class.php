@@ -52,7 +52,7 @@ class LoginController extends Controller {
 
     public function verify(){
         $config = array(
-            'imageW' => 360, 
+            'imageW' => 260, 
             'imageH' => 60, 
             'useCurve'=> false,
             'fontSize'=> 28

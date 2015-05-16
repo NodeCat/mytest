@@ -47,6 +47,9 @@ class CommonController extends AuthController {
         !empty($condition) && $this->filter_list($condition, '1');
         if(!empty($condition)){
             foreach ($query as $key => $v) {
+                if(!array_key_exists($key, $condition)) {
+                    continue;
+                }
                 switch ($v['query_type']) {
                     case 'eq':
                         $map[$key]=array($v['query_type'],$condition[$key]);
@@ -59,7 +62,7 @@ class CommonController extends AuthController {
                         break;
                 }
             }
-            $map = queryFilter($map);
+            //$map = queryFilter($map);
         }
         else{
             $condition = I('q');
