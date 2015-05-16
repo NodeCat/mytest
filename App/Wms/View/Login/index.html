@@ -9,31 +9,41 @@ a{
     color:#555;
 }
 .panel-heading{
-    background: url(__PUBLIC__/img/top_bg.jpg) repeat-x left top !important;
+    background: url(__PUBLIC__/img/top_bg.jpg) repeat-x left bottom !important;
     padding: 5px 15px;
     padding-top:0px; 
     padding-bottom: 3px;
 }
-.panel-title{
-    width: 320px;
-    
+.panel-body{
+    padding-top:0px;
 }
+
+@media (min-width: 992px) {
+    .panel-body{
+        padding:20px 35px 15px 35px;
+    }
+}
+
+
     </style>
-<div class="container-fluid">
+<div class="container">
 <div class="wrapper">
-    <include file="nav"/>
-    <div class="col-lg-12 col-sm-12 col-md-12 col-xs-12">
+    <include file="Index:nav"/>
+    <div class="col-lg-4 col-md-6  col-sm-8 col-xs-12 col-lg-offset-4 col-md-offset-3 col-sm-offset-2">
             <div class="row">
                 <div class="panel panel-default">
-  <div class="panel-heading hidden">
+  <div class="panel-heading">
     <div class="panel-title">
         <h2 class="">大厨网 & 大果网</h2>
+        <!--
         <img src="__PUBLIC__/img/logo.jp" class="hidden" />
+        -->
     </div>
   </div>
   <div class="panel-body">
                 <form class="center" action="__SELF__" method="post">
                     <input type="hidden" name="token" value="{$token}" />
+                    <input type="hidden" name="url" value="{$url}" />
                     <div class="form-group">
                         <label class="control-label"></label>
                         <div class="input-group">
@@ -67,7 +77,7 @@ a{
 
                     <div class="form-group">
                         <div class="input-grou">
-                            <button type="submit" class=" btn btn-lg btn-primary btn-block" tabindex="4"> 登  陆 </button>
+                            <button type="submit" class=" btn btn-lg btn-primary btn-block" tabindex="4"> 登  录 </button>
                             <label class="checkbox remember hidden">
                                 <input type="checkbox"> Remember me
                             </label>

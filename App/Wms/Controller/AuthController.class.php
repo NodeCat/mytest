@@ -7,7 +7,8 @@ class AuthController extends Controller {
         layout(!IS_AJAX);
         //判断是否需要登陆才能访问，post下返回session timeout错误，
         if(!is_login()){
-            $this->redirect('Login/index', 'please login'); 
+            $url = urlencode(__SELF__);
+            redirect(U('Login/index').'?url='.$url,0, '请您先登录。'); 
         }
         if(!defined('UID')) {
             define('UID',session('user.uid'));
