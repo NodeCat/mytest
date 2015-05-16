@@ -13,6 +13,11 @@ layout
 .wrapper{
 	padding-top: 70px;
 }
+@media (min-width: 992px) {
+    .wrapper{
+    	min-height: 600px;
+    }
+}
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
   background-color: #efefef;
 }

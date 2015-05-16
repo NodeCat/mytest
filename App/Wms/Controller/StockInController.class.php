@@ -221,17 +221,21 @@ class StockInController extends CommonController {
 		$A = A('StockIn','Logic');
 		$qtyForIn = 0;
 		foreach ($pros as $key => $val) {
-			$qty = $A->getQtyForIn($id,$val['pro_code']);
-			$qtyForIn += $qty;
-			$pros[$key]['moved_qty'] = $val['pro_qty'] - $qty;
+			$qtyIn = $A->getQtyForIn($id,$val['pro_code']);
+			$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
+			
+			$qtyForIn += $qtyIn;
+			$qtyForOn += $qtyOn;
+			$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn; 
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
 		$data['qtyForIn'] = $qtyForIn;
+		$data['qtyForOn'] =$qtyForOn;
 	}
-	public function _before_index() {
+	public function before_index() {
         $this->table = array(
-            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+            'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => false, 

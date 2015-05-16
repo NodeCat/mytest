@@ -61,6 +61,12 @@ $(function(){
 
 typehead();
 $('.add-pro').on('click',function(){
+    var val = $('.tr-cur .pro_code').val();
+    if(val == '' && val != null) {
+      $('.tr-cur .pro_names').focus();
+      alert('请输入产品编号选择产品。');
+      return;
+    }
     $('.tr-cur').removeClass('tr-cur');
     var tr = $('#table-pro tr.tr-tpl').clone();
     tr.removeClass('tr-tpl');
