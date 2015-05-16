@@ -10,19 +10,12 @@ class LocationModel extends Model {
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-                array('wh_id','require','请填写仓库标识'),
-                array('area_id','require','请填写区域标识'),
-                array('code','require','请填写库位'),
-                array('type_id','require','请选择库位类型'),
-                array('picking_line','require','请填写拣货路线'),
-                array('putaway_line','require','请填写上架路线'),
-                array('is_mixed_pro','require','请选择是否混放货品'),
-                array('is_mixed_batch','require','请选择是否混放批次'),
+                //array('wh_id','require','请填写仓库标识'),
             );
 
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
-            array('status','1'),
+            array('status','qualified'),
             array('type','2'),
             array('created_user',UID,1,'string'),
             array('created_time','get_time',1,'function'),

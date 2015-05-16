@@ -5,12 +5,13 @@ class LocationAreaController extends CommonController {
 
     protected function before_delete ($ids) {
         $location = M('location'); 
-        foreach ($ids as $val) {
-            $res = $location->where('type=2 AND is_deleted=0 AND pid=' . $val)->count();
-            if($res) {
-	            $this->msgReturn(0,'区域下存在库位，无法删除');
-            }
-            
+        $map['pid'] = array('in', $ids);
+        $map['type'] = 2;
+        $map['is_deleted'] = 0;
+
+        $res = $location->where($map)->count();
+        if($res) {
+	        $this->msgReturn(0,'区域下存在库位，无法删除');
         }
     }
 
@@ -19,6 +20,7 @@ class LocationAreaController extends CommonController {
         if($wh_id) {
             $map['wh_id'] = $wh_id;
         }
+
         $map['type'] = '1';
         $M = $M->where($map);
         $data = $this->columns;
@@ -36,7 +38,6 @@ class LocationAreaController extends CommonController {
             $list = $warehouse->getById($val['wh_id']);
             $val['warehouse_code'] = $list['code'];
         }*/
-        //dump($data);exit;
     }
 
     protected function after_add($id) {
@@ -54,8 +55,8 @@ class LocationAreaController extends CommonController {
             $area_code = array_column($location_area, 'code', 'id');
             $status = array(
                 '0' =>'请选择',
-                '1' =>'合格状态',
-                '2' =>'残次状态'
+                'qualified' =>'合格状态',
+                'unqualified' =>'残次状态'
             );
             $query['location.id'] = array(
                 'title' => '区域标识',
