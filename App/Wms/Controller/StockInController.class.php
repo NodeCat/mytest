@@ -219,13 +219,15 @@ class StockInController extends CommonController {
 		$map['pid'] = $purchase['id'];
 		$pros = M('stock_purchase_detail')->where($map)->select();
 		$A = A('StockIn','Logic');
-
+		$qtyForIn = 0;
 		foreach ($pros as $key => $val) {
 			$qty = $A->getQtyForIn($id,$val['pro_code']);
+			$qtyForIn += $qty;
 			$pros[$key]['moved_qty'] = $val['pro_qty'] - $qty;
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
+		$data['qtyForIn'] = $qtyForIn;
 	}
 	public function _before_index() {
         $this->table = array(
