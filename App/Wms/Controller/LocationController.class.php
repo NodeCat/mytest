@@ -121,16 +121,11 @@ class LocationController extends CommonController {
         }
     }
 
-    protected function after_delete($ids) {var_dump($ids);
+    protected function after_delete($ids) {
         $location_detail = M('location_detail');
             $map['location_id'] = array('in',$ids);
             $data['is_deleted'] = 1;
-            var_dump($map); var_dump($data);
-            $res = $location_detail->where($map)->save($data);var_dump($res);
-            if(!$res){
-            var_dump($location_detail->getError()); 
-            var_dump($location_detail->_sql());
-            }
+            $res = $location_detail->where($map)->save($data);
         
     }
 }

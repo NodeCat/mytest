@@ -12,6 +12,15 @@ class WarehouseController extends CommonController {
             
         }
     }
+   
+    protected function before_lists(&$M) {
+        //无效仓库不能展示在区域创建的选择中
+        if(ACTION_NAME == 'refer') {
+            $map['status'] = 2;
+        }
+            
+        $M = $M->where($map);
     
+    }
 
 }
