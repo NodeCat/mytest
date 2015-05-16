@@ -34,7 +34,7 @@ return array(
 
 	//session设置
 	'SESSION_OPTIONS'	=> array('expire'=>'3600'),
-	'SESSION_PREFIX'	=>'wms',
+	//'SESSION_PREFIX'	=>'wms',
 
 	//缓存设置
 	'DATA_CACHE_TYPE'   => 'redis',
