@@ -77,7 +77,7 @@ class HttpCurl{
 
         if($post_json){
             $httpRequest->add_header('Content-Type','application/json; charset=utf-8');
-            $httpRequest->add_header('Content-Length',strlen($args));
+            //$httpRequest->add_header('Content-Length',strlen($args));
         }
 
         $httpRequest->send();
