@@ -8,7 +8,7 @@ class StockInController extends CommonController {
 		),
 		'status' => array(
 			'0'	=> '草稿',
-			'21'=>'待入库',
+			'21'=>'待收货',
 			'31'=>'待上架',
 			'23'=>'已入库',
 			'53'=>'已完成',
@@ -24,7 +24,7 @@ class StockInController extends CommonController {
 		'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
-		'sp_created_user' => '采购人',
+		'sp_created_user_name' => '采购人',
   		'sp_created_time' => '采购时间',
 		'status' => '状态', 
 	);
@@ -47,9 +47,9 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$data = $A->getOnQty($id,$code);
-				if(!empty($data)) {
-					$this->assign($data);
+				$res = $A->getOnQty($id,$code);
+				if($res['res'] == true) {
+					$this->assign($res['data']);
 					layout(false);
 					$this->msg = '查询成功。';
 					$this->title = '录入上架量';
@@ -57,7 +57,7 @@ class StockInController extends CommonController {
 					$this->msgReturn(1,'查询成功。',$data);
 				}
 				else {
-					$this->msgReturn(0,'查询失败。');
+					$this->msgReturn(0,'查询失败。'.$res['msg']);
 				}
 			}
 		
@@ -134,9 +134,9 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$data = $A->getInQty($id,$code);
-				if(!empty($data)) {
-					$this->assign($data);
+				$res = $A->getInQty($id,$code);
+				if($res['res'] == true) {
+					$this->assign($res['data']);
 					layout(false);
 					$this->msg = '查询成功。';
 					$this->title = '录入到货量';
@@ -144,7 +144,7 @@ class StockInController extends CommonController {
 					$this->msgReturn(1,'查询成功。',$data);
 				}
 				else {
-					$this->msgReturn(0,'查询失败。');
+					$this->msgReturn(0,'查询失败。'.$res['msg']);
 				}
 				
 			}
@@ -152,8 +152,8 @@ class StockInController extends CommonController {
 				$qty = I('post.qty');
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
 
-				if(!empty($res)) {
-					$data['msg'] = '收货成功。'.$res;
+				if($res['res'] == true) {
+					$data['msg'] = '收货成功。'.$res['msg'];
 					$res = M('stock_bill_in')->field('id,code')->find($id);
 					$data['id'] = $res['id'];
 					$data['code'] = $res['code'];
@@ -163,7 +163,7 @@ class StockInController extends CommonController {
 					$this->msgReturn(1,'验收成功。',$data);
 				}
 				else {
-					$this->msgReturn(0,'验收失败。');
+					$this->msgReturn(0,'验收失败。'.$res['msg']);
 				}
 			}
 			if($type == 'scan_incode') {
@@ -244,11 +244,11 @@ class StockInController extends CommonController {
     public function before_lists(){
     	$pill = array(
 			'status'=> array(
-				array('value'=>'0','title'=>'草稿','class'=>'warning'),
-				array('value'=>'21','title'=>'待入库','class'=>'primary'),
-				array('value'=>'31','title'=>'待上架','class'=>'info'),
-				array('value'=>'53','title'=>'已完成','class'=>'success'),
-				array('value'=>'04','title'=>'已关闭','class'=>''),
+				'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),
+				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
+				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
+				'53'=>array('value'=>'53','title'=>'已完成','class'=>'success'),
+				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
 			)
 		);
 		$M = M('stock_bill_in');

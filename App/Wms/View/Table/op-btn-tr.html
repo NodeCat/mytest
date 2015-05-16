@@ -44,9 +44,18 @@
 	<in name="vo['state']" value="$tool['domain']">
 	<eq name="tool.show" value="true">
 	<eq name="tool.new" value="true">
-		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit"  data-title="审核" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit"  data-title="批准" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
 	<else/>
-		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit" data-target="#modal" data-toggle="modal"  data-title="审核" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit" data-target="#modal" data-toggle="modal"  data-title="批准" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+	</eq></eq></in>
+	</case>
+	<case value="reject" break="1">
+	<in name="vo['state']" value="$tool['domain']">
+	<eq name="tool.show" value="true">
+	<eq name="tool.new" value="true">
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit"  data-title="驳回" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-remove"></i> </a>
+	<else/>
+		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit" data-target="#modal" data-toggle="modal"  data-title="驳回" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-remove"></i> </a>
 	</eq></eq></in>
 	</case>
 	<case value="close" break="1">
@@ -66,7 +75,7 @@
 	</case> 
 	<case value="refer" break="1">
 	<eq name="tool.show" value="true">
-		<a href='javascript:refer_quote("{$refer}",{:json_encode($values)})' class="btn-refer"  data-title="引用" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+		<a href='javascript:refer_quote("{$refer}",{:json_encode($values)})' class="btn-refer"  data-title="单击选中" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok-circle"></i> 选择</a>
 	</eq>
 	</case> 
 	<default />

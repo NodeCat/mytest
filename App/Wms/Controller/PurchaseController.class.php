@@ -22,6 +22,52 @@ class PurchaseController extends CommonController {
 			'14' => '已驳回'
 		)
 	);
+	
+	protected $columns = array (   
+		'id' => '',   
+		'code' => '编号',   
+		'warehouse_name' => '仓库',   
+		'company_name' => '所属系统',   
+		'partner_name' => '供货商',   
+		'cat_total' => '品类数',   
+		'qty_total' => '总数量',   
+		'price_total' => '总金额',   
+		'status' => '状态',   
+		'user_nickname' => '采购人',   
+		'created_time' => '采购时间', 
+	);
+	protected $query = array (   
+		'stock_purchase.wh_id' =>    array (     
+			'title' => '仓库',     
+			'query_type' => 'eq',     
+			'control_type' => 'refer',     
+			'value' => 'stock_purchase-wh_id-warehouse-id,id,name,Warehouse/refer',   
+		),
+		'stock_purchase.company_id' =>    array (     
+			'title' => '所属系统',     
+			'query_type' => 'eq',    
+			 'control_type' => 'getField',     
+			 'value' => 'Company.id,name',   
+		),   
+		'stock_purchase.partner_id' =>    array (     
+			'title' => '供货商',    
+			 'query_type' => 'eq',     
+			 'control_type' => 'refer',     
+			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
+		),   
+		'stock_purchase.created_user' =>    array (     
+			'title' => '采购人',     
+			'query_type' => 'eq',     
+			'control_type' => 'refer',     
+			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
+		),
+		'stock_purchase.created_time' =>    array (    
+			'title' => '采购时间',     
+			'query_type' => 'between',     
+			'control_type' => 'datetime',     
+			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
+		), 
+	);
 	public function match_code() {
         $code=I('q');
         $A = A('Pms',"Logic");
@@ -67,6 +113,7 @@ class PurchaseController extends CommonController {
             'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
             'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
             'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11,13")
         );
         $this->status =array(
@@ -190,7 +237,7 @@ class PurchaseController extends CommonController {
 		$map[$M->tableName.'.'.$pk] = $id;
 		$res = $M->field('code,status')->where($map)->find();
 		
-		if(empty($res) || ($res['status']!='0')) {
+		if(empty($res) || ($res['status']!='0' && $res['status']!='11')) {
 			$this->msgReturn(0);
 		}
 		$data['status'] = '14';
@@ -205,30 +252,29 @@ class PurchaseController extends CommonController {
 		$map[$M->tableName.'.'.$pk] = $id;
 		$res = $M->field('code,status')->where($map)->find();
 		
-		if(empty($res) || ($res['status']!='0' && $res['status']!='13')) {
+		if(empty($res) || ($res['status']!='0' && $res['status']!='11' && $res['status']!='13')) {
 			$this->msgReturn(0);
 		}
 		else {
-			if($res['status'] == '0'){
+			if($res['status'] == '11'){
 				$data['status'] = '04';		
 			}
 			else{
+				$where['refer_code'] = $res['code'];
+				//$res = M('stock_bill_in')->field('id')->where($where)->find();
+				
 				$A = A('StockIn','Logic');
-				$res = $A->checkIn($id);
-				if($res){
-					$A->finishByPurchase($id);
-					$this->msgReturn($res);
-				}
-				else{
-					$data['status'] == '14';	
-				}
+				//$res = $A->checkIn($res['id']);
+				
+				$A->finishByPurchase($id);
+				$this->msgReturn($res);
 			}
 		}
-		
 		$res = $M->where($map)->save($data);
-		dump($M->_sql());
+	
 		$this->msgReturn($res);
 	}
+
 	public function pass(){
 		$M = D(CONTROLLER_NAME);
 		$pk = $M->getPk();

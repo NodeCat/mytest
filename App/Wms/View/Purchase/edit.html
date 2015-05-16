@@ -17,29 +17,29 @@
 		<div class="col-lg-6"><h3>采购单 {$data.code}</h3></div>
 		<div class="col-lg-6">
 <div class="btn-group pull-right" role="group" aria-label="...">
-		  <a href="#" class="list-group-item">
-		  	<div class="media-left">
-		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
-		        	<span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
-		        </div>
-		    </div>
-		    <div class="media-body">
-			  	<h4 class="list-group-item-heading">36</h4>
-			    <p class="list-group-item-text">待发货</p>
-			</div>
-		  </a>
+      <a href="#" class="list-group-item">
+        <div class="media-left">
+            <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+              <span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
+            </div>
+        </div>
+        <div class="media-body">
+          <h4 class="list-group-item-heading">{$data.qty_total}</h4>
+          <p class="list-group-item-text">总数量</p>
+      </div>
+      </a>
 
-		  <a href="#" class="list-group-item">
-		  	<div class="media-left">
-		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
-		        	<span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true"></span>
-		        </div>
-		    </div>
-		    <div class="media-body">
-			  	<h4 class="list-group-item-heading">18</h4>
-			    <p class="list-group-item-text">待付款</p>
-			</div>
-		  </a>
+      <a href="#" class="list-group-item">
+        <div class="media-left">
+            <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+              <span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true"></span>
+            </div>
+        </div>
+        <div class="media-body">
+          <h4 class="list-group-item-heading">{$data.price_total}</h4>
+          <p class="list-group-item-text">总金额</p>
+      </div>
+      </a>
 </div>
 
 
@@ -96,7 +96,7 @@
 <div class="form-group col-lg-4">
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">送货日期</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-<input type="datetime" value="{$data.expecting_date}" class="form-control input-sm date form_datetime {required:true,dateISO:true,date:true,}" name="expecting_date" id="expecting_date"  rel="datepicker" data-date="" data-date-format="yyyy-mm-dd hh:ii:ss" placeholder="入库日期">
+<input type="datetime"  autocomplete="off" value="{$data.expecting_date}" class="form-control input-sm date form_datetime {required:true,dateISO:true,date:true,}" name="expecting_date" id="expecting_date"  rel="datepicker" data-date="" data-date-format="yyyy-mm-dd hh:ii:ss" placeholder="入库日期">
     </div>
 </div>
 </div>

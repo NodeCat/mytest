@@ -277,6 +277,9 @@ class CommonController extends AuthController {
         $map[$pk]   =   array('in',$ids);
         $data['is_deleted'] = 1;
         $res = $M->where($map)->save($data);
+        if($res == true) {
+            $this->after($ids,'delete');
+        }
         $this->msgReturn($res);
     }
 
