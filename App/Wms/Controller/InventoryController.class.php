@@ -272,7 +272,10 @@ class InventoryController extends CommonController {
 						'type'=>'inventory',
 						'refer_code'=>$refer_code,
 						);
-					M('stock_adjustment')->data($adjust_data)->add();
+					$stock_adjustment = D('Adjustment');
+					$adjust_data = $stock_adjustment->create($adjust_data);
+					$stock_adjustment->data($adjust_data)->add();
+					unset($stock_adjustment);
 				}
 
 
@@ -310,7 +313,10 @@ class InventoryController extends CommonController {
 							'origin_status' => $stock_info['status'],
 							'adjust_status' => $stock_info['status'],
 							);
-						M('stock_adjustment_detail')->data($adjust_detail_data)->add();
+						$stock_adjustment_detail = D('AdjustmentDetail');
+						$adjust_detail_data = $stock_adjustment_detail->create($adjust_detail_data);
+						$stock_adjustment_detail->data($adjust_detail_data)->add();
+						unset($stock_adjustment_detail);
 						unset($adjust_detail_data);
 						unset($adjusted_qty);
 						unset($stock_info);

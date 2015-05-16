@@ -61,4 +61,5 @@ class AdjustmentController extends CommonController {
             $map['stock_adjustment.type'][1] = cn_to_en($map['stock_adjustment.type'][1]);
         }
     }
+
 }

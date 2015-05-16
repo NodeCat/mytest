@@ -142,7 +142,7 @@ class StockController extends CommonController {
 			$map['id'] = $data['location_id'];
 			$location_code = M('Location')->where($map)->getField('code');
 			unset($map);
-			$data['location_name'] = $location_code;
+			$data['location_code'] = $location_code;
 		}
 		//view edit 展示
 		switch($data['status']){
