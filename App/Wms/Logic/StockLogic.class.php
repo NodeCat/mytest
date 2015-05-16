@@ -238,7 +238,23 @@ class StockLogic{
 					}
 				}
 			}
-
+			//创建库存移动记录
+			$stock_move_data = array(
+				'type' => 'move_location',
+				'batch' => $param['batch'],
+				'pro_code' => $param['pro_code'],
+				'move_qty' => $param['variable_qty'],
+				'price_unit' => 0,
+				'src_wh_id' => $param['wh_id'],
+				'dest_wh_id' => $param['wh_id'],
+				'src_location_id' => $param['src_location_id'],
+				'dest_location_id' => $param['dest_location_id'],
+				);
+			$stock_move = D('stock_move');
+			$stock_move_data = $stock_move->create($stock_move_data);
+			$stock_move->data($stock_move_data)->add();
+			unset($stock_move_data);
+			unset($stock_move);
 
 		}
 

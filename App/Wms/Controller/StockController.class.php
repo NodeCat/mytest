@@ -230,8 +230,8 @@ class StockController extends CommonController {
 			if(I('editStockMove')){
 				//创建库存移动记录
 				//根据pro_code 查询产品信息
-				$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
-				$SKU = $SKUs['list'][0];
+				//$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
+				//$SKU = $SKUs['list'][0];
 				$stock_move_data = array(
 					'type' => 'move_location',
 					'batch' => I('batch'),
