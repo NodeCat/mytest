@@ -12,9 +12,9 @@ class InventoryDetailController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'view', 'show' => false,'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
@@ -28,9 +28,10 @@ class InventoryDetailController extends CommonController {
     }
 
     public function index() {
+        $tmpl = IS_AJAX ? 'Table:list':'index';
         //$this->before($map,'index');
         $this->before_index();
-        $this->lists('index');
+        $this->lists($tmpl);
     }
 
     //lists方法执行前，执行该方法
@@ -61,6 +62,5 @@ class InventoryDetailController extends CommonController {
 		}
         $this->invetory_code = $data[0]['inventory_code'];
 	}
-
 
 }

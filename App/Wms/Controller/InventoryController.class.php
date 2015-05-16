@@ -8,6 +8,32 @@ class InventoryController extends CommonController {
 			'is_diff' => array('0' => '无', '1' => '有'),
 			'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
 		);
+	protected $query   = array (
+		'stock_inventory.code' => array (
+		    'title' => '盘点单号',
+		    'query_type' => 'like',
+		    'control_type' => 'text',
+		    'value' => 'name',
+		),
+		'stock_inventory.type' => array (
+		    'title' => '盘点类型',
+		    'query_type' => 'eq',
+		    'control_type' => 'select',
+		    'value' => array('fast'=>'快速盘点'),
+		),
+		'stock_inventory.is_diff' => array (
+		    'title' => '有无差异',
+		    'query_type' => 'eq',
+		    'control_type' => 'select',
+		    'value' => array(0=>'无',1=>'有'),
+		),
+		'stock_inventory.status' => array (
+		    'title' => '状态',
+		    'query_type' => 'eq',
+		    'control_type' => 'select',
+		    'value' => array('noinventory'=>'未盘点','inventory'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		),
+	);
 	//重载index方法
 	public function index(){
 		$tmpl = IS_AJAX ? 'Table:list':'index';
@@ -53,8 +79,8 @@ class InventoryController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
@@ -68,7 +94,7 @@ class InventoryController extends CommonController {
     }
 
 	//serach方法执行后，执行该方法
-	protected function after_search(&$map){
+	/*protected function after_search(&$map){
 		if(IS_AJAX){
 			//用于重新整理查询条件
 			//盘点单类型
@@ -86,7 +112,7 @@ class InventoryController extends CommonController {
 			$map['stock_inventory.is_diff'] = array('eq',$inventory_is_diff);
 			
 		}
-	}
+	}*/
 
 	//edit方法执行前，执行该方法
 	protected function before_edit(&$data){
