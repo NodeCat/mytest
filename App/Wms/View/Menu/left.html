@@ -2,6 +2,7 @@
 <div class='sidebar-nav'>
 <div class="tab-content">
 <volist name="menu[1]" id="vo" empty="" >
+<eq name="vo['show']" value="1">
 <eq name="pid" value="$vo.pid">
 		<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
 <else/>
@@ -14,7 +15,9 @@
 			<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
 </eq>
 	<assign name="pid" value="$vo.pid" />
+</eq>
 </volist>
+
 <notempty name="menu[1]">
 		</div>
 	</div>

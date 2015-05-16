@@ -28,8 +28,10 @@ function get_tablename() {
 function get_setting($table) {
 	$M = M('module_table');
 	$res = $M->field('list,query')->find(strtolower($table));
-	eval('$list = '.$res['list'].';');
-	eval('$query = '.$res['query'].';');
+    if(!empty($res)) {
+        eval('$list = '.$res['list'].';');
+        eval('$query = '.$res['query'].';');
+    }
 	$data = array(
 			'list' => $list ,
 			'query'=> $query,

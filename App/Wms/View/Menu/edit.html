@@ -53,6 +53,13 @@
     </select>        
     </div>
 </div><div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="location">是否隐藏</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input name="show" id="show" checked="{~$data['show']==1?'checked':''}" type="checkbox" >不显示
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
     <label class="control-label col-lg-3" for="memo">备注</label>
     <div class="col-lg-5">
         <textarea cols="3"  class="form-control {maxlength:100,}"  name="memo" id="memo" placeholder="">{$data.memo}</textarea>       
