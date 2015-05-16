@@ -55,7 +55,9 @@ class StockController extends CommonController {
 			//可用量=库存量-配送量
 			$data[$key]['available_qty'] = $data_detail['stock_qty'] - $data_detail['assign_qty'];
 			//区域标识
-			$data[$key]['area'] = $data_detail['location_name'];
+			$location_info = A('Location','Logic')->getParentById($data_detail['location_id']);
+			$data[$key]['area'] = $location_info['code'];
+			unset($location_info);
 			//库位
 			$data[$key]['location_code'] = $data_detail['location_code'];
 		}

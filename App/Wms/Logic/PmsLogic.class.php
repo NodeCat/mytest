@@ -84,18 +84,20 @@ class PmsLogic{
 			//添加pro_name字段
 			$prepare_data = array();
 			$pro_codes = array();
-			foreach($data as $value){
-				$prepare_data[$value['pro_code']] = $value;
-				$pro_codes[] = $value['pro_code'];
+			foreach($data as $key => $value){
+				$prepare_data[$key] = $value;
+				$SKUs = $this->get_SKU_field_by_pro_codes(array($value['pro_code']));
+				$prepare_data[$key]['pro_name'] = $SKUs[0]['wms_name'];
+				//$pro_codes[] = $value['pro_code'];
 			}
 
 			//根据pro_code 接口查询SKU
-			$SKUs = $this->get_SKU_field_by_pro_codes($pro_codes);
+			//$SKUs = $this->get_SKU_field_by_pro_codes($pro_codes);
 
 			//整理数据
-			foreach($SKUs as $pro_code => $SKU){
+			/*foreach($SKUs as $pro_code => $SKU){
 				$prepare_data[$pro_code]['pro_name'] = $SKU['wms_name'];
-			}
+			}*/
 
 			return $prepare_data;
 		}
