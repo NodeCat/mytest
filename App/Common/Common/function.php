@@ -41,7 +41,7 @@ function get_setting($table) {
 //复选框未选择，则不会出现在post中，应添加条件并赋值为false
 function queryFilter($data){
     foreach ($data as $key => $value) {
-        if(empty($value) || (is_array($value) && empty($value[1]))){
+        if($value == '' || (is_array($value) && empty($value[1]))){
             unset($data[$key]);
         }
     }

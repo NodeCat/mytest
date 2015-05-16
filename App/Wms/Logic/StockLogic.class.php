@@ -35,7 +35,7 @@ class StockLogic{
 		else{
 			$map['id'] = $res['id'];
 			$data['prepare_qty'] = $res['prepare_qty'] + $pro_qty;
-			$data = $stock->create($data);
+			$data = $stock->create($data, 2);
 			$res = $stock->where($map)->save($data);
 		}
 
@@ -89,7 +89,7 @@ class StockLogic{
 		}
 		unset($map);
 		$map['id'] = $res['id'];
-		$data['prepare_qty'] = $resp['prepare_qty'] - $pro_qty;
+		$data['prepare_qty'] = $res['prepare_qty'] - $pro_qty;
 		$data = $stock->create($data);
 		$res = $stock->where($map)->save($data);
 		if($res == false) {
@@ -103,18 +103,20 @@ class StockLogic{
 		$row['status'] =$status;
 		
 		$res = $stock->where($row)->find();
+		
 		if(empty($res)) {
 			$row['prepare_qty'] = 0;
 			$row['stock_qty'] = $pro_qty;
 			$row['assign_qty'] = 0;	
 			
 			$data = $stock->create($row);
+
 			$res = $stock->add($data);
 		}
 		else{
 			$map['id'] = $res['id'];
 			$data['stock_qty'] = $res['stock_qty'] + $pro_qty;
-			$data = $stock->create($data);
+			$data = $stock->create($data,2);
 			$res = $stock->where($map)->save($data);
 		}
 		if($res == false) {
@@ -126,7 +128,7 @@ class StockLogic{
 		//写库存移动记录
 		$M = D('StockMove');
 		$row['refer_code'] = $refer_code;
-		$row['type'] = 'in';
+		$row['type'] = 'on';
 		$row['pro_code'] = $pro_code;
 		$row['pro_uom'] = $pro_uom;
 		$row['move_qty'] = $pro_qty;
