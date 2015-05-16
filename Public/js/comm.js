@@ -361,21 +361,27 @@ function init(){
 		maxView: 1,
 		forceParse: 0
     });
-
-	$("#aform").validate({
+/*
+	$("form").validate({
         highlight: function(label) {
-            $(label).closest('.control-group').addClass('error');
+        	$(label).parent().parent().addClass('has-error');
+            $(label).closest('.control-label').addClass('label-danger');
         },
         success: function(label) {
             $(label)
             .text('OK!').addClass('valid')
-            .closest('.control-group').addClass('success');
+            .closest('.control-label').addClass('label-success');
         },
          submitHandler:function(form){
             form.submit();
-        }
+        },
+        errorPlacement: function(error, element) {  
+        	var msg = $(error).text();
+		    element.parent().next().text(msg);  
+		    element.parent().next().toggleClass(error.attr('class'));  
+		}
     });
-
+*/
 }
 
 function refresh_page(){
