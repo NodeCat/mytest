@@ -10,7 +10,7 @@ class LocationController extends CommonController {
             $data = $this->columns;
             unset($data); 
             $data["id"] = '';
-            $data["wh_id"] = '仓库标识';
+            $data["warehouse_code"] = '仓库标识';
             $data["area_code"] = '区域标识';
             $data["code"] = '库位标识';
             $data['picking_line'] = '拣货路线';
@@ -119,5 +119,18 @@ class LocationController extends CommonController {
             }
             
         }
+    }
+
+    protected function after_delete($ids) {var_dump($ids);
+        $location_detail = M('location_detail');
+            $map['location_id'] = array('in',$ids);
+            $data['is_deleted'] = 1;
+            var_dump($map); var_dump($data);
+            $res = $location_detail->where($map)->save($data);var_dump($res);
+            if(!$res){
+            var_dump($location_detail->getError()); 
+            var_dump($location_detail->_sql());
+            }
+        
     }
 }
