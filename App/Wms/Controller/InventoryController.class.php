@@ -8,6 +8,17 @@ class InventoryController extends CommonController {
 			'is_diff' => array('0' => '无', '1' => '有'),
 			'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
 		);
+	protected $columns = array('id' => '',
+            'code' => '盘点单号',
+            'location_name' => '区域',
+            'type' => '盘点类型',
+            'is_diff' => '有误差异',
+            'remark' => '备注',
+            'status' => '状态',
+            'count_location' => '总库位数',
+            'user_nickname' => '创建人',
+            'created_time' => '创建时间', 
+            );
 	protected $query   = array (
 		'stock_inventory.code' => array (
 		    'title' => '盘点单号',
@@ -43,17 +54,18 @@ class InventoryController extends CommonController {
 	}
 
 	//lists方法执行前，执行该方法
-	protected function before_lists(&$M){
+	/*protected function before_lists(&$M){
 		//整理显示项
 		foreach($this->columns as $key => $column){
 			$columns[$key] = $column;
 		}
 		$columns['count_location'] = '总库位数';
 		$columns['remark'] = '备注';
-		$columns['created_user'] = '创建人';
+		$columns['user_nickname'] = '创建人';
 		$columns['created_time'] = '创建时间';
+		unset($columns['created_user']);
 		$this->columns = $columns;
-	}
+	}*/
 
 	//lists方法执行后，执行该方法
 	protected function after_lists(&$data){

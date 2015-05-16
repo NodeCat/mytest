@@ -2,6 +2,13 @@
 namespace Wms\Controller;
 use Think\Controller;
 class InventoryDetailController extends CommonController {
+    protected $columns = array('id' => '',
+            'pro_code' => '产品标识',
+            'location_code' => '库位',
+            'pro_qty' => '盘点数量',
+            'theoretical_qty' => '理论库存量',
+            'diff_qty' => '差异量',
+            );
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -36,14 +43,6 @@ class InventoryDetailController extends CommonController {
 
     //lists方法执行前，执行该方法
 	protected function before_lists(&$M){
-        $this->columns = array (
-			'id' => '',
-			'pro_code' => '产品标识',
-			'location_code' => '库位',
-			'pro_qty' => '盘点数量',
-			'theoretical_qty' => '理论库存量',
-			'diff_qty' => '差异量',
-		);
 
 		//根据inventory_id 查询对应code
 		$inventory_id = I('id');

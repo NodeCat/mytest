@@ -9,6 +9,13 @@ class AdjustmentController extends CommonController {
         //'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
         'status' => array('qualified' => '合格'),
     );
+    protected $columns = array('id' => '',
+            'code' => '调整单号',
+            'type' => '调整类型',
+            'refer_code' => '来源单号',
+            'user_nickname' => '创建人',
+            'created_time' => '创建时间', 
+            );
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -20,8 +27,8 @@ class AdjustmentController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
@@ -57,9 +64,10 @@ class AdjustmentController extends CommonController {
     //在search方法执行后，执行该方法
     protected function after_search(&$map){
         //替换调整单type查询条件
-        if($map['stock_adjustment.type'][1]){
+        /*if($map['stock_adjustment.type'][1]){
             $map['stock_adjustment.type'][1] = cn_to_en($map['stock_adjustment.type'][1]);
-        }
+        }*/
+        
     }
 
 }

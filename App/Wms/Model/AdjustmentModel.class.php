@@ -32,7 +32,8 @@ class AdjustmentModel extends Model {
         'default'=>array(
             'where'=>array('stock_adjustment.is_deleted'=>'0'),
             'order'=>'stock_adjustment.id DESC',
-            
+            'join' => array('left join user on stock_adjustment.created_user = user.id ',),
+            'field' => array('stock_adjustment.*,user.nickname as user_nickname'),
         ),
         'latest'=>array(
             'where'=>array('stock_adjustment.is_deleted'=>'0'),
