@@ -362,7 +362,7 @@ function init(){
 		forceParse: 0
     });
 
-	$("form").validate({
+	$("#aform").validate({
         highlight: function(label) {
             $(label).closest('.control-group').addClass('error');
         },
@@ -374,6 +374,7 @@ function init(){
          submitHandler:function(form){
             form.submit();
         }
+    });
 
 }
 
