@@ -32,6 +32,10 @@ return array(
 	'PAGE_SIZE'         => 10,
 	'DB_BIND_PARAM'    =>    true,
 
+	//session设置
+	'SESSION_OPTIONS'	=> array('expire'=>'3600'),
+	//'SESSION_PREFIX'	=>'wms',
+
 	//缓存设置
 	'DATA_CACHE_TYPE'   => 'redis',
 	'REDIS_HOST'        => '127.0.0.1',
