@@ -7,13 +7,16 @@
 </div>
 <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
 </div>
+
 <div class="form-group ">
 <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="pro_code">内部货号</label>
 <div class="col-lg-5 col-sm-5 col-xs-5">
-<input type="text" class="form-control {required:true,maxlength:45,}"  value="" name="pro_code" id="pro_code"  placeholder="内部货号">
+<input type="text" class="form-control {required:true,maxlength:45,} typeahead"  value="" id="pro_codes"  placeholder="内部货号">
+<input type="hidden" class="form-control {required:true,maxlength:45,}" value="" id="inner_code" name="pro_code">
 </div>
 <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
 </div>
+
 <div class="form-group ">
 <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="pro_uom">计量单位</label>
 <div class="col-lg-5 col-sm-5 col-xs-5">
@@ -35,4 +38,34 @@
 </form>
 </div>
 
+<script type="text/javascript">
 
+$('#pro_codes').typeahead({ 
+    display: 'name',
+    val: 'val',
+    items:10,
+    ajax: {
+      url:"{:U('Purchase/match_code')}",
+      triggerLength: 1,
+      method: 'post',
+      preDispatch: function(data) {
+          return { 'q': data };
+      },
+      preProcess: function(data) {
+        var n =$.parseJSON(data);
+        $.each(n,function(a,b){
+          n[a]['val'] = JSON.stringify(b['val']);
+        }); 
+        return n;
+      }
+    },
+    itemSelected:function(item,val,text) {
+        val = $.parseJSON(val);
+        $('#inner_code').val(val['code']);
+        //$('#table-pro .tr-active .pro_name').val(val['name']);
+        //$('#table-pro .tr-active .pro_attrs').val(val['attrs']);
+        //$('.tr-active').removeClass('tr-active');
+    }
+  });
+
+</script>

@@ -60,8 +60,12 @@ class LocationController extends CommonController {
     }
 
     protected function before_add($M) {
-        //dump($post_data);
-        //dump($M->data());exit;
+        $data = I('post.');
+        if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['picking_line']) || empty($data['putaway_line']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
+	        
+            $this->msgReturn(0,'请填写完整信息');
+        
+        }
     }
     
     protected function after_add($data) {
@@ -103,9 +107,7 @@ class LocationController extends CommonController {
     }
 
     protected function before_edit(&$data) {
-        //$warehouse = M('warehouse');
-        //$wh_code = $warehouse->where('id=' . $data['wh_id'])->getField('warehouse.code');
-        //$data['wh_id'] = $wh_code;
+        dump($data);exit;
     }
     
     protected function before_delete ($ids) {
