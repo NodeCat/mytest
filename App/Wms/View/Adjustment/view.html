@@ -1,25 +1,18 @@
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-&nbsp;&nbsp;调整单号:
-{$data.code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;调整单类型:
-{:en_to_cn($data['type'])}
+<div class="col-md-4">调整单号:{$data.code}</div>
+<div class="col-md-4">调整单类型:{:en_to_cn($data['type'])}</div>
 </br>
 </br>
-&nbsp;&nbsp;调整单状态:
-已执行&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">调整单状态:已执行</div>
 </br>
 </br>
-&nbsp;&nbsp;来源单号:
-{$data.refer_code}
-&nbsp;&nbsp;来源单类型:
-{:get_type_by_bill($data['refer_code'])}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">来源单号:{$data.refer_code}</div>
+<div class="col-md-4">来源单类型:{:get_type_by_bill($data['refer_code'])}</div>
 </br>
 </br>
-&nbsp;&nbsp;创建时间:
-{$data.created_time}
-&nbsp;&nbsp;创建人:
-{$data.user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">创建时间:{$data.created_time}</div>
+<div class="col-md-4">创建人:{$data.user_nickname}</div>
 </br>
 </div>
 </form>

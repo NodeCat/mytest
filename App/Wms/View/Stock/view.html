@@ -1,51 +1,36 @@
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-&nbsp;&nbsp;仓库标识:
-{$data.wh_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;区域名称:
-{$data.area_name}
+<div class="col-md-4">仓库标识:{$data.wh_code}</div>
+<div class="col-md-4">区域名称:{$data.area_name}</div>
 </br>
 </br>
-&nbsp;&nbsp;库位:
-{$data.location_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;库存状态:
-{:en_to_cn($data['status'])}
+<div class="col-md-4">库位:{$data.location_code}</div>
+<div class="col-md-4">库存状态:{:en_to_cn($data['status'])}</div>
 </br>
 </br>
-&nbsp;&nbsp;货品号:
-{$data.pro_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;货品名称:
-{$data.pro_name}
+<div class="col-md-4">货品号:{$data.pro_code}</div>
+<div class="col-md-4">货品名称:{$data.pro_name}</div>
 </br>
 </br>
-&nbsp;&nbsp;在库数量:
-{$data.stock_qty}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;可用数量:
-{$data['stock_qty'] - $data['assign_qty']}
+<div class="col-md-4">在库数量:{$data.stock_qty}</div>
+<div class="col-md-4">可用数量:{$data['stock_qty'] - $data['assign_qty']}</div>
 </br>
 </br>
-&nbsp;&nbsp;待上数量:
-{$data.prepare_qty}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;分配数量:
-{$data.assign_qty}
+<div class="col-md-4">待上数量:{$data.prepare_qty}</div>
+<div class="col-md-4">分配数量:{$data.assign_qty}</div>
 </br>
 </br>
-&nbsp;&nbsp;批次:
-{$data.batch}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">批次:{$data.batch}</div>
 </br>
 </br>
 </br>
 </br>
-&nbsp;&nbsp;创建时间:
-{$data.created_time}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建人:
-{$data.created_user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">创建时间:{$data.created_time}</div>
+<div class="col-md-4">创建人:{$data.created_user_nickname}</div>
 </br>
 </br>
-&nbsp;&nbsp;修改时间:
-{$data.updated_time}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;修改人:
-{$data.updated_user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">修改时间:{$data.updated_time}</div>
+<div class="col-md-4">修改人:{$data.updated_user_nickname}</div>
 </br>
 </br>
 </form>

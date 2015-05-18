@@ -1,50 +1,41 @@
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-&nbsp;&nbsp;关联单据:{$data.refer_code}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;类型:{:en_to_cn($data['type'])}
+<div class="col-md-4">关联单据:{$data.refer_code}</div>
+<div class="col-md-4">类型:{:en_to_cn($data['type'])}</div>
 </br>
 </br>
-&nbsp;&nbsp;批次:{$data.batch}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;产品编号:{$data.pro_code}
+<div class="col-md-4">批次:{$data.batch}</div>
+<div class="col-md-4">产品编号:{$data.pro_code}</div>
 
 </br>
 </br>
-&nbsp;&nbsp;计量单位:{$data.pro_uom}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;移动量:{$data.move_qty}
+<div class="col-md-4">计量单位:{$data.pro_uom}</div>
+<div class="col-md-4">移动量:{$data.move_qty}</div>
 
 </br>
 </br>
-&nbsp;&nbsp;单价:{$data.price_unit}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</br>
-</br>
-&nbsp;&nbsp;原仓库:{$data.src_wh_name}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;原库位:{$data.src_location_name}
+<div class="col-md-4">单价:{$data.price_unit}</div>
 
 </br>
 </br>
-&nbsp;&nbsp;目标仓库:{$data.dest_wh_name}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;目标库位:{$data.dest_location_name}
+<div class="col-md-4">原仓库:{$data.src_wh_name}</div>
+<div class="col-md-4">原库位:{$data.src_location_name}</div>
+
+</br>
+</br>
+<div class="col-md-4">目标仓库:{$data.dest_wh_name}</div>
+<div class="col-md-4">目标库位:{$data.dest_location_name}</div>
 
 </br>
 </br>
 </br>
 </br>
-&nbsp;&nbsp;创建时间:
-{$data.created_time}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建人:
-{$data.created_user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">创建时间:{$data.created_time}</div>
+<div class="col-md-4">创建人:{$data.created_user_nickname}</div>
 </br>
 </br>
-&nbsp;&nbsp;修改时间:
-{$data.updated_time}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;修改人:
-{$data.updated_user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">修改时间:{$data.updated_time}</div>
+<div class="col-md-4">修改人:{$data.updated_user_nickname}</div>
 </br>
 </br>
 </form>

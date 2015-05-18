@@ -4,28 +4,23 @@
 
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-&nbsp;&nbsp;盘点单单号:
-{$inventory_info.code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;盘点单类型:
-{:en_to_cn($inventory_info['type'])}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-md-4">盘点单单号:{$inventory_info.code}</div>
+<div class="col-md-4">盘点单类型:{:en_to_cn($inventory_info['type'])}</div>
 </br>
 </br>
 
-&nbsp;&nbsp;盘点单状态:{:en_to_cn($inventory_info['status'])}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建人:{$inventory_info.created_user_nickname}
+<div class="col-md-4">盘点单状态:{:en_to_cn($inventory_info['status'])}</div>
+<div class="col-md-4">创建人:{$inventory_info.created_user_nickname}</div>
 </br>
 </br>
 
-&nbsp;&nbsp;盘点人:{$inventory_info.updated_user_nickname}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建时间:{$inventory_info.created_time}
+<div class="col-md-4">盘点人:{$inventory_info.updated_user_nickname}</div>
+<div class="col-md-4">创建时间:{$inventory_info.created_time}</div>
 </br>
 </br>
 
-&nbsp;&nbsp;盘点开始时间:{$inventory_info.updated_time}
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;盘点结束时间:{$inventory_info.end_time}
+<div class="col-md-4">盘点开始时间:{$inventory_info.updated_time}</div>
+<div class="col-md-4">盘点结束时间:{$inventory_info.end_time}</div>
 </br>
 </br>
 </div>

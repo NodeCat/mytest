@@ -2,20 +2,14 @@
 
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-&nbsp;&nbsp;盘点单号:
-{$data.code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;盘点单类型:
-{$data.type}
+<div class="col-md-4">盘点单号:{$data.code}</div>
+<div class="col-md-4">盘点单类型:{$data.type}</div>
 </br>
-&nbsp;&nbsp;盘点单状态:
-{$data.status}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建人:
-{$data.created_user}
+<div class="col-md-4">盘点单状态:{$data.status}</div>
+<div class="col-md-4">创建人:{$data.created_user}</div>
 <br>
-&nbsp;&nbsp;盘点人:
-{$data.updated_user}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建时间:
-{$data.created_time}
+<div class="col-md-4">盘点人:{$data.updated_user}</div>
+<div class="col-md-4">创建时间:{$data.created_time}</div>
 <br>
 </div>
 </form>
