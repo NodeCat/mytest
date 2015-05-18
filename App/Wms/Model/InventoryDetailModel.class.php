@@ -33,7 +33,7 @@ class InventoryDetailModel extends Model {
             'where'=>array('stock_inventory_detail.is_deleted'=>'0'),
             'order'=>'stock_inventory_detail.id DESC',
             "join"=>array("inner join location on stock_inventory_detail.location_id=location.id "),
-"field"=>"stock_inventory_detail.*,location.name as location_name,location.code as location_code",
+"field"=>"stock_inventory_detail.*,location.name as location_name,location.code as location_code,case stock_inventory_detail.pro_qty when 0 then '' else stock_inventory_detail.pro_qty end pro_qty",
         ),
         'latest'=>array(
             'where'=>array('stock_inventory_detail.is_deleted'=>'0'),

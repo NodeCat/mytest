@@ -6,7 +6,7 @@ class InventoryController extends CommonController {
 	protected $filter = array(
 			'type' => array('fast' => '快速盘点','again' => '复盘'),
 			'is_diff' => array('0' => '无', '1' => '有'),
-			'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
+			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
 		);
 	protected $columns = array('id' => '',
             'code' => '盘点单号',
@@ -36,7 +36,7 @@ class InventoryController extends CommonController {
 		    'title' => '盘点状态',
 		    'query_type' => 'eq',
 		    'control_type' => 'select',
-		    'value' => array('noinventory'=>'未盘点','inventory'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
 		),
 		'stock_inventory.is_diff' => array (
 		    'title' => '有无差异',
@@ -164,7 +164,7 @@ class InventoryController extends CommonController {
 				case 'noinventory':
 					$data['status'] = '未盘点';
 					break;
-				case 'inventory':
+				case 'inventorying':
 					$data['status'] = '盘点中';
 					break;
 				case 'confirm':
@@ -458,7 +458,7 @@ class InventoryController extends CommonController {
 						'type' => 'again',
 						'status' => 'noinventory',
 						);
-					$stock_inventory = D('stock_inventory');
+					$stock_inventory = D('Inventory');
 					$inventory_data = $stock_inventory->create($inventory_data);
 					$stock_inventory->data($inventory_data)->add();
 					unset($stock_inventory);
@@ -474,7 +474,7 @@ class InventoryController extends CommonController {
 								'pro_qty' => 0,
 								'theoretical_qty' => $inventory_detail['theoretical_qty'],
 								);
-							$stock_inventory_detail = D('stock_inventory_detail');
+							$stock_inventory_detail = D('InventoryDetail');
 							$inventory_detail_data = $stock_inventory_detail->create($inventory_detail_data);
 							$stock_inventory_detail->data($inventory_detail_data)->add();
 							unset($stock_inventory_detail);

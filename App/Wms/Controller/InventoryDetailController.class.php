@@ -17,7 +17,7 @@ class InventoryDetailController extends CommonController {
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
-            'toolbar_tr'=> false
+            'toolbar_tr'=> true,
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
@@ -77,8 +77,43 @@ class InventoryDetailController extends CommonController {
         $inventory_info['updated_user_nickname'] = M('user')->where($map)->getField('nickname');
         unset($map);
 
+        //添加盘点结束时间
+        $map['inventory_code'] = $data[0]['inventory_code'];
+        $inventory_info['end_time'] = M('stock_inventory_detail')->where($map)->order('updated_time desc')->getField('updated_time');
+
         $this->inventory_info = $inventory_info;
 
     }
 
+    //save方法执行后，执行该方法
+    protected function after_save($id){
+        //变更盘点详情状态
+        $map['id'] = $id;
+        $data['status'] = 'done';
+        M('stock_inventory_detail')->where($map)->save($data);
+        unset($data);
+        //unset($map);
+
+        //根据inventory_code 查询盘点单信息
+        $inventory_code = M('stock_inventory_detail')->where($map)->getField('inventory_code');
+        unset($map);
+        $map['code'] = $inventory_code;
+        $inventory_info = M('stock_inventory')->where($map)->find();
+        unset($map);
+
+        //更新对应盘点单状态
+        //获得所有盘点详情的状态
+        $map['inventory_code'] = $inventory_code;
+        $inventory_detail = M('stock_inventory_detail')->where($map)->group('status')->getField('status',true);
+        unset($map);
+
+        //如果所有盘点详情状态都为done，则更新盘点单为待确认
+        if(count($inventory_detail) == 1 && $inventory_detail[0] == 'done'){
+            $map['code'] = $inventory_code;
+            $data['status'] = 'confirm';
+            M('stock_inventory')->where($map)->save($data);
+            unset($data);
+        }
+
+    }
 }
