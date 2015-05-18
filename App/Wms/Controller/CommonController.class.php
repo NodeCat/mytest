@@ -18,7 +18,7 @@ class CommonController extends AuthController {
             'statusbar' => false
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
         );
@@ -231,7 +231,7 @@ class CommonController extends AuthController {
 	            $this->msgReturn(0,'没有找到该记录，请检查表关联或者纪录状态'.$msg);
 	        }
 	        $this->pk = $pk;
-			$this->display();
+			$this->display(ACTION_NAME);
 		}
     }
 
