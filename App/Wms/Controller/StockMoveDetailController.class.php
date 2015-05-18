@@ -15,8 +15,8 @@ class StockMoveDetailController extends CommonController {
             'pro_uom' => '计量单位',
             'move_qty' => '移动量',
             'price_unit' => '单价',
-            'src_wh_name' => '源仓库',
-            'src_location_name' => '源库位',
+            'src_wh_name' => '原仓库',
+            'src_location_name' => '原库位',
             'dest_wh_name' => '目标仓库',
             'dest_location_name' => '目标库位',
             );
@@ -48,12 +48,12 @@ class StockMoveDetailController extends CommonController {
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
-            'toolbar_tr'=> false,
+            'toolbar_tr'=> true,
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 

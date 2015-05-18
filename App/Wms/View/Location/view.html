@@ -1,0 +1,109 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="{:U('edit')}" method="post" id='form'>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="id"></label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<input type="hidden" value="{$data.id}" name="id" id="id" class="form-control {required:true,digits:true,range:[0,4294967295]}"  placeholder="">
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="code">仓库标识</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="code">{$data.warehouse_code}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="name">区域名称</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="name">{$data.area_name}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="address">库位标识</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="address">{$data.code}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">拣货路线</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="status">{$data.picking_line}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">上架路线</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="status">{$data.putaway_line}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">库位类型</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="status">{$data.type_name}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">混放货品</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="status">{$data.is_mixed_pro}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="status">混放批次</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="status">{$data.is_mixed_batch}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="address">创建人</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="address">{$data.created_user}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="address">创建时间</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="address">{$data.created_time}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="address">修改人</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="address">{$data.updated_user}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="address">修改时间</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<label class="control-label" for="address">{$data.updated_time}</label>
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+</form>
+</div>

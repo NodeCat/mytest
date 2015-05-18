@@ -11,7 +11,7 @@ class LocationController extends CommonController {
             unset($data); 
             $data["id"] = '';
             $data["warehouse_code"] = '仓库标识';
-            $data["area_code"] = '区域标识';
+            $data["area_name"] = '区域名称';
             $data["code"] = '库位标识';
             $data['picking_line'] = '拣货路线';
             $data['putaway_line'] = '上架线路';
@@ -55,7 +55,7 @@ class LocationController extends CommonController {
             $val['type_name'] = $type['name'];
 
             $area = $location_area->getById($val['pid']);
-            $val['area_code'] = $area['code'];
+            $val['area_name'] = $area['name'];
          }
     }
 

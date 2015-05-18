@@ -3,10 +3,11 @@ namespace Wms\Controller;
 use Think\Controller;
 class InventoryDetailController extends CommonController {
     protected $columns = array('id' => '',
-            'pro_code' => '产品标识',
             'location_code' => '库位',
-            'pro_qty' => '盘点数量',
-            'theoretical_qty' => '理论库存量',
+            'pro_code' => '货品标识',
+            'pro_name' => '货品名称',
+            'theoretical_qty' => '原数量',
+            'pro_qty' => '实盘量',
             'diff_qty' => '差异量',
             );
 	//设置列表页选项
@@ -16,7 +17,7 @@ class InventoryDetailController extends CommonController {
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
-            'toolbar_tr'=> true
+            'toolbar_tr'=> false
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
@@ -59,6 +60,8 @@ class InventoryDetailController extends CommonController {
 		foreach($data as $key => $data_detail){
 			$data[$key]['diff_qty'] = $data_detail['theoretical_qty'] - $data_detail['pro_qty'];
 		}
+        //添加pro_name字段
+        $data = A('Pms','Logic')->add_fields($data,'pro_name');
         $this->invetory_code = $data[0]['inventory_code'];
 	}
 

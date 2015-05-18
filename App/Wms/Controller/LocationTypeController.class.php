@@ -2,6 +2,16 @@
 namespace Wms\Controller;
 use Think\Controller;
 class LocationTypeController extends CommonController {
+    
+    protected function before_lists(&$M) {
+            $data = $this->columns;
+            $data["length"] = '长度(cm)';
+            $data['width'] = '宽度(cm)';
+            $data['height'] = '高度(cm)';
+            $data['load'] = '载重量(kg)';
+            $this->columns = $data;
+    }
+    
     protected function before_delete ($ids) {
         $location_detail = M('location_detail'); 
         $map['type_id'] = array('in', $ids);

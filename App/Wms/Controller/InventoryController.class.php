@@ -12,10 +12,10 @@ class InventoryController extends CommonController {
             'code' => '盘点单号',
             'location_name' => '区域',
             'type' => '盘点类型',
-            'is_diff' => '有误差异',
-            'remark' => '备注',
             'status' => '状态',
+            'is_diff' => '是否有差异',
             'count_location' => '总库位数',
+            'remark' => '备注',
             'user_nickname' => '创建人',
             'created_time' => '创建时间', 
             );
@@ -32,18 +32,30 @@ class InventoryController extends CommonController {
 		    'control_type' => 'select',
 		    'value' => array('fast'=>'快速盘点'),
 		),
+		'stock_inventory.status' => array (
+		    'title' => '盘点状态',
+		    'query_type' => 'eq',
+		    'control_type' => 'select',
+		    'value' => array('noinventory'=>'未盘点','inventory'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		),
 		'stock_inventory.is_diff' => array (
 		    'title' => '有无差异',
 		    'query_type' => 'eq',
 		    'control_type' => 'select',
 		    'value' => array(0=>'无',1=>'有'),
 		),
-		'stock_inventory.status' => array (
-		    'title' => '状态',
+		'stock_inventory.created_user' => array (
+		    'title' => '创建人',
 		    'query_type' => 'eq',
-		    'control_type' => 'select',
-		    'value' => array('noinventory'=>'未盘点','inventory'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		    'control_type' => 'text',
+		    'value' => '',
 		),
+		'stock_inventory.created_time' =>    array (    
+            'title' => '开始时间',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => '',   
+        ), 
 	);
 	//重载index方法
 	public function index(){

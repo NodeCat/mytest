@@ -27,7 +27,8 @@ class LocationAreaController extends CommonController {
         unset($data);
         $data['id'] = '区域id';
         $data['wh_code'] = '仓库标识';
-        $data['code'] = '区域标识'; 
+        $data['code'] = '区域标识';
+        $data['name'] = '区域名称';
         $data['status'] = '库存状态';
         $this->columns = $data;
     }
