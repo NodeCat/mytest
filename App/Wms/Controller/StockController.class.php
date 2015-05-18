@@ -59,18 +59,10 @@ class StockController extends CommonController {
     }
 	//lists方法执行前，执行该方法
 	/*protected function before_lists(&$M){
-		//整理显示项
-		$columns['id'] = '';
-		$columns['area'] = '区域标识';
-		$columns['pro_code'] = '货品号';
-		$columns['pro_name'] = '货品名称';
-		$columns['location_code'] = '库位';
-		foreach($this->columns as $key => $column){
-			$columns[$key] = $column;
-		}
-		$columns['available_qty'] = '可用量';
-		$columns['status'] = '库存状态';
-		$this->columns = $columns;
+		//如果包含空库位 查询location表
+		if($this->in_empty_location){
+			$M->union("select '','','','','','','','','','','','','','','',code as location_code,'','','' from location where type = 2");
+		}	
 	}*/
 
 	//lists方法执行后，执行该方法
@@ -94,6 +86,21 @@ class StockController extends CommonController {
 		//查询所有库位信息
 		$location_info = M('Location')->where('type = 1')->getField('id,name,code');
 		$this->area_info = $location_info;
+
+		//如果包含空库位 查询location表
+		if($this->in_empty_location){
+			$location_list = M('Location')->where('type = 2')->select();
+			foreach($location_list as $key => $location){
+				$data_empty_location[$key]['location_code'] = $location['code'];
+
+				//根据location_id 查询对应信息
+				$area_info = A('Location','Logic')->getParentById($location['id']);
+				$data_empty_location[$key]['area'] = $area_info['code'];
+				$data_empty_location[$key]['status'] = $area_info['status'];
+			}
+
+			$data = array_merge($data,$data_empty_location);
+		}
 	}
 
 	//serach方法执行后，执行该方法
@@ -151,6 +158,12 @@ class StockController extends CommonController {
 					$pro_codes[] = $SKU['sku_number'];
 				}
 				$map['stock.pro_code'] = array('in',$pro_codes);
+			}
+
+			//是否包含空库位
+			$in_empty_location = I('in_empty_location');
+			if($in_empty_location == 'on'){
+				$this->in_empty_location = true;
 			}
 		}
 	}
