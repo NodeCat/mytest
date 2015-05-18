@@ -9,7 +9,9 @@ class PurchaseModel extends RelationModel {
     public $tableName='stock_purchase';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-        
+        array('wh_id','require','目标仓库不能为空',1,'regex',1),
+        array('company_id','require','所属系统不能为空',1,'regex',1),
+        array('partner_id','require','供货商不能为空',1,'regex',1),
     );
     protected $_link = array(
         "Detail" => array(
@@ -26,7 +28,7 @@ class PurchaseModel extends RelationModel {
                 array('updated_user',UID,3,'string'),
                 array('updated_time','get_time',3,'function'),
                 array('is_deleted','0',1,'string'),
-                array('status','0',1,'string'),
+                array('status','11',1,'string'),
     );
 
     //'数据表字段'=>'表单字段'

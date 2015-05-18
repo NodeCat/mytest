@@ -28,7 +28,52 @@ class StockInController extends CommonController {
   		'sp_created_time' => '采购时间',
 		'status' => '状态', 
 	);
-	
+	protected $query = array (   
+		 'stock_bill_in.code' =>    array (     
+			'title' => '到货单号',     
+			'query_type' => 'like',     
+			'control_type' => 'text',     
+			'value' => 'name',   
+		),  
+		'stock_bill_in.refer_code' =>    array (     
+			'title' => '采购单据',     
+			'query_type' => 'like',     
+			'control_type' => 'text',     
+			'value' => 'Company.id,name',   
+		),   
+		
+		'stock_bill_in.wh_id' =>    array (     
+			'title' => '仓库',     
+			'query_type' => 'eq',     
+			'control_type' => 'getField',     
+			'value' => 'Warehouse.id,name',   
+		),
+		'stock_bill_in.company_id' =>    array (     
+			'title' => '所属系统',     
+			'query_type' => 'eq',     
+			'control_type' => 'getField',     
+			'value' => 'Company.id,name',   
+		),   
+		
+		'stock_bill_in.partner_id' =>    array (     
+			'title' => '供货商',     
+			'query_type' => 'eq',     
+			'control_type' => 'refer',     
+			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
+			),
+		'stock_purchase.created_user' =>    array (     
+			'title' => '采购人',     
+			'query_type' => 'eq',     
+			'control_type' => 'refer',     
+			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
+		),
+		'stock_bill_in.created_time' =>    array (     
+			'title' => '采购时间',     
+			'query_type' => 'between',     
+			'control_type' => 'datetime',     
+			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
+		), 
+	);
 	public function on($t='scan_incode'){
 		$this->cur = '上架';
 		if(IS_GET) {

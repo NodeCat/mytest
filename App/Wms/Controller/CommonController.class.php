@@ -71,20 +71,17 @@ class CommonController extends AuthController {
                         break;
                 }
             }
-            //$map = queryFilter($map);
         }
-        else{
-            $condition = I('q');
-             if(!empty($condition)){
-                $para=explode('&', urldecode($condition));
-                $table = get_tablename();
-                foreach ($para as $key => $v) {
-                    $cond=explode('=', $v);
-                    if(count($cond)===2)
-                        $map[$table.'.'.$cond[0]]=$cond[1];
-                }
+        $condition = I('q');
+         if(!empty($condition)){
+            $para=explode('&', urldecode($condition));
+            foreach ($para as $key => $v) {
+                $cond=explode('=', $v);
+                if(count($cond)===2)
+                    $map[$table.'.'.$cond[0]]=$cond[1];
             }
         }
+        
         
         $this->after($map,'search');
         //dump($map);
@@ -234,9 +231,7 @@ class CommonController extends AuthController {
             $res = $M->scope('default')->where($map)->limit(1)->find();
 	        if(!empty($res) && is_array($res)){
                 $this->before($res,'edit');
-                if(ACTION_NAME == 'view') {
-                    $this->filter_list($res);
-                }
+                
 	            $this->data = $res;
 	        }
 	        else{
