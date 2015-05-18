@@ -10,7 +10,7 @@ class LocationController extends CommonController {
             $data = $this->columns;
             unset($data); 
             $data["id"] = '';
-            $data["wh_id"] = '仓库标识';
+            $data["warehouse_code"] = '仓库标识';
             $data["area_code"] = '区域标识';
             $data["code"] = '库位标识';
             $data['picking_line'] = '拣货路线';
@@ -60,8 +60,12 @@ class LocationController extends CommonController {
     }
 
     protected function before_add($M) {
-        //dump($post_data);
-        //dump($M->data());exit;
+        $data = I('post.');
+        if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['picking_line']) || empty($data['putaway_line']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
+	        
+            $this->msgReturn(0,'请填写完整信息');
+        
+        }
     }
     
     protected function after_add($data) {
@@ -103,9 +107,7 @@ class LocationController extends CommonController {
     }
 
     protected function before_edit(&$data) {
-        //$warehouse = M('warehouse');
-        //$wh_code = $warehouse->where('id=' . $data['wh_id'])->getField('warehouse.code');
-        //$data['wh_id'] = $wh_code;
+        //dump($data);exit;
     }
     
     protected function before_delete ($ids) {
@@ -119,5 +121,13 @@ class LocationController extends CommonController {
             }
             
         }
+    }
+
+    protected function after_delete($ids) {
+        $location_detail = M('location_detail');
+            $map['location_id'] = array('in',$ids);
+            $data['is_deleted'] = 1;
+            $res = $location_detail->where($map)->save($data);
+        
     }
 }

@@ -11,53 +11,45 @@
 <div class="alert alert-success text-center" role="alert">{$msg}</div>
 </notempty>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
-<form class="form-horizontal form-view" method="POST">
+<form class="form-horizontal form-pda form-view" method="POST">
 <input type="hidden" name="wh_id" value="{$wh_id}"/>
 <input type="hidden" name="location_id" value="{$location_id}"/>
 <input type="hidden" name="pro_code" value="{$pro_code}"/>
   <div class="form-group">
-    <label for="location" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">从库位</label>
-    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$location_code}</label>
-    </div>
+    <label for="location" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">从库位</label>
+    <label for="pro_code" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$location_code}</label>
   </div>
   <br>
 
   <div class="form-group">
-    <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品号</label>
-    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$pro_code}</label>
-    </div>
+    <label for="pro_code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品号</label>
+    <label for="pro_code" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$pro_code}</label>
   </div>
   <br>
   
   <div class="form-group">
-    <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品名称</label>
-    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$pro_name}</label>
-    </div>
+    <label for="pro_code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品名称</label>
+    <label for="pro_code" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$pro_name}</label>
   </div>
   <br>
  
   <div class="form-group">
-    <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">可移动数量</label>
-    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-        <label for="pro_code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">{$variable_qty}</label>
-    </div>
+    <label for="pro_code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">可移动数量</label>
+    <label for="pro_code" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$variable_qty}</label>
   </div>
   <br>
 
   <div class="form-group">
-    <label for="batch" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">到库位</label>
-    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+    <label for="batch" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">到库位</label>
+    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
       <input type="text" class="form-control input-lg" name="dest_location_code" id="dest_location_code" placeholder="请输目的库位编号">
     </div>
   </div>
   <br>
 
   <div class="form-group">
-    <label for="batch" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">移动数量</label>
-    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+    <label for="batch" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">移动数量</label>
+    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
       <input type="text" class="form-control input-lg" name="variable_qty" id="variable_qty" value="{$variable_qty}" disabled>
     </div>
   </div>
