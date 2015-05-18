@@ -142,6 +142,17 @@ class StockInLogic{
 		$batch   = $in['code'];
 		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status);
 		
+		if($res == true) {
+			$oned = $this->checkOn($inId); 
+			
+			if($oned == 2) {
+				$data['status'] = '53';
+				$map['id'] = $inId;
+				$map['status'] = '31';
+				$map['is_deleted'] = 0;
+				M('stock_bill_in')->where($map)->save($data);
+			}
+		}
 		if($res == true){
 			return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$pro_qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
 		}
@@ -171,8 +182,24 @@ class StockInLogic{
 		$status  = 'unknown';
 		$wh_id = $in['wh_id'];
 		$res = A('Stock','Logic')->adjustStockByPrepare($wh_id,$refer_code,$code,$qty,$pro_uom,$status);
-		
+		if($res == true) {
+			$ined = $this->checkIn($inId);
+			if($ined == 2) {
+				$data['status'] = '31';
+				$map['id'] = $inId;
+				$map['status'] = '21';
+				$map['is_deleted'] = 0;
+				M('stock_bill_in')->where($map)->save($data);
+
+				unset($map);
+				unset($data);
+				$map['code'] = $in['refer_code'];
+				$data['status'] = '23';
+				M('stock_purchase')->where($map)->save($data);
+			}
+		}
 		if($res == true){
+
 			return array('res'=>true,'msg'=>'数量：<strong>'.$qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
 			
 		}
@@ -185,18 +212,21 @@ class StockInLogic{
 		if(!empty($pro_code)) {
 			$map['pro_code'] = $pro_code;
 		}
-		$in = $M->group('refer_code,pro_code')->where($map)->getField('refer_code,pro_code,sum(pro_qty) as qty_total');
+		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,sum(pro_qty) as qty_total');
 		unset($map['pid']);
-		$map['refer_code'] = $in['refer_code'];
+		$row = reset($in);
+		$map['refer_code'] = $row['refer_code'];
+		$map['type'] = 'in';
 		$map['status'] = '0';
-		$moved = M('stock_move')->where($map)->field('pro_code,sum(move_qty) as qty_total')->find();
-		if(empty($moved['pro_code'])) {
+		$moved = M('stock_move')->where($map)->group('pro_code')->getField('pro_code,sum(move_qty) as qty_total');
+
+		if(empty($moved)) {
 			return 0;
 		}
-		dump($moved);
+
 		foreach ($in as $key => $val) {
 			if(array_key_exists($key, $moved)) {
-				if($val != $moved[$key]) {
+				if($val['qty_total'] != $moved[$key]) {
 					return 1;
 				}
 			}
@@ -206,6 +236,30 @@ class StockInLogic{
 		}
 		return 2;
 		
+	}
+
+	public  function checkOn($inId,$pro_code=''){
+		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
+		$map['location_id'] = '0';
+		if(!empty($pro_code)) {
+			$map['pro_code'] = $pro_code;
+		}
+		if($in['status']=='21') {
+			return 1;
+		}
+		$map['type'] = 'in';
+		$map['status'] = 'unknown';
+		$map['batch'] = $in['code'];
+		$res = M('stock')->where($map)->getField('pro_code,stock_qty,prepare_qty');
+		if(empty($res)) {
+			return 0;
+		}
+		foreach ($res as $key => $val) {
+			if($val['prepare_qty'] != 0 ){
+				return 1;
+			}
+		}
+		return 2;
 	}
 
 	public function getQtyForIn($inId,$pro_code){

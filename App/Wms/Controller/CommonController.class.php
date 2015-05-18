@@ -323,10 +323,10 @@ class CommonController extends AuthController {
     }
     public function import() {
         $info = $this->upload();
-        $data = get_setting(CONTROLLER_NAME);
+        $table = get_tablename(CONTROLLER_NAME);
+        $data = get_setting($table);
         $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
         $sheet = $this->get_excel_sheet();
-
 
     }
 
@@ -335,7 +335,8 @@ class CommonController extends AuthController {
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel(); 
         $i = 1;
-        $res = get_setting(CONTROLLER_NAME);
+        $table = get_tablename(CONTROLLER_NAME);
+        $res = get_setting($table);
         $columns = $res['list'];
         $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
         $Sheet = $this->get_excel_sheet($Excel);
@@ -345,8 +346,8 @@ class CommonController extends AuthController {
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
-        $M  =  M(CONTROLLER_NAME);
-        $result = $M->select();
+        $M  =  D(CONTROLLER_NAME);
+        $result = $M->scope('default')->select();
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;
             foreach ($columns as $key  => $value){
