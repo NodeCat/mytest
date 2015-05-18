@@ -1803,6 +1803,9 @@ class Model {
         
         return $this;
     }
+    public function getWhere(){
+        return $this->options['where'];
+    }
 
     /**
      * 指定查询数量

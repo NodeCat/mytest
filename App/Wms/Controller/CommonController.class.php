@@ -44,6 +44,15 @@ class CommonController extends AuthController {
         $this->before($query,'search');
         $condition = I('query');
         $condition = queryFilter($condition);
+        $table = get_tablename(CONTROLLER_NAME);
+        $get = I('get.');unset($get['p']);
+        foreach ($get as $key => $value) {
+            $param[$table.'.'.$key] = $value;
+            if(!array_key_exists($key, $condition)) {
+                $condition[$table.'.'.$key] = $value;
+            }
+        }
+        $this->condition = $condition;
         !empty($condition) && $this->filter_list($condition, '1');
         if(!empty($condition)){
             foreach ($query as $key => $v) {
@@ -162,12 +171,14 @@ class CommonController extends AuthController {
 
         $M2 = clone $M;
         $M->page($p.','.$page_size);
+        
         $data = $M->select();
         $count  = $M2->page()->limit()->count();
         $this->after($data,'lists');
         $this->filter_list($data);
         $this->data = $data;
-        $this->page($count,$map,$template);
+        $maps = $this->condition;
+        $this->page($count,$maps,$template);
     }
 
     public function _before_refer() {
@@ -223,7 +234,9 @@ class CommonController extends AuthController {
             $res = $M->scope('default')->where($map)->limit(1)->find();
 	        if(!empty($res) && is_array($res)){
                 $this->before($res,'edit');
-                //$this->filter_list($res);
+                if(ACTION_NAME == 'view') {
+                    $this->filter_list($res);
+                }
 	            $this->data = $res;
 	        }
 	        else{

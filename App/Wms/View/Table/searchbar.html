@@ -23,8 +23,8 @@
             </div>
             <eq name="vo['query_type']" value="between">{~$a++}
             </div></div>
-            <div class="form-group  col-lg-3">
-            <label class="control-label col-lg-4 col-sm-4 col-xs-4">&nbsp;&nbsp;—&nbsp;&nbsp;</label>
+            <div class="form-group  col-lg-3  text-left">
+            <label class="control-label col-lg-4 col-sm-4 col-xs-4">－</label>
             <div class="col-lg-8 col-sm-8 col-xs-8">
             <div class="input-group input-group-sm">
                 <input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
@@ -37,7 +37,7 @@
         <case value="digit">{~$a++}
             <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm">
             <eq name="vo['query_type']" value="between">
-                 &nbsp;&nbsp;—&nbsp;&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm">
+                －&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm">
             </eq>
         </case>
         <case value="checkbox" >{~$a++}
