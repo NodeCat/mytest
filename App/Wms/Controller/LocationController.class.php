@@ -107,7 +107,7 @@ class LocationController extends CommonController {
     }
 
     protected function before_edit(&$data) {
-        dump($data);exit;
+        //dump($data);exit;
     }
     
     protected function before_delete ($ids) {
