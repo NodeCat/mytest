@@ -26,12 +26,12 @@ class HttpCurl{
         if(isset($options['timeout'])){
             $httpRequest->set_timeout($options['timeout']);
         }else{
-        	$httpRequest->set_timeout(15000);
+        	$httpRequest->set_timeout(8000);
         }
         if(isset($options['connect_timeout'])){
             $httpRequest->set_connect_timeout($options['connect_timeout']);
         }else{
-        	$httpRequest->set_connect_timeout(15000);
+        	$httpRequest->set_connect_timeout(8000);
         }
 
         $httpRequest->send();
@@ -61,12 +61,12 @@ class HttpCurl{
         if(isset($options['timeout'])){
             $httpRequest->set_timeout($options['timeout']);
         }else{
-            $httpRequest->set_timeout(15000);
+            $httpRequest->set_timeout(8000);
         }
         if(isset($options['connect_timeout'])){
             $httpRequest->set_connect_timeout($options['connect_timeout']);
         }else{
-            $httpRequest->set_connect_timeout(15000);
+            $httpRequest->set_connect_timeout(8000);
         }
 
         if(isset($options['header'])){
@@ -77,7 +77,7 @@ class HttpCurl{
 
         if($post_json){
             $httpRequest->add_header('Content-Type','application/json; charset=utf-8');
-            $httpRequest->add_header('Content-Length',strlen($args));
+            //$httpRequest->add_header('Content-Length',strlen($args));
         }
 
         $httpRequest->send();

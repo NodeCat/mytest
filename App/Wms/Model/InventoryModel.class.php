@@ -32,8 +32,10 @@ class InventoryModel extends Model {
         'default'=>array(
             'where'=>array('stock_inventory.is_deleted'=>'0'),
             'order'=>'stock_inventory.id DESC',
-            "join"=>array("left join location on stock_inventory.location_id=location.id "),
-"field"=>"stock_inventory.*,location.name as location_name",
+            "join"=>array(
+                "left join location on stock_inventory.location_id=location.id ",
+                "left join user on stock_inventory.created_user = user.id "),
+"field"=>"stock_inventory.*,location.name as location_name,user.nickname as user_nickname",
         ),
         'latest'=>array(
             'where'=>array('stock_inventory.is_deleted'=>'0'),

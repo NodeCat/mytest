@@ -2,6 +2,18 @@
 namespace Wms\Controller;
 use Think\Controller;
 class StockController extends CommonController {
+	protected $columns = array('id' => '',
+            'area' => '区域标识',
+            'pro_code' => '货品号',
+            'pro_name' => '货品名称',
+            'location_code' => '库位',
+            'batch' => '批次号',
+            'status' => '库存状态',
+            'stock_qty' => '库存量',
+            'assign_qty' => '分配量',
+            'prepare_qty' => '待上架量', 
+            'available_qty' => '可用量',
+            );
 	//页面展示数据映射关系 例如取出数据是qualified 显示为合格
 	protected $filter = array(
 			'status' => array('qualified' => '合格','unqualified' => '残次'),
@@ -32,7 +44,7 @@ class StockController extends CommonController {
         $this->search_addon = true;
     }
 	//lists方法执行前，执行该方法
-	protected function before_lists(&$M){
+	/*protected function before_lists(&$M){
 		//整理显示项
 		$columns['id'] = '';
 		$columns['area'] = '区域标识';
@@ -45,7 +57,7 @@ class StockController extends CommonController {
 		$columns['available_qty'] = '可用量';
 		$columns['status'] = '库存状态';
 		$this->columns = $columns;
-	}
+	}*/
 
 	//lists方法执行后，执行该方法
 	protected function after_lists(&$data){
@@ -55,7 +67,9 @@ class StockController extends CommonController {
 			//可用量=库存量-配送量
 			$data[$key]['available_qty'] = $data_detail['stock_qty'] - $data_detail['assign_qty'];
 			//区域标识
-			$data[$key]['area'] = $data_detail['location_name'];
+			$location_info = A('Location','Logic')->getParentById($data_detail['location_id']);
+			$data[$key]['area'] = $location_info['code'];
+			unset($location_info);
 			//库位
 			$data[$key]['location_code'] = $data_detail['location_code'];
 		}
@@ -142,7 +156,7 @@ class StockController extends CommonController {
 			$map['id'] = $data['location_id'];
 			$location_code = M('Location')->where($map)->getField('code');
 			unset($map);
-			$data['location_name'] = $location_code;
+			$data['location_code'] = $location_code;
 		}
 		//view edit 展示
 		switch($data['status']){
@@ -216,8 +230,8 @@ class StockController extends CommonController {
 			if(I('editStockMove')){
 				//创建库存移动记录
 				//根据pro_code 查询产品信息
-				$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
-				$SKU = $SKUs['list'][0];
+				//$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
+				//$SKU = $SKUs['list'][0];
 				$stock_move_data = array(
 					'type' => 'move_location',
 					'batch' => I('batch'),
@@ -226,10 +240,12 @@ class StockController extends CommonController {
 					'price_unit' => 0,
 					'src_wh_id' => I('wh_id'),
 					'dest_wh_id' => I('wh_id'),
-					'src_location_id' => I('location_id'),
+					'src_location_id' => I('src_location_id'),
 					'dest_location_id' => I('location_id'),
 					);
-				M('stock_move')->data($stock_move_data)->add();
+				$stock_move = D('stock_move');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
 			}
 		}
 	}
@@ -296,7 +312,7 @@ class StockController extends CommonController {
 		//查询库存信息
 		$stock_infos = A('Stock','Logic')->getStockInfosByCondition($params);
 		$stock_info = $stock_infos[$cur_page - 1];
-		$stock_info['available_qty'] = $stock_info['stock_qty'] = $stock_info['assign_qty'];
+		$stock_info['available_qty'] = $stock_info['stock_qty'] - $stock_info['assign_qty'];
 
 		$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes(array($stock_info['pro_code']));
 		$stock_info['pro_name'] = $SKUs[$stock_info['pro_code']]['wms_name'];
@@ -307,7 +323,7 @@ class StockController extends CommonController {
 		unset($map);
 		$stock_info['location_code'] = $location_info['code'];
 
-		if($stock_info['status'])
+		//if($stock_info['status'])
 
 		$data['count'] = $count;
 		$data['cur_page'] = $cur_page;

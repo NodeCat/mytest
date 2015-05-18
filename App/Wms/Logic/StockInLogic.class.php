@@ -310,7 +310,7 @@ class StockInLogic{
 		return $detail;
 	}
 	public function finishByPurchase($purchaseId) {
-		$map['id_deleted'] = 0;
+		$map['is_deleted'] = 0;
 		$map['id'] = $purchaseId;
 		$data['status'] = '23'; //完成
 		$M = M('stock_purchase');

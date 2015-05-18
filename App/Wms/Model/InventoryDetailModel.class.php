@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Model;
 use Think\Model;
-class InventorydetailModel extends Model {
+class InventoryDetailModel extends Model {
 
     protected $insertFields = array('id','inventory_code','pro_code','location_id','pro_qty','theoretical_qty','created_user','created_time','updated_user','updated_time','status','is_deleted');
     protected $updateFields = array('inventory_code','pro_code','location_id','pro_qty','theoretical_qty','created_user','created_time','updated_user','updated_time','status','is_deleted');

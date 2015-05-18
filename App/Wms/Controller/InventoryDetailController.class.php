@@ -2,6 +2,13 @@
 namespace Wms\Controller;
 use Think\Controller;
 class InventoryDetailController extends CommonController {
+    protected $columns = array('id' => '',
+            'pro_code' => '产品标识',
+            'location_code' => '库位',
+            'pro_qty' => '盘点数量',
+            'theoretical_qty' => '理论库存量',
+            'diff_qty' => '差异量',
+            );
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
@@ -12,9 +19,9 @@ class InventoryDetailController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'view', 'show' => false,'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
@@ -28,21 +35,14 @@ class InventoryDetailController extends CommonController {
     }
 
     public function index() {
+        $tmpl = IS_AJAX ? 'Table:list':'index';
         //$this->before($map,'index');
         $this->before_index();
-        $this->lists('index');
+        $this->lists($tmpl);
     }
 
     //lists方法执行前，执行该方法
 	protected function before_lists(&$M){
-        $this->columns = array (
-			'id' => '',
-			'pro_code' => '产品标识',
-			'location_code' => '库位',
-			'pro_qty' => '盘点数量',
-			'theoretical_qty' => '理论库存量',
-			'diff_qty' => '差异量',
-		);
 
 		//根据inventory_id 查询对应code
 		$inventory_id = I('id');
@@ -61,6 +61,5 @@ class InventoryDetailController extends CommonController {
 		}
         $this->invetory_code = $data[0]['inventory_code'];
 	}
-
 
 }
