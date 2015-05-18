@@ -15,8 +15,8 @@ class StockMoveDetailController extends CommonController {
             'pro_uom' => '计量单位',
             'move_qty' => '移动量',
             'price_unit' => '单价',
-            'src_wh_name' => '源仓库',
-            'src_location_name' => '源库位',
+            'src_wh_name' => '原仓库',
+            'src_location_name' => '原库位',
             'dest_wh_name' => '目标仓库',
             'dest_location_name' => '目标库位',
             );

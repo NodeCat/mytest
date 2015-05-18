@@ -4,7 +4,7 @@ use Think\Controller;
 class AdjustmentController extends CommonController {
     //页面展示数据映射关系 例如取出数据是Qualified 显示为合格
     protected $filter = array(
-        'type' => array('inventory' => '盘点','move' => '库存移动'),
+        'type' => array('inventory' => '盘点','move' => '库存移动','change_status' => '状态调整'),
         //'is_diff' => array('0' => '无', '1' => '有'),
         //'status' => array('noinventory' => '未盘点', 'inventory' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
         'status' => array('qualified' => '合格'),

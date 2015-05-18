@@ -241,9 +241,12 @@ class StockController extends CommonController {
 				$adjustment_code = get_sn('adjust');
 				$adjustment_data = array(
 					'code' => $adjustment_code,
-					'type' => 'move',
+					'type' => 'change_status',
+					'refer_code' => 'STOCK'.$res,
 					);
-				M('Stock_adjustment')->data($adjustment_data)->add();
+				$stock_adjustment = D('Adjustment');
+				$adjustment_data = $stock_adjustment->create($adjustment_data);
+				$stock_adjustment->data($adjustment_data)->add();
 
 				//创建库存调整单详情
 				$adjustment_detail_data = array(
@@ -254,7 +257,9 @@ class StockController extends CommonController {
 					'origin_status' => I('origin_status'),
 					'adjust_status' => I('status'),
 					);
-				M('Stock_adjustment_detail')->data($adjustment_detail_data)->add();
+				$stock_adjustment_detail = D('AdjustmentDetail');
+				$stock_adjustment_detail_data = $stock_adjustment_detail->create($adjustment_detail_data);
+				$stock_adjustment_detail->data($stock_adjustment_detail_data)->add();
 			}
 
 			//库存移动完成后触发的方法

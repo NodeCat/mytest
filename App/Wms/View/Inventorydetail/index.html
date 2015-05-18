@@ -4,8 +4,31 @@
 
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
+	{:dump($data)}
 &nbsp;&nbsp;盘点单单号:
 {$invetory_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;盘点单类型:
+{$invetory_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</br>
+</br>
+
+&nbsp;&nbsp;盘点单状态:{$data.batch}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;创建人:{$data.pro_code}
+</br>
+</br>
+
+&nbsp;&nbsp;盘点人:{$data.batch}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;创建时间:{$data.pro_code}
+</br>
+</br>
+
+&nbsp;&nbsp;盘点开始时间:{$data.batch}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;盘点结束时间:{$data.pro_code}
+</br>
+</br>
 </div>
 </form>
 
