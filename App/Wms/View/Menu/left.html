@@ -2,18 +2,25 @@
 <div class='sidebar-nav'>
 <div class="tab-content">
 <volist name="menu[1]" id="vo" empty="" >
+
 <eq name="vo['show']" value="1">
-<eq name="pid" value="$vo.pid">
-		<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
-<else/>
-<neq name="i" value="1">
-	</div>
-</div>
-</neq>
-	<div class='<eq name="i" value="1">tab-pane<else/>tab-pane</eq>' id="tab_{$vo.pid}">
-	  <div class="list-group">
-			<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
-</eq>
+	<neq name="pid" value="$vo.pid">
+		<neq name="i" value="1">
+			</div></div>
+		</neq>
+		<div class='tab-pane' id="tab_{$vo.pid}">
+		<div class="list-group">
+	</neq>
+		
+			<empty name="vo['link']">
+				<span id="nav_link_{$vo['id']}" class="list-group-item panel-heading"><i class="glyphicon glyphicon-chevron-u"></i>{$vo['name']}</span>
+				<volist name="menu[2][$vo['id']]" id ="m2">
+				<a id="nav_link_{$m2['id']}" href="{:strpos($m2['link'], 'http')===false?U($m2['link']):$m2['link']}" target="{$m2['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$m2['name']}</a>
+			</volist>
+				<else/>
+				<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
+			</empty>
+		
 	<assign name="pid" value="$vo.pid" />
 </eq>
 </volist>
@@ -22,6 +29,7 @@
 		</div>
 	</div>
 </notempty>
+
 </div>
 </div>
 <script>

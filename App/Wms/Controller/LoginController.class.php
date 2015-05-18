@@ -67,10 +67,11 @@ class LoginController extends Controller {
     public function logout(){
         if(is_login()){
             destory_session();
-            $this->success('退出成功！', U('index'),3);
-        } else {
-            $this->redirect('Login/index');
-        }
+        
+        }//$this->success('退出成功！', U('index'),3);
+        
+        $this->redirect('Login/index');
+        
     }
 
 

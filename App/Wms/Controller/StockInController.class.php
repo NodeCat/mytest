@@ -247,6 +247,15 @@ class StockInController extends CommonController {
         );
         
     }
+    public function pview() {
+        $this->edit();
+    }
+    public function pindex() {
+    	$this->_before_index();
+    	$this->before_index();
+    	//$tmpl = IS_AJAX ? 'Table:list':'index';
+        $this->lists();
+    }
     public function before_lists(){
     	$pill = array(
 			'status'=> array(
