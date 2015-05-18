@@ -243,7 +243,7 @@ class StockInController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
         );
         
     }
@@ -253,6 +253,9 @@ class StockInController extends CommonController {
     public function pindex() {
     	$this->_before_index();
     	$this->before_index();
+    	$this->toolbar_tr =array(
+            array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+        );
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
     }

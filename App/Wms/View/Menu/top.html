@@ -1,6 +1,6 @@
 {__NOLAYOUT__}
 <notempty name="menu[0]">
-	<volist name="menu[0]" id="vo" empty="s" >
+	<volist name="menu[0][0]" id="vo" empty="s" >
 	<li><eq name="vo['show']" value="1">
 		<empty name="vo['link']">
 			<a href="#tab_{$vo.id}" data-toggle="tab">{$vo['icon']} {$vo['name']}</a>
