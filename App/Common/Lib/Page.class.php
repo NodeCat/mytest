@@ -43,8 +43,7 @@ class Page{
         /* 基础设置 */
         $this->totalRows  = $totalRows; //设置总记录数
         $this->listRows   = $listRows;  //设置每页显示行数
-        //$this->parameter  = empty($parameter) ? $_GET : $parameter;
-        $this->parameter  = is_array($parameter)?implode('&' , $parameter):$parameter;
+        $this->parameter  = $parameter;
         $this->nowPage    = empty($_GET[$this->p]) ? 1 : intval($_GET[$this->p]);
         $this->firstRow   = $this->listRows * ($this->nowPage - 1);
         $this->target = $target;
@@ -76,8 +75,29 @@ class Page{
     public function show() {
         if(0 == $this->totalRows) return '';
         /* 生成URL */
-        $params[$this->p] = '[PAGE]';
-        $this->url = U(CONTROLLER_NAME.'/'.ACTION_NAME, $this->parameter.'&'.$this->p.'=[PAGE]');
+        if($this->url){
+            $depr       =   C('URL_PATHINFO_DEPR');
+            $url        =   rtrim(U('/'.$this->url,'',false),$depr).$depr.'__PAGE__';
+        }else{
+            if($this->parameter && is_string($this->parameter)) {
+                parse_str($this->parameter,$parameter);
+            }elseif(is_array($this->parameter)){
+                $parameter      =   $this->parameter;
+            }elseif(empty($this->parameter)){
+                unset($_GET[C('VAR_URL_PARAMS')]);
+                $var =  !empty($_POST)?$_POST:$_GET;
+                if(empty($var)) {
+                    $parameter  =   array();
+                }else{
+                    $parameter  =   $var;
+                }
+            }
+            $parameter[$this->p]  =   '[PAGE]';
+            $url            =   U('',$parameter);
+        }
+        
+        $this->url = U(CONTROLLER_NAME.'/'.ACTION_NAME, $parameter);
+        
         /* 计算分页信息 */
         $this->totalPages = ceil($this->totalRows / $this->listRows); //总页数
         if(!empty($this->totalPages) && $this->nowPage > $this->totalPages) {
