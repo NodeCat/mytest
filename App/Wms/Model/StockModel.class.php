@@ -31,8 +31,11 @@ class StockModel extends Model {
         'default'=>array(
             'where'=>array('stock.is_deleted'=>'0'),
             'order'=>'stock.id DESC',
-            "join"=>array("inner join location on stock.location_id=location.id ","inner join warehouse on stock.wh_id=warehouse.id "),
-"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.name as warehouse_name",
+            "join"=>array("inner join location on stock.location_id=location.id ",
+                "inner join warehouse on stock.wh_id=warehouse.id ",
+                "inner join user u1 on stock.created_user = u1.id",
+                "inner join user u2 on stock.updated_user = u2.id"),
+"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.code as wh_code,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
         ),
         'latest'=>array(
             'where'=>array('stock.is_deleted'=>'0'),

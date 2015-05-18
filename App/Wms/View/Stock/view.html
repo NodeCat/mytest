@@ -1,13 +1,13 @@
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
 &nbsp;&nbsp;仓库标识:
-{$data.code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{$data.wh_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;区域名称:
-{$data.type}
+{$data.area_name}
 </br>
 </br>
 &nbsp;&nbsp;库位:
-{$data.status}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{$data.location_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;库存状态:
 {:en_to_cn($data['status'])}
 </br>
@@ -34,20 +34,18 @@
 {$data.batch}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br>
 </br>
+</br>
+</br>
 &nbsp;&nbsp;创建时间:
 {$data.created_time}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</br>
-</br>
 &nbsp;&nbsp;创建人:
-{$data.created_user}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{$data.created_user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br>
 </br>
 &nbsp;&nbsp;修改时间:
 {$data.updated_time}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</br>
-</br>
 &nbsp;&nbsp;修改人:
-{$data.updated_user}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{$data.updated_user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br>
 </br>
 </form>

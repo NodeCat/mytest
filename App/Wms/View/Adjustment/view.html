@@ -1,9 +1,10 @@
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
+  {:dump($data)}
 &nbsp;&nbsp;调整单号:
 {$data.code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;调整单单类型:
-{$data.type}
+{:en_to_cn($data['type'])}
 </br>
 </br>
 &nbsp;&nbsp;调整单状态:
@@ -13,11 +14,13 @@
 &nbsp;&nbsp;来源单号:
 {$data.refer_code}
 &nbsp;&nbsp;来源单类型:
-{$data.type}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{:get_type_by_bill($data['refer_code'])}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br>
 </br>
 &nbsp;&nbsp;创建时间:
 {$data.created_time}
+&nbsp;&nbsp;创建人:
+{$data.user_nickname}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br>
 </div>
 </form>

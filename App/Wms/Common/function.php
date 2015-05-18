@@ -119,6 +119,11 @@ function en_to_cn($str){
     $filter = array(
         'qualified' => '合格',
         'unqualified' => '残次',
+        'in' => '收货',
+        'on' => '上架',
+        'move_location' => '库存移动',
+        'move' => '库存移动',
+        'inventory' => '盘点'
         );
 
     return $filter[$str];
@@ -135,4 +140,13 @@ function cn_to_en($str){
         );
 
     return $filter[$str];
+}
+
+//根据单号返回单据中文类型
+function get_type_by_bill($bill_code){
+    if(strstr($bill_code,'PD')){
+        $type = '盘点单';
+    }
+
+    return $type;
 }

@@ -37,8 +37,10 @@ class StockMoveDetailModel extends Model {
                 "left join warehouse dest_wh on stock_move.dest_wh_id=dest_wh.id ",
                 "left join location src_location on stock_move.src_location_id=src_location.id",
                 "left join location dest_location on stock_move.dest_location_id=dest_location.id",
+                "inner join user u1 on stock_move.created_user = u1.id",
+                "inner join user u2 on stock_move.updated_user = u2.id"
                 ),
-"field"=>"stock_move.*,src_wh.name as src_wh_name,dest_wh.name as dest_wh_name,src_location.name as src_location_name,dest_location.name as dest_location_name",
+"field"=>"stock_move.*,src_wh.name as src_wh_name,dest_wh.name as dest_wh_name,src_location.name as src_location_name,dest_location.name as dest_location_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
 
         ),
         'latest'=>array(

@@ -7,13 +7,27 @@ class StockController extends CommonController {
             'pro_code' => '货品号',
             'pro_name' => '货品名称',
             'location_code' => '库位',
-            'batch' => '批次号',
-            'status' => '库存状态',
-            'stock_qty' => '库存量',
-            'assign_qty' => '分配量',
+            'batch' => '批次',
+            'stock_qty' => '在库数量',
             'prepare_qty' => '待上架量', 
-            'available_qty' => '可用量',
+            'assign_qty' => '分配数量',
+            'available_qty' => '可用数量',
+            'status' => '库存状态',
             );
+	protected $query   = array (
+		'stock.pro_code' => array (
+		    'title' => '货品号',
+		    'query_type' => 'like',
+		    'control_type' => 'text',
+		    'value' => '',
+		),
+		'stock.batch' => array (
+		    'title' => '批次',
+		    'query_type' => 'like',
+		    'control_type' => 'text',
+		    'value' => '',
+		),
+	);
 	//页面展示数据映射关系 例如取出数据是qualified 显示为合格
 	protected $filter = array(
 			'status' => array('qualified' => '合格','unqualified' => '残次'),
@@ -25,12 +39,12 @@ class StockController extends CommonController {
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
-            'toolbar_tr'=> false,
+            'toolbar_tr'=> true,
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
@@ -170,11 +184,28 @@ class StockController extends CommonController {
 				break;
 		}
 
-		//根据pro_code 查询对应的pro_name
-		//$pro_codes = array($data['pro_code']);
+		if(ACTION_NAME == 'view'){
+			//根据pro_code 查询对应的pro_name
+			$pro_codes = array($data['pro_code']);
+			$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+			$data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];
 
-		//$SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
-		//$data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];
+			//区域标识
+			$location_info = A('Location','Logic')->getParentById($data['location_id']);
+			$data['area_name'] = $location_info['name'];
+
+			//根据location.id 查询库位信息
+			/*$map['id'] = $data['location_id'];
+			$location_info = M('Location')->where($map)->find();
+			$data['location_code'] = $location_info['code'];
+			unset($map);
+
+			//根据wh_id 查询仓库信息
+			$map['id'] = $data['wh_id'];
+			$wh_info = M('warehouse')->where($map)->find();
+			$data['wh_code'] = $wh_info['code'];*/
+		}
+		
 	}
 
 	//save方法之前，执行该方法
