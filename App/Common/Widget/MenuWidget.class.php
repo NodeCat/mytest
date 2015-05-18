@@ -50,13 +50,14 @@ class MenuWidget extends Controller {
             }
         }
         $menu = $data;
-        
-		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>2 );
-		$cur=M('Menu')->field('id,pid,name')->where($cond)->find();
-        $menu['tab'] = $menu[2][$cur['pid']];
+		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
+		$cur=M('Menu')->field('id,pid,name,level')->where($cond)->order('level desc')->find();
+
+        $menu['tab'] = $menu[$cur['level']][$cur['pid']];
         $menu['pid'] =$cur['pid'];
         $menu['cur'] = $cur['id'];
         $menu['title'] = $cur['name'];
+        //dump($menu);exit();
         return $menu;
    }
 

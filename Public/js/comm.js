@@ -43,10 +43,16 @@ $(function () {
 		var modal = $(this).closest('.modal');
 		var addr,params;
 		if(modal.find("div.tab-pane.active").size()==1){
+			/*
+			if(!modal.find('div.tab-pane.active form').valid()){alert('验证失败，请检查您的输入。');return false;}
+			*/
 			params=modal.find('div.tab-pane.active form').serialize();
 			addr=modal.find('div.tab-pane.active form').attr('action');
 		}
 		else{
+			/*
+			if(!modal.find('form').valid()){alert('验证失败，请检查您的输入。');return false;}
+			*/
 			params=modal.find('form').serialize();
 			addr=modal.find('form').attr('action');
 		}
@@ -87,6 +93,9 @@ $(function () {
 	});
 
 	$('.form-ajax button[type=submit]').on('click',function(){
+/*
+		if(!$(this).parents('form').valid()){alert('验证失败，请检查您的输入。');return false;}
+*/
 		var addr,params;
 		params=$(this).parents('form').serialize();
 		addr=$(this).parents('form').attr('action');
@@ -94,14 +103,21 @@ $(function () {
 			url:addr,
 			type:'post',
 			cache : false,
-			dataType:'html',
+			dataType:'json',
 			data:params,
 			success: function(msg){
 				alert(msg.msg);
+				if(msg.url != '' && msg.url != null ){
+		          setTimeout(function() {document.location=msg.url}, 0);
+		        }
+		        if(msg.data != '' && msg.data != null ){
+		            $('.content').html(msg.data);
+		        }
 			}
 		}); 
 		return false;
 	});
+
 
 init();
 
@@ -363,22 +379,34 @@ function init(){
     });
 /*
 	$("form").validate({
+		errorClass:'invalid',
+		validClass:'valid',
         highlight: function(label) {
-        	$(label).parent().parent().addClass('has-error');
-            $(label).closest('.control-label').addClass('label-danger');
+        	$(label).parents('.form-group').removeClass('has-success');
+        	$(label).parents('.form-group').addClass('has-error');
         },
         success: function(label) {
-            $(label)
-            .text('OK!').addClass('valid')
-            .closest('.control-label').addClass('label-success');
+        	$(label).parents('.form-group').removeClass('has-error');
+        	$(label).parents('.form-group').addClass('has-success');
         },
          submitHandler:function(form){
             form.submit();
         },
         errorPlacement: function(error, element) {  
-        	var msg = $(error).text();
-		    element.parent().next().text(msg);  
-		    element.parent().next().toggleClass(error.attr('class'));  
+        	var label = $(element).parent().next('label');
+        	
+        	if(label.length != 0) {	
+        		alert(label.attr('class'));
+        		$(error).addClass(label.attr('class'));	
+        		$(label).remove();
+        		
+        	}
+        	else {
+        		$(error).addClass('hidden');
+        	}
+		    element.parent().after(error);
+        	
+        	
 		}
     });
 */

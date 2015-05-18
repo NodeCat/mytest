@@ -87,7 +87,7 @@ class StockInController extends CommonController {
 				$res = M('stock_bill_in')->where($map)->find();
 				if(!empty($res)) {
 					if(true){
-						if($res['status'] =='21' || $res['status'] =='22') {
+						if($res['status'] =='31' || $res['status'] =='32') {
 							$data['id'] = $res['id'];
 							$data['code'] = $res['code'];
 							$data['title'] = '扫描货品';
@@ -98,7 +98,7 @@ class StockInController extends CommonController {
 							$data = $this->fetch('StockIn:scan-procode');
 							$this->msgReturn(1,'查询成功。',$data);
 						}
-						if($res['status'] == '31' || $res['status'] =='32') {
+						if($res['status'] =='33') {
 							$this->msgReturn(0,'查询失败，该单据已入库。');
 						}
 						if($res['status'] == '53'){
@@ -246,6 +246,15 @@ class StockInController extends CommonController {
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
         );
         
+    }
+    public function pview() {
+        $this->edit();
+    }
+    public function pindex() {
+    	$this->_before_index();
+    	$this->before_index();
+    	//$tmpl = IS_AJAX ? 'Table:list':'index';
+        $this->lists();
     }
     public function before_lists(){
     	$pill = array(

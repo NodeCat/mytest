@@ -638,8 +638,10 @@ class CodeController extends CommonController {
 			$this->refers=$M->where("module='%s'",$module)->getField('fk,pk,id,module,module_refer,field_show');
 			$this->module = ucwords($module);
 			layout(false);
+			$this->view_show=$this->fetch('view');
 			$this->add_show= $this->fetch('add');
 			$this->edit_show=$this->fetch('edit');
+			$this->view= htmlentities($this->view_show,ENT_NOQUOTES,"utf-8");
 			$this->add= htmlentities($this->add_show,ENT_NOQUOTES,"utf-8");
 			$this->edit=htmlentities($this->edit_show,ENT_NOQUOTES,"utf-8");
 			
@@ -703,7 +705,7 @@ class CodeController extends CommonController {
 			$this->pk=$M->getPk();
 		}
 		layout(!IS_AJAX);
-		$this->display();
+		$this->display('preview');
 	}
 
 	public function build_all(){
@@ -765,6 +767,9 @@ class CodeController extends CommonController {
     	    mkdirs($path);
     	}
     	layout(false);
+    	$file = "view.html".$this->ext;
+		$content=$this->fetch('view');dump($content);
+		file_put_contents($path.$file, $content);
     	$file = "add.html".$this->ext;
 		$content=$this->fetch('add');dump($content);
 		file_put_contents($path.$file, $content);
