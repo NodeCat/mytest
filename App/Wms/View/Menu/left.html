@@ -2,8 +2,9 @@
 <div class='sidebar-nav'>
 <div class="tab-content">
 <volist name="menu[1]" id="m1" key="pid">
-<div class='tab-pane' id="tab_{$pid}">
+<div class='tab-pane' id="tab_{$key}">
 	<div class="list-group">
+
 <volist name="m1" id="vo" empty="" >
 	<eq name="vo['show']" value="1">
 		<empty name="vo['link']">
