@@ -125,6 +125,12 @@ function en_to_cn($str){
         'move' => '库存移动',
         'inventory' => '盘点',
         'change_status' => '状态调整',
+        'noinventory' => '未盘点',
+        'inventory' => '盘点中',
+        'confirm' => '待确认',
+        'closed' => '已关闭',
+        'fast' => '快速盘点',
+        'again' => '复盘',
         );
 
     return $filter[$str];

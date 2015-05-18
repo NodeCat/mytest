@@ -273,7 +273,11 @@ class InventoryController extends CommonController {
 				}
 
 				//写入数据
-				M('stock_inventory_detail')->addAll($data_list);
+				$stock_inventory_detail = D('Inventory_detail');
+				foreach($data_list as $key => $value){
+					$data_list[$key] = $stock_inventory_detail->create($value);
+				}
+				$stock_inventory_detail->addAll($data_list);
 			}
 		}
 	}
@@ -454,7 +458,11 @@ class InventoryController extends CommonController {
 						'type' => 'again',
 						'status' => 'noinventory',
 						);
-					M('stock_inventory')->data($inventory_data)->add();
+					$stock_inventory = D('stock_inventory');
+					$inventory_data = $stock_inventory->create($inventory_data);
+					$stock_inventory->data($inventory_data)->add();
+					unset($stock_inventory);
+					unset($inventory_data);
 					
 					//创建复盘单详情
 					foreach($inventory_details as $inventory_detail){
@@ -466,7 +474,10 @@ class InventoryController extends CommonController {
 								'pro_qty' => 0,
 								'theoretical_qty' => $inventory_detail['theoretical_qty'],
 								);
-							M('stock_inventory_detail')->data($inventory_detail_data)->add();
+							$stock_inventory_detail = D('stock_inventory_detail');
+							$inventory_detail_data = $stock_inventory_detail->create($inventory_detail_data);
+							$stock_inventory_detail->data($inventory_detail_data)->add();
+							unset($stock_inventory_detail);
 							unset($inventory_detail_data);
 						}
 					}

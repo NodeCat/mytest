@@ -4,29 +4,28 @@
 
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-	{:dump($data)}
 &nbsp;&nbsp;盘点单单号:
-{$invetory_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{$inventory_info.code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;盘点单类型:
-{$invetory_code}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{:en_to_cn($inventory_info['type'])}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br>
 </br>
 
-&nbsp;&nbsp;盘点单状态:{$data.batch}
+&nbsp;&nbsp;盘点单状态:{:en_to_cn($inventory_info['status'])}
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建人:{$data.pro_code}
+&nbsp;&nbsp;创建人:{$inventory_info.created_user_nickname}
 </br>
 </br>
 
-&nbsp;&nbsp;盘点人:{$data.batch}
+&nbsp;&nbsp;盘点人:{$inventory_info.updated_user_nickname}
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;创建时间:{$data.pro_code}
+&nbsp;&nbsp;创建时间:{$inventory_info.created_time}
 </br>
 </br>
 
-&nbsp;&nbsp;盘点开始时间:{$data.batch}
+&nbsp;&nbsp;盘点开始时间:{$inventory_info.updated_time}
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;盘点结束时间:{$data.pro_code}
+&nbsp;&nbsp;盘点结束时间:{$data.end_time}
 </br>
 </br>
 </div>

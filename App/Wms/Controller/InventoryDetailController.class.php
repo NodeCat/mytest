@@ -62,7 +62,23 @@ class InventoryDetailController extends CommonController {
 		}
         //添加pro_name字段
         $data = A('Pms','Logic')->add_fields($data,'pro_name');
-        $this->invetory_code = $data[0]['inventory_code'];
-	}
+
+        //根据盘点code 查询盘点单信息
+        $map['code'] = $data[0]['inventory_code'];
+        $inventory_info = M('stock_inventory')->where($map)->find();
+
+        //添加 创建人
+        $map['id'] = $inventory_info['created_user'];
+        $inventory_info['created_user_nickname'] = M('user')->where($map)->getField('nickname');
+        unset($map);
+
+        //添加 盘点人
+        $map['id'] = $inventory_info['updated_user'];
+        $inventory_info['updated_user_nickname'] = M('user')->where($map)->getField('nickname');
+        unset($map);
+
+        $this->inventory_info = $inventory_info;
+
+    }
 
 }
