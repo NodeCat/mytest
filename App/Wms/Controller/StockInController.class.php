@@ -132,7 +132,7 @@ class StockInController extends CommonController {
 				$res = M('stock_bill_in')->where($map)->find();
 				if(!empty($res)) {
 					if(true){
-						if($res['status'] =='31' || $res['status'] =='32') {
+						if($res['status'] =='31' || $res['status'] =='32' || $res['status'] == '21') {
 							$data['id'] = $res['id'];
 							$data['code'] = $res['code'];
 							$data['title'] = '扫描货品';
