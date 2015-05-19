@@ -18,7 +18,7 @@ class PurchaseController extends CommonController {
 			'11'=>'待审核',
 			'13' => '已生效',
 			'23' => '已完成',
-			'04' => '已作废',
+			'04' => '已关闭',
 			'14' => '已驳回'
 		)
 	);
@@ -202,7 +202,7 @@ class PurchaseController extends CommonController {
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				array('value'=>'21','title'=>'待入库','class'=>'primary'),
 				array('value'=>'31','title'=>'待上架','class'=>'info'),
-				array('value'=>'53','title'=>'已完成','class'=>'success'),
+				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				array('value'=>'04','title'=>'已关闭','class'=>''),
 			)
 		);
@@ -215,7 +215,7 @@ class PurchaseController extends CommonController {
 				'11'=>array('value'=>'11','title'=>'待审核','class'=>'default'),
 				'13'=> array('value'=>'13','title'=>'已生效','class'=>'info'),//已审核
 				//array('value'=>'21','title'=>'待入库','class'=>'info'),
-				'23'=> array('value'=>'23','title'=>'已完成','class'=>'success'),//已入库
+				//'23'=> array('value'=>'23','title'=>'已完成','class'=>'success'),//已入库
 				//array('value'=>'20','title'=>'已拒收','class'=>'success'),
 				//array('value'=>'31','title'=>'待上架','class'=>'info'),
 				//array('value'=>'33','title'=>'已上架','class'=>'success'),
@@ -225,7 +225,7 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已关闭','class'=>'warning'),
 			)
 		);
 		$M = M('stock_purchase');
