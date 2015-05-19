@@ -25,16 +25,16 @@ class PurchaseController extends CommonController {
 	
 	protected $columns = array (   
 		'id' => '',   
-		'code' => '编号',   
-		'warehouse_name' => '仓库',   
-		'company_name' => '所属系统',   
-		'partner_name' => '供货商',   
-		'cat_total' => '品类数',   
-		'qty_total' => '总数量',   
-		'price_total' => '总金额',   
-		'state' => '状态',   
+		'code' => '采购单号',   
+		'in_code' =>'采购到货单号',
+		'partner_name' => '供应商',
+		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
+		'state' => '单据状态',    
+		'cat_total' => 'sku种数',  
+		'qty_total' => '采购总数',   
+		'price_total' => '采购总金额',   
 	);
 	protected $query = array (   
 		'stock_purchase.wh_id' =>    array (     
