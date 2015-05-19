@@ -55,6 +55,12 @@ class PurchaseController extends CommonController {
 			 'control_type' => 'refer',     
 			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
 		),   
+		'stock_purchase_detail.pro_code' =>    array (     
+			'title' => '货品编号',    
+			 'query_type' => 'like',     
+			 'control_type' => 'text',     
+			 'value' => '',   
+		),   
 		'stock_purchase.created_user' =>    array (     
 			'title' => '采购人',     
 			'query_type' => 'eq',     
@@ -122,7 +128,6 @@ class PurchaseController extends CommonController {
                 array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
             ),
         );
-        $this->status_type='0';
     }
 	public function before_add(&$M) {
 		$M->type = 'purchase';
@@ -133,15 +138,16 @@ class PurchaseController extends CommonController {
 		$M->invoice_status = '0';
 		$M->picking_status = '0';
 	}
-	public function before_save(&$M) {
-		$M->status= '11';
-	}
+	
 	public function after_save($pid){
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
 		}
 		$n = count($pros['pro_code']);
+		if($n <2) {
+			$this->msgReturn(1,'','',U('view','id='.$pid));
+		}
 		$M = D('PurchaseDetail');
 		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
 			$row['pid'] = $pid ;
@@ -177,6 +183,7 @@ class PurchaseController extends CommonController {
 		$where['id'] = $pid;
 		$M = D(CONTROLLER_NAME);
 		$M->where($where)->save($data);
+
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
 	protected function before_edit() {
@@ -312,7 +319,7 @@ class PurchaseController extends CommonController {
 		if($res == true){
 			$purchase['status'] = '13';
 			$M->where($map)->save($purchase);
-			$this->msgReturn($res,'','',U('StockIn/view','id='.$res));
+			$this->msgReturn($res,'','',U('StockIn/pview','id='.$res));
 		}
 		else{
 			dump($Min->getError);

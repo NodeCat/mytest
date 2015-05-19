@@ -42,22 +42,18 @@ class MenuWidget extends Controller {
         }
         $data=array();
         foreach ($result as $k => $v) {
-            //if($v['level']=='2'){
-                $data[$v['level']][$v['pid']][]=$v;
-            //}
-            //else{
-                //$data[$v['level']][$v['id']]=$v
-            //}
-        }//dump($data);exit();
+            $data[$v['level']][$v['pid']][]=$v;
+        }
         $menu = $data;
 		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
 		$cur=M('Menu')->field('id,pid,name,level')->where($cond)->order('level desc')->find();
 
         $menu['tab'] = $menu[$cur['level']][$cur['pid']];
+
         $menu['pid'] =$cur['pid'];
         $menu['cur'] = $cur['id'];
         $menu['title'] = $cur['name'];
-        //dump($menu);exit();
+        //dump($menu['tab']);exit();
         return $menu;
    }
 

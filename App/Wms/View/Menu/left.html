@@ -2,12 +2,13 @@
 <div class='sidebar-nav'>
 <div class="tab-content">
 <volist name="menu[1]" id="m1" key="pid">
-<div class='tab-pane' id="tab_{$pid}">
+<div class='tab-pane' id="tab_{$key}">
 	<div class="list-group">
+
 <volist name="m1" id="vo" empty="" >
 	<eq name="vo['show']" value="1">
 		<empty name="vo['link']">
-			<span id="nav_link_{$vo['id']}" class="list-group-item panel-heading"><i class="glyphicon glyphicon-chevron-u"></i>{$vo['name']}</span>
+			<span id="nav_link_{$vo['id']}" class="list-group-item disabled"><i class="glyphicon glyphicon-chevron-u"></i>{$vo['name']}</span>
 			<volist name="menu[2][$vo['id']]" id ="m2">
 			<a id="nav_link_{$m2['id']}" href="{:strpos($m2['link'], 'http')===false?U($m2['link']):$m2['link']}" target="{$m2['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$m2['name']}</a>
 		</volist>

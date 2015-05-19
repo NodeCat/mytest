@@ -80,7 +80,7 @@ menu
  */
 
 
-.menus .icon-chevron-down,.menus .icon-chevron-up {
+.menus .glyphicon-chevron-down,.menus .glyphicon-chevron-up {
     float: right;
     margin-right: -6px;
     margin-top: 2px;
@@ -101,12 +101,17 @@ menu
 sidebar
  */
 
-.sidebar-nav .glyphicon-chevron-right {
+.sidebar-nav .glyphicon-chevron-right ,.sidebar-nav .glyphicon-chevron-down,.sidebar-nav .glyphicon-chevron-up {
 float: right;
 margin-top: 3px;
 margin-right: -6px;
 color:#ccc;
 opacity: 1;
+}
+.sidebar-nav   {
+  color: #777;
+  cursor: not-allowed;
+  background-color: #eee;
 }
 .sidebar-nav a.list-group-item {
 color: #0088cc;
