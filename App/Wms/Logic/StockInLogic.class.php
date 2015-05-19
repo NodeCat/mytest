@@ -261,20 +261,24 @@ class StockInLogic{
 
 	public  function checkOn($inId,$pro_code=''){
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
-		$map['location_id'] = '0';
+		//$map['location_id'] = '0';
 		if(!empty($pro_code)) {
 			$map['pro_code'] = $pro_code;
 		}
 		if($in['status']=='21') {
 			return 1;
 		}
-		$map['type'] = 'in';
+		/*$map['type'] = 'in';
 		$map['status'] = 'unknown';
 		$map['batch'] = $in['code'];
 		$res = M('stock')->where($map)->getField('pro_code,stock_qty,prepare_qty');
 		if(empty($res)) {
 			return 0;
-		}
+		}*/
+		//根据pid查询stock_bill_in_detail 所有记录的prepare_qty是否为0 如果为0 则上架完毕
+		$map['pid'] = $inId;
+		$res = M('stock_bill_in_detail')->where($map)->select();
+
 		foreach ($res as $key => $val) {
 			if($val['prepare_qty'] != 0 ){
 				return 1;
@@ -310,12 +314,16 @@ class StockInLogic{
 	}
 
 	public function getQtyForOn($batch,$pro_code){
-		$map['location_id'] = '0';
+		/*$map['location_id'] = '0';
 		$map['pro_code'] = $pro_code;
 		$map['type'] = 'in';
 		$map['status'] = 'unknown';
 		$map['batch'] = $batch;
 		$res = M('stock')->field('stock_qty,prepare_qty')->where($map)->find();
+		*/
+		$map['pro_code'] = $pro_code;
+		$map['refer_code'] = $batch;
+		$res = M('stock_bill_in_detail')->where($map)->find();
 		if(empty($res)) {
 			return 0;
 		}

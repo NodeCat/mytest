@@ -263,6 +263,7 @@ class StockInController extends CommonController {
 		unset($map);
 		$map['pid'] = $purchase['id'];
 		$pros = M('stock_purchase_detail')->where($map)->select();
+		unset($map);
 		$A = A('StockIn','Logic');
 		$qtyForIn = 0;
 		foreach ($pros as $key => $val) {
@@ -272,12 +273,17 @@ class StockInController extends CommonController {
 			$qtyForIn += $qtyIn;
 			$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
-			$pros[$key]['moved_qty'] = $qtyIn;
+			//$pros[$key]['moved_qty'] = $qtyIn;
 			$moved_qty_total += $qtyIn;
 			$expected_qty_total += $val['pro_qty'];
-			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
+			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
-		$this->pros = $pros;
+
+		//根据pid 查询对应stock_bill_in_detail
+		$map['pid'] = $id;
+		$bill_in_detail_list = M('stock_bill_in_detail')->where($map)->select();
+		
+		$this->pros = $bill_in_detail_list;
 		$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
 		$data['qtyForOn'] =$qtyForIn;
 	}

@@ -77,7 +77,7 @@ class StockLogic{
 	public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status){
 		$stock = D('stock');
 		//减待上架库存
-		$map['wh_id'] = $wh_id;
+		/*$map['wh_id'] = $wh_id;
 		$map['location_id'] = '0';
 		$map['pro_code'] = $pro_code;
 		$map['batch'] = $refer_code;
@@ -87,14 +87,14 @@ class StockLogic{
 		if(empty($res)) {
 			return false;
 		}
-		unset($map);
-		$map['id'] = $res['id'];
+		unset($map);*/
+		/*$map['id'] = $res['id'];
 		$data['prepare_qty'] = $res['prepare_qty'] - $pro_qty;
 		$data = $stock->create($data);
 		$res = $stock->where($map)->save($data);
 		if($res == false) {
 			return false;
-		}
+		}*/
 		//增加库存
 		$row['wh_id'] = $wh_id;
 		$row['location_id'] = $location_id;
@@ -118,15 +118,24 @@ class StockLogic{
 			$data['stock_qty'] = $res['stock_qty'] + $pro_qty;
 			$data = $stock->create($data,2);
 			$res = $stock->where($map)->save($data);
+			unset($map);
 		}
 		if($res == false) {
 			return false;
 		}
 		unset($row);
 		unset($data);
+
+		//减待上架库存 增加已上量
+		$map['refer_code'] = $refer_code;
+		$map['pro_code'] = $pro_code;
+		$map['pro_uom'] = $pro_uom;
+		M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
+		M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
+		unset($map);
 		
 		//写库存移动记录
-		$M = D('StockMove');
+		/*$M = D('StockMove');
 		$row['refer_code'] = $refer_code;
 		$row['type'] = 'on';
 		$row['pro_code'] = $pro_code;
@@ -139,8 +148,8 @@ class StockLogic{
 		$row['status'] = '0';
 		$row['is_deleted'] = '0';
 		$data = $M->create($row);
-		$res = $M->add($data);
-		return $res;
+		$res = $M->add($data);*/
+		return ture;
 	}
 
 	/**
