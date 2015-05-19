@@ -271,7 +271,8 @@ class StockInController extends CommonController {
 			
 			$qtyForIn += $qtyIn;
 			$qtyForOn += $qtyOn;
-			$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn; 
+			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
+			$pros[$key]['moved_qty'] = $qtyIn;
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
@@ -314,7 +315,7 @@ class StockInController extends CommonController {
 				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
 			)
 		);
-		$M = M('stock_bill_in');
+		$M = M('stock_bill_in_detail');
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $key => $val) {

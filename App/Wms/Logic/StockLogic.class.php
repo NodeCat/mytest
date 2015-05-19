@@ -3,7 +3,7 @@ namespace Wms\Logic;
 
 class StockLogic{
 	/**
-	 * 入库上架时，库存表变化，调整库存量
+	 * 入库收货时，库存表变化，调整库存量
 	 * @param 
 	 * $wh_id 仓库id
 	 * $refer_code 关联单号
@@ -45,7 +45,7 @@ class StockLogic{
 		unset($row);
 
 		//写库存移动记录
-		$M = D('StockMove');
+		/*$M = D('StockMove');
 		$row['refer_code'] = $refer_code;
 		$row['type'] = 'in';
 		$row['pro_code'] = $pro_code;
@@ -58,12 +58,12 @@ class StockLogic{
 		$row['status'] = '0';
 		$row['is_deleted'] = '0';
 		$data = $M->create($row);
-		$res = $M->add($data);
-		return $res;
+		$res = $M->add($data);*/
+		return true;
 	}
 
 	/**
-	 * 入库收货时，库存表变化，调整库存量
+	 * 入库上架时，库存表变化，调整库存量
 	 * @param 
 	 * $wh_id 仓库id
 	 * $location_id 库位id

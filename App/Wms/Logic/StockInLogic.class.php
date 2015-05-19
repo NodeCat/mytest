@@ -21,7 +21,8 @@ class StockInLogic{
 		$detail['id'] = $in['id'];
 		$detail['code'] = $in['code'];
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
-		$detail['moved_qty'] = $detail['pro_qty'] - $this->getQtyForIn($inId,$code);
+		//$detail['moved_qty'] = $detail['expected_qty'] - $this->getQtyForIn($inId,$code);
+		$detail['moved_qty'] = $this->getQtyForIn($inId,$code);
 		return array('res'=>true,'data'=>$detail);
 	}
 
@@ -167,9 +168,14 @@ class StockInLogic{
 		if(!is_numeric($qty) || empty($qty) || $qty < 0) {
 			return array('res'=>false,'msg'=>'验收数量有误。');
 		}
-		$qtyForIn = $this->getQtyForIn($inId,$code);
+		//$qtyForIn = $this->getQtyForIn($inId,$code);
+		$map['pid'] = $inId;
+		$map['pro_code'] = $code;
+		$bill_in_detail_info = M('stock_bill_in_detail')->where($map)->find();
+		//可验收数量 = 预计数量 - 实际验收数
+		$qtyForCanIn = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['prepare_qty'];
 		
-		if(empty($qtyForIn) || $qtyForIn < $qty) {
+		if(empty($qtyForCanIn) || $qtyForCanIn < $qty) {
 			return array('res'=>false,'msg'=>'验收数量不能大于可验收数量。');
 		}
 
@@ -177,11 +183,21 @@ class StockInLogic{
 		$pro_uom = $line['pro_uom'];
 
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
+		/*
 		$refer_code = $in['code'];
 		$batch   = $in['code'];
 		$status  = 'unknown';
 		$wh_id = $in['wh_id'];
 		$res = A('Stock','Logic')->adjustStockByPrepare($wh_id,$refer_code,$code,$qty,$pro_uom,$status);
+		*/
+		//根据pid + pro_code + pro_uom 更新stock_bill_in_detail expected_qty 减少 prepare_qty 增加
+		$map['pid'] = $inId;
+		$map['pro_code'] = $code;
+		$map['pro_uom'] = $pro_uom;
+		//$res = M('stock_bill_in_detail')->where($map)->setDec('expected_qty',$qty);
+		$res = M('stock_bill_in_detail')->where($map)->setInc('prepare_qty',$qty);
+		unset($map);
+
 		if($res == true) {
 			$ined = $this->checkIn($inId);
 			if($ined == 2) {
@@ -207,14 +223,14 @@ class StockInLogic{
 	}
 
 	public  function checkIn($inId,$pro_code=''){
-		$M = M('stock_bill_detail');
+		$M = M('stock_bill_in_detail');
 		$map['pid'] = $inId;
 		if(!empty($pro_code)) {
 			$map['pro_code'] = $pro_code;
 		}
-		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,sum(pro_qty) as qty_total');
+		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,expected_qty,prepare_qty');
 		unset($map['pid']);
-		$row = reset($in);
+		/*$row = reset($in);
 		$map['refer_code'] = $row['refer_code'];
 		$map['type'] = 'in';
 		$map['status'] = '0';
@@ -223,14 +239,19 @@ class StockInLogic{
 		if(empty($moved)) {
 			return 0;
 		}
+		*/
 
 		foreach ($in as $key => $val) {
+			/*
 			if(array_key_exists($key, $moved)) {
 				if($val['qty_total'] != $moved[$key]) {
 					return 1;
 				}
 			}
 			else {
+				return 1;
+			}*/
+			if($val['expected_qty'] - $val['prepare_qty'] > 0){
 				return 1;
 			}
 		}
@@ -263,27 +284,28 @@ class StockInLogic{
 	}
 
 	public function getQtyForIn($inId,$pro_code){
-		$M = M('stock_bill_detail');
+		$M = M('stock_bill_in_detail');
 		$map['pid'] = $inId;
 		$map['pro_code'] = $pro_code;
 		//待入库量
-		$in = $M->field('refer_code,pro_code,sum(pro_qty) as qty_total')->group('pro_code')->where($map)->find();
+		$in = $M->field('refer_code,pro_code,sum(prepare_qty) as qty_total')->group('pro_code')->where($map)->find();
 		
 		if(empty($in)) {
 			return 0;
 		}
 		unset($map['pid']);
-		$map['refer_code'] = $in['refer_code'];
+		/*$map['refer_code'] = $in['refer_code'];
 		$map['type'] = 'in';
 		$map['status'] = '0';
 		$moved = M('stock_move')->field('pro_code,sum(move_qty) as qty_total')->group('pro_code')->where($map)->find();
-		
-		if(empty($moved)) {
+		*/
+		/*if(empty($moved)) {
 			return $in['qty_total'];
 		}
 		else{
 			return $in['qty_total'] - $moved['qty_total'];
-		}
+		}*/
+		return $in['qty_total'];
 	}
 
 	public function getQtyForOn($batch,$pro_code){
@@ -304,8 +326,8 @@ class StockInLogic{
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
 		$map['is_deleted'] = '0';
-		$detail = M('stock_bill_detail')
-		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(pro_qty) as pro_qty')
+		$detail = M('stock_bill_in_detail')
+		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty')
 		->group('pro_code')->where($map)->find();
 		return $detail;
 	}

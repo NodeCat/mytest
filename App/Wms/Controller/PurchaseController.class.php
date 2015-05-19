@@ -308,10 +308,13 @@ class PurchaseController extends CommonController {
 			$v['pro_name'] = $val['pro_name'];
 			$v['pro_attrs'] = $val['pro_attrs'];
 			$v['pro_uom'] = $val['pro_uom'];
-			$v['pro_qty'] = $val['pro_qty'];
+			$v['expected_qty'] = $val['pro_qty'];
+			$v['prepare_qty'] = 0;
+			$v['done_qty'] = 0;
 			$v['wh_id'] = $data['wh_id'];
-			$v['type'] = 'in';
+			//$v['type'] = 'in';
 			$v['refer_code'] = $bill['code'];
+			$v['pid'] = $val['pid'];
 			$bill['detail'][] = $v;
 		}
 
