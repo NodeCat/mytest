@@ -23,6 +23,7 @@ class StockInLogic{
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
 		//$detail['moved_qty'] = $detail['expected_qty'] - $this->getQtyForIn($inId,$code);
 		$detail['moved_qty'] = $this->getQtyForIn($inId,$code);
+		$detail['expected_qty'] = $detail['expected_qty'];
 		return array('res'=>true,'data'=>$detail);
 	}
 
@@ -196,6 +197,7 @@ class StockInLogic{
 		$map['pro_uom'] = $pro_uom;
 		//$res = M('stock_bill_in_detail')->where($map)->setDec('expected_qty',$qty);
 		$res = M('stock_bill_in_detail')->where($map)->setInc('prepare_qty',$qty);
+		$res = M('stock_bill_in_detail')->where($map)->setInc('receipt_qty',$qty);
 		unset($map);
 
 		if($res == true) {
@@ -336,7 +338,7 @@ class StockInLogic{
 		$map['pro_code'] = $code;
 		$map['is_deleted'] = '0';
 		$detail = M('stock_bill_in_detail')
-		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty')
+		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty')
 		->group('pro_code')->where($map)->find();
 		return $detail;
 	}

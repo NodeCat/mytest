@@ -57,7 +57,9 @@ class InventoryDetailController extends CommonController {
 	protected function after_lists(&$data){
 		//整理数据项
 		foreach($data as $key => $data_detail){
-			$data[$key]['diff_qty'] = $data_detail['pro_qty'] - $data_detail['theoretical_qty'];
+            if($data_detail['pro_qty']){
+                $data[$key]['diff_qty'] = $data_detail['pro_qty'] - $data_detail['theoretical_qty'];
+            }
 		}
         //添加pro_name字段
         $data = A('Pms','Logic')->add_fields($data,'pro_name');
