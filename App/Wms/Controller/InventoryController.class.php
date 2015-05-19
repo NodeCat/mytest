@@ -298,7 +298,7 @@ class InventoryController extends CommonController {
 			unset($map);
 			//检查是否存在 已经有差异的盘点单，如果有，则提示错误
 			foreach($inventory_infos as $inventory_info){
-				if($inventory_info['is_diff'] == 1 || $inventory_info['status'] == 'closed'){
+				if($inventory_info['status'] == 'closed'){
 					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'已经经过差异确认，或者盘点单已经关闭');
 				}
 			}
@@ -338,25 +338,29 @@ class InventoryController extends CommonController {
 					if($inventory_detail['pro_qty'] != $inventory_detail['theoretical_qty']){
 						$map['pro_code'] = $inventory_detail['pro_code'];
 						$map['location_id'] = $inventory_detail['location_id'];
-						//根据pro_code location_id 更新库存表
-						M('stock')->where($map)->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
-						unset($map);
+						//根据pro_code location_id 查询是否有记录
+						$stock_info = M('stock')->where($map)->find();
+						if(empty($stock_info)){
+							//如果为空 则需要创建库存记录
+							$data['location_id'] = $inventory_detail['location_id'];
+							$data['pro_code'] = $inventory_detail['pro_code'];
+							$data['batch'] = get_sn('profit');
+							$data['stock_qty'] = $inventory_detail['pro_qty'];
+							A('Stock','Logic')->addStock($data);
+							unset($data);
 
-						//根据pro_code 查询库存信息
-						$stock_info = M('stock')->where('pro_code = "'.$inventory_detail['pro_code'].'"')->find();
-						/*//添加库存移动表记录
-						$stock_move_data = array(
-							'type' => 'inventory_checkdiff',
-							'batch' => $stock_info['batch'],
-							'pro_code' => $inventory_detail['pro_code'],
-							'move_qty' => $stock_info['stock_qty'],
-							'price_unit' => 0,
-							'src_wh_id' => $stock_info['wh_id'],
-							'dest_wh_id' => $stock_info['wh_id'],
-							'src_location_id' => $stock_info['location_id'],
-							'dest_location_id' => '999', //目标
-							);
-						M('stock_move')->data($stock_move_data)->add();*/
+							//根据location_id 查询对应location信息
+							//如果盘盈 需要获得库位默认status
+							$map['id'] = $inventory_detail['location_id'];
+							$location_info = M('Location')->where($map)->find();
+							$stock_info['status'] = $location_info['status'];
+							unset($map);
+						}else{
+							//如果有记录 则需要更新库存记录
+							//根据pro_code location_id 更新库存表
+							M('stock')->where($map)->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
+						}
+
 						//新建库存调整单详情
 						$adjusted_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
 						$adjust_detail_data = array(
@@ -435,7 +439,7 @@ class InventoryController extends CommonController {
 			unset($map);
 
 			foreach($inventory_infos as $inventory_info){
-				$inventory_is_diff = false;
+				$inventory_is_diff = falseis_diff;
 				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
 				$map['inventory_code'] = $inventory_info['code'];
 				$inventory_details = M('stock_inventory_detail')->where($map)->select();

@@ -314,4 +314,52 @@ class StockLogic{
 
 		return $stock_infos;
 	}
+
+	/**
+	* 创建库存记录 并添加库存交易日志
+	* $params = array(
+	*	'wh_id' => xxx,
+	*	'location_id' => xxx,
+	*	'pro_code' => xxx,
+	*	'batch' => xxxx,
+	*	'status' => xxx,
+	*	'stock_qty' => xxxx,
+	*	'assgin_qty' => xxxx,
+	*	'prepare_qty' => xxx,
+	* )
+	*/
+	public function addStock($params = array()){
+		if(!is_array($params)){
+			return false;
+		}
+
+		if(empty($params['location_id']) || empty($params['pro_code']) || empty($params['batch']) || empty($params['stock_qty'])){
+			return false;
+		}
+
+		$add_data = $params;
+
+		//如果状态为空 则读取location对应的默认状态
+		if(empty($params['status'])){
+			$map['id'] = $params['location_id'];
+			$location_info = M('Location')->where($map)->find();
+			$add_data['wh_id'] = $location_info['wh_id'];
+			$add_data['status'] = $location_info['status'];
+			unset($map);
+		}
+
+		$add_data['stock_qty'] = (empty($params['stock_qty'])) ? 0 : $params['stock_qty'];
+		$add_data['assgin_qty'] = (empty($params['assgin_qty'])) ? 0 : $params['assgin_qty'];
+		$add_data['prepare_qty'] = (empty($params['prepare_qty'])) ? 0 : $params['prepare_qty'];
+
+		//插入记录
+		$stock = D('Stock');
+		$add_data = $stock->create($add_data);
+		$stock->data($add_data)->add();
+
+		//写入库存交易记录
+		//to do ....
+
+		return true;
+	}
 }

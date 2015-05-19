@@ -40,7 +40,7 @@ class StockMoveDetailModel extends Model {
                 "inner join user u1 on stock_move.created_user = u1.id",
                 "inner join user u2 on stock_move.updated_user = u2.id"
                 ),
-"field"=>"stock_move.*,src_wh.name as src_wh_name,dest_wh.name as dest_wh_name,src_location.name as src_location_name,dest_location.name as dest_location_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
+"field"=>"stock_move.*,src_wh.code as src_wh_code,dest_wh.code as dest_wh_code,src_location.code as src_location_code,dest_location.code as dest_location_code,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
 
         ),
         'latest'=>array(

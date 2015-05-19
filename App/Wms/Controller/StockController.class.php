@@ -124,6 +124,9 @@ class StockController extends CommonController {
 				//根据location.code 查询对应的库位id
 				$location_map['code'] = array('LIKE',$location_code.'%');
 				$location_ids_by_code = M('Location')->where($location_map)->getField('id',true);
+				if(empty($location_ids_by_code)){
+					$location_ids_by_code = array(-1);
+				}
 			}
 			if(empty($location_ids_by_location_name)){
 				$location_ids_by_location_name = $location_ids_by_code;
@@ -137,7 +140,7 @@ class StockController extends CommonController {
 			if(!empty($location_ids)){
 				$map['stock.location_id'] = array('in',$location_ids);
 			}//else{
-				//$map['stock.location_id'] = array('eq',0);
+				//$map['stock.location_id'] = array('eq',-1);
 			//}
 
 			//根据stock.status 查询对应stock记录
@@ -156,6 +159,9 @@ class StockController extends CommonController {
 				$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($pro_name);
 				foreach($SKUs['list'] as $SKU){
 					$pro_codes[] = $SKU['sku_number'];
+				}
+				if(empty($pro_codes)){
+					$pro_codes = array(0);
 				}
 				$map['stock.pro_code'] = array('in',$pro_codes);
 			}

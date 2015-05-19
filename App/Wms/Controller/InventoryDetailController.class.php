@@ -25,7 +25,7 @@ class InventoryDetailController extends CommonController {
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => false,'new'=>'false'), 
+            array('name'=>'add', 'show' => !isset($auth['view']),'new'=>'false'), 
             array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
@@ -44,7 +44,6 @@ class InventoryDetailController extends CommonController {
 
     //lists方法执行前，执行该方法
 	protected function before_lists(&$M){
-
 		//根据inventory_id 查询对应code
 		$inventory_id = I('id');
         $map['id'] = $inventory_id;
@@ -58,7 +57,7 @@ class InventoryDetailController extends CommonController {
 	protected function after_lists(&$data){
 		//整理数据项
 		foreach($data as $key => $data_detail){
-			$data[$key]['diff_qty'] = $data_detail['theoretical_qty'] - $data_detail['pro_qty'];
+			$data[$key]['diff_qty'] = $data_detail['pro_qty'] - $data_detail['theoretical_qty'];
 		}
         //添加pro_name字段
         $data = A('Pms','Logic')->add_fields($data,'pro_name');
@@ -95,9 +94,17 @@ class InventoryDetailController extends CommonController {
         //unset($map);
 
         //根据inventory_code 查询盘点单信息
-        $inventory_code = M('stock_inventory_detail')->where($map)->getField('inventory_code');
+        $inventory_detail_info = M('stock_inventory_detail')->where($map)->find();
+        $inventory_code = $inventory_detail_info['inventory_code'];
         unset($map);
+        //更新盘点单状态为盘点中 如果有差异，则更新盘点单的是否有差异
         $map['code'] = $inventory_code;
+        $data['status'] = 'inventorying';
+        if($inventory_detail_info['pro_qty'] != $inventory_detail_info['theoretical_qty']){
+            $data['is_diff'] = 1;
+        }
+        M('stock_inventory')->where($map)->save($data);
+        
         $inventory_info = M('stock_inventory')->where($map)->find();
         unset($map);
 
