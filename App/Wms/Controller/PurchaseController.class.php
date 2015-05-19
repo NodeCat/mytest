@@ -319,7 +319,7 @@ class PurchaseController extends CommonController {
 		if($res == true){
 			$purchase['status'] = '13';
 			$M->where($map)->save($purchase);
-			$this->msgReturn($res,'','',U('StockIn/pview','id='.$res));
+			$this->msgReturn($res,'','',U('view','id='.$id));
 		}
 		else{
 			dump($Min->getError);
