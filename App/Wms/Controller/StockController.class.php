@@ -287,7 +287,7 @@ class StockController extends CommonController {
 				//根据pro_code 查询产品信息
 				//$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
 				//$SKU = $SKUs['list'][0];
-				$stock_move_data = array(
+				/*$stock_move_data = array(
 					'type' => 'move_location',
 					'batch' => I('batch'),
 					'pro_code' => I('pro_code'),
@@ -301,6 +301,7 @@ class StockController extends CommonController {
 				$stock_move = D('stock_move');
 				$stock_move_data = $stock_move->create($stock_move_data);
 				$stock_move->data($stock_move_data)->add();
+				*/
 			}
 		}
 	}
