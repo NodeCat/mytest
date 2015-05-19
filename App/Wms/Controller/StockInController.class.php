@@ -273,11 +273,13 @@ class StockInController extends CommonController {
 			$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			$pros[$key]['moved_qty'] = $qtyIn;
+			$moved_qty_total += $qtyIn;
+			$expected_qty_total += $val['pro_qty'];
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
-		$data['qtyForIn'] = $qtyForIn;
-		$data['qtyForOn'] =$qtyForOn;
+		$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
+		$data['qtyForOn'] =$qtyForIn;
 	}
 	public function before_index() {
         $this->table = array(

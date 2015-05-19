@@ -283,6 +283,7 @@ class StockInLogic{
 		return 2;
 	}
 
+	//已经移动的数量
 	public function getQtyForIn($inId,$pro_code){
 		$M = M('stock_bill_in_detail');
 		$map['pid'] = $inId;
