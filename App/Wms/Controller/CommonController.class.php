@@ -231,7 +231,9 @@ class CommonController extends AuthController {
             $res = $M->scope('default')->where($map)->limit(1)->find();
 	        if(!empty($res) && is_array($res)){
                 $this->before($res,'edit');
-                
+                if(ACTION_NAME == 'view') {
+                    $this->filter_list($data);
+                }
 	            $this->data = $res;
 	        }
 	        else{

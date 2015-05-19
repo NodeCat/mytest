@@ -13,7 +13,7 @@ class PurchaseController extends CommonController {
 		'picking_status' => array(
 			'0' => '未入库', 
 		),
-		'status' => array(
+		'state' => array(
 			'0' => '草稿',
 			'11'=>'待审核',
 			'13' => '已生效',
@@ -32,7 +32,7 @@ class PurchaseController extends CommonController {
 		'cat_total' => '品类数',   
 		'qty_total' => '总数量',   
 		'price_total' => '总金额',   
-		'status' => '状态',   
+		'state' => '状态',   
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
 	);

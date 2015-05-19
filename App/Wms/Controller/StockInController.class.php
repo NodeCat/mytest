@@ -6,7 +6,7 @@ class StockInController extends CommonController {
 		'type' => array(
 			'purchase' => '采购入库'
 		),
-		'status' => array(
+		'state' => array(
 			'0'	=> '草稿',
 			'21'=>'待收货',
 			'31'=>'待上架',
@@ -26,7 +26,7 @@ class StockInController extends CommonController {
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '采购人',
   		'sp_created_time' => '采购时间',
-		'status' => '状态', 
+		'state' => '状态', 
 	);
 	protected $query = array (   
 		 'stock_bill_in.code' =>    array (     
