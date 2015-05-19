@@ -45,7 +45,7 @@ class StockInModel extends RelationModel {
                 "inner join stock_purchase sp on stock_bill_in.refer_code = sp.code",
                 "inner join user u on sp.created_user = u.id"
             ),
-"field"=>"stock_bill_in.*,warehouse.name as warehouse_name,company.name as company_name,
+"field"=>"stock_bill_in.*,stock_bill_in.status as state,warehouse.name as warehouse_name,company.name as company_name,
 partner.name as partner_name,u.nickname as sp_created_user_name,u.mobile as sp_created_user_mobile,sp.created_time as sp_created_time,sp.cat_total,sp.qty_total",
             
         ),
