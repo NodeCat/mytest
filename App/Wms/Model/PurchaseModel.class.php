@@ -43,9 +43,10 @@ class PurchaseModel extends RelationModel {
             "join"=>array("inner join warehouse on stock_purchase.wh_id=warehouse.id ",
                 "inner join partner on stock_purchase.partner_id=partner.id ",
                 "inner join user on stock_purchase.created_user = user.id ",
-                "inner join company on stock_purchase.company_id=company.id "
+                "inner join company on stock_purchase.company_id=company.id ",
+                "inner join stock_bill_in sbi on sbi.refer_code = stock_purchase.code"
             ),
-"field"=>"stock_purchase.*,stock_purchase.status as state,warehouse.code as warehouse_code,warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname,user.mobile as user_mobile,company.name as company_name",
+"field"=>"stock_purchase.*,stock_purchase.status as state,sbi.code as in_code,warehouse.code as warehouse_code,warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname,user.mobile as user_mobile,company.name as company_name",
         ),
         'latest'=>array(
             'where'=>array('stock_purchase.is_deleted'=>'0'),

@@ -7,7 +7,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-  			<th>名称</th><th>数量</th><th>计量单位</th><th>单价</th><th>小记</th><th></th>
+  			<th>产品名称</th><th>采购数量</th><th>计量单位</th><th>采购单价</th><th>操作</th>
   		</thead>
   		<tbody>
       <volist name="pros" id="vo">
@@ -23,9 +23,7 @@
         <td style="width:10%;" class="text-right">
           {$vo.price_unit}
         </td>
-        <td style="width:10%;"  class="text-right">
-          {$vo.price_subtotal}
-        </td>
+        
         <td style="width:10%;">
           
         </td>
