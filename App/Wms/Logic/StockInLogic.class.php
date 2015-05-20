@@ -337,9 +337,9 @@ class StockInLogic{
 	public function finishByPurchase($purchaseId) {
 		$map['is_deleted'] = 0;
 		$map['id'] = $purchaseId;
-		$data['status'] = '23'; //完成
+		$data['status'] = '13'; //完成
 		$M = M('stock_purchase');
-		$M->where($map)->save($data);
+		//$M->where($map)->save($data);
 		$purchase = $M->field('code')->find($purchaseId);
 		unset($map['id']);
 		$map['refer_code'] = $purchase['code'];

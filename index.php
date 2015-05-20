@@ -20,7 +20,7 @@ if(isset($_SERVER['SERVER_ENV'])) {
   define('APP_DEBUG',TRUE);
 }
 
-define('RUNTIME_PATH','../Runtime/');
+define('RUNTIME_PATH','../../Runtime/');
 
 define('BIND_MODULE','Wms');
 

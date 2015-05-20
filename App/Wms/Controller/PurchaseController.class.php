@@ -274,12 +274,21 @@ class PurchaseController extends CommonController {
 			}
 			else{
 				$where['refer_code'] = $res['code'];
-				//$res = M('stock_bill_in')->field('id')->where($where)->find();
+				$in = M('stock_bill_in');
+				$res = $in->field('id')->where($where)->find();
 				
 				$A = A('StockIn','Logic');
-				//$res = $A->checkIn($res['id']);
-				
-				$A->finishByPurchase($id);
+				$res = $A->checkIn($res['id']);
+				if($res == 0) {
+					$data['status'] = '04';
+					$data['is_deleted'] = 1;
+					$data = $in->create($data);
+					$res = $in->where($map)->save($data);
+				}
+				else {
+					$this->msgReturn(0,'操作失败，采购单对应的到货单已收货。');
+					//$A->finishByPurchase($id);
+				}
 				$this->msgReturn($res);
 			}
 		}
