@@ -241,6 +241,27 @@ class StockController extends CommonController {
 				if($old_stock_info[$data['id']]['status'] === $data['status']){
 					$this->msgReturn(0,'请修改库存状态');
 				}
+
+				//写入库存交易日志
+				$stock_move_data = array(
+					'wh_id' => session('user.wh_id'),
+					'location_id' => $data['location_id'],
+					'pro_code' => $data['pro_code'],
+					'type' => 'status',
+					'direction' => 'OUT',
+					'move_qty' => 0,
+					'old_qty' => $data['stock_qty'],
+					'new_qty' => $data['stock_qty'],
+					'batch' => $data['batch'],
+					'status' => $old_stock_info[$data['id']]['status'],
+					);
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+				
+				$stock_move_data['direction'] = 'IN';
+				$stock_move_data['status'] = $data['status'];
+				$stock_move->data($stock_move_data)->add();
 			}
 
 			if(I('editStockMove')){
@@ -254,6 +275,29 @@ class StockController extends CommonController {
 				if($res['res'] == false){
 					$this->msgReturn(0,'移库失败。'.$res['msg']);
 				}
+
+				//写入库存交易日志
+				$stock_move_data = array(
+					'wh_id' => session('user.wh_id'),
+					'location_id' => $old_stock_info[$data['id']]['location_id'],
+					'pro_code' => $data['pro_code'],
+					'type' => 'move',
+					'direction' => 'OUT',
+					'move_qty' => $data['stock_qty'],
+					'old_qty' => $data['stock_qty'],
+					'new_qty' => 0,
+					'batch' => $data['batch'],
+					'status' => $data['status'],
+					);
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+
+				$stock_move_data['direction'] = 'IN';
+				$stock_move_data['location_id'] = $data['location_id'];
+				$stock_move_data['old_qty'] = 0;
+				$stock_move_data['new_qty'] = $data['stock_qty'];
+				$stock_move->data($stock_move_data)->add();
 			}
 		}
 	}

@@ -8,34 +8,22 @@ class StockMoveDetailController extends CommonController {
 		);
 
     protected $columns = array('id' => '',
+            'wh_code' => '仓库',
+            'created_time' => '操作时间',
+            'user_nickname' => '操作人',
+            'pro_code' => '货品号',
+            'pro_name' => '货品名',
+            'src_location_code' => '原库位',
+            'dest_location_code' => '目标库位',
             'refer_code' => '关联单据',
             'type' => '类型',
+            'direction' => '方向',
             'batch' => '批次',
-            'pro_code' => '产品编号',
-            'pro_uom' => '计量单位',
-            'move_qty' => '移动量',
-            'price_unit' => '单价',
-            'src_wh_code' => '原仓库',
-            'src_location_code' => '原库位',
-            'dest_wh_code' => '目标仓库',
-            'dest_location_code' => '目标库位',
             );
 
     protected $query   = array (
         'stock_move.refer_code' => array (
             'title' => '关联单据',
-            'query_type' => 'like',
-            'control_type' => 'text',
-            'value' => '',
-        ),
-        'stock_move.type' => array (
-            'title' => '盘点类型',
-            'query_type' => 'eq',
-            'control_type' => 'select',
-            'value' => array('in' => '收货','on' => '上架','move_location' => '库存移动'),
-        ),
-        'stock_move.pro_code' => array (
-            'title' => '产品编号',
             'query_type' => 'like',
             'control_type' => 'text',
             'value' => '',

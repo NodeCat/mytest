@@ -1,29 +1,27 @@
 <form class="form-inline well well-small ajax" >
 <div class="row-fluid">
-<div class="col-md-4">关联单据:{$data.refer_code}</div>
-<div class="col-md-4">类型:{:en_to_cn($data['type'])}</div>
+<div class="col-md-4">仓库:{$data.wh_code}</div>
+<div class="col-md-4">库位:{$data.location_code}</div>
 </br>
 </br>
-<div class="col-md-4">批次:{$data.batch}</div>
-<div class="col-md-4">产品编号:{$data.pro_code}</div>
+<div class="col-md-4">区域:</div>
+<div class="col-md-4">货品号:{$data.pro_code}</div>
 
 </br>
 </br>
-<div class="col-md-4">计量单位:{$data.pro_uom}</div>
-<div class="col-md-4">移动量:{$data.move_qty}</div>
+<div class="col-md-4">货品名:{$data.pro_name}</div>
+<div class="col-md-4">交易类型:{:en_to_cn($data['type'])}</div>
 
 </br>
 </br>
-<div class="col-md-4">单价:{$data.price_unit}</div>
-
+<div class="col-md-4">参考单号:{$data.refer_code}</div>
+<div class="col-md-4">方向:{$data.direction}</div>
 </br>
 </br>
-<div class="col-md-4">原仓库:{$data.src_wh_name}</div>
+<div class="col-md-4">状态:{:en_to_cn($data['status'])}</div>
+</br>
+</br>
 <div class="col-md-4">原库位:{$data.src_location_name}</div>
-
-</br>
-</br>
-<div class="col-md-4">目标仓库:{$data.dest_wh_name}</div>
 <div class="col-md-4">目标库位:{$data.dest_location_name}</div>
 
 </br>
@@ -31,11 +29,8 @@
 </br>
 </br>
 <div class="col-md-4">创建时间:{$data.created_time}</div>
-<div class="col-md-4">创建人:{$data.created_user_nickname}</div>
-</br>
-</br>
-<div class="col-md-4">修改时间:{$data.updated_time}</div>
-<div class="col-md-4">修改人:{$data.updated_user_nickname}</div>
+<div class="col-md-4">创建人:{$data.user_nickname}</div>
+
 </br>
 </br>
 </form>

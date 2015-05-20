@@ -417,6 +417,6 @@ class StockLogic{
 				}
 			}
 		}
-		return true;
+		return array('res'=>true);
 	}
 }
