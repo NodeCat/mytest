@@ -62,9 +62,9 @@
 	<in name="vo['state']" value="$tool['domain']">
 	<eq name="tool.show" value="true">
 	<eq name="tool.new" value="true">
-		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-close"  data-title="关闭" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ban-circle"></i> </a>
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-close"  data-title="作废" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ban-circle"></i> </a>
 	<else/>
-		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-close" data-target="#modal" data-toggle="modal"  data-title="关闭" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ban-circle"></i> </a>
+		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-close" data-target="#modal" data-toggle="modal"  data-title="作废" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ban-circle"></i> </a>
 	</eq></eq></in>
 	</case>
 	

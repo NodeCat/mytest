@@ -10,9 +10,8 @@ class StockInController extends CommonController {
 			'0'	=> '草稿',
 			'21'=>'待收货',
 			'31'=>'待上架',
-			'23'=>'已入库',
-			'53'=>'已完成',
-			'00'=>'已关闭'
+			'33'=>'已上架',
+			'04'=>'已关闭'
 		),
 	);
 	protected $columns = array (   
@@ -144,7 +143,7 @@ class StockInController extends CommonController {
 							$this->msgReturn(1,'查询成功。',$data);
 						}
 						if($res['status'] =='33') {
-							$this->msgReturn(0,'查询失败，该单据已入库。');
+							$this->msgReturn(0,'查询失败，该单据已上架。');
 						}
 						if($res['status'] == '53'){
 							$this->msgReturn(0,'查询失败，该单据已完成。');
@@ -316,10 +315,10 @@ class StockInController extends CommonController {
     public function before_lists(){
     	$pill = array(
 			'status'=> array(
-				'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),
+				//'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
-				'53'=>array('value'=>'53','title'=>'已完成','class'=>'success'),
+				'53'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
 				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
 			)
 		);

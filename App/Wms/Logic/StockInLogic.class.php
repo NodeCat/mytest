@@ -157,7 +157,7 @@ class StockInLogic{
 			$oned = $this->checkOn($inId); 
 			
 			if($oned == 2) {
-				$data['status'] = '53';
+				$data['status'] = '33';
 				$map['id'] = $inId;
 				$map['status'] = '31';
 				$map['is_deleted'] = 0;
@@ -217,12 +217,13 @@ class StockInLogic{
 				$map['status'] = '21';
 				$map['is_deleted'] = 0;
 				M('stock_bill_in')->where($map)->save($data);
-
+				/*
 				unset($map);
 				unset($data);
 				$map['code'] = $in['refer_code'];
 				$data['status'] = '23';
 				M('stock_purchase')->where($map)->save($data);
+				*/
 			}
 		}
 		if($res == true){
