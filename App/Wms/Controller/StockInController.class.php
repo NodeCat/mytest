@@ -327,7 +327,9 @@ class StockInController extends CommonController {
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $key => $val) {
-			$pill['status'][$val['status']]['count'] = $val['qty'];
+			if(array_key_exists($key, $pill)){
+				$pill['status'][$val['status']]['count'] = $val['qty'];
+			}
 		}
 		$this->pill = $pill;
     }

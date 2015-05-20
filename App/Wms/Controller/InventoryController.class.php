@@ -340,7 +340,23 @@ class InventoryController extends CommonController {
 						$map['location_id'] = $inventory_detail['location_id'];
 						//根据pro_code location_id 查询是否有记录
 						$stock_info = M('stock')->where($map)->find();
-						if(empty($stock_info)){
+
+						//判断 盘盈 盘亏 
+						//盘盈 添加盘盈批次 创建新的库存记录
+						if($inventory_detail['pro_qty'] > $inventory_detail['theoretical_qty']){
+							$data['location_id'] = $inventory_detail['location_id'];
+							$data['pro_code'] = $inventory_detail['pro_code'];
+							$data['batch'] = get_sn('profit');
+							$data['stock_qty'] = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
+							A('Stock','Logic')->addStock($data);
+							unset($data);
+						}
+						//盘亏 按照先进先出原则 减去最早的批次量
+						if($inventory_detail['pro_qty'] < $inventory_detail['theoretical_qty']){
+
+						}
+
+						/*if(empty($stock_info)){
 							//如果为空 则需要创建库存记录
 							$data['location_id'] = $inventory_detail['location_id'];
 							$data['pro_code'] = $inventory_detail['pro_code'];
@@ -359,7 +375,7 @@ class InventoryController extends CommonController {
 							//如果有记录 则需要更新库存记录
 							//根据pro_code location_id 更新库存表
 							M('stock')->where($map)->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
-						}
+						}*/
 
 						//新建库存调整单详情
 						$adjusted_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
