@@ -13,7 +13,7 @@ class PurchaseController extends CommonController {
 		'picking_status' => array(
 			'0' => '未入库', 
 		),
-		'state' => array(
+		'status' => array(
 			'0' => '草稿',
 			'11'=>'待审核',
 			'13' => '已生效',
@@ -31,7 +31,7 @@ class PurchaseController extends CommonController {
 		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
-		'state' => '单据状态',    
+		'status' => '单据状态',    
 		'cat_total' => 'sku种数',  
 		'qty_total' => '采购总数',   
 		'price_total' => '采购总金额',   
@@ -139,8 +139,8 @@ class PurchaseController extends CommonController {
 		$M->picking_status = '0';
 	}
 	
-	public function before_save(&$data){
-		$data['status'] = '11';
+	public function before_save(&$M){
+		$M->status = '11';
 	}
 
 	public function after_save($pid){

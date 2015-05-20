@@ -355,6 +355,11 @@ class InventoryController extends CommonController {
 						}
 						//盘亏 按照先进先出原则 减去最早的批次量
 						if($inventory_detail['pro_qty'] < $inventory_detail['theoretical_qty']){
+							//根据pro_code location_id 查询库存stock
+							$map['pro_code'] = $inventory_detail['pro_code'];
+							$map['location_id'] = $inventory_detail['location_id'];
+							$stock_list = M('Stock')->where($map)->select();
+							var_dump($stock_list);exit;
 							echo 123;exit;
 						}
 
