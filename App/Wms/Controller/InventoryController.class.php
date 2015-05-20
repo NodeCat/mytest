@@ -355,35 +355,34 @@ class InventoryController extends CommonController {
 						}
 						//盘亏 按照先进先出原则 减去最早的批次量
 						if($inventory_detail['pro_qty'] < $inventory_detail['theoretical_qty']){
-							//根据pro_code location_id 查询库存stock
+							//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 							$map['pro_code'] = $inventory_detail['pro_code'];
 							$map['location_id'] = $inventory_detail['location_id'];
-							$stock_list = M('Stock')->where($map)->select();
-							var_dump($stock_list);exit;
-							echo 123;exit;
-						}
-
-echo 11111;exit;
-						/*if(empty($stock_info)){
-							//如果为空 则需要创建库存记录
-							$data['location_id'] = $inventory_detail['location_id'];
-							$data['pro_code'] = $inventory_detail['pro_code'];
-							$data['batch'] = get_sn('profit');
-							$data['stock_qty'] = $inventory_detail['pro_qty'];
-							A('Stock','Logic')->addStock($data);
-							unset($data);
-
-							//根据location_id 查询对应location信息
-							//如果盘盈 需要获得库位默认status
-							$map['id'] = $inventory_detail['location_id'];
-							$location_info = M('Location')->where($map)->find();
-							$stock_info['status'] = $location_info['status'];
+							$stock_list = M('Stock')->where($map)->order('batch')->select();
 							unset($map);
-						}else{
-							//如果有记录 则需要更新库存记录
-							//根据pro_code location_id 更新库存表
-							M('stock')->where($map)->data(array('stock_qty'=>$inventory_detail['pro_qty']))->save();
-						}*/
+
+							$diff_qty = $inventory_detail['theoretical_qty'] - $inventory_detail['pro_qty'];
+							//按照现进先出原则 减去最早的批次量
+							foreach($stock_list as $stock){
+								if($diff_qty > 0){
+									//如果库存量小于等于差异量 则删除该条库存记录 然后减去差异量diff_qty
+									if($stock['stock_qty'] <= $diff_qty){
+										$map['id'] = $stock['id'];
+										M('Stock')->where($map)->delete();
+										unset($map);
+
+										$diff_qty = $diff_qty - $stock['stock_qty'];
+									}else{
+										//根据id 更新库存表
+										$map['id'] = $stock['id'];
+										$data['stock_qty'] = $stock['stock_qty'] - $diff_qty;
+										M('stock')->where($map)->data($data)->save();
+										unset($map);
+										unset($data);
+									}
+								}
+							}
+						}
 
 						//新建库存调整单详情
 						$adjusted_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
