@@ -146,6 +146,7 @@ class StockLogic{
 			'location_id' => $location_id,
 			'pro_code' => $pro_code,
 			'type' => 'move',
+			'refer_code' => $refer_code,
 			'direction' => 'IN',
 			'move_qty' => $pro_qty,
 			'old_qty' => $log_old_qty,
@@ -156,7 +157,7 @@ class StockLogic{
 		$stock_move = D('StockMoveDetail');
 		$stock_move_data = $stock_move->create($stock_move_data);
 		$stock_move->data($stock_move_data)->add();
-		
+
 		return ture;
 	}
 
