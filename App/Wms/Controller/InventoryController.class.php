@@ -259,13 +259,15 @@ class InventoryController extends CommonController {
 				//获得所有要盘点的pro_codes
 				//根据inventory_pro_codes 查询对应的库存量stock_qty
 				$map['pro_code'] = array('in', $this->inventory_pro_codes);
-				$stock_lists = M('Stock')->where($map)->getField('pro_code,stock_qty,location_id',true);
+				$map['wh_id'] = session('user.wh_id');
+				//$stock_lists = M('Stock')->where($map)->getField('pro_code,stock_qty,location_id',true);
+				$stock_lists = M('Stock')->field('pro_code, location_id, sum(stock_qty) as stock_qty')->group('location_id')->where($map)->select();
 				unset($map);
 				//插入盘点详情表，stock_inventory_detail
 				foreach($stock_lists as $pro_code => $stock_list){
 					$data_list[] = array(
 						'inventory_code'=>$inventory_code,
-						'pro_code'=>$pro_code,
+						'pro_code'=>$stock_list['pro_code'],
 						'location_id'=>$stock_list['location_id'],
 						'pro_qty'=>0,
 						'theoretical_qty'=>$stock_list['stock_qty'],
@@ -353,9 +355,10 @@ class InventoryController extends CommonController {
 						}
 						//盘亏 按照先进先出原则 减去最早的批次量
 						if($inventory_detail['pro_qty'] < $inventory_detail['theoretical_qty']){
-
+							echo 123;exit;
 						}
 
+echo 11111;exit;
 						/*if(empty($stock_info)){
 							//如果为空 则需要创建库存记录
 							$data['location_id'] = $inventory_detail['location_id'];

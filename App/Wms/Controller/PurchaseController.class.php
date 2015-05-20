@@ -139,6 +139,10 @@ class PurchaseController extends CommonController {
 		$M->picking_status = '0';
 	}
 	
+	public function before_save(&$data){
+		$data['status'] = '11';
+	}
+
 	public function after_save($pid){
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
