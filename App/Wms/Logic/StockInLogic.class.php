@@ -115,32 +115,14 @@ class StockInLogic{
 			$location = M('location_detail')->field('is_mixed_pro,is_mixed_batch')->where($map)->find();
 		}
 		
-		if($location['is_mixed_pro'] ==2 || $location['is_mixed_batch'] == 2) {
-			//检查库位上的货品
-			unset($map);
-			$map['location_id'] = $location_id;
-			$map['wh_id'] = $in['wh_id'];
-			$map['status'] = $status;
-			$map['stock_qty'] = array('neq','0');
-			$map['is_deleted'] = 0;
-			$res = M('stock')->field('pro_code,batch,status')->group('pro_code,status')->where($map)->select();
-			
-			if(!empty($res)) {
-				if($location['is_mixed_pro'] == 2) {
-					foreach ($res as $key => $val) {
-						if($val['pro_code'] != $code) {
-							return array('res'=>false,'msg'=>'该库位不允许混放货品。');
-						}
-					}
-				}
-				if($location['is_mixed_batch'] == 2) {
-					foreach ($res as $key => $val) {
-						if($val['batch'] != $in['code']) {
-							return array('res'=>false,'msg'=>'该库位不允许混放批次。');
-						}
-					}
-				}
-			}
+		//判断目标库位是否可以 混货 混批次
+		$data['location_id'] = $location_id;
+		$data['wh_id'] = $in['wh_id'];
+		$data['status'] = $status;
+		$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
+
+		if($res['res'] == false){
+			return $res;
 		}
 		
 		//写库存

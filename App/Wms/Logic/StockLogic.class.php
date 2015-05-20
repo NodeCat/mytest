@@ -371,4 +371,52 @@ class StockLogic{
 
 		return true;
 	}
+
+	/**
+	* 插入库存记录时 检查目标库位是否允许 混货 混批次
+	* @param
+	* $params = array(
+	* 	'location_id' => xxx,
+	*	'wh_id' => xxxx,
+	*	'status' => xxxx,
+	*	'wh_id' => xxxx,
+	* );
+	*/
+	public function checkLocationMixedProOrBatch($params = array()){
+		if(empty($params) || empty($params['location_id']) || empty($params['wh_id'])){
+			return array('res'=>false,'msg'=>'参数有误');
+		}
+
+		$map['location_id'] = $params['location_id'];
+		$location_detail = M('location_detail')->field('is_mixed_pro,is_mixed_batch')->where($map)->find();
+		unset($map);
+
+		if($location_detail['is_mixed_pro'] ==2 || $location_detail['is_mixed_batch'] == 2) {
+			//检查库位上的货品
+			$map['location_id'] = $params['location_id'];
+			$map['wh_id'] = $params['wh_id'];
+			$map['status'] = $params['status'];
+			$map['stock_qty'] = array('neq','0');
+			$map['is_deleted'] = 0;
+			$res = M('stock')->field('pro_code,batch,status')->group('pro_code,status')->where($map)->select();
+
+			if(!empty($res)) {
+				if($location_detail['is_mixed_pro'] == 2) {
+					foreach ($res as $key => $val) {
+						if($val['pro_code'] != $params['pro_code']) {
+							return array('res'=>false,'msg'=>'该库位不允许混放货品。');
+						}
+					}
+				}
+				if($location_detail['is_mixed_batch'] == 2) {
+					foreach ($res as $key => $val) {
+						if($val['batch'] != $params['batch']) {
+							return array('res'=>false,'msg'=>'该库位不允许混放批次。');
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
 }

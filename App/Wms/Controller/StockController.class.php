@@ -247,6 +247,13 @@ class StockController extends CommonController {
 				if($old_stock_info[$data['id']]['location_id'] === $data['location_id']){
 					$this->msgReturn(0,'请修改库位信息');
 				}
+
+				//判断目标库位是否可以 混货 混批次
+				$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
+
+				if($res['res'] == false){
+					$this->msgReturn(0,'移库失败。'.$res['msg']);
+				}
 			}
 		}
 	}
