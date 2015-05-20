@@ -18,6 +18,15 @@ class StockInLogic{
 			return array('res'=>false,'msg'=>'单据中未找到该货品。');
 		}
 
+		$map['pid'] = $inId;
+		$map['pro_code'] = $code;
+		$bill_in_detail_info = M('stock_bill_in_detail')->group('pro_code')->where($map)->find();
+		$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
+
+		if($prepareOnQty == 0) {
+			return array('res'=>false,'msg'=>'该货品没有待上架量。');
+		}
+
 		$detail['id'] = $in['id'];
 		$detail['code'] = $in['code'];
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
