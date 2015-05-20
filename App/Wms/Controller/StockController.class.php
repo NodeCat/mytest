@@ -333,27 +333,8 @@ class StockController extends CommonController {
 			}
 
 			//库存移动完成后触发的方法
-			if(I('editStockMove')){
-				//创建库存移动记录
-				//根据pro_code 查询产品信息
-				//$SKUs = A('Pms','Logic')->get_SKU_by_pro_codes(array(I('pro_code')));
-				//$SKU = $SKUs['list'][0];
-				/*$stock_move_data = array(
-					'type' => 'move_location',
-					'batch' => I('batch'),
-					'pro_code' => I('pro_code'),
-					'move_qty' => I('stock_qty'),
-					'price_unit' => 0,
-					'src_wh_id' => I('wh_id'),
-					'dest_wh_id' => I('wh_id'),
-					'src_location_id' => I('src_location_id'),
-					'dest_location_id' => I('location_id'),
-					);
-				$stock_move = D('stock_move');
-				$stock_move_data = $stock_move->create($stock_move_data);
-				$stock_move->data($stock_move_data)->add();
-				*/
-			}
+			/*if(I('editStockMove')){
+			}*/
 		}
 	}
 

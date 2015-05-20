@@ -112,8 +112,14 @@ class StockLogic{
 			$data = $stock->create($row);
 
 			$res = $stock->add($data);
+
+			$log_old_qty = 0;
+			$log_new_qty = $pro_qty;
 		}
 		else{
+			$log_old_qty = $res['stock_qty'];
+			$log_new_qty = $res['stock_qty'] + $pro_qty;
+
 			$map['id'] = $res['id'];
 			$data['stock_qty'] = $res['stock_qty'] + $pro_qty;
 			$data = $stock->create($data,2);
@@ -134,21 +140,23 @@ class StockLogic{
 		M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
 		unset($map);
 		
-		//写库存移动记录
-		/*$M = D('StockMove');
-		$row['refer_code'] = $refer_code;
-		$row['type'] = 'on';
-		$row['pro_code'] = $pro_code;
-		$row['pro_uom'] = $pro_uom;
-		$row['move_qty'] = $pro_qty;
-		$row['src_wh_id'] = 0;
-		$row['src_location_id'] = 0;
-		$row['dest_wh_id'] = $wh_id;
-		$row['dest_location_id'] = $location_id;
-		$row['status'] = '0';
-		$row['is_deleted'] = '0';
-		$data = $M->create($row);
-		$res = $M->add($data);*/
+		//写入库存交易日志
+		$stock_move_data = array(
+			'wh_id' => $wh_id,
+			'location_id' => $location_id,
+			'pro_code' => $pro_code,
+			'type' => 'move',
+			'direction' => 'IN',
+			'move_qty' => $pro_qty,
+			'old_qty' => $log_old_qty,
+			'new_qty' => $log_new_qty,
+			'batch' => $batch,
+			'status' => $status,
+			);
+		$stock_move = D('StockMoveDetail');
+		$stock_move_data = $stock_move->create($stock_move_data);
+		$stock_move->data($stock_move_data)->add();
+		
 		return ture;
 	}
 
