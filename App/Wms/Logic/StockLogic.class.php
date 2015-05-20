@@ -367,7 +367,22 @@ class StockLogic{
 		$stock->data($add_data)->add();
 
 		//写入库存交易记录
-		//to do ....
+		$stock_move_data = array(
+			'wh_id' => session('user.wh_id'),
+			'location_id' => $params['location_id'],
+			'pro_code' => $params['pro_code'],
+			'type' => 'move',
+			'refer_code' => $params['refer_code'],
+			'direction' => 'IN',
+			'move_qty' => $params['stock_qty'],
+			'old_qty' => 0,
+			'new_qty' => $params['stock_qty'],
+			'batch' => $params['batch'],
+			'status' => $add_data['status'],
+			);
+		$stock_move = D('StockMoveDetail');
+		$stock_move_data = $stock_move->create($stock_move_data);
+		$stock_move->data($stock_move_data)->add();
 
 		return true;
 	}

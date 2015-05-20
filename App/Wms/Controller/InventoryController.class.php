@@ -350,6 +350,7 @@ class InventoryController extends CommonController {
 							$data['pro_code'] = $inventory_detail['pro_code'];
 							$data['batch'] = get_sn('profit');
 							$data['stock_qty'] = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
+							$data['refer_code'] = $data['batch'];
 							A('Stock','Logic')->addStock($data);
 							unset($data);
 						}
@@ -372,14 +373,42 @@ class InventoryController extends CommonController {
 										unset($map);
 
 										$diff_qty = $diff_qty - $stock['stock_qty'];
+										$log_qty = $stock['stock_qty'];
+										$log_old_qty = $stock['stock_qty'];
+										$log_new_qty = 0;
 									}else{
 										//根据id 更新库存表
 										$map['id'] = $stock['id'];
+										$log_qty = $diff_qty;
+										$log_old_qty = $stock['stock_qty'];
 										$data['stock_qty'] = $stock['stock_qty'] - $diff_qty;
+										$log_new_qty = $data['stock_qty'];
 										M('stock')->where($map)->data($data)->save();
 										unset($map);
 										unset($data);
 									}
+
+									//写入库存交易日志
+									$stock_move_data = array(
+										'wh_id' => session('user.wh_id'),
+										'location_id' => $stock['location_id'],
+										'pro_code' => $stock['pro_code'],
+										'type' => 'move',
+										'refer_code' => $inventory_info['code'],
+										'direction' => 'OUT',
+										'move_qty' => $log_qty,
+										'old_qty' => $log_old_qty,
+										'new_qty' => $log_new_qty,
+										'batch' => $stock['batch'],
+										'status' => $stock['status'],
+										);
+									$stock_move = D('StockMoveDetail');
+									$stock_move_data = $stock_move->create($stock_move_data);
+									$stock_move->data($stock_move_data)->add();
+									unset($log_qty);
+									unset($log_old_qty);
+									unset($log_new_qty);
+									unset($stock_move_data);
 								}
 							}
 						}

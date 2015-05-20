@@ -18,6 +18,7 @@ class StockMoveDetailController extends CommonController {
             'refer_code' => '关联单据',
             'type' => '类型',
             'direction' => '方向',
+            'move_qty' => '变化数量',
             'batch' => '批次',
             );
 
