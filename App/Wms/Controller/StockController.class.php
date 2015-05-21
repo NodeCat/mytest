@@ -35,7 +35,7 @@ class StockController extends CommonController {
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
-            'toolbar'   => true,
+            'toolbar'   => false,
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
@@ -47,12 +47,12 @@ class StockController extends CommonController {
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'add', 'show' => false,'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
             array('name'=>'export' ,'show' => false,'new'=>'false'),
-            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'print' ,'show' => false,'new'=>'false'),
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
         $this->search_addon = true;
@@ -213,130 +213,67 @@ class StockController extends CommonController {
 			$location_info = A('Location','Logic')->getParentById($data['location_id']);
 			$data['area_name'] = $location_info['name'];
 
-			//根据location.id 查询库位信息
-			/*$map['id'] = $data['location_id'];
-			$location_info = M('Location')->where($map)->find();
-			$data['location_code'] = $location_info['code'];
-			unset($map);
-
-			//根据wh_id 查询仓库信息
-			$map['id'] = $data['wh_id'];
-			$wh_info = M('warehouse')->where($map)->find();
-			$data['wh_code'] = $wh_info['code'];*/
 		}
 		
 	}
 
-	//save方法之前，执行该方法
-	protected function before_save(&$M){
-		if(IS_POST){
-			//对比状态是否改变，如果没有改变，报错
-			//根据stock.id 查询对应stock.status
-			$data = $M->data();
-			$map['id'] = $data['id'];
-			$old_stock_info = M('Stock')->where($map)->getField('id,status,location_id');
-			unset($map);
 
-			if(I('editStatus')){
-				if($old_stock_info[$data['id']]['status'] === $data['status']){
-					$this->msgReturn(0,'请修改库存状态');
-				}
+	//重写save方法
+	protected function save() {
+		if(I('editStatus')){
+			$params['wh_id'] = I('wh_id');
+			$params['location_id'] = I('location_id');
+			$params['pro_code'] = I('pro_code');
+			$params['batch'] = I('batch');
+			$params['origin_status'] = I('origin_status');
+			$params['new_status'] = I('status');
+			$res = A('Stock','Logic')->adjustStockStatus($params);
 
-				//写入库存交易日志
-				$stock_move_data = array(
-					'wh_id' => session('user.wh_id'),
-					'location_id' => $data['location_id'],
-					'pro_code' => $data['pro_code'],
-					'type' => 'status',
-					'direction' => 'OUT',
-					'move_qty' => 0,
-					'old_qty' => $data['stock_qty'],
-					'new_qty' => $data['stock_qty'],
-					'batch' => $data['batch'],
-					'status' => $old_stock_info[$data['id']]['status'],
-					);
-				$stock_move = D('StockMoveDetail');
-				$stock_move_data = $stock_move->create($stock_move_data);
-				$stock_move->data($stock_move_data)->add();
-				
-				$stock_move_data['direction'] = 'IN';
-				$stock_move_data['status'] = $data['status'];
-				$stock_move->data($stock_move_data)->add();
-			}
-
-			if(I('editStockMove')){
-				if($old_stock_info[$data['id']]['location_id'] === $data['location_id']){
-					$this->msgReturn(0,'请修改库位信息');
-				}
-
-				//判断目标库位是否可以 混货 混批次
-				$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
-
-				if($res['res'] == false){
-					$this->msgReturn(0,'移库失败。'.$res['msg']);
-				}
-
-				//写入库存交易日志
-				$stock_move_data = array(
-					'wh_id' => session('user.wh_id'),
-					'location_id' => $old_stock_info[$data['id']]['location_id'],
-					'pro_code' => $data['pro_code'],
-					'type' => 'move',
-					'direction' => 'OUT',
-					'move_qty' => $data['stock_qty'],
-					'old_qty' => $data['stock_qty'],
-					'new_qty' => 0,
-					'batch' => $data['batch'],
-					'status' => $data['status'],
-					);
-				$stock_move = D('StockMoveDetail');
-				$stock_move_data = $stock_move->create($stock_move_data);
-				$stock_move->data($stock_move_data)->add();
-
-				$stock_move_data['direction'] = 'IN';
-				$stock_move_data['location_id'] = $data['location_id'];
-				$stock_move_data['old_qty'] = 0;
-				$stock_move_data['new_qty'] = $data['stock_qty'];
-				$stock_move->data($stock_move_data)->add();
+			if($res['status'] == 0){
+				$this->msgReturn($res['status'],$res['msg']);
 			}
 		}
-	}
 
-	//save方法之后，执行该方法
-	protected function after_save($res){
-		if(IS_POST){
-			//调整状态完成后触发的方法
-			if(I('editStatus')){
-				//创建库存调整单
-				$adjustment_code = get_sn('adjust');
-				$adjustment_data = array(
-					'code' => $adjustment_code,
-					'type' => 'change_status',
-					'refer_code' => 'STOCK'.$res,
-					);
-				$stock_adjustment = D('Adjustment');
-				$adjustment_data = $stock_adjustment->create($adjustment_data);
-				$stock_adjustment->data($adjustment_data)->add();
-
-				//创建库存调整单详情
-				$adjustment_detail_data = array(
-					'adjustment_code' => $adjustment_code,
-					'pro_code' => I('pro_code'),
-					'origin_qty' => I('stock_qty'),
-					'adjusted_qty' => 0,
-					'origin_status' => I('origin_status'),
-					'adjust_status' => I('status'),
-					);
-				$stock_adjustment_detail = D('AdjustmentDetail');
-				$stock_adjustment_detail_data = $stock_adjustment_detail->create($adjustment_detail_data);
-				$stock_adjustment_detail->data($stock_adjustment_detail_data)->add();
+		if(I('editStockMove')){
+			$src_location_id = I('src_location_id');
+			$dest_location_id = I('location_id');
+			if($src_location_id === $dest_location_id){
+				$this->msgReturn(0,'请修改库位信息');
 			}
 
-			//库存移动完成后触发的方法
-			/*if(I('editStockMove')){
-			}*/
+			$params['src_location_id'] = $src_location_id;
+			$params['dest_location_id'] = $dest_location_id;
+			$params['wh_id'] = I('wh_id');
+			$params['status'] = I('status');
+			$params['pro_code'] = I('pro_code');
+			//判断目标库位是否可以 混货 混批次
+			$res = A('Stock','Logic')->checkLocationMixedProOrBatch($params);
+
+			if($res['status'] == 0){
+				$this->msgReturn(0,'移库失败。'.$res['msg']);
+			}
+			unset($params);
+			unset($res);
+
+			//库存移动
+			$variable_qty = I('stock_qty');
+			$params['variable_qty'] = $variable_qty;
+			$params['wh_id'] = I('wh_id');
+			$params['src_location_id'] = I('src_location_id');
+			$params['dest_location_id'] = I('location_id');
+			$params['pro_code'] = I('pro_code');
+			$params['batch'] = I('batch');
+			$params['status'] = I('status');
+			$res = A('Stock','Logic')->adjustStockByMove($params);
+
+			if($res['status'] == 0){
+				$this->msgReturn(0,'移库失败。'.$res['msg']);
+			}
 		}
-	}
+
+		$this->msgReturn(1);
+    }
+
 
 	//调整状态按钮触发的方法
 	public function editStatus(){

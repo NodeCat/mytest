@@ -116,12 +116,14 @@ class StockInLogic{
 		}
 		
 		//判断目标库位是否可以 混货 混批次
-		$data['location_id'] = $location_id;
+		$data['dest_location_id'] = $location_id;
 		$data['wh_id'] = $in['wh_id'];
 		$data['status'] = $status;
+		$data['batch'] = $in['code'];
+		$data['pro_code'] = $code;
 		$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
 
-		if($res['res'] == false){
+		if($res['status'] == 0){
 			return $res;
 		}
 		
