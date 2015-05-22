@@ -244,7 +244,7 @@ class StockController extends CommonController {
 			$params['src_location_id'] = $src_location_id;
 			$params['dest_location_id'] = $dest_location_id;
 			$params['wh_id'] = I('wh_id');
-			$params['status'] = I('status');
+			//$params['status'] = I('status');
 			$params['pro_code'] = I('pro_code');
 			//判断目标库位是否可以 混货 混批次
 			$res = A('Stock','Logic')->checkLocationMixedProOrBatch($params);

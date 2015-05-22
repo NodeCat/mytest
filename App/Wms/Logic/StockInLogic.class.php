@@ -118,7 +118,7 @@ class StockInLogic{
 		//判断目标库位是否可以 混货 混批次
 		$data['dest_location_id'] = $location_id;
 		$data['wh_id'] = $in['wh_id'];
-		$data['status'] = $status;
+		//$data['status'] = $status;
 		$data['batch'] = $in['code'];
 		$data['pro_code'] = $code;
 		$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
@@ -177,13 +177,7 @@ class StockInLogic{
 		$pro_uom = $line['pro_uom'];
 
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
-		/*
-		$refer_code = $in['code'];
-		$batch   = $in['code'];
-		$status  = 'unknown';
-		$wh_id = $in['wh_id'];
-		$res = A('Stock','Logic')->adjustStockByPrepare($wh_id,$refer_code,$code,$qty,$pro_uom,$status);
-		*/
+
 		//根据pid + pro_code + pro_uom 更新stock_bill_in_detail expected_qty 减少 prepare_qty 增加
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;

@@ -17,6 +17,15 @@ function get_sn($type = '', $wh_id = '') {
     $numb = str_replace(array('%date%','%wh_id%'), array($date,$wh_id), $numb);
 	return $numb;
 }
+function get_batch($code=''){
+    if(!empty($code)) {
+        $code = get_sn('batch');
+    }
+    $data['code'] = $code;
+    $data['product_date'] = get_time();
+    M('stock_batch')->add($data);
+    retun $code;
+}
 function get_tablename() {
 	$M = D(CONTROLLER_NAME);
     $table = $M->tableName;

@@ -86,66 +86,6 @@ class StockLogic{
 	}
 
 	/**
-	 * 入库收货时，库存表变化，调整库存量
-	 * @param 
-	 * $wh_id 仓库id
-	 * $refer_code 关联单号
-	 * $pro_code sku编号
-	 * $pro_qty 产品数量
-	 * $pro_uom 产品计量单位
-	 * $status 库存状态
-	 * )
-	 */
-
-	public function adjustStockByPrepare($wh_id,$refer_code,$pro_code,$pro_qty,$pro_uom,$status){
-		
-		//写库存
-		$row['wh_id'] = $wh_id;
-		$row['location_id'] = 0;
-		$row['pro_code'] = $pro_code;
-		$row['batch'] = $refer_code;
-		$row['status'] =$status;
-		$stock = D('stock');
-		$res = $stock->where($row)->find();
-		if(empty($res)) {
-			$row['prepare_qty'] = $pro_qty;
-			$row['stock_qty'] = 0;
-			$row['assign_qty'] = 0;	
-			
-			$data = $stock->create($row);
-			$res = $stock->add($data);
-		}
-		else{
-			$map['id'] = $res['id'];
-			$data['prepare_qty'] = $res['prepare_qty'] + $pro_qty;
-			$data = $stock->create($data, 2);
-			$res = $stock->where($map)->save($data);
-		}
-
-		if($res == false) {
-			return false;
-		}
-		unset($row);
-
-		//写库存移动记录
-		/*$M = D('StockMove');
-		$row['refer_code'] = $refer_code;
-		$row['type'] = 'in';
-		$row['pro_code'] = $pro_code;
-		$row['pro_uom'] = $pro_uom;
-		$row['move_qty'] = $pro_qty;
-		$row['src_wh_id'] = 0;
-		$row['src_location_id'] = 0;
-		$row['dest_wh_id'] = $wh_id;
-		$row['dest_location_id'] = 0;
-		$row['status'] = '0';
-		$row['is_deleted'] = '0';
-		$data = $M->create($row);
-		$res = $M->add($data);*/
-		return true;
-	}
-
-	/**
 	 * 入库上架时，库存表变化，调整库存量
 	 * @param 
 	 * $wh_id 仓库id
@@ -159,25 +99,6 @@ class StockLogic{
 	 */
 	public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status){
 		$stock = D('stock');
-		//减待上架库存
-		/*$map['wh_id'] = $wh_id;
-		$map['location_id'] = '0';
-		$map['pro_code'] = $pro_code;
-		$map['batch'] = $refer_code;
-		$map['status'] = 'unknown';
-		$res = $stock->field('id,prepare_qty')->where($map)->find();
-		
-		if(empty($res)) {
-			return false;
-		}
-		unset($map);*/
-		/*$map['id'] = $res['id'];
-		$data['prepare_qty'] = $res['prepare_qty'] - $pro_qty;
-		$data = $stock->create($data);
-		$res = $stock->where($map)->save($data);
-		if($res == false) {
-			return false;
-		}*/
 		//增加库存
 		$row['wh_id'] = $wh_id;
 		$row['location_id'] = $location_id;
@@ -242,6 +163,209 @@ class StockLogic{
 		$stock_move->data($stock_move_data)->add();
 
 		return ture;
+	}
+
+	/**
+	* 移库操作 库存表变化，调整库存量 没有批次参数 按照批次先进先出
+	* @param 
+	* $params = array(
+	* 	'variable_qty' => 80,
+	* 	'wh_id'=>'xxx',
+	*	'src_location_id'=>xxxx,
+	*	'dest_location_id'=>xxxx,
+	*	'pro_code'=>xxxxx,
+	*	'dest_location_status'=>xxxx,
+	* )
+	*
+	*/
+	public function adjustStockByMoveNoBatchFIFO($param = array()){
+		if($param['variable_qty'] == 0 || 
+			empty($param['wh_id']) || 
+			empty($param['src_location_id']) || 
+			empty($param['dest_location_id']) || 
+			empty($param['pro_code']) || 
+			empty($param['dest_location_status']) ){
+
+			//添加错误信息
+			return array('status'=>0,'msg'=>'参数有误');
+		}
+		//查询目标库位上是否有商品
+		$map['location_id'] = $param['dest_location_id'];
+		$map['pro_code'] = $param['pro_code'];
+		$map['wh_id'] = $param['wh_id'];
+		$dest_stock_info = M('Stock')->where($map)->find();
+
+		//查询源库位上信息
+		$map['location_id'] = $param['src_location_id'];
+		$map['pro_code'] = $param['pro_code'];
+		$map['wh_id'] = $param['wh_id'];
+		$src_stock_list = M('Stock')->where($map)->order('batch')->find();
+		unset($map);
+
+		//检查变化量是否大于总库存量，如果大于则报错
+		foreach($src_stock_list as $src_stock){
+			$src_total_qty += $src_stock['stock_qty'];
+		}
+
+		if($param['variable_qty'] > $src_total_qty){
+			return array('status'=>0,'msg'=>'移库量大于库存总量！');
+		}
+
+		//剩余移动量
+		$diff_qty = $param['variable_qty'];
+
+		//按照现进先出原则 减去最早的批次量
+		foreach($src_stock_list as $src_stock){
+			if($diff_qty > 0){
+				//库存量大于剩余移动量
+				if($src_stock['stock_qty'] > $diff_qty){
+					//增加目标库存量 减少原库存量
+					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
+				}
+
+				//库存量等于剩余移动量
+				if($src_stock['stock_qty'] == $diff_qty){
+					//增加目标库存量 减少原库存量
+					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
+
+					//删除原库存记录
+					$map['id'] = $src_stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+				}
+
+				//库存量小于剩余移动量
+				if($src_stock['stock_qty'] < $diff_qty){
+					//增加目标库存量 减少原库存量
+					$param['variable_qty'] = $src_stock['stock_qty'];
+					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
+
+					//删除原库存记录
+					$map['id'] = $src_stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+
+					$diff_qty = $diff_qty - $src_stock['stock_qty'];
+				}
+			}else{
+				break;
+			}
+		}
+
+
+		return array('status'=>1);
+	}
+
+	/**
+	* 	
+	*/
+	public function incDestStockDecSrcStock($src_stock,$dest_stock_info,$param){
+		//如果没有记录，则新加一条记录
+		if(empty($dest_stock_info)){
+			$add_info['wh_id'] = $param['wh_id'];
+			$add_info['location_id'] = $param['dest_location_id'];
+			$add_info['pro_code'] = $param['pro_code'];
+			$add_info['batch'] = $src_stock['batch'];
+			$add_info['status'] = $src_stock['status'];
+			$add_info['stock_qty'] = $param['variable_qty'];
+			$add_info['assign_qty'] = 0;
+			$add_info['prepare_qty'] = 0;
+
+			try{
+				//插入数据
+				$stock = D('Stock');
+				$add_info = $stock->create($add_info);
+				$stock->data($add_info)->add();
+
+				//写入库存交易日志
+				$stock_move_data = array(
+					'wh_id' => $param['wh_id'],
+					'location_id' => $param['dest_location_id'],
+					'pro_code' => $param['pro_code'],
+					'type' => 'move',
+					'direction' => 'IN',
+					'move_qty' => $param['variable_qty'],
+					'old_qty' => 0,
+					'new_qty' => $param['variable_qty'],
+					'batch' => $src_stock['batch'],
+					'status' => $src_stock['status'],
+					);
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+
+				//减少原库存量
+				$map['location_id'] = $param['src_location_id'];
+				$map['pro_code'] = $param['pro_code'];
+				$map['batch'] = $src_stock['batch'];
+				$map['status'] = $src_stock['status'];
+			
+				M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+
+				//写入库存交易日志
+
+				$stock_move_data['location_id'] = $param['src_location_id'];
+				$stock_move_data['direction'] = 'OUT';
+				$stock_move_data['old_qty'] = $src_stock['stock_qty'];
+				$stock_move_data['new_qty'] = $src_stock['stock_qty'] - $param['variable_qty'];
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+				unset($map);
+			}catch(Exception $e){
+				//添加错误信息
+				return array('status'=>0,'msg'=>'添加库存记录错误');
+			}
+			
+		}
+		//如果有记录，则更新记录
+		else{
+			//如果变化量大于0 增加目标库存 减少原库存
+			if($param['variable_qty'] > 0){
+				try{
+					//增加目标库存
+					$map['location_id'] = $param['dest_location_id'];
+					$map['pro_code'] = $param['pro_code'];
+					$map['batch'] = $dest_stock_info['batch'];
+					M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
+
+					//写入库存交易日志
+					$stock_move_data = array(
+						'wh_id' => $dest_stock_info['wh_id'],
+						'location_id' => $param['dest_location_id'],
+						'pro_code' => $param['pro_code'],
+						'type' => 'move',
+						'direction' => 'IN',
+						'move_qty' => $param['variable_qty'],
+						'old_qty' => $dest_stock_info['stock_qty'],
+						'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
+						'batch' => $dest_stock_info['batch'],
+						'status' => $dest_stock_info['status'],
+						);
+					$stock_move = D('StockMoveDetail');
+					$stock_move_data = $stock_move->create($stock_move_data);
+					$stock_move->data($stock_move_data)->add();
+
+					//减少原库存
+					$map['location_id'] = $param['src_location_id'];
+					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+
+					//写入库存交易日志
+					$stock_move_data['location_id'] = $param['src_location_id'];
+					$stock_move_data['direction'] = 'OUT';
+					$stock_move_data['old_qty'] = $src_stock['stock_qty'];
+					$stock_move_data['new_qty'] = $src_stock['stock_qty'] - $param['variable_qty'];
+					$stock_move = D('StockMoveDetail');
+					$stock_move_data = $stock_move->create($stock_move_data);
+					$stock_move->data($stock_move_data)->add();
+					unset($map);
+				}catch(Exception $e){
+					//添加错误信息
+					return array('status'=>0,'msg'=>'变更数量错误');
+				}
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -531,25 +655,15 @@ class StockLogic{
 		$location_detail = M('location_detail')->field('is_mixed_pro,is_mixed_batch')->where($map)->find();
 		unset($map);
 
-		if($location_detail['is_mixed_pro'] ==2 || $location_detail['is_mixed_batch'] == 2) {
+		if($location_detail['is_mixed_pro'] ==2){
 			//检查目标库位上的货品
 			$map['wh_id'] = $params['wh_id'];
 			$map['location_id'] = $params['dest_location_id'];
 			$map['status'] = $params['status'];
-			//$map['pro_code'] = $params['pro_code'];
 			$map['stock_qty'] = array('neq','0');
 			$map['is_deleted'] = 0;
 			$dest_stock_info = M('stock')->field('pro_code,batch,status')->group('pro_code,status')->where($map)->select();
 			unset($map);
-
-			//根据src_location_id 查询对应的原库位数据
-			if(!empty($params['src_location_id'])){
-				$map['location_id'] = $params['src_location_id'];
-				$map['pro_code'] = $params['pro_code'];
-				$map['wh_id'] = $params['wh_id'];
-				$src_stock_info = M('Stock')->where($map)->select();
-				unset($map);
-			}
 
 			//如果有记录 则禁止混货
 			if(!empty($dest_stock_info)) {
@@ -560,18 +674,46 @@ class StockLogic{
 						}
 					}
 				}
-				if($location_detail['is_mixed_batch'] == 2) {
-					if(!empty($src_stock_info)){
-						foreach ($src_stock_info as $key => $val) {
-							if($val['batch'] != $dest_stock_info[0]['batch']) {
-								return array('status'=>0,'msg'=>'该库位不允许混放批次。');
-							}
+			}
+		}
+
+		//检查混批次
+		if($location_detail['is_mixed_batch'] == 2) {
+			//检查目标库位上的货品
+			$map['wh_id'] = $params['wh_id'];
+			$map['location_id'] = $params['dest_location_id'];
+			//$map['status'] = $params['status'];
+			$map['pro_code'] = $params['pro_code'];
+			$map['stock_qty'] = array('neq','0');
+			$map['is_deleted'] = 0;
+			//由于已经是禁止混批次，所以理论上查询的结果只有一条记录
+			$dest_stock_info = M('stock')->field('pro_code,batch,status')->group('pro_code,status')->where($map)->select();
+			unset($map);
+
+			//根据src_location_id 查询对应的原库位数据
+			if(!empty($params['src_location_id'])){
+				$map['location_id'] = $params['src_location_id'];
+				$map['pro_code'] = $params['pro_code'];
+				$map['wh_id'] = $params['wh_id'];
+				$map['stock_qty'] = array('neq','0');
+				$map['is_deleted'] = 0;
+				$src_stock_info = M('Stock')->where($map)->select();
+				unset($map);
+			}
+
+			//禁止混批次
+			if(!empty($dest_stock_info)) {
+				if(!empty($src_stock_info)){
+					foreach ($src_stock_info as $key => $val) {
+						//由于已经是禁止混批次，所以理论上查询的结果只有一条记录
+						if($val['batch'] != $dest_stock_info[0]['batch']) {
+							return array('status'=>0,'msg'=>'该库位不允许混放批次。');
 						}
-					}else{
-						foreach($dest_stock_info as $key => $val){
-							if($val['batch'] != $params['batch']){
-								return array('status'=>0,'msg'=>'该库位不允许混放批次。');
-							}
+					}
+				}else{
+					foreach($dest_stock_info as $key => $val){
+						if($val['batch'] != $params['batch']){
+							return array('status'=>0,'msg'=>'该库位不允许混放批次。');
 						}
 					}
 				}
