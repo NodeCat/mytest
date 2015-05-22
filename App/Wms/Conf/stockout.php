@@ -1,0 +1,27 @@
+<?php
+/*return array('stockout'=>array(
+                'filter'=>array(
+                    'type'=>array(
+                        '1'=>'普通订单',
+                        '2'=>'采购退货',
+                        '3'=>'库内样品出库',
+                        ),
+                    'line'=>array(
+                        '1'=>'海淀黄庄北',
+                        '2'=>'知春路锦秋国际'
+                        ),
+                    'status'=>array(
+                        '1'=>'待生产',
+                        '2'=>'已出库'
+                        ),
+                    'process_type'=>array(
+                        '1'=>'正常单',
+                        '2'=>'取消单'
+                        ),
+                    'refused_type'=>array(
+                        '1'=>'空',
+                        '2'=>'缺货'
+                        )
+                    )
+                )
+            );*/

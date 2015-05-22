@@ -1,0 +1,29 @@
+<div class="form-group  col-lg-3">
+<a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
+</div>
+<script type="text/javascript">
+$(function(){
+	$('#stock_out').on('click',function(){
+		//获得盘点单id
+		var ids = getChecked();
+		$.ajax({
+			url:'/StockOut/stockOut',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:'ids='+ids,
+			success: function(json){
+				if(json.status=='1'){
+					refresh_list();
+				}
+				if(json.status=='0'){
+					alert(json.msg);
+                    return false;
+				}
+			}
+		});
+		return true;
+	})
+	
+})
+</script>
