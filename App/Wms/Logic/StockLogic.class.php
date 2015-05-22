@@ -684,7 +684,7 @@ class StockLogic{
 			//检查目标库位上的货品
 			$map['wh_id'] = $params['wh_id'];
 			$map['location_id'] = $params['dest_location_id'];
-			$map['status'] = $params['status'];
+			//$map['status'] = $params['status'];
 			$map['stock_qty'] = array('neq','0');
 			$map['is_deleted'] = 0;
 			$dest_stock_info = M('stock')->field('pro_code,batch,status')->group('pro_code,status')->where($map)->select();
