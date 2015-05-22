@@ -88,15 +88,18 @@ class CommonController extends AuthController {
         return $map;
     }
 
-    protected function filter_list(&$data,$type = '0') {
+    protected function filter_list(&$data,$type = '0',$filter = '') {
         if(!is_array($data)) return;
-        if(empty($this->filter)) {
-            $file = strtolower(CONTROLLER_NAME);
-            $filter = C($file.'.filter');
+        if(empty($filter)){
+            if(empty($this->filter)) {
+                $file = strtolower(CONTROLLER_NAME);
+                $filter = C($file.'.filter');
+            }
+            else {
+                $filter = $this->filter;
+            }
         }
-        else {
-            $filter = $this->filter;
-        }
+
         if($type == '1') {
             $table = strtolower(CONTROLLER_NAME);
             foreach ($filter as $key => $val) {

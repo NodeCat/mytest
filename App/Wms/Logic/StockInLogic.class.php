@@ -135,6 +135,8 @@ class StockInLogic{
 		$refer_code = $in['code'];
 		$wh_id = $in['wh_id'];
 		$batch   = $in['code'];
+		//管理批次号
+		get_batch($batch);
 		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status);
 		
 		if($res == true) {

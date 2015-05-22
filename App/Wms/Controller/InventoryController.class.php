@@ -349,6 +349,8 @@ class InventoryController extends CommonController {
 							$data['location_id'] = $inventory_detail['location_id'];
 							$data['pro_code'] = $inventory_detail['pro_code'];
 							$data['batch'] = get_sn('profit');
+							//管理批次号
+							get_batch($data['batch']);
 							$data['stock_qty'] = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
 							$data['refer_code'] = $data['batch'];
 							A('Stock','Logic')->addStock($data);
