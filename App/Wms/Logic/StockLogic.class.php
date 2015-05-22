@@ -16,7 +16,7 @@ class StockLogic{
 			return array('status'=>0,'msg'=>'参数有误！');
 		}
 
-		$diff_qty = $params['stock_qty'];
+		$diff_qty = $params['pro_qty'];
 
 		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 		$map['pro_code'] = $params['pro_code'];
@@ -38,47 +38,47 @@ class StockLogic{
 			if($diff_qty > 0){
 				//如果库存量小于等于差异量 则删除该条库存记录 然后减去差异量diff_qty
 				if($stock['stock_qty'] <= $diff_qty){
-				$map['id'] = $stock['id'];
-				M('Stock')->where($map)->delete();
-				unset($map);
+					$map['id'] = $stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
 
-				$diff_qty = $diff_qty - $stock['stock_qty'];
-				$log_qty = $stock['stock_qty'];
-				$log_old_qty = $stock['stock_qty'];
-				$log_new_qty = 0;
-			}else{
-				//根据id 更新库存表
-				$map['id'] = $stock['id'];
-				$log_qty = $diff_qty;
-				$log_old_qty = $stock['stock_qty'];
-				$data['stock_qty'] = $stock['stock_qty'] - $diff_qty;
-				$log_new_qty = $data['stock_qty'];
-				M('stock')->where($map)->data($data)->save();
-				unset($map);
-				unset($data);
-			}
+					$diff_qty = $diff_qty - $stock['stock_qty'];
+					$log_qty = $stock['stock_qty'];
+					$log_old_qty = $stock['stock_qty'];
+					$log_new_qty = 0;
+				}else{
+					//根据id 更新库存表
+					$map['id'] = $stock['id'];
+					$log_qty = $diff_qty;
+					$log_old_qty = $stock['stock_qty'];
+					$data['stock_qty'] = $stock['stock_qty'] - $diff_qty;
+					$log_new_qty = $data['stock_qty'];
+					M('stock')->where($map)->data($data)->save();
+					unset($map);
+					unset($data);
+				}
 
-			//写入库存交易日志
-			$stock_move_data = array(
-				'wh_id' => session('user.wh_id'),
-				'location_id' => $stock['location_id'],
-				'pro_code' => $stock['pro_code'],
-				'type' => 'move',
-				'refer_code' => $params['refer_code'],
-				'direction' => 'OUT',
-				'move_qty' => $log_qty,
-				'old_qty' => $log_old_qty,
-				'new_qty' => $log_new_qty,
-				'batch' => $stock['batch'],
-				'status' => $stock['status'],
-				);
-			$stock_move = D('StockMoveDetail');
-			$stock_move_data = $stock_move->create($stock_move_data);
-			$stock_move->data($stock_move_data)->add();
-			unset($log_qty);
-			unset($log_old_qty);
-			unset($log_new_qty);
-			unset($stock_move_data);
+				//写入库存交易日志
+				$stock_move_data = array(
+					'wh_id' => session('user.wh_id'),
+					'location_id' => $stock['location_id'],
+					'pro_code' => $stock['pro_code'],
+					'type' => 'move',
+					'refer_code' => $params['refer_code'],
+					'direction' => 'OUT',
+					'move_qty' => $log_qty,
+					'old_qty' => $log_old_qty,
+					'new_qty' => $log_new_qty,
+					'batch' => $stock['batch'],
+					'status' => $stock['status'],
+					);
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+				unset($log_qty);
+				unset($log_old_qty);
+				unset($log_new_qty);
+				unset($stock_move_data);
 			}
 		}
 		

@@ -159,8 +159,7 @@ class StockOutController extends CommonController {
                 $data['pro_code'] = $val['pro_code'];
                 $data['pro_qty'] = $val['order_qty'];
                 dump($data);
-                
-                $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);dump($res);exit;
+                $res = outStockBySkuFIFO($data);dump($res);exit;
                 if($res['status'] == 1) {
                     $status = 1;      
                 }else {
