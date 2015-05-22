@@ -199,7 +199,7 @@ class StockLogic{
 		$map['location_id'] = $param['src_location_id'];
 		$map['pro_code'] = $param['pro_code'];
 		$map['wh_id'] = $param['wh_id'];
-		$src_stock_list = M('Stock')->join('stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->find();
+		$src_stock_list = M('Stock')->join('stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
 		//检查变化量是否大于总库存量，如果大于则报错
@@ -207,12 +207,20 @@ class StockLogic{
 			$src_total_qty += $src_stock['stock_qty'];
 		}
 
-		if($param['variable_qty'] > $src_total_qty){
+
+		if(intval($param['variable_qty']) > intval($src_total_qty)){
 			return array('status'=>0,'msg'=>'移库量大于库存总量！');
 		}
 
 		//剩余移动量
-		$diff_qty = $param['variable_qty'];
+		$diff_qty = intval($param['variable_qty']);
+
+		//整理数据格式
+		foreach($src_stock_list as $key => $value){
+			$src_stock_list[$key]['stock_qty'] = intval($value['stock_qty']);
+			$src_stock_list[$key]['assign_qty'] = intval($value['assign_qty']);
+			$src_stock_list[$key]['prepare_qty'] = intval($value['prepare_qty']);
+		}
 
 		//按照现进先出原则 减去最早的批次量
 		foreach($src_stock_list as $src_stock){
@@ -220,12 +228,14 @@ class StockLogic{
 				//库存量大于剩余移动量
 				if($src_stock['stock_qty'] > $diff_qty){
 					//增加目标库存量 减少原库存量
+					$param['variable_qty'] = $diff_qty;
 					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
 				}
 
 				//库存量等于剩余移动量
 				if($src_stock['stock_qty'] == $diff_qty){
 					//增加目标库存量 减少原库存量
+					$param['variable_qty'] = $diff_qty;
 					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
 
 					//删除原库存记录
@@ -239,11 +249,6 @@ class StockLogic{
 					//增加目标库存量 减少原库存量
 					$param['variable_qty'] = $src_stock['stock_qty'];
 					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
-
-					//删除原库存记录
-					$map['id'] = $src_stock['id'];
-					M('Stock')->where($map)->delete();
-					unset($map);
 
 					$diff_qty = $diff_qty - $src_stock['stock_qty'];
 				}
@@ -294,13 +299,19 @@ class StockLogic{
 				$stock_move_data = $stock_move->create($stock_move_data);
 				$stock_move->data($stock_move_data)->add();
 
-				//减少原库存量
-				$map['location_id'] = $param['src_location_id'];
-				$map['pro_code'] = $param['pro_code'];
-				$map['batch'] = $src_stock['batch'];
-				$map['status'] = $src_stock['status'];
-			
-				M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+				//减少原库存量 如果和原库存量相等，则直接删除库存记录
+				if($param['variable_qty'] == $src_stock['stock_qty']){
+					$map['id'] = $src_stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+				}else{
+					$map['location_id'] = $param['src_location_id'];
+					$map['pro_code'] = $param['pro_code'];
+					$map['batch'] = $src_stock['batch'];
+					$map['status'] = $src_stock['status'];
+				
+					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);	
+				}
 
 				//写入库存交易日志
 
@@ -326,7 +337,7 @@ class StockLogic{
 					//增加目标库存
 					$map['location_id'] = $param['dest_location_id'];
 					$map['pro_code'] = $param['pro_code'];
-					$map['batch'] = $dest_stock_info['batch'];
+					$map['batch'] = $src_stock['batch'];
 					M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
 
 					//写入库存交易日志
@@ -339,7 +350,7 @@ class StockLogic{
 						'move_qty' => $param['variable_qty'],
 						'old_qty' => $dest_stock_info['stock_qty'],
 						'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
-						'batch' => $dest_stock_info['batch'],
+						'batch' => $src_stock['batch'],
 						'status' => $dest_stock_info['status'],
 						);
 					$stock_move = D('StockMoveDetail');
@@ -698,6 +709,15 @@ class StockLogic{
 				$map['stock_qty'] = array('neq','0');
 				$map['is_deleted'] = 0;
 				$src_stock_info = M('Stock')->where($map)->select();
+
+				//如果有不同的批次 则直接返回错误
+				foreach($src_stock_info as $src_stock){
+					$src_stock_batch[] = $src_stock['batch'];
+				}
+
+				if(count($src_stock_batch) > 1){
+					return array('status'=>0,'msg'=>'该库位不允许混放批次。');
+				}
 				unset($map);
 			}
 

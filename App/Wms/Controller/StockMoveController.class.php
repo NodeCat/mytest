@@ -108,17 +108,27 @@ class StockMoveController extends CommonController {
         $list['src_location_id'] = $data['location_id'];
         $list['dest_location_id'] = $dest_location['id'];
         $list['pro_code'] = $data['pro_code'];
-        $list['dest_location_status'] = $dest_location['status'];
-        $list['variable_qty'] = $data['variable_qty'];
+        $list['status'] = $dest_location['status'];
+
+        $res = A('Stock', 'Logic')->checkLocationMixedProOrBatch($list);
+
+        if($res['status'] == 0) {
+           $this->error_msg = $res['msg'];
+           C('LAYOUT_NAME','pda');
+           $this->display('/StockMove/pdaStockMove'); 
+           return;
+        }
         
+        $list['variable_qty'] = $data['variable_qty'];
+        $list['dest_location_status'] = $dest_location['status'];
         $stock = A('Stock', 'Logic')->adjustStockByMoveNoBatchFIFO($list);
         //$stock = A('Stock', 'Logic')->adjustStockByMove($stock_info_list);
-            if($stock['status'] == 0) {
-               $this->error_msg = $stock['msg'];
-               C('LAYOUT_NAME','pda');
-               $this->display('/StockMove/pdaStockMove'); 
-               return;
-            }
+        if($stock['status'] == 0) {
+           $this->error_msg = $stock['msg'];
+           C('LAYOUT_NAME','pda');
+           $this->display('/StockMove/pdaStockMove'); 
+           return;
+        }
 
         $this->msg = '操作成功';
         C('LAYOUT_NAME','pda');
