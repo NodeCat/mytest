@@ -471,7 +471,18 @@ class StockLogic{
 				$map['batch'] = $param['batch'];
 				$map['status'] = $param['status'];
 			
-				M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+				//检查原库存 如果库存量与变化量相等 则删除数据 如果不等 则减掉库存量
+				$stock = M('Stock')->where($map)->find();
+				if($stock['stock_qty'] == $param['variable_qty']){
+					//删除库存记录
+					$map['id'] = $stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+				}else{
+					//减少原库存
+					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+				}
+				
 
 				//写入库存交易日志
 
@@ -517,9 +528,22 @@ class StockLogic{
 					$stock_move_data = $stock_move->create($stock_move_data);
 					$stock_move->data($stock_move_data)->add();
 
-					//减少原库存
+					
 					$map['location_id'] = $param['src_location_id'];
-					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+
+					//检查原库存 如果库存量与变化量相等 则删除数据 如果不等 则减掉库存量
+					$stock = M('Stock')->where($map)->find();
+					if($stock['stock_qty'] == $param['variable_qty']){
+						//删除库存记录
+						$map['id'] = $stock['id'];
+						M('Stock')->where($map)->delete();
+						unset($map);
+					}else{
+						//减少原库存
+						M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+					}
+
+					
 
 					//写入库存交易日志
 					$stock_move_data['location_id'] = $param['src_location_id'];
