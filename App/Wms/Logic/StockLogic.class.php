@@ -21,7 +21,7 @@ class StockLogic{
 		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 		$map['pro_code'] = $params['pro_code'];
 		$map['wh_id'] = $params['wh_id'];
-		$stock_list = M('Stock')->where($map)->order('batch')->select();
+		$stock_list = M('Stock')->join('stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
 		//检查所有的 库存量 是否满足 出库量
@@ -199,7 +199,7 @@ class StockLogic{
 		$map['location_id'] = $param['src_location_id'];
 		$map['pro_code'] = $param['pro_code'];
 		$map['wh_id'] = $param['wh_id'];
-		$src_stock_list = M('Stock')->where($map)->order('batch')->find();
+		$src_stock_list = M('Stock')->join('stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->find();
 		unset($map);
 
 		//检查变化量是否大于总库存量，如果大于则报错

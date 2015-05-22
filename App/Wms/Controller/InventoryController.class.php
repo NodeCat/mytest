@@ -361,7 +361,7 @@ class InventoryController extends CommonController {
 							//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 							$map['pro_code'] = $inventory_detail['pro_code'];
 							$map['location_id'] = $inventory_detail['location_id'];
-							$stock_list = M('Stock')->where($map)->order('batch')->select();
+							$stock_list = M('Stock')->join('stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 							unset($map);
 
 							$diff_qty = $inventory_detail['theoretical_qty'] - $inventory_detail['pro_qty'];
@@ -388,6 +388,9 @@ class InventoryController extends CommonController {
 										M('stock')->where($map)->data($data)->save();
 										unset($map);
 										unset($data);
+
+										//跳出循环
+										$diff_qty = 0;
 									}
 
 									//写入库存交易日志

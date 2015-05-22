@@ -18,7 +18,7 @@ function get_sn($type = '', $wh_id = '') {
 	return $numb;
 }
 function get_batch($code=''){
-    if(!empty($code)) {
+    if(empty($code)) {
         $code = get_sn('batch');
     }
     $data['code'] = $code;
