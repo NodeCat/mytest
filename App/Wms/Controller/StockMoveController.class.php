@@ -96,32 +96,29 @@ class StockMoveController extends CommonController {
         $map['code'] = $data['dest_location_code'];
         $dest_location = $location->field('id,status')->where($map)->find();
         
-        //查询相关库存的批次和移库量
-        unset($map);
+        //查询相关库存的移库量
+        /*unset($map);
         $map['wh_id'] = $data['wh_id'];
         $map['location_id'] = $data['location_id'];
         $map['pro_code'] = $data['pro_code'];
-        $stock_info_list = $stock->field('batch,stock_qty-assign_qty as variable_qty')->where($map)->select();
-        
+        $stock_info_list = $stock->field('stock_qty-assign_qty as variable_qty')->where($map)->select();
+        */
         //组装数据
-        foreach($stock_info_list as &$val) {
-            $val['wh_id'] = $data['wh_id'];
-            $val['src_location_id'] = $data['location_id'];
-            $val['dest_location_id'] = $dest_location['id'];
-            $val['pro_code'] = $data['pro_code'];
-            $val['status'] = $dest_location['status'];
-        }
-
-        //$stock_info_list[0]['status'] = 0;
-        $stock = A('Stock','Logic')->adjustStockByMove($stock_info_list);
-        foreach($stock as $val){
-            if($val['status'] == 'err') {
-               $this->error_msg = $val['msg'];
+        $list['wh_id'] = $data['wh_id'];
+        $list['src_location_id'] = $data['location_id'];
+        $list['dest_location_id'] = $dest_location['id'];
+        $list['pro_code'] = $data['pro_code'];
+        $list['dest_location_status'] = $dest_location['status'];
+        $list['variable_qty'] = $data['variable_qty'];
+        
+        $stock = A('Stock', 'Logic')->adjustStockByMoveNoBatchFIFO($list);
+        //$stock = A('Stock', 'Logic')->adjustStockByMove($stock_info_list);
+            if($stock['status'] == 0) {
+               $this->error_msg = $stock['msg'];
                C('LAYOUT_NAME','pda');
                $this->display('/StockMove/pdaStockMove'); 
                return;
             }
-        }
 
         $this->msg = '操作成功';
         C('LAYOUT_NAME','pda');
