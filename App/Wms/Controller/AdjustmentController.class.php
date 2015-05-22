@@ -28,7 +28,7 @@ class AdjustmentController extends CommonController {
             'title' => '调整类型',
             'query_type' => 'eq',
             'control_type' => 'select',
-            'value' => array('inventory' => '盘点','move' => '移库'),
+            'value' => array('inventory' => '盘点','change_status' => '状态调整'),
         ),
         'stock_adjustment.refer_code' => array (
             'title' => '来源单号',
