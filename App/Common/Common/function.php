@@ -24,7 +24,7 @@ function get_batch($code=''){
     $data['code'] = $code;
     $data['product_date'] = get_time();
     M('stock_batch')->add($data);
-    retun $code;
+    return $code;
 }
 function get_tablename() {
 	$M = D(CONTROLLER_NAME);
