@@ -79,7 +79,7 @@ $(function(){
     }
     var _origin_qty = $('#origin_qty').val();
     var _variable_qty = $('#variable_qty').val();
-    if(_origin_qty < _variable_qty ) {
+    if(parseInt(_origin_qty) < parseInt(_variable_qty)) {
         alert_error('移动数量不得大于可移动数量');
         return false;
     }
