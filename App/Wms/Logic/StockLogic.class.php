@@ -334,11 +334,24 @@ class StockLogic{
 			//如果变化量大于0 增加目标库存 减少原库存
 			if($param['variable_qty'] > 0){
 				try{
-					//增加目标库存
+					//检查是否有库存记录 如果有 则增加目标库存 如果没有 则新建库存记录
+					$map['wh_id'] = $param['wh_id'];
 					$map['location_id'] = $param['dest_location_id'];
 					$map['pro_code'] = $param['pro_code'];
 					$map['batch'] = $src_stock['batch'];
-					M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
+					$map['status'] = $src_stock['status'];
+					$stock_info = M('Stock')->where($map)->find();
+					if(empty($stock_info)){
+						//新增目标库存记录
+						$stock_add_data = $map;
+						$stock_add_data['stock_qty'] = $param['variable_qty'];
+						$stock = D('Stock');
+						$stock_add_data = $stock->create($stock_add_data);
+						$stock->data($stock_add_data)->add();
+					}else{
+						//增加目标库存
+						M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
+					}
 
 					//写入库存交易日志
 					$stock_move_data = array(
