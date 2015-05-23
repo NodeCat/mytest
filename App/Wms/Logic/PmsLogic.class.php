@@ -19,12 +19,12 @@ class PmsLogic{
 	}
 
 	//无条件 查询对应的SKU
-	public function get_SKU_by_all(){
+	public function get_SKU_by_all($page = 1,$count = 10){
 		import("Common.Lib.HttpCurl");
 		$request = new \HttpCurl();
 		$data = array(
-			'currentPage' => 1,
-			'itemsPerPage' => 10,
+			'currentPage' => $page,
+			'itemsPerPage' => $count,
 			);
 		$url = 'http://s.test.dachuwang.com/sku/manage';
 		$json_data = json_encode($data);
