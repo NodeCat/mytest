@@ -33,6 +33,11 @@ class HttpCurl{
         }else{
         	$httpRequest->set_connect_timeout(8000);
         }
+        if(isset($options['header'])){
+            foreach($options['header'] as $key => $value){
+                $httpRequest->add_header($key,$value);
+            }
+        }
 
         $httpRequest->send();
         $response = $httpRequest->get_response_content();

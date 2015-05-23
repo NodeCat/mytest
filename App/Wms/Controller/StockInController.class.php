@@ -332,4 +332,39 @@ class StockInController extends CommonController {
 		}
 		$this->pill = $pill;
     }
+    //打印
+    public function printpage(){
+    	$id = I('get.id');
+
+    	//根据id 查询对应入库单
+    	$map['stock_bill_in.id'] = $id;
+    	$bill_in = M('stock_bill_in')
+    	->join('partner on partner.id = stock_bill_in.partner_id' )
+    	->join('user on user.id = stock_bill_in.created_user')
+    	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
+    	->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
+    	unset($map);
+
+    	//根据pid 查询对应入库单详情
+    	$map['stock_bill_in_detail.pid'] = $id;
+    	$bill_in_detail_list = M('stock_bill_in_detail')
+    	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
+    	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
+
+    	$data['refer_code'] = $bill_in['code'];
+    	$data['print_time'] = get_time();
+    	$data['partner_name'] = $bill_in['partner_name'];
+    	$data['expecting_date'] = $bill_in['expecting_date'];
+    	$data['created_user_name'] = $bill_in['created_user_name'];
+    	$data['session_user_name'] = session('user.username');
+    	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
+
+    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+    	$data['bill_in_detail_list'] = $bill_in_detail_list;
+
+    	layout(false);
+    	$this->assign($data);
+    	$this->display('StockIn:print');
+    }
 }
