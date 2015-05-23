@@ -52,10 +52,13 @@ class LocationAreaController extends CommonController {
             $location = M('location');
             $wh_id = session('user.wh_id');
             unset($query['location.code']); 
-            $location_area = $location->where('is_deleted=0 AND type=1 AND wh_id=' . $wh_id)->select();
+            
+            $map['is_deleted'] = 0;
+            $map['type'] = 1;
+            $map['wh_id'] = $wh_id;
+            $location_area = $location->where($map)->select();
             $area_code = array_column($location_area, 'code', 'id');
             $status = array(
-                '0' =>'请选择',
                 'qualified' =>'合格状态',
                 'unqualified' =>'残次状态'
             );
