@@ -9,6 +9,38 @@
 namespace Wms\Logic;
 
 class PmsLogic{
+	//无条件 查询对应的SKU
+	public function get_SKU_by_all(){
+		import("Common.Lib.HttpCurl");
+		$request = new \HttpCurl();
+		$data = array(
+			'currentPage' => 1,
+			'itemsPerPage' => 10,
+			);
+		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$json_data = json_encode($data);
+		$result = $request->post($url,$json_data);
+		return json_decode($result,true);
+	}
+
+	//根据category_id 查询对应的SKU
+	public function get_SKU_by_category_id($category_ids = array()){
+		if(empty($category_ids)){
+			return false;
+		}
+		import("Common.Lib.HttpCurl");
+		$request = new \HttpCurl();
+		$data = array(
+			'currentPage' => 1,
+			'itemsPerPage' => 15,
+			'where' => array('in'=>array('category_id'=>$category_ids)),
+			);
+		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$json_data = json_encode($data);
+		$result = $request->post($url,$json_data);
+		return json_decode($result,true);
+	}
+
 	//根据pro_code 查询对应的SKU
 	public function get_SKU_by_pro_codes($pro_codes = array()){
 		if(empty($pro_codes)){
@@ -21,20 +53,6 @@ class PmsLogic{
 			'itemsPerPage' => 15,
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
-		/*$url = 'http://s.test.dachuwang.com/sku/manage';
-		$jsonStr = json_encode($data);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonStr);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		    'Content-Type: application/json; charset=utf-8',
-		    'Content-Length: ' . strlen($jsonStr)
-		   )
-		);
-		$response = curl_exec($ch);
-		var_dump($response);exit;*/
 		$url = 'http://s.test.dachuwang.com/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
@@ -117,20 +135,6 @@ class PmsLogic{
 			'itemsPerPage' => 15,
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
-		/*$url = 'http://s.test.dachuwang.com/sku/manage';
-		$jsonStr = json_encode($data);
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonStr);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-		    'Content-Type: application/json; charset=utf-8',
-		    'Content-Length: ' . strlen($jsonStr)
-		   )
-		);
-		$response = curl_exec($ch);
-		var_dump($response);exit;*/
 		$url = 'http://s.test.dachuwang.com/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
