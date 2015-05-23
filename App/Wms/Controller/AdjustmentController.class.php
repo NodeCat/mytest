@@ -28,7 +28,7 @@ class AdjustmentController extends CommonController {
             'title' => '调整类型',
             'query_type' => 'eq',
             'control_type' => 'select',
-            'value' => array('inventory' => '盘点','move' => '移库'),
+            'value' => array('inventory' => '盘点','change_status' => '状态调整'),
         ),
         'stock_adjustment.refer_code' => array (
             'title' => '来源单号',
@@ -46,7 +46,7 @@ class AdjustmentController extends CommonController {
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
-            'toolbar'   => true,
+            'toolbar'   => false,
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
@@ -57,15 +57,16 @@ class AdjustmentController extends CommonController {
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
+        /*
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
             array('name'=>'export' ,'show' => false,'new'=>'false'),
-            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'print' ,'show' => false,'new'=>'false'),
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
-        );
+        );*/
     }
 
     //edit方法执行前，执行该方法
