@@ -33,7 +33,7 @@ return array(
 	'DB_BIND_PARAM'    =>    true,
 
 	//session设置
-	'SESSION_OPTIONS'	=> array('expire'=>'3600'),
+	'SESSION_OPTIONS'	=> array('expire'=>'36000'),
 	//'SESSION_PREFIX'	=>'wms',
 
 	//缓存设置
