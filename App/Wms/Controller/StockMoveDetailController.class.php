@@ -56,7 +56,7 @@ class StockMoveDetailController extends CommonController {
 	//设置列表页选项
 	public function before_index() {
         $this->table = array(
-            'toolbar'   => true,
+            'toolbar'   => false,
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
@@ -67,7 +67,7 @@ class StockMoveDetailController extends CommonController {
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
-        $this->toolbar =array(
+        /*$this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
@@ -75,7 +75,7 @@ class StockMoveDetailController extends CommonController {
             array('name'=>'export' ,'show' => false,'new'=>'false'),
             array('name'=>'print' ,'show' => false,'new'=>'false'),
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
-        );
+        );*/
     }
 
     //lists方法执行后，执行该方法
