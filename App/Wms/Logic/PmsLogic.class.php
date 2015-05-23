@@ -9,6 +9,15 @@
 namespace Wms\Logic;
 
 class PmsLogic{
+	//查询SKU所有分类信息
+	public function get_SKU_category(){
+		import("Common.Lib.HttpCurl");
+		$request = new \HttpCurl();
+		$url = 'http://s.test.dachuwang.com/category/lists';
+		$result = $request->get($url);
+		return json_decode($result,true);
+	}
+
 	//无条件 查询对应的SKU
 	public function get_SKU_by_all(){
 		import("Common.Lib.HttpCurl");
