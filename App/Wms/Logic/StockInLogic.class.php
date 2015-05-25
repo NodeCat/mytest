@@ -214,6 +214,25 @@ class StockInLogic{
 		return array('res'=>false,'msg'=>'添加验收记录失败。');
 	}
 
+	//根据stock_bill_in_detail 检查是否已经有入库
+	public function haveCheckIn($inId,$pro_code=''){
+		$M = M('stock_bill_in_detail');
+		$map['pid'] = $inId;
+		if(!empty($pro_code)) {
+			$map['pro_code'] = $pro_code;
+		}
+		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,expected_qty,prepare_qty,receipt_qty');
+
+		foreach($in as $k => $val){
+			//如果receipt_qty 已收量不为0 则认为是已经入库了
+			if($val['receipt_qty'] > 0){
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public  function checkIn($inId,$pro_code=''){
 		$M = M('stock_bill_in_detail');
 		$map['pid'] = $inId;

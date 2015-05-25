@@ -278,13 +278,16 @@ class PurchaseController extends CommonController {
 				$res = $in->field('id')->where($where)->find();
 				
 				$A = A('StockIn','Logic');
-				$res = $A->checkIn($res['id']);
-				if($res == 0) {
+				$res = $A->haveCheckIn($res['id']);
+
+				//没有收货
+				if($res == false) {
 					$data['status'] = '04';
 					$data['is_deleted'] = 1;
-					$data = $in->create($data);
-					$res = $in->where($map)->save($data);
+					$data = M('stock_purchase')->create($data);
+					$res = M('stock_purchase')->where($map)->save($data);
 				}
+				//已经收获
 				else {
 					$this->msgReturn(0,'操作失败，采购单对应的到货单已收货。');
 					//$A->finishByPurchase($id);
