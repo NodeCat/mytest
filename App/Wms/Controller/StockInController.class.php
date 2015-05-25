@@ -197,6 +197,13 @@ class StockInController extends CommonController {
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
 
 				if($res['res'] == true) {
+					//有一件商品入库 更新到货单状态为 待上架
+					$upd_map['id'] = $id;
+					$upd_data['status'] = '31';
+					M('stock_bill_in')->where($upd_map)->data($upd_data)->save();
+					unset($upd_map);
+					unset($upd_data);
+
 					$data['msg'] = '收货成功。'.$res['msg'];
 					$res = M('stock_bill_in')->field('id,code')->find($id);
 					$data['id'] = $res['id'];
