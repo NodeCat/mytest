@@ -27,6 +27,7 @@ class PurchaseController extends CommonController {
 		'id' => '',   
 		'code' => '采购单号',   
 		'in_code' =>'采购到货单号',
+		'warehouse_code' =>'仓库',
 		'partner_name' => '供应商',
 		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
