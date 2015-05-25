@@ -42,7 +42,7 @@ class MenuWidget extends Controller {
         }
         $data=array();
         foreach ($result as $k => $v) {
-            $data[$v['level']][$v['pid']][]=$v;
+            $data[$v['level']][$v['pid']][$v['id']]=$v;
         }
         $menu = $data;
 		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
