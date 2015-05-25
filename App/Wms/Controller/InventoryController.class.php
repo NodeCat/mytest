@@ -6,7 +6,7 @@ class InventoryController extends CommonController {
 	protected $filter = array(
 			'type' => array('fast' => '快速盘点','again' => '复盘'),
 			'is_diff' => array('0' => '无', '1' => '有'),
-			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
+			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已作废'),
 		);
 	protected $columns = array('id' => '',
             'code' => '盘点单号',
@@ -36,7 +36,7 @@ class InventoryController extends CommonController {
 		    'title' => '盘点状态',
 		    'query_type' => 'eq',
 		    'control_type' => 'select',
-		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已作废'),
 		),
 		'stock_inventory.is_diff' => array (
 		    'title' => '有无差异',
@@ -171,7 +171,7 @@ class InventoryController extends CommonController {
 					$data['status'] = '待确认';
 					break;
 				case 'closed':
-					$data['status'] = '已关闭';
+					$data['status'] = '已作废';
 					break;
 				default:
 					break;

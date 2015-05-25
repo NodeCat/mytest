@@ -11,7 +11,7 @@ class StockInController extends CommonController {
 			'21'=>'待收货',
 			'31'=>'待上架',
 			'33'=>'已上架',
-			'04'=>'已关闭'
+			'04'=>'已作废'
 		),
 	);
 	protected $columns = array (   
@@ -326,7 +326,7 @@ class StockInController extends CommonController {
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
 				'33'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
-				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
+				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger'),
 			)
 		);
 		$M = M('stock_bill_in');

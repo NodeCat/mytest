@@ -128,7 +128,7 @@ function en_to_cn($str){
         'noinventory' => '未盘点',
         'inventorying' => '盘点中',
         'confirm' => '待确认',
-        'closed' => '已关闭',
+        'closed' => '已作废',
         'fast' => '快速盘点',
         'again' => '复盘',
         'status' => '状态调整',
