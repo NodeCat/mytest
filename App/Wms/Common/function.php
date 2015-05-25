@@ -119,6 +119,7 @@ function en_to_cn($str){
     $filter = array(
         'qualified' => '合格',
         'unqualified' => '残次',
+        'freeze' => '冻结',
         'in' => '收货',
         'on' => '上架',
         'move_location' => '库存移动',
