@@ -50,14 +50,14 @@ class PurchaseController extends CommonController {
 			 'value' => 'Company.id,name',   
 		),   
 		'stock_purchase.partner_id' =>    array (     
-			'title' => '供货商',    
+			'title' => '供应商',    
 			 'query_type' => 'eq',     
 			 'control_type' => 'refer',     
 			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
 		),   
 		'stock_purchase_detail.pro_code' =>    array (     
 			'title' => '货品编号',    
-			 'query_type' => 'like',     
+			 'query_type' => 'eq',     
 			 'control_type' => 'text',     
 			 'value' => '',   
 		),   
@@ -346,4 +346,26 @@ class PurchaseController extends CommonController {
 		$this->msgReturn($res);
 	}
 
+	//在search方法执行后 执行该方法
+	public function after_search(&$map){
+		//获得页面提交过来的货品编号
+		if(array_key_exists('stock_purchase_detail.pro_code', $map)){
+			$pro_code = $map['stock_purchase_detail.pro_code'][1];
+			unset($map['stock_purchase_detail.pro_code']);
+
+			//根据pro_code 查询stock_purchase_detail的pid
+			$purchase_detail_map['pro_code'] = array('like','%'.$pro_code.'%');
+			$pid_list = M('stock_purchase_detail')->where($purchase_detail_map)->field('pid')->group('pid')->select();
+			unset($purchase_detail_map);
+
+			$pid_arr = array();
+			foreach($pid_list as $pid){
+				$pid_arr[] = $pid['pid'];
+			}
+
+			if(!empty($pid_arr)){
+				$map['stock_purchase.id'] = array('in',$pid_arr);
+			}
+		}
+	}
 }
