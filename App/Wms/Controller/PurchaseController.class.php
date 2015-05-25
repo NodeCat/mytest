@@ -18,7 +18,7 @@ class PurchaseController extends CommonController {
 			'11'=>'待审核',
 			'13' => '已生效',
 			'23' => '已完成',
-			'04' => '已关闭',
+			'04' => '已作废',
 			'14' => '已驳回'
 		)
 	);
@@ -207,7 +207,7 @@ class PurchaseController extends CommonController {
 				array('value'=>'21','title'=>'待入库','class'=>'primary'),
 				array('value'=>'31','title'=>'待上架','class'=>'info'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
-				array('value'=>'04','title'=>'已关闭','class'=>''),
+				array('value'=>'04','title'=>'已作废','class'=>''),
 			)
 		);
 		//0 草稿 1审核 2入库 3上架 4付款 5完成
@@ -229,7 +229,7 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已关闭','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
 			)
 		);
 		$M = M('stock_purchase');
@@ -239,6 +239,13 @@ class PurchaseController extends CommonController {
 		foreach ($res as $key => $val) {
 			if(array_key_exists($val['status'], $pill['status'])){
 				$pill['status'][$val['status']]['count'] = $val['qty'];
+				$pill['status']['total'] += $val['qty'];
+			}
+		}
+
+		foreach($pill['status'] as $k => $val){
+			if(empty($val['count'])){
+				$pill['status'][$k]['count'] = 0;
 			}
 		}
 		

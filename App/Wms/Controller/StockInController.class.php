@@ -318,7 +318,7 @@ class StockInController extends CommonController {
 				//'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
-				'53'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
+				'33'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
 				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
 			)
 		);
@@ -329,8 +329,16 @@ class StockInController extends CommonController {
 		foreach ($res as $key => $val) {
 			if(array_key_exists($val['status'], $pill['status'])){
 				$pill['status'][$val['status']]['count'] = $val['qty'];
+				$pill['status']['total'] += $val['qty'];
 			}
 		}
+
+		foreach($pill['status'] as $k => $val){
+			if(empty($val['count'])){
+				$pill['status'][$k]['count'] = 0;
+			}
+		}
+
 		$this->pill = $pill;
     }
     //打印
@@ -362,7 +370,7 @@ class StockInController extends CommonController {
     	$data['session_user_name'] = session('user.username');
     	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
 
-    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+    	//$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
     	$data['bill_in_detail_list'] = $bill_in_detail_list;
 
     	layout(false);
