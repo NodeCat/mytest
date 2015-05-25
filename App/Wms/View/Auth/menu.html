@@ -1,0 +1,299 @@
+<div class="row">
+<div class="col-lg-6">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">菜单列表</h3>
+  </div>
+  <div class="panel-body" style="padding: 0 15px;">
+	<div class="row">
+		<div class="toolbar">
+			<a class="btn btn-sm" id="addLeaf" data-target="tree" data-original-title="Refresh" rel="tooltip" data-placement="bottom">插入</a>
+		    <a class="btn btn-sm" id="editNode" data-target="tree" data-original-title="Refresh" rel="tooltip" data-placement="bottom">编辑</a>
+		    <a class="btn btn-sm"  id="removeNode" data-target="tree" data-original-title="Refresh" rel="tooltip" data-placement="bottom">删除</a>
+		    <a  role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-sm pull-right">设置</a>
+		</div>
+	</div>
+	<div class="row">
+		<div class="well well-small">
+			<ul id="mtree" class="ztree"></ul>
+		</div>
+	</div>
+  </div>
+</div>
+</div>
+<div class="col-lg-6">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">权限列表</h3>
+  </div>
+  <div class="panel-body" style="padding: 0 15px;">
+	<div class="row">
+		<div class="toolbar">
+			<a class="select-all btn btn-sm" data-target="tree" data-original-title="Refresh" rel="tooltip" data-placement="bottom">全选</a>
+		    <a class="select-invert btn btn-sm" data-target="tree" data-original-title="Refresh" rel="tooltip" data-placement="bottom">反选</a>
+		    <a class="select-cancel btn btn-sm" data-target="tree" data-original-title="Refresh" rel="tooltip" data-placement="bottom">取消</a>
+		    <a  role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-sm pull-right">设置</a>
+		</div>
+	</div>
+	<div class="row">
+		<div class="well well-small">
+			<ul id="tree" class="ztree"></ul>
+		</div>
+	</div>
+  </div>
+</div>
+</div>
+<div id="log"></div>
+<div class="col-lg-6 hidden">
+<div class="col-lg-6 text-center">
+	<a onclick="getNodeValue()" role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-primary">保存</a>
+</div>
+<div class="col-lg-6 text-center">
+	<a role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-default">返回</a>
+</div>
+</div>
+</div>
+<link href="__PUBLIC__/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+<style type="text/css">
+	.ztree li span.button.add {margin-left:2px; margin-right: -1px; background-position:-144px 0; vertical-align:top; *vertical-align:middle}
+</style>
+
+<script type="text/javascript">
+$(function(){
+head.js(
+	"__PUBLIC__/zTree/js/jquery.ztree.all-3.5.min.js",initTree
+	);
+});
+function initTree(){
+	var setting = {
+		edit: {
+			drag: {
+				autoExpandTrigger: true,
+				isCopy: false,
+				isMove: true
+			},
+			enable: true,
+			editNameSelectAll: true,
+			showRemoveBtn: false,
+			showRenameBtn: false
+		},
+		view: {
+			selectedMulti: false,
+			showLine: false,
+			showIcon: true,
+		},
+		data: {
+			keep: {
+				parent:false,
+				leaf:false
+			},
+			simpleData: {
+				enable: true
+			}
+		},
+		callback: {
+			beforeEditName: beforeEditName,
+			beforeRemove: beforeRemove,
+			beforeRename: beforeRename,
+			onRemove: onRemove,
+			onRename: onRename,
+			onDrop: onDrop
+		}
+	};
+	$.ajax({
+	   	type: "POST",
+		url:"{:U(CONTROLLER_NAME.'/nodes')}",
+		data: { type: "all"},
+		cache : false,
+	    global: false,
+	    async: false,
+	    success: function (strReult) {
+	       var treeNodes=eval(strReult);
+	       $.fn.zTree.init($("#tree"), setting, treeNodes);
+	    }, 
+	    error: function () {
+	        alert("Ajax请求数据失败!");
+	    }
+	});
+	$.ajax({
+	   	type: "POST",
+		url:"{:U(CONTROLLER_NAME.'/menu')}",
+		data: { type: "m"},
+		cache : false,
+	    global: false,
+	    async: false,
+	    success: function (strReult) {
+	       var mNodes=eval(strReult);
+	       $.fn.zTree.init($('#mtree'), setting, mNodes);
+	    }, 
+	    error: function () {
+	        alert("Ajax请求数据失败!");
+	    }
+	 });
+	zTree = $.fn.zTree.getZTreeObj("mtree");
+	$("#addLeaf").bind("click", add);
+	$("#editNode").bind("click", edit);
+	$("#removeNode").bind("click", remove);
+}
+var zTree;
+
+function onRename(e, treeId, treeNode) {
+	zTree = $.fn.zTree.getZTreeObj(treeId);
+	$.ajax({
+	  	type: "POST",
+	  	url: "{:U(CONTROLLER_NAME.'/menu')}",
+	  	data: { id: treeNode.id,name: treeNode.name, t: (treeNode.id<0?"add":"edit") },
+	  	success:(function(msg) {
+	  		if(treeNode.id<0)
+				if(msg>0)
+					treeNode.id=msg;
+			zTree.cancelSelectedNode(treeNode);
+			return(msg>0);
+		})
+	});
+}
+
+function onRemove(e, treeId, treeNode) {
+	zTree = $.fn.zTree.getZTreeObj(treeId);
+	var ids;
+	if(treeNode.isParent){
+		var nodes = treeNode.children;
+		var nids = new Array();  
+		nids[0] = treeNode.id;
+	  	for(var i=0; i<nodes.length; i++){
+	      		nids[i+1]= nodes[i].id;
+	    }
+	    ids=nids.join(',');
+	}
+ 	else
+ 		ids = treeNode.id;
+	
+	$.ajax({
+	  	type: "POST",
+	  	url: "{:U(CONTROLLER_NAME.'/menu')}",
+	  	data: { ids: ids, t: "del" },
+	  	success:(function(msg) {
+	  		alert(msg);
+		})
+	});
+}
+function beforeEditName(treeId, treeNode) {
+	zTree = $.fn.zTree.getZTreeObj(treeId);
+	zTree.selectNode(treeNode);
+	return true;
+}
+function beforeRemove(treeId, treeNode) {
+	zTree = $.fn.zTree.getZTreeObj(treeId);
+	zTree.selectNode(treeNode);
+	return true;
+}
+function beforeRename(treeId, treeNode, newName) {
+	zTree = $.fn.zTree.getZTreeObj(treeId);
+	if (newName.length == 0) {
+		alert("节点名称不能为空.");
+		setTimeout(function(){zTree.editName(treeNode)}, 10);
+		return false;
+	}
+	return true;
+}
+var newCount = 1;
+function add() {
+	nodes = zTree.getSelectedNodes(),
+	treeNode = nodes[0];
+	if (treeNode) {
+		treeNode = zTree.addNodes(treeNode, {id:(-1 - newCount), pid:treeNode.id, name:"new node" + (newCount++)});
+	} else {
+		treeNode = zTree.addNodes(null, {id:(-1 - newCount), pid:0, name:"new node" + (newCount++)});
+	}
+	if (treeNode) {
+		zTree.editName(treeNode[0]);
+	} else {
+		alert("叶子节点被锁定，无法增加子节点");
+	}
+};
+function edit() {
+	nodes = zTree.getSelectedNodes(),
+	treeNode = nodes[0];
+	if (nodes.length == 0) {
+		alert("请先选择一个节点");
+		return;
+	}
+	zTree.editName(treeNode);
+};
+function remove(e) {
+	nodes = zTree.getSelectedNodes(),
+	treeNode = nodes[0];
+	if (nodes.length == 0) {
+		alert("请先选择一个节点");
+		return;
+	}
+	zTree.removeNode(treeNode,true);
+};
+function onDrop(event, treeId, treeNodes, targetNode, moveType, isCopy) {
+	zTree = $.fn.zTree.getZTreeObj(treeId);
+	var pid,nodes;
+	if(moveType=='inner'){
+		pid = targetNode ? targetNode.id : 0;
+	}
+	else if(moveType == 'next' || moveType == 'prev'){
+		if(targetNode){
+			var pNode =targetNode.getParentNode();
+			pid = pNode ? pNode.id : 0;
+		}
+		else{
+			pid =  0;
+		}
+	}
+	if(pid == 0){
+		nodes = zTree.getNodesByParam("level", 0, null);
+	}
+	else{
+		var node = zTree.getNodeByParam("id", pid, null);
+		nodes = node.children;
+	}
+
+	var nids = Array();
+	for (var i = 0;i< nodes.length;  i++) {
+		nids[i]=nodes[i].id;
+	};
+	nids=nids.join(',');
+	var level = treeNodes[0].level;
+	var ids = Array();
+	ids[0]=treeNodes[0].id;
+	if(treeNodes[0].isParent){
+		nodes = treeNodes[0].children;
+		for (var i = 0;i< nodes.length;  i++) {
+			ids[i+1]=nodes[i].id;
+		};
+	}
+	ids=ids.join(',');
+	alert(ids);
+	$.ajax({
+		type: "POST",
+		url:"{:U(CONTROLLER_NAME.'/menu')}",
+		cache : false,
+		data: { ids:ids,nids:nids,pid:pid,level:level,t:'queue'},
+		success:(function(msg) {
+		  	alert(msg.info);
+		})
+	});
+}
+
+function getNodeValue(){
+	var list=getChecked();
+ 	var nodes = zTree.getCheckedNodes();
+    var nids = new Array();  
+  	for(var i=0; i<nodes.length; i++){
+  		//if(!nodes[i].getCheckStatus().half)
+      		nids[i]= nodes[i].id;
+    }
+    var nids=nids.join(',');
+    $.ajax({
+		  type: "POST",
+		  url:"{:U(CONTROLLER_NAME.'/edit')}",
+		  data: { aids:nids,rids:list},
+		  success:(function(msg) {
+		  	alert(msg.info);
+		})});
+}
+</SCRIPT>

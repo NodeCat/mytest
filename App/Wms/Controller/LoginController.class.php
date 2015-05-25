@@ -83,6 +83,7 @@ class LoginController extends Controller {
             'fontSize'=> 28
             );
         $verify = new \Think\Verify($config);
+        ob_clean();
         $verify->entry(1);
     }
 
