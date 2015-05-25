@@ -18,7 +18,7 @@
       <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" ><input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" ><input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
       <input type="text" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
         <td  style="width:10%;">
-          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="1" class="pro_qty form-control input-sm text-right" autocomplete="off">
+          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="1" class="pro_qty form-control input-sm text-left" autocomplete="off">
         </td>
         <td style="width:10%;">
           <select name="pros[pro_uom][]" class="form-control input-sm">
@@ -27,10 +27,10 @@
           </select>
         </td>
         <td style="width:10%;">
-          <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="0.00" class="form-control input-sm text-right">
+          <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="0.00" class="form-control input-sm text-left">
         </td>
         
-        <td style="width:5%;" class="text-right">
+        <td style="width:5%;" class="text-left">
           <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
         </td>
       </tr>
@@ -49,7 +49,7 @@
       <input type="hidden" value="{$vo.pro_attrs}" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
       <input type="text" value="{$vo.pro_names}"  placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
         <td  style="width:10%;">
-          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="{$vo.pro_qty}" class="pro_qty form-control input-sm text-right" autocomplete="off">
+          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="{$vo.pro_qty}" class="pro_qty form-control input-sm text-left" autocomplete="off">
         </td>
         <td style="width:10%;">
           <select name="pros[pro_uom][]" class="form-control input-sm selected" value="{$vo.pro_uom}">
@@ -58,9 +58,9 @@
           </select>
         </td>
         <td style="width:10%;">
-          <input type="text"  id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="{$vo.price_unit}" class="form-control input-sm text-right">
+          <input type="text"  id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="{$vo.price_unit}" class="form-control input-sm text-left">
         </td>
-        <td style="width:10%;"  class="text-right">
+        <td style="width:10%;"  class="text-left">
           {$vo.price_subtotal}
         </td>
         <td style="width:10%;" class="text-center">
