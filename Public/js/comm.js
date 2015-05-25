@@ -332,7 +332,7 @@ function init(){
         $($(this).parent().parent().children('select')).select2('open');
     });
 
-	$('.content').on('click', '[data-toggle=modal]',function (e) {
+	$('body').on('click', '[data-toggle=modal]',function (e) {
 	    e.preventDefault();
 	    var target=$(this).data('target');
 	    if(target ==null)return;
