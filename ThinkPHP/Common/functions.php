@@ -287,6 +287,10 @@ function I($name,$default='',$filter=null,$datas=null) {
         case 'post'    :   
         	$input =& $_POST;
         	break;
+        case 'json'     :
+            $input = file_get_contents('php://input');
+            $input = json_decode($input,TRUE);
+            break;
         case 'put'     :   
         	if(is_null($_PUT)){
             	parse_str(file_get_contents('php://input'), $_PUT);
