@@ -322,11 +322,12 @@ class StockInController extends CommonController {
 				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
 			)
 		);
-		$M = M('stock_bill_in_detail');
+		$M = M('stock_bill_in');
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
 		foreach ($res as $key => $val) {
-			if(array_key_exists($key, $pill)){
+			if(array_key_exists($val['status'], $pill['status'])){
 				$pill['status'][$val['status']]['count'] = $val['qty'];
 			}
 		}
@@ -343,7 +344,7 @@ class StockInController extends CommonController {
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
+    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
     	unset($map);
 
     	//根据pid 查询对应入库单详情
@@ -353,6 +354,7 @@ class StockInController extends CommonController {
     	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
 
     	$data['refer_code'] = $bill_in['code'];
+    	$data['remark'] = $bill_in['remark'];
     	$data['print_time'] = get_time();
     	$data['partner_name'] = $bill_in['partner_name'];
     	$data['expecting_date'] = $bill_in['expecting_date'];

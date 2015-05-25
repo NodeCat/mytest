@@ -235,11 +235,13 @@ class PurchaseController extends CommonController {
 		$M = M('stock_purchase');
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
 		foreach ($res as $key => $val) {
-			if(array_key_exists($key, $pill)){
+			if(array_key_exists($val['status'], $pill['status'])){
 				$pill['status'][$val['status']]['count'] = $val['qty'];
 			}
 		}
+		
 		$this->pill = $pill;
 		
 	}
@@ -283,9 +285,20 @@ class PurchaseController extends CommonController {
 				//没有收货
 				if($res == false) {
 					$data['status'] = '04';
-					$data['is_deleted'] = 1;
+					//$data['is_deleted'] = 1;
 					$data = M('stock_purchase')->create($data);
 					$res = M('stock_purchase')->where($map)->save($data);
+					unset($map);
+					unset($data);
+
+					//关闭对应的到货单
+					$data['status'] = '04';
+					$data = M('stock_bill_in')->create($data);
+					$map['refer_code'] = $where['refer_code'];
+					M('stock_bill_in')->where($map)->save($data);
+					unset($map);
+					unset($data);
+
 				}
 				//已经收获
 				else {
