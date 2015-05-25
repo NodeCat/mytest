@@ -24,7 +24,7 @@ class StockInLogic{
 		$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
 
 		if($prepareOnQty == 0) {
-			return array('res'=>false,'msg'=>'该货品没有待上架量。');
+			return array('res'=>false,'msg'=>'该货品没有待入库量。');
 		}
 
 		$detail['id'] = $in['id'];
