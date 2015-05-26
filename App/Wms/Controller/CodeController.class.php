@@ -985,6 +985,10 @@ class CodeController extends CommonController {
 			$data_groups[] = array('app' => $app, 'group' =>$group, 'type' => '2','name'=>$group, 'url'=>$group, 'title'=>empty($dict[$group]) ? $group : $dict[$group]);
 			$modules = $this->getModule($group);
 			foreach ($modules as $module) {
+				$in_black_list = auth_module_black_list($module);
+				if($in_black_list){
+					continue;
+				}
 				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
 				$module_name=$group.'/'.$module;
 				$actions = $this->getAction($group, $module);

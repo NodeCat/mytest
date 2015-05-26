@@ -244,3 +244,25 @@ function X($t, $id=null, $value = ''){
     }
     return $data;
 }
+function auth_module_black_list($module){
+    $black_list = array(
+        'Auth',
+        'AuthRole',
+        'Authority',
+        'Category',
+        'Code',
+        'Common',
+        'Config',
+        'Company',
+        'Dictionary',
+        'Empty',
+        'Index',
+        'Menu',
+        'User',
+        );
+    if(in_array($module, $black_list)){
+        return true;
+    }
+
+    return false;
+}
