@@ -48,10 +48,44 @@ class AuthController extends Controller {
         }*/
     }
 
-    protected function check_rule($rule){
+    protected function check_rule($cur_rule){
         return true;
-        $user_id = session('user.uid');
-        var_dump(session('user'));exit;
+        $user_roles = session('user.role');
+        
+        if(empty($user_roles)){
+            return false;
+        }
+
+        //根据id 查询auth_role
+        $user_roles_arr = explode('_', $user_roles);
+        $map['id'] = array('in',$user_roles_arr);
+        $rules = M('auth_role')->where($map)->field('rules')->select();
+        unset($map);
+
+        if(empty($rules)){
+            return false;
+        }
+
+        $rules_arr = array();
+        foreach($rules as $rule){
+            $arr = explode(',', $rule['rules']);
+            foreach($arr as $val){
+                $rules_arr[$val] = $val;
+            }
+        }
+
+        //根据id 查询auth_authority
+        $res = array();
+        $map['id'] = array('in',$rules_arr);
+        $url_arr = M('auth_authority')->where($map)->field('url')->select();
+        foreach($url_arr as $url){
+            $res[] = $url['url'];
+        }
+
+        if(in_array($cur_rule,$res)){
+            return true;
+        }
+
         return false;
     }
 

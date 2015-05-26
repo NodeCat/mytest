@@ -93,7 +93,7 @@ class InventoryController extends CommonController {
 	}
 
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
         $this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 
@@ -581,7 +581,7 @@ class InventoryController extends CommonController {
 	}
 
 	//手持设备扫描盘点 根据inventory_code返回对应详情
-	public function getInvDetailByInvCode(){
+	/*public function getInvDetailByInvCode(){
 		$inventory_code = I('inventory_code');
 		$map['inventory_code'] = $inventory_code;
 		$inventory_detail_infos = M('stock_inventory_detail')->where($map)->select();
@@ -591,7 +591,7 @@ class InventoryController extends CommonController {
 		$data['data'] = $inventory_detail_infos;
 
 		$this->ajaxReturn($data);
-	}
+	}*/
 
 	//
 }

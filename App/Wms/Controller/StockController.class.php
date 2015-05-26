@@ -33,7 +33,7 @@ class StockController extends CommonController {
 			'status' => array('qualified' => '合格','unqualified' => '残次','freeze' => '冻结'),
 		);
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
         $this->table = array(
             'toolbar'   => false,
             'searchbar' => true, 
