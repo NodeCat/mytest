@@ -49,7 +49,12 @@ class AuthController extends Controller {
     }
 
     protected function check_rule($cur_rule){
-        return true;
+        //return true;
+        $cur_user = session('user');
+        if($cur_user['uid'] == 1){
+            return true;
+        }
+
         $user_roles = session('user.role');
         
         if(empty($user_roles)){
