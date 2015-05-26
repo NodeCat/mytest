@@ -153,6 +153,7 @@ class LoginController extends Controller {
             $res = $Api->updateInfo($uid, $old, $data);
             if($res['status']){
                 $this->success('修改密码成功！');
+                return true;
             }else{
                 $this->error($this->showRegError($res['info']));
             }
