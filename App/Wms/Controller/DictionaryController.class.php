@@ -65,7 +65,7 @@ class DictionaryController extends AuthController {
 		}
 		$M=M(CONTROLLER_NAME);
 		$M->execute('truncate table dictionary');
-		//dump($data);exit();
+		
         $result=$M->addAll($data);
         if(!$result){
         	$this->error($M->getError());

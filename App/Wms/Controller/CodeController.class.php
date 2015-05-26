@@ -256,7 +256,7 @@ class CodeController extends CommonController {
 			$data[$k]['name'] 			= $v['name'];
 			$data[$k]['title']			=$v['comment'];
 			$data[$k]['module']			= ucwords($v['name']);
-			$data[$k]['group']			= 'Wms';
+			$data[$k]['group']			= MODULE_NAME;
 			$data[$k]['build']			=0;
 			$data[$k]['status']			='1';
 			$data[$k]['rows']			=$v['rows'];
@@ -980,12 +980,12 @@ class CodeController extends CommonController {
 		$n=0;
 		$dict=R(MODULE_NAME.'/Dictionary/get_words');
 		$exists = $M->getField('id,url');
-		$data_app[] = array('app' => $app, 'type' => '1', 'name'=>$app,'title'=>isset($dict[$app])?$dict[$app]:$app);
+		$data_app[] = array('app' => $app, 'type' => '1', 'name'=>$app,'title'=> empty($dict[$app])?$app:$dict[$app]);
 		foreach ($groups as $group) {
-			$data_groups[] = array('app' => $app, 'group' =>$group, 'type' => '2','name'=>$group, 'url'=>$group, 'title'=>isset($dict[$group])?$dict[$group] : $group);
+			$data_groups[] = array('app' => $app, 'group' =>$group, 'type' => '2','name'=>$group, 'url'=>$group, 'title'=>empty($dict[$group]) ? $group : $dict[$group]);
 			$modules = $this->getModule($group);
 			foreach ($modules as $module) {
-				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>isset($dict[$module])?$dict[$module]:$module);
+				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
 				$module_name=$group.'/'.$module;
 				$actions = $this->getAction($group, $module);
 				foreach ($actions as $action) {
@@ -995,8 +995,8 @@ class CodeController extends CommonController {
 					$data_actions[$n]['action'] = $action;
 					$data_actions[$n]['type'] 	= '4';
 					$data_actions[$n]['url']  	= $group.'/'.$module.'/'.$action;
-					$data_actions[$n]['url']  	= $module.'/'.$action;
-					$data_actions[$n]['title'] 	= (isset($dict[$action])?$dict[$action]:$action);//(isset($dict[$module])?$dict[$module]:$module).
+					//$data_actions[$n]['url']  	= $module.'/'.$action;
+					$data_actions[$n]['title'] 	= (empty($dict[$action]))?$action:$dict[$action];
 					$data_actions[$n]['name'] 	= $action;
 					++$n;
 				}
@@ -1100,7 +1100,7 @@ class CodeController extends CommonController {
 		foreach ($actions as $action){
 			if(!in_array($action, $inherents_actions)){
 				$func =   $M->getMethod($action);
-                if($func->isPublic()) {
+                if($func->isPublic() && !$func->isProtected()) {
                 	if(substr($action, 0, 1) !='_')
 						$customer_actions[]=$action;
 				}
