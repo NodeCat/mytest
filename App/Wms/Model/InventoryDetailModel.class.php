@@ -10,7 +10,9 @@ class InventoryDetailModel extends Model {
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-        
+        array('inventory_code','require','盘点单号不能为空',1,'regex',1),
+        array('pro_code','require','货品标识不能为空',1,'regex',1),
+        array('location_id','require','库位不能为空',1,'regex',1),
     );
 
     //array(填充字段,填充内容,[填充条件,附加规则])

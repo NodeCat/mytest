@@ -32,11 +32,10 @@ class StockMoveDetailModel extends Model {
         'default'=>array(
             'where'=>array('stock_move.is_deleted'=>'0'),
             'order'=>'stock_move.id DESC',
-            "join"=>array("inner join location as src_location on stock_move.location_id=src_location.id ",
-                "inner join location as dest_location on stock_move.location_id=dest_location.id ",
+            "join"=>array("inner join location on stock_move.location_id=location.id ",
                 "inner join warehouse on stock_move.wh_id=warehouse.id ",
                 "inner join user on stock_move.created_user = user.id"),
-"field"=>"stock_move.*,src_location.code as src_location_code,dest_location.code as dest_location_code, warehouse.code as wh_code,user.nickname as user_nickname",
+"field"=>"stock_move.*,location.code as location_code, warehouse.code as wh_code,user.nickname as user_nickname",
         ),
         'latest'=>array(
             'where'=>array('stock_move.is_deleted'=>'0'),

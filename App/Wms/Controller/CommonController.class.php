@@ -40,7 +40,7 @@ class CommonController extends AuthController {
         $this->status_type='0';
     }
 
-    public function search($query = '') {
+    protected function search($query = '') {
         $this->before($query,'search');
         $condition = I('query');
         $condition = queryFilter($condition);
@@ -88,15 +88,18 @@ class CommonController extends AuthController {
         return $map;
     }
 
-    protected function filter_list(&$data,$type = '0') {
+    protected function filter_list(&$data,$type = '0',$filter = '') {
         if(!is_array($data)) return;
-        if(empty($this->filter)) {
-            $file = strtolower(CONTROLLER_NAME);
-            $filter = C($file.'.filter');
+        if(empty($filter)){
+            if(empty($this->filter)) {
+                $file = strtolower(CONTROLLER_NAME);
+                $filter = C($file.'.filter');
+            }
+            else {
+                $filter = $this->filter;
+            }
         }
-        else {
-            $filter = $this->filter;
-        }
+
         if($type == '1') {
             $table = strtolower(CONTROLLER_NAME);
             foreach ($filter as $key => $val) {
@@ -332,14 +335,105 @@ class CommonController extends AuthController {
        
     }
     public function import() {
-        $info = $this->upload();
-        $table = get_tablename(CONTROLLER_NAME);
-        $data = get_setting($table);
-        $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
-        $sheet = $this->get_excel_sheet();
+        $file = $this->upload();
 
+        $table = get_tablename(CONTROLLER_NAME);
+        $setting = get_setting($table);
+        $columns = $setting['list'];
+        foreach ($columns as $key => $val) {
+            $list[$val] = $key ;
+        }
+
+        $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+        
+        import("Common.Lib.PHPExcel");
+        import("Common.Lib.PHPExcel.IOFactory");
+        import("PHPExcel.PHPExcel.Reader.Excel5");  
+
+        $objReader  =  \PHPExcel_IOFactory::createReader('Excel5');
+        $objPHPExcel  =  $objReader->load($file);   
+        $sheet  =  $objPHPExcel->getSheet(0);
+        $rows  =  $sheet->getHighestRow(); // 取得总行数
+        $cols  =  $sheet->getHighestColumn(); // 取得总列数
+
+        //获取关联表中的数据，比如类别表，获取name,id结构的键值对
+        //这样excel中字段值是类别1，那么就被转换成类别1的id
+
+        //读取第一行,将第一行的标题中的中文文字转成数据库中的字段
+        for($i=1,$j = 'A';$j<= $cols;$j++,$i++){
+            $val = trim(iconv('utf-8','gbk',$objPHPExcel->getActiveSheet()->getCell("$j1")->getValue()));
+            if($val == "") {
+               continue;
+            }
+            else {
+                if(array_key_exists($val, $list)) {
+                    $columns[$i] = $list[$val];
+                }
+            }
+        }
+        //遍历数据
+        for($i = 2;$i<= $rows;$i++) {
+            for($k=1,$j = 'A';$j<= $cols;$j++,$k++){
+                $val = trim(iconv('utf-8','gbk',$objPHPExcel->getActiveSheet()->getCell("$j$i")->getValue()));
+                if(array_key_exists($k, $columns)) {
+                    $data[$i][$columns[$k]] = $val;    
+                }
+                
+            }
+        }
+        $this->after($data,'import');
+        unset($rows);
+        $i = 2;
+        $M = D(CONTROLLER_NAME);
+        foreach ($data as $row) {
+            $row = $M->create($row);
+            $res = $M->add($row);
+            if($res < 1) {
+                $fail[] = $i;
+                $fail_msg = $M->getError();
+            }
+            else {
+                $success[] = $i;
+            }
+            ++$i;
+        }
+        $i = count($fail);
+        $j = count($success);
+        $msg = '成功：'.$j.'条。';
+        if($i > 0) {
+            $msg .= ' 失败：'.$i.'条。最后一条导入失败的错误信息是：'.$fail_msg.'。其中导入失败的行数：'.implode(',', $fail).'。';
+        }
+        $this->msgReturn(1,'导入完成。'.$msg);
     }
 
+    protected function upload(){
+        if(IS_POST) {
+            $upload_path = RUNTIME_PATH;
+            $config = array(
+                'maxSize'    =>    10241024,//C('MAX_UPLOAD_FILE_SIZE'),
+                'rootPath'   =>    $upload_path,
+                'savePath'   =>    '',
+                'saveName'   =>    array('uniqid',''),
+                'exts'       =>    array('jpg', 'gif', 'png', 'jpeg','xls','doc','xlsx','docx'),
+                'autoSub'    =>    false,
+                'subName'    =>    array('date','Ymd'),
+            );
+            $upload = new \Think\Upload($config);
+            $info   =   $upload->upload();
+            if(!$info) {
+                $this->msgReturn(0,$upload->getError());
+            }else{
+                foreach ($info as $v) {
+                    $files[]=$upload_path.$v['savepath'].$v['savename'];
+                }
+                return $files;
+            }
+        }
+        else {
+            $this->display('Index:upload');
+            exit();
+        }
+    }
     public function export() {
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -401,33 +495,17 @@ class CommonController extends AuthController {
         $Sheet->getDefaultStyle()->getFont()->setSize(13);
         return $Sheet;
     }
-
-    public function upload(){
-        import('ORG.Net.UploadFile');
-        $upload             = new UploadFile();
-        $upload->maxSize    = C('MAX_UPLOAD_FILE_SIZE');
-        $upload->allowExts  = array('jpg', 'gif', 'png', 'jpeg','xls','doc');
-        $upload->savePath   = __PUBLIC__.'/Upload/';
-        if(!$upload->upload()) {
-            $this->error($upload->getErrorMsg());
-            return null;
-        }else{
-            return $info;
-            $info = $upload->getUploadFileInfo();
-            $this->import($info);
-        }
-    }
    
     public function _empty($action){
        $this->error('unknown',U('index'));
     }
-    private function before(&$data, $func_name = '') {
+    protected function before(&$data, $func_name = '') {
     	$func = 'before_' . (empty($func_name) ? ACTION_NAME : $func_name);
 		if(method_exists($this, $func)){
             $this->$func($data);
         }
     }
-    private function after(&$res, $func_name = '') {
+    protected function after(&$res, $func_name = '') {
     	$func = 'after_' . (empty($func_name) ? ACTION_NAME : $func_name);
 		if(method_exists($this, $func)){
             $this->$func($res);
@@ -439,10 +517,10 @@ class CommonController extends AuthController {
             $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
         }
         else if($res){ 
-                $this->success('操作成功',$url);
+                $this->success($msg,$url);
             }
             else{
-                $this->error('操作失败',$url);
+                $this->error($msg,$url);
             }
         exit();
     }

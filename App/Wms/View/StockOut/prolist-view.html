@@ -1,0 +1,48 @@
+<div role="tabpanel">
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">订单明细</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+  			<th>行号</th><th>货品号</th><th>货品名</th><th>规格</th><th>订单量</th><th>状态</th>
+  		</thead>
+  		<tbody>
+    <volist name="pros" id="vo" key="key">
+        
+    <tr class="tr-cur">
+        <th style="width:10%;">{$key}</th>
+
+        <th style="width:10%;">{$vo.pro_code}</th>
+        
+        <th style="width:15%;">{$vo.pro_name}</th>
+        
+        <th style="width:30%;">{$vo.pro_attrs}</th>
+        
+        <th style="width:10%;">{$vo.order_qty}</th>
+        
+        <th style="width:10%;">{$vo.status}</th>
+    </tr>
+        
+    </volist>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+</div>
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

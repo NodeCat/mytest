@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model\RelationModel;
 class PurchaseModel extends RelationModel {
 
-    protected $insertFields = array('id','code','type','wh_id','company_id','partner_id','invoice_method','piece_total','price_total','cat_total','qty_total','invoice_status','picking_status','expecting_date','status','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('id','code','type','wh_id','company_id','partner_id','invoice_method','piece_total','price_total','cat_total','qty_total','invoice_status','picking_status','expecting_date','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','code','type','wh_id','company_id','partner_id','invoice_method','piece_total','price_total','cat_total','qty_total','invoice_status','picking_status','expecting_date','remark','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('id','code','type','wh_id','company_id','partner_id','invoice_method','piece_total','price_total','cat_total','qty_total','invoice_status','picking_status','expecting_date','remark','status','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName='stock_purchase';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])

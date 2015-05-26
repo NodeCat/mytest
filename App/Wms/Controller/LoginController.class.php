@@ -14,9 +14,9 @@ class LoginController extends Controller {
     public function index($username = null, $password = null, $verify = null){
         if(IS_POST){
             /* 检测验证码  */
-            if(!check_verify($verify)){
+            /*if(!check_verify($verify)){
                 $this->error('验证码输入错误！');
-            }
+            }*/
             $this->username=$username;
             $User = D('User','Api');
             $uid = $User->login($username, $password);
@@ -83,6 +83,7 @@ class LoginController extends Controller {
             'fontSize'=> 28
             );
         $verify = new \Think\Verify($config);
+        ob_clean();
         $verify->entry(1);
     }
 
