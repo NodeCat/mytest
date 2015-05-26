@@ -30,7 +30,7 @@ class StockController extends CommonController {
 	);
 	//页面展示数据映射关系 例如取出数据是qualified 显示为合格
 	protected $filter = array(
-			'status' => array('qualified' => '合格','unqualified' => '残次'),
+			'status' => array('qualified' => '合格','unqualified' => '残次','freeze' => '冻结'),
 		);
 	//设置列表页选项
 	public function before_index() {
@@ -146,11 +146,8 @@ class StockController extends CommonController {
 			//根据stock.status 查询对应stock记录
 			//添加map
 			$stock_status = I('status');
-			if($stock_status == 'qualified'){
-				$map['stock.status'] = array('eq','qualified');
-			}
-			if($stock_status == 'unqualified'){
-				$map['stock.status'] = array('eq','unqualified');
+			if(!empty($stock_status)){
+				$map['stock.status'] = array('eq',$stock_status);
 			}
 
 			//根据pro_name 查询对应的pro_code
@@ -192,16 +189,7 @@ class StockController extends CommonController {
 			$data['location_code'] = $location_code;
 		}
 		//view edit 展示
-		switch($data['status']){
-			case 'unqualified':
-				$data['status_name'] = '残次';
-				break;
-			case 'qualified':
-				$data['status_name'] = '合格';
-				break;
-			default:
-				break;
-		}
+		$data['status_name'] = en_to_cn($data['status']);
 
 		if(ACTION_NAME == 'view'){
 			//根据pro_code 查询对应的pro_name

@@ -2,7 +2,7 @@
 <div class="table-pill row-fluid">
 <div class="col-lg-12">
 
-  <a href="{:U('index')}#" class="btn btn-default btn-sm"> &nbsp;&nbsp;全部&nbsp;&nbsp; </a>
+  <a href="{:U('index')}#" class="btn btn-default btn-sm"> &nbsp;&nbsp;全部&nbsp;&nbsp; {$pill.status.total}</a>
   <volist name="pill" id="p">
   {~$k=$key}
   <volist name="p" id="vo">

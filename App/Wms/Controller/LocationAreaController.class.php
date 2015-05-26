@@ -60,7 +60,8 @@ class LocationAreaController extends CommonController {
             $area_code = array_column($location_area, 'code', 'id');
             $status = array(
                 'qualified' =>'合格状态',
-                'unqualified' =>'残次状态'
+                'unqualified' =>'残次状态',
+                'freeze' => '冻结'
             );
             $query['location.id'] = array(
                 'title' => '区域标识',

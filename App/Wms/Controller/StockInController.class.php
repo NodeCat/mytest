@@ -11,7 +11,7 @@ class StockInController extends CommonController {
 			'21'=>'待收货',
 			'31'=>'待上架',
 			'33'=>'已上架',
-			'04'=>'已关闭'
+			'04'=>'已作废'
 		),
 	);
 	protected $columns = array (   
@@ -197,6 +197,13 @@ class StockInController extends CommonController {
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
 
 				if($res['res'] == true) {
+					//有一件商品入库 更新到货单状态为 待上架
+					$upd_map['id'] = $id;
+					$upd_data['status'] = '31';
+					M('stock_bill_in')->where($upd_map)->data($upd_data)->save();
+					unset($upd_map);
+					unset($upd_data);
+
 					$data['msg'] = '收货成功。'.$res['msg'];
 					$res = M('stock_bill_in')->field('id,code')->find($id);
 					$data['id'] = $res['id'];
@@ -318,18 +325,27 @@ class StockInController extends CommonController {
 				//'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
-				'53'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
-				'04'=>array('value'=>'04','title'=>'已关闭','class'=>'danger'),
+				'33'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
+				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger'),
 			)
 		);
-		$M = M('stock_bill_in_detail');
+		$M = M('stock_bill_in');
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
 		foreach ($res as $key => $val) {
-			if(array_key_exists($key, $pill)){
+			if(array_key_exists($val['status'], $pill['status'])){
 				$pill['status'][$val['status']]['count'] = $val['qty'];
+				$pill['status']['total'] += $val['qty'];
 			}
 		}
+
+		foreach($pill['status'] as $k => $val){
+			if(empty($val['count'])){
+				$pill['status'][$k]['count'] = 0;
+			}
+		}
+
 		$this->pill = $pill;
     }
     //打印
@@ -343,7 +359,7 @@ class StockInController extends CommonController {
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
+    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
     	unset($map);
 
     	//根据pid 查询对应入库单详情
@@ -353,6 +369,7 @@ class StockInController extends CommonController {
     	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
 
     	$data['refer_code'] = $bill_in['code'];
+    	$data['remark'] = $bill_in['remark'];
     	$data['print_time'] = get_time();
     	$data['partner_name'] = $bill_in['partner_name'];
     	$data['expecting_date'] = $bill_in['expecting_date'];
@@ -360,7 +377,7 @@ class StockInController extends CommonController {
     	$data['session_user_name'] = session('user.username');
     	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
 
-    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+    	//$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
     	$data['bill_in_detail_list'] = $bill_in_detail_list;
 
     	layout(false);

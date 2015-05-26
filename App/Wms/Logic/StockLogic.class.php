@@ -607,11 +607,8 @@ class StockLogic{
 			$map['stock.location_id'] = array('in',$location_ids);
 		}
 
-		if($stock_status == 'qualified'){
-			$map['stock.status'] = array('eq','qualified');
-		}
-		if($stock_status == 'unqualified'){
-			$map['stock.status'] = array('eq','unqualified');
+		if(!empty($stock_status)){
+			$map['stock.status'] = array('eq',$stock_status);
 		}
 
 		$stock_infos = M('Stock')->where($map)->select();

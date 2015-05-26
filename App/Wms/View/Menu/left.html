@@ -29,9 +29,11 @@
   	left_cur.closest('.tab-pane').addClass('active');
 	left_cur.addClass("active");
 	left_cur.children('i').addClass('icon-white');
+	$("#nav_link_{$menu['pid']},#nav_link_{$menu['ppid']}").parent('li').addClass('active');
   	var cur=$(".content a[href='{:U(CONTROLLER_NAME.'/'.ACTION_NAME)}']");
     cur.closest('.tab-pane').addClass('active');
 	cur.addClass("active");
+	
 	cur.children('i').addClass('icon-white');
 	$('#nav-tab a[href="{:U(CONTROLLER_NAME.'/'.ACTION_NAME)}"]').parent('li').addClass('active');
   })

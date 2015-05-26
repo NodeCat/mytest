@@ -17,9 +17,9 @@
             {~$datetime_format=array('datetime'=>'yyyy-mm-dd hh:ii:ss','date'=>'yyyy-mm-dd','time'=>'hh:ii:ss')}
             <div class="input-group input-group-sm">
             <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
-             <span class="input-group-btn">
+             <!--<span class="input-group-btn">
                 <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-calendar"></i></button>
-              </span>
+              </span>-->
             </div>
             <eq name="vo['query_type']" value="between">{~$a++}
             </div></div>
@@ -28,9 +28,9 @@
             <div class="col-lg-8 col-sm-8 col-xs-8">
             <div class="input-group input-group-sm">
                 <input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
-                <span class="input-group-btn">
+                <!--<span class="input-group-btn">
                 <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-calendar"></i></button>
-              </span>
+              </span>-->
             </div>
             </eq>
         </case>

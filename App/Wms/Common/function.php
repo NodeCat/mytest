@@ -119,6 +119,7 @@ function en_to_cn($str){
     $filter = array(
         'qualified' => '合格',
         'unqualified' => '残次',
+        'freeze' => '冻结',
         'in' => '收货',
         'on' => '上架',
         'move_location' => '库存移动',
@@ -128,7 +129,7 @@ function en_to_cn($str){
         'noinventory' => '未盘点',
         'inventorying' => '盘点中',
         'confirm' => '待确认',
-        'closed' => '已关闭',
+        'closed' => '已作废',
         'fast' => '快速盘点',
         'again' => '复盘',
         'status' => '状态调整',
