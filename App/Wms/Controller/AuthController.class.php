@@ -19,9 +19,17 @@ class AuthController extends Controller {
             $this->display('index:closed');
             exit();
         }
+
+        //检查节点权限
+        $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
+
+        if ( !$this->check_rule($rule)){
+            $this->error('权限不足，不能访问');
+        }
+
         return ;
         //模块访问控制，判断站点维护及禁止访问的模块，及是否需要登陆才能访问
-        $access = $this->check_access();
+        /*$access = $this->check_access();
         if ( $access === false ) {
             $this->error('unauthorized');
         }
@@ -37,7 +45,14 @@ class AuthController extends Controller {
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
         if ( !$this->check_rule($rule)){
             $this->error('unauthorized');
-        }
+        }*/
+    }
+
+    protected function check_rule($rule){
+        return true;
+        $user_id = session('user.uid');
+        var_dump(session('user'));exit;
+        return false;
     }
 
     protected function api_auth(){

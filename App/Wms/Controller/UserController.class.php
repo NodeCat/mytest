@@ -4,10 +4,16 @@ use Think\Controller;
 class UserController extends CommonController {
 	protected $columns = array(
 		'id'		=> '',
+        'username'  => '用户名',
 		'nickname' 	=> '姓名',
 		'email' 	=> '邮箱',
-		'mobile'		=> '手机'
+		'mobile'	=> '手机',
+        'status'    => '状态',
 	);
+    //页面展示数据映射关系 例如取出数据是qualified 显示为合格
+    protected $filter = array(
+            'status' => array('job' => '在职','quit' => '离职'),
+        );
 
 	//设置列表页选项
 	public function before_index() {
@@ -21,7 +27,7 @@ class UserController extends CommonController {
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['view']),'new'=>'false')
+            array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => true,'new'=>'false'), 
