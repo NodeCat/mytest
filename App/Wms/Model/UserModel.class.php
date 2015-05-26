@@ -33,8 +33,11 @@ class UserModel extends Model {
         'default'=>array(
             'where'=>array('user.is_deleted'=>'0'),
             'order'=>'user.id DESC',
-            
+            //"join"=>array("inner join auth_user_role on auth_user_role.user_id=user.id ",
+                //"inner join auth_role on auth_role.id = auth_user_role.role_id"),
+            //"field"=>"user.*,auth_role.name as role_name",
         ),
+            
         'latest'=>array(
             'where'=>array('user.is_deleted'=>'0'),
             'order'=>'update_time DESC',
