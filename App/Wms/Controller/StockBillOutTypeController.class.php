@@ -1,7 +1,7 @@
 <?php
 namespace Wms\Controller;
 use Think\Controller;
-class StockBillInTypeController extends CommonController {
+class StockBillOutTypeController extends CommonController {
 	protected $columns = array (   
 		'id' => '',   
 		'type' => '单据类型',   
