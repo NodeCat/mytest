@@ -69,15 +69,15 @@ class PmsLogic{
 	}
 
 	//根据pro_code 模糊查询对应的SKU
-	public function get_SKU_by_pro_codes_fuzzy($pro_code){
+	public function get_SKU_by_pro_codes_fuzzy($pro_code, $page = 1, $count = 10){
 		if(empty($pro_code)){
 			return false;
 		}
 		import("Common.Lib.HttpCurl");
 		$request = new \HttpCurl();
 		$data = array(
-			'currentPage' => 1,
-			'itemsPerPage' => 10,
+			'currentPage' => $page,
+			'itemsPerPage' => $count,
 			'where' => array('like'=>array('sku_number'=>$pro_code)),
 			);
 		$url = 'http://s.test.dachuwang.com/sku/manage';
