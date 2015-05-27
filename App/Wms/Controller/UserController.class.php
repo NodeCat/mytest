@@ -4,13 +4,38 @@ use Think\Controller;
 class UserController extends CommonController {
 	protected $columns = array(
 		'id'		=> '',
+        'username'  => '用户名',
 		'nickname' 	=> '姓名',
-		'email' 	=> '邮箱',
-		'mobile'		=> '手机'
+        'role_name'      => '角色',
+        'status'    => '状态',
 	);
+    protected $query   = array (
+        'user.username' => array (
+            'title' => '用户ID',
+            'query_type' => 'like',
+            'control_type' => 'text',
+            'value' => '',
+        ),
+        'user.nickname' => array (
+            'title' => '用户名称',
+            'query_type' => 'like',
+            'control_type' => 'text',
+            'value' => '',
+        ),
+        'user.status' => array (
+            'title' => '状态',
+            'query_type' => 'eq',
+            'control_type' => 'select',
+            'value' => array('job'=>'在职','quit'=>'离职'),
+        ),
+    );
+    //页面展示数据映射关系 例如取出数据是qualified 显示为合格
+    protected $filter = array(
+            'status' => array('job' => '在职','quit' => '离职'),
+        );
 
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
 		$this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 
@@ -21,7 +46,7 @@ class UserController extends CommonController {
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['view']),'new'=>'false')
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => true,'new'=>'false'), 
@@ -59,7 +84,7 @@ class UserController extends CommonController {
     }
 
     //在save之前执行该方法
-    public function before_save(&$M){
+    protected function before_save(&$M){
         //角色id
         $roles = I('roles');
         //用户id
@@ -83,6 +108,28 @@ class UserController extends CommonController {
             }
             
         }
-        
     }
+
+    //在lists之后执行该方法
+    protected function after_lists(&$data){
+        foreach($data as $k => $val){
+            //根据id 查询auth_role
+            $map['auth_user_role.user_id'] = $val['id'];
+            $roles_name_list = M('auth_user_role')
+            ->join('auth_role on auth_role.id = auth_user_role.role_id')
+            ->where($map)->field('auth_role.name')->select();
+            unset($map);
+
+            $roles_names = '';
+            if(!empty($roles_name_list)){
+                foreach($roles_name_list as $roles_name){
+                    $roles_names .= $roles_name['name'].' ';
+                }
+            }
+            
+            $data[$k]['role_name'] = $roles_names;
+            unset($roles_names);
+        }
+    }
+
 }

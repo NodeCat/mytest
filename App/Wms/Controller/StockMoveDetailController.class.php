@@ -54,7 +54,7 @@ class StockMoveDetailController extends CommonController {
         ),
     );
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
         $this->table = array(
             'toolbar'   => false,
             'searchbar' => true, 

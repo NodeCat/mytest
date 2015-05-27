@@ -14,7 +14,9 @@ class UserModel extends Model {
 
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
-                array('created_user',UID,1,'string'),
+        array('password', 'auth_md5', 1, 'function', AUTH_KEY),
+        array('status', 'open'),
+        array('created_user',UID,1,'string'),
         array('created_time','get_time',1,'function'),
         array('updated_user',UID,3,'string'),
         array('updated_time','get_time',3,'function'),
@@ -31,8 +33,11 @@ class UserModel extends Model {
         'default'=>array(
             'where'=>array('user.is_deleted'=>'0'),
             'order'=>'user.id DESC',
-            
+            //"join"=>array("inner join auth_user_role on auth_user_role.user_id=user.id ",
+                //"inner join auth_role on auth_role.id = auth_user_role.role_id"),
+            //"field"=>"user.*,auth_role.name as role_name",
         ),
+            
         'latest'=>array(
             'where'=>array('user.is_deleted'=>'0'),
             'order'=>'update_time DESC',
