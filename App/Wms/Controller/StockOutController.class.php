@@ -92,7 +92,7 @@ class StockOutController extends CommonController {
 		), */
 	);
 
-    public function before_index() {
+    protected function before_index() {
         $this->table = array(
             'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
@@ -107,7 +107,7 @@ class StockOutController extends CommonController {
         $this->search_addon = true;
     }
 
-    public function before_lists(){
+    protected function before_lists(){
     	
         $pill = array(
 			'status'=> array(
@@ -127,7 +127,7 @@ class StockOutController extends CommonController {
 
     }
     
-    public function before_edit(&$data) {
+    protected function before_edit(&$data) {
        $stock_out = M('stock_bill_out');
        $stock_detail = M('stock_bill_out_detail');
        $warehouse = M('warehouse');

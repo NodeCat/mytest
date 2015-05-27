@@ -148,22 +148,28 @@ class UserApi extends Controller{
         }
 
         //更新用户信息
-        $data = $this->create($data);
+        $data = M('user')->create($data);
+
         if($data){
-            $res = $this->where(array('id'=>$uid))->save($data);
+            $data['password'] = auth_md5($data['password'], AUTH_KEY);
+            $res = M('user')->where(array('id'=>$uid))->save($data);
         }
-        $res = false;
+        //$res = false;
         if($res !== false){
             $return['status'] = true;
         }else{
             $return['status'] = false;
-            $return['msg'] = $this->model->getError();
+            $return['msg'] = '修改密码错误';
         }
         return $return;
     }
     protected function verifyUser($uid, $password_in){
-        $password = $this->getFieldById($uid, 'password');
-        if(think_ucenter_md5($password_in, AUTH_KEY) === $password){
+        $map['id'] = $uid;
+        $password = M('user')->where($map)->field('password')->find();
+        unset($map);
+
+        $password = $password['password'];
+        if(auth_md5($password_in, AUTH_KEY) === $password){
             return true;
         }
         return false;

@@ -75,7 +75,7 @@ class StockMoveController extends CommonController {
         $stock_info = $stock->where($map)->find();
         if(empty($stock_info)){
             $return['status'] = 0;
-            $return['msg'] = '相关信息有误，请重新输入';
+            $return['msg'] = '该库位没有相关货品，请重新输入';
             $this->ajaxReturn($return);
         }
        

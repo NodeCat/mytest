@@ -12,17 +12,19 @@ function match($table,$field,$fields){
 function set_session($uid){
     $uid =$uid;
     $user = M('User')->find($uid);
-    /*
+    
     $user_roles = M()
         ->table('auth_user_role ur')
         ->join("auth_role r on ur.role_id=r.id")
         ->where("ur.user_id='$uid' and r.status='1'")
         ->field('r.id')->select();
+
     foreach ($user_roles as $value) {
         $roles[] = $value['id'];
     }
-    *
+    
     $roles = implode('_', $roles);
+    
     /* 记录登录SESSION和COOKIES */
     $auth = array(
         'uid'             => $user['id'],

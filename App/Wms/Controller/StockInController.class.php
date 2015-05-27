@@ -293,7 +293,7 @@ class StockInController extends CommonController {
 		$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
 		$data['qtyForOn'] =$qtyForIn;
 	}
-	public function before_index() {
+	protected function before_index() {
         $this->table = array(
             'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
@@ -319,7 +319,7 @@ class StockInController extends CommonController {
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
     }
-    public function before_lists(){
+    protected function before_lists(){
     	$pill = array(
 			'status'=> array(
 				//'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),

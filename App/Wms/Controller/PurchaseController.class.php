@@ -130,7 +130,7 @@ class PurchaseController extends CommonController {
             ),
         );
     }
-	public function before_add(&$M) {
+	protected function before_add(&$M) {
 		$M->type = 'purchase';
 		$M->code = get_sn('purchase');
 		$M->price_total = 0;
@@ -140,11 +140,11 @@ class PurchaseController extends CommonController {
 		$M->picking_status = '0';
 	}
 	
-	public function before_save(&$M){
+	protected function before_save(&$M){
 		$M->status = '11';
 	}
 
-	public function after_save($pid){
+	protected function after_save($pid){
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
@@ -201,7 +201,7 @@ class PurchaseController extends CommonController {
 		}
 		$this->pros = $pros;
 	}
-	public function before_lists(){
+	protected function before_lists(){
 		$pill = array(
 			'status'=> array(
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
@@ -371,7 +371,7 @@ class PurchaseController extends CommonController {
 	}
 
 	//在search方法执行后 执行该方法
-	public function after_search(&$map){
+	protected function after_search(&$map){
 		//获得页面提交过来的货品编号
 		if(array_key_exists('stock_purchase_detail.pro_code', $map)){
 			$pro_code = $map['stock_purchase_detail.pro_code'][1];
