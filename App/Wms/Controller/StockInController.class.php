@@ -234,9 +234,9 @@ class StockInController extends CommonController {
 							$data = $this->fetch('StockIn:scan-procode');
 							$this->msgReturn(1,'查询成功。',$data);
 						}
-						if($res['status'] == '31' || $res['status'] =='32') {
+						/*if($res['status'] == '31' || $res['status'] =='32') {
 							$this->msgReturn(0,'查询失败，该单据已入库。');
-						}
+						}*/
 						if($res['status'] == '53'){
 							$this->msgReturn(0,'查询失败，该单据已完成。');
 						}
