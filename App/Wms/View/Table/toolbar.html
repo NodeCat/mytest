@@ -5,16 +5,27 @@
 	<switch name="tool.name" >
 		<case value="add" break="1">
 		<eq name="tool.show" value="true">
-			<a data-href="{:U('add')}" data-target="#modal" data-toggle="modal" role="button"  data-title="添加" rel="tooltip" data-placement="bottom" class="btn btn-add btn-lg btn-tool"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+			<eq name="tool.new" value="true">
+				<a href="{:U('add')}" class="btn btn-xs btn-add" data-title="添加" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+			<else/>
+				<a data-href="{:U('add')}" data-target="#modal" data-toggle="modal" class="btn btn-xs btn-add" data-title="添加" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+			</eq>
 		</eq></case><case value="edit" break="1">
 		<eq name="tool.show" value="true">
-			<a data-remote="{:U('edit')}" data-target="#modal" role="button" data-title="编辑" rel="tooltip"  data-placement="bottom" class="btn btn-lg btn-edit btn-tool" data-id=""><i class="glyphicon glyphicon-edit"></i> 修改</a>
+
+
+	<eq name="tool.new" value="true">
+		<a href="{:U('edit')}" class="btn btn-xs btn-edit"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> 修改</a>
+	<else/>
+		<a data-href="{:U('edit')}" class="btn btn-xs btn-edit" data-target="#modal" data-toggle="modal"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> 修改</a>
+	</eq>
+
 		</eq></case><case value="delete" break="1">
 		<eq name="tool.show" value="true">
 			<a data-remote="{:U('delete')}" data-title="删除" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-delete btn-tool"><i class="glyphicon glyphicon-remove"></i> 删除</a>
 		</eq></case><case value="import" break="1">
 		<eq name="tool.show" value="true">
-			<a data-href="{:U('upload')}" data-target="#modal" data-toggle="modal" data-title="导入" rel="tooltip" data-placement="bottom" class="btn btn-lg "><i class="glyphicon  glyphicon-open"></i> 导入
+			<a data-href="{:U('import')}" data-target="#modal-refer" data-toggle="modal" data-title="导入" rel="tooltip" data-placement="bottom" class="btn btn-lg "><i class="glyphicon  glyphicon-open"></i> 导入
 			</a>
 		</eq></case><case value="export" break="1">
 		<eq name="tool.show" value="true">
