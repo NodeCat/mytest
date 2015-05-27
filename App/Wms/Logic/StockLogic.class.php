@@ -251,6 +251,11 @@ class StockLogic{
 					$param['variable_qty'] = $src_stock['stock_qty'];
 					$this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
 
+					//删除原库存记录
+					$map['id'] = $src_stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+
 					$diff_qty = $diff_qty - $src_stock['stock_qty'];
 				}
 			}else{
