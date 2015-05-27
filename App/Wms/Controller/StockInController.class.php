@@ -316,6 +316,7 @@ class StockInController extends CommonController {
     	$this->before_index();
     	$this->toolbar_tr =array(
             array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true'),
         );
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();

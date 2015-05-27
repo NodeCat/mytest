@@ -25,7 +25,7 @@
           {$vo.prepare_qty}
         </td>
         <td style="width:10%;"  class="text-left">
-          {$vo['expected_qty'] - $vo['prepare_qty']}
+          {$vo['expected_qty'] - $vo['prepare_qty'] - $vo['done_qty']}
         </td>
         <!--<td style="width:10%;"  class="text-left">
           0
