@@ -200,7 +200,7 @@ class StockLogic{
 		$map['location_id'] = $param['src_location_id'];
 		$map['pro_code'] = $param['pro_code'];
 		$map['wh_id'] = $param['wh_id'];
-		$src_stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+		$src_stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->group('batch')->select();
 		unset($map);
 
 		//检查变化量是否大于总库存量，如果大于则报错
