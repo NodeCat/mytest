@@ -287,7 +287,7 @@ class StockInController extends CommonController {
 			$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			//$pros[$key]['moved_qty'] = $qtyIn;
-			$moved_qty_total += $qtyIn;
+			//$moved_qty_total += $qtyIn;
 			$expected_qty_total += $val['pro_qty'];
 			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
@@ -297,7 +297,11 @@ class StockInController extends CommonController {
 		$bill_in_detail_list = M('stock_bill_in_detail')->where($map)->select();
 		
 		$this->pros = $bill_in_detail_list;
-		$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
+		//已上架量
+		foreach($this->pros as $pro){
+			$data['qtyForIn'] += $pro['done_qty'];
+		}
+		//$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
 		$data['qtyForOn'] =$qtyForIn;
 	}
 	protected function before_index() {
