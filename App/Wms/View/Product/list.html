@@ -1,0 +1,55 @@
+<if condition="! IS_AJAX">
+<include file="Product:search"/>
+</if>
+<div class="table-content" id="table-content">
+<div class="table-responsive">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+<thead>
+<tr class="text-center">
+<th>
+<label class="checkbox">
+<input type="checkbox" class="select-all" data-target="data-table"> 全选
+</label>      
+</th>
+<th id="pro_code">货品号</th>
+<th id="pro_uom">名称</th>
+<th id="barcode">规格</th>            
+<th class="sorter-false">操作</th> 
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<volist name="product_info" id="vo" key="key">
+
+<tr class="tr-cur">
+
+<td style="width:10%;"><label class="checkbox"><input type="checkbox" id="{$vo.id}" data-id="id" />{$key}</label></td>
+
+<td style="width:10%;">{$vo.sku_number}</td>
+
+<td style="width:20%;">{$vo.name}</td>
+
+<td style="width:30%;">{$vo.attrs}</td>
+
+<td style="width:10%;" class="inline">
+<div class="btn-group table-operate-btn">
+<a href="/Product/view/pro_code/{$vo.sku_number}" class="btn btn-xs btn-view" data-title="查看" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom">
+<i class="glyphicon glyphicon-zoom-in"></i>
+</a>
+<a href="{:U('Product/printpage',array('pro_code'=>$vo['sku_number'],'type'=>22))}" class="btn btn-xs btn-view" data-title="打印2*2" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom">
+<i class="glyphicon glyphicon-print"></i>
+</a>
+<a href="{:U('Product/printpage',array('pro_code'=>$vo['sku_number'],'type'=>44))}" class="btn btn-xs btn-view" data-title="打印4*4" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom">
+<i class="glyphicon glyphicon-print"></i>
+</a>
+</div>
+</td>
+
+</volist> 
+</tr>  
+</tbody>
+</table>
+</div>
+<include file="Index:pager"/>
+</div>

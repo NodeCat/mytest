@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Api;
-class StockOutApi {
+use Think\Controller;
+class StockOutApi extends Controller{
    public function stockout() {
         if($_SERVER['HTTP_CONTENT_TYPE'] == 'application/json'){
             $post = json_decode(file_get_contents("php://input"),true);
@@ -27,7 +28,7 @@ class StockOutApi {
         $stock_out_id = $stock_out->add($map);
         if(empty($stock_out_id)) {
             $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
-            echo json_encode($return);exit;
+            $this->ajaxReturn($return);
         }
         $total = 0;
         
@@ -35,7 +36,7 @@ class StockOutApi {
         $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
         if(empty($pms)) {
             $return = array('error_code' => '501', 'error_message' => 'pms infomation error', 'data' => '' );
-            echo json_encode($return);exit;
+            $this->ajaxReturn($return);
         }
         foreach($post['product_list'] as $val) {
             $detail['pid'] = $stock_out_id;
@@ -49,7 +50,7 @@ class StockOutApi {
             $res = $stock_detail->add($detail);
             if(empty($res)) {
                 $return = array('error_code' => '501', 'error_message' => 'created detail error', 'data' => '' );
-                echo json_encode($return);exit;
+                $this->ajaxReturn($return);
             }
         }
         
@@ -59,7 +60,6 @@ class StockOutApi {
         $stock_out->where($map)->save($data);
         
         $return = array('error_code' => '0', 'error_message' => 'success', 'data' => '' );
-        echo json_encode($return);exit;
-        
+        $this->ajaxReturn($return);
     } 
 }

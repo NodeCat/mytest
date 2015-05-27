@@ -338,7 +338,7 @@ class PurchaseController extends CommonController {
 		
 		$bill = $Min->create($data);
 		$bill['code'] = get_sn('in');
-		$bill['type'] = 'purchase';
+		$bill['type'] = 'ASN';
 		$bill['status'] = '21';
 		$bill['batch_code'] = 'batch'.NOW_TIME;
 
