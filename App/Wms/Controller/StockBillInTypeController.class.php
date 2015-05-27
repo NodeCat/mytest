@@ -7,6 +7,20 @@ class StockBillInTypeController extends CommonController {
 		'type' => '单据类型',   
 		'name' =>'类型名称',  
 	);
+    protected $query   = array (
+        'stock_bill_in_type.type' => array (
+            'title' => '单据类型',
+            'query_type' => 'like',
+            'control_type' => 'text',
+            'value' => '',
+        ),
+        'stock_bill_in_type.name' => array (
+            'title' => '类型名称',
+            'query_type' => 'like',
+            'control_type' => 'text',
+            'value' => '',
+        ),
+    );
 	public function _before_index() {
 		$this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
