@@ -814,10 +814,25 @@ class StockLogic{
 		unset($map);
 
 		//变更状态
+		//查询是否有变更状态后的记录
+		$map['wh_id'] = $stock_info['wh_id'];
+		$map['location_id'] = $stock_info['location_id'];
+		$map['pro_code'] = $stock_info['pro_code'];
+		$map['batch'] = $stock_info['batch'];
+		$map['status'] = $params['new_status'];
+		$dest_stock_info = M('Stock')->where($map)->find();
+		unset($map);
+		
+
 		$map['id'] = $stock_info['id'];
 		$save_data['status'] = $params['new_status'];
 		$res = M('Stock')->where($map)->save($save_data);
 		unset($map);
+
+		//如果变更后的状态有记录 则需要合并记录
+		if(!empty($dest_stock_info)){
+			$this->mergeStockInfo(array('src_stock_id'=>$stock_info['id'],'dest_stock_id'=>$dest_stock_info['id']));
+		}
 
 		if($res){
 			//写入库存交易日志
@@ -867,5 +882,52 @@ class StockLogic{
 		}
 
 		return array('status'=>1);
+	}
+
+	/**
+	* 合并两条相同的记录 库存量相加
+	* 条件：wh_id location_id pro_code batch status 全部相等
+	* @param
+	* $params = array(
+	*	'src_stock_id' => xxxx,
+	* 	'dest_stock_id' => xxxx,
+	* );
+	*/
+	public function mergeStockInfo($params){
+		if(empty($params['src_stock_id']) || empty($params['dest_stock_id'])){
+			return false;
+		}
+
+		//根据 src_stock_id dest_stock_id 获得库存记录
+		$map['id'] = $params['src_stock_id'];
+		$src_stock_info = M('Stock')->where($map)->find();
+		unset($map);
+
+		$map['id'] = $params['dest_stock_id'];
+		$dest_stock_info = M('Stock')->where($map)->find();
+		unset($map);
+
+		//判断wh_id location_id pro_code batch status 是否全部相等
+		if($src_stock_info['wh_id'] != $dest_stock_info['wh_id'] || 
+			$src_stock_info['location_id'] != $dest_stock_info['location_id'] || 
+			$src_stock_info['pro_code'] != $dest_stock_info['pro_code'] || 
+			$src_stock_info['batch'] != $dest_stock_info['batch'] || 
+			$src_stock_info['status'] != $dest_stock_info['status']
+			){
+			return false;
+		}
+
+		//如果全部相等 则将src合并到dest里面 同时删除src记录
+		$map['id'] = $dest_stock_info['id'];
+		$data['stock_qty'] = $src_stock_info['stock_qty'] + $dest_stock_info['stock_qty'];
+		M('Stock')->where($map)->save($data);
+		unset($map);
+
+		//删除src记录
+		$map['id'] = $src_stock_info['id'];
+		M('Stock')->where($map)->delete();
+		unset($map);
+		
+		return true;
 	}
 }
