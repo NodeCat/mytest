@@ -70,6 +70,6 @@ class ProductController extends AuthController {
 
         layout(false);
         $this->assign($data);
-        $this->display('Productbarcode:print'.$type);
+        $this->display('ProductBarcode:print'.$type);
     }
 }
