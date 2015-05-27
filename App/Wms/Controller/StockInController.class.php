@@ -304,6 +304,7 @@ class StockInController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true'),
         );
         
     }
