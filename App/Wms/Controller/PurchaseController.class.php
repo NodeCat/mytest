@@ -131,6 +131,18 @@ class PurchaseController extends CommonController {
         );
     }
 	protected function before_add(&$M) {
+		$pros = I('pros');
+
+		//检查采购记录数
+		if(count($pros['pro_code']) == 1){
+			$this->msgReturn(0,'请至少采购一个产品');
+		}
+		//检查采购数量
+		foreach($pros['pro_qty'] as $pro_qty){
+			if($pro_qty == 0){
+				$this->msgReturn(0,'采购数量不能为0');
+			}
+		}
 		$M->type = 'purchase';
 		$M->code = get_sn('purchase');
 		$M->price_total = 0;
