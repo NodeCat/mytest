@@ -89,6 +89,7 @@ class StockInController extends CommonController {
 			$code = I('post.code');
 			$id = I('post.id');
 			$type = I('post.t');
+			//扫描SKU编号
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
 				$res = $A->getOnQty($id,$code);
@@ -105,11 +106,13 @@ class StockInController extends CommonController {
 				}
 			}
 		
+			//上架数量 库位
 			if($type == 'input_qty') {
 				$qty = I('post.qty');
 				$location = I('post.location');
 				$status = I('post.status');
 
+				//上架逻辑
 				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
 				if($res['res'] == true) {
 					//有一件商品上架 更新到货单状态为 已上架
@@ -132,6 +135,7 @@ class StockInController extends CommonController {
 					$this->msgReturn(0,'上架失败。'.$res['msg']);
 				}
 			}
+			//扫描入库单号
 			if($type == 'scan_incode') {
 				$map['is_deleted'] = 0;
 				$map['code'] = $code;

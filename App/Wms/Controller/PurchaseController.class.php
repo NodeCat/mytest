@@ -371,6 +371,7 @@ class PurchaseController extends CommonController {
 			//$v['type'] = 'in';
 			$v['refer_code'] = $bill['code'];
 			$v['pid'] = $val['pid'];
+			$v['price_unit'] = $val['price_unit'];
 			$bill['detail'][] = $v;
 		}
 
