@@ -2,6 +2,13 @@
 namespace Wms\Controller;
 use Think\Controller;
 class StockInController extends CommonController {
+    public function __construct(){
+        parent::__construct();
+        if(IS_GET && ACTION_NAME == 'add'){
+            $stock_type = M('stock_bill_in_type');
+            $this->stock_in_type = $stock_type->select();
+        }
+    }
 	protected $filter = array(
 		'type' => array(
 			'purchase' => '采购入库'
@@ -39,7 +46,7 @@ class StockInController extends CommonController {
 			'query_type' => 'like',     
 			'control_type' => 'text',     
 			'value' => 'Company.id,name',   
-		),   
+		),  
 		
 		'stock_bill_in.wh_id' =>    array (     
 			'title' => '仓库',     
@@ -295,7 +302,7 @@ class StockInController extends CommonController {
 	}
 	protected function before_index() {
         $this->table = array(
-            'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
+            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => false, 
@@ -304,6 +311,9 @@ class StockInController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+        );
+        $this->toolbar = array(
+        	    array('name' => 'add', 'show' => true, 'new' => 'true'),
         );
         
     }
@@ -383,5 +393,77 @@ class StockInController extends CommonController {
     	layout(false);
     	$this->assign($data);
     	$this->display('StockIn:print');
+    }
+    
+    /**
+     * 手动创建入库单
+     * (初始化入库数据 写入操作由父类add方法完成)
+     * @param object $M stockin模型（操作数据表stock_bill_in）
+     */
+    public function before_add(&$M) {
+        $M->code = get_sn('in'); //入库单号
+        //$M->type = 'purchase'; //类型
+        $M->batch_code = 'batch' . NOW_TIME; //批次
+        $M->updated_time = date('Y-m-d H:i:s', time()); //更新时间
+        $M->created_user = session()['user']['uid']; //创建管理员
+        $M->updated_user = session()['user']['uid']; //更新管理员
+        $M->status = 21; //状态 21待入库
+        if (empty(I('post.refer_code'))) {
+            $M->refer_code = '';
+        }
+    }
+    
+    /**
+     * 手动创建入库单（自动生成入库详情单）
+     * @param int $id 入库单id
+     * (操作数据表 stock_bill_in_detail)
+     */
+    public function after_add($id) {
+        $pros = I('pros'); //入库单详情数据
+        //去除隐藏域
+        unset($pros[0]);
+        if (empty($pros)) {
+            //没有产品被添加
+            $this->msgReturn(false, '没有添加产品');
+        }
+        //获取采购单id
+        $stock_in = D('stock_bill_in');
+        $where = array('id' => $id);
+        $stock_info = $stock_in->field('code, wh_id')->where($where)->find();
+        //叠加相同产品
+        $new_pros = array();
+        foreach ($pros as $key => $value) {
+            if (!isset($new_pros[$value['pro_code']])) {
+                $new_pros[$value['pro_code']] = $value;
+            } else {
+                $new_pros[$value['pro_code']]['pro_qty'] = $value['pro_qty'] + $new_pros[$value['pro_code']]['pro_qty'];
+            }
+        }
+        
+        //生成入库详情单
+        $stock_detail = D('StockBillInDetail');
+        $detail = array();
+        foreach ($new_pros as $val) {
+            $detail['wh_id'] = $stock_info['wh_id'];
+            $detail['pid'] = $id;
+            $detail['refer_code'] = $stock_info['code'];
+            $detail['pro_code'] = $val['pro_code'];
+            $detail['pro_name'] = $val['pro_name'];
+            $detail['pro_attrs'] = $val['pro_attrs'];
+            $detail['expected_qty'] = $val['pro_qty'];
+            $detail['pro_uom'] = $val['pro_uom'];
+            $detail['prepare_qty'] = 0;
+            $detail['done_qty'] = 0;
+            $detail['receipt'] = 0;
+            $detail['created_user'] = session()['user']['uid'];
+            $detail['updated_user'] = session()['user']['uid'];
+            $detail['created_time'] = date('Y-m-d H:i:s', time());
+            $detail['updated_time'] = date('Y-m-d H:i:s', time());
+            
+            if ($stock_detail->create($detail)) {
+                $stock_detail->add();
+            }
+        }
+        $this->msgReturn(true, '操作成功', '', 'Stock/index');
     }
 }
