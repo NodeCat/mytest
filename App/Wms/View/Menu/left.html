@@ -1,24 +1,26 @@
 {__NOLAYOUT__}
 <div class='sidebar-nav'>
 <div class="tab-content">
-<volist name="menu[1]" id="vo" empty="" >
-<eq name="pid" value="$vo.pid">
-		<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
-<else/>
-<neq name="i" value="1">
+<volist name="menu[1]" id="m1" key="pid">
+<div class='tab-pane' id="tab_{$key}">
+	<div class="list-group">
+
+<volist name="m1" id="vo" empty="" >
+	<eq name="vo['show']" value="1">
+		<empty name="vo['link']">
+			<span id="nav_link_{$vo['id']}" class="list-group-item disabled"><i class="glyphicon glyphicon-chevron-u"></i>{$vo['name']}</span>
+			<volist name="menu[2][$vo['id']]" id ="m2">
+			<a id="nav_link_{$m2['id']}" href="{:strpos($m2['link'], 'http')===false?U($m2['link']):$m2['link']}" target="{$m2['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{$m2['name']}</a>
+		</volist>
+			<else/>
+			<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
+		</empty>
+	</eq>
+</volist>
 	</div>
 </div>
-</neq>
-	<div class='<eq name="i" value="1">tab-pane<else/>tab-pane</eq>' id="tab_{$vo.pid}">
-	  <div class="list-group">
-			<a id="nav_link_{$vo['id']}" href="{:strpos($vo['link'], 'http')===false?U($vo['link']):$vo['link']}" target="{$vo['target']}" class="list-group-item"><i class="glyphicon glyphicon-chevron-right"></i>{$vo['name']}</a>
-</eq>
-	<assign name="pid" value="$vo.pid" />
 </volist>
-<notempty name="menu[1]">
-		</div>
-	</div>
-</notempty>
+
 </div>
 </div>
 <script>
@@ -27,9 +29,11 @@
   	left_cur.closest('.tab-pane').addClass('active');
 	left_cur.addClass("active");
 	left_cur.children('i').addClass('icon-white');
+	$("#nav_link_{$menu['pid']},#nav_link_{$menu['ppid']}").parent('li').addClass('active');
   	var cur=$(".content a[href='{:U(CONTROLLER_NAME.'/'.ACTION_NAME)}']");
     cur.closest('.tab-pane').addClass('active');
 	cur.addClass("active");
+	
 	cur.children('i').addClass('icon-white');
 	$('#nav-tab a[href="{:U(CONTROLLER_NAME.'/'.ACTION_NAME)}"]').parent('li').addClass('active');
   })

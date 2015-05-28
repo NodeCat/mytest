@@ -1,23 +1,36 @@
 <?php
+function getField($table,$fields,$condition=null){
+  $data=M($table)->where($condition)->getField($fields);
+  return $data;
+}
+function match($table,$field,$fields){
+  $id=I('q');
+  $map[$field] = array('like','%'.$id.'%');
+  $data = getField($$table,$fields,$map);
+  return json_encode($data);
+}
 function set_session($uid){
     $uid =$uid;
     $user = M('User')->find($uid);
-    /*
+    
     $user_roles = M()
         ->table('auth_user_role ur')
         ->join("auth_role r on ur.role_id=r.id")
         ->where("ur.user_id='$uid' and r.status='1'")
         ->field('r.id')->select();
+
     foreach ($user_roles as $value) {
         $roles[] = $value['id'];
     }
-    *
+    
     $roles = implode('_', $roles);
+    
     /* 记录登录SESSION和COOKIES */
     $auth = array(
         'uid'             => $user['id'],
         'username'        => $user['nickname'],
         'role'            => $roles,
+        'wh_id'           => 1,
     );
 
     session('user', $auth);
@@ -88,3 +101,66 @@ function validator($vo){
 
         return $type;
     }
+
+function where_array_to_str($where = array(), $relation = 'AND'){
+    if(empty($where)){
+        return false;
+    }
+    
+    foreach($params['where'] as $condition => $val){
+        $where_str .= $condition.' = '.$val.' '.$relation.' ';
+    }
+    
+    $where_str = substr($where_str, 0, strlen($where_str) - 4);
+    
+    return $where_str;
+}
+
+//英文转中文
+function en_to_cn($str){
+    $filter = array(
+        'qualified' => '合格',
+        'unqualified' => '残次',
+        'freeze' => '冻结',
+        'in' => '收货',
+        'on' => '上架',
+        'move_location' => '库存移动',
+        'move' => '库存移动',
+        'inventory' => '盘点',
+        'change_status' => '状态调整',
+        'noinventory' => '未盘点',
+        'inventorying' => '盘点中',
+        'confirm' => '待确认',
+        'closed' => '已作废',
+        'fast' => '快速盘点',
+        'again' => '复盘',
+        'status' => '状态调整',
+        );
+
+    return $filter[$str];
+}
+
+//中文转英文
+function cn_to_en($str){
+    $filter = array(
+        '盘点' => 'inventory',
+        '库存移动' => 'move',
+        '收货' => 'in',
+        '上架' => 'on',
+        '库存移动' => 'move_location',
+        );
+
+    return $filter[$str];
+}
+
+//根据单号返回单据中文类型
+function get_type_by_bill($bill_code){
+    if(strstr($bill_code,'PD')){
+        $type = '盘点单';
+    }
+    if(strstr($bill_code,'STOCK')){
+        $type = '状态调整';
+    }
+
+    return $type;
+}

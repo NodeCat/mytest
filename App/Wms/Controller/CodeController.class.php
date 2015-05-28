@@ -157,7 +157,6 @@ class CodeController extends CommonController {
 		$this->data = $data;
 	}
 	public function auto() {
-		//dump(filemtime('index.php'));exit();
 		$module=I('name','menu');
         $M=M($module);
         $this->module=$module;
@@ -213,27 +212,53 @@ class CodeController extends CommonController {
                     ."<td></td></tr>";
 		$this->msgReturn(1,'添加成功',$data);
 	}
-	public function index($refresh=true){
+	public function setting(){
+        $table = 'module_table';
+        if(IS_POST){
+            $M =M('module_column');
+            $data=$_POST["query"];
+            foreach ($data as $k => $v) {
+                $data[$k]['id']=$v['id'];
+                $data[$k]['title']=$v['title'];
+                if ($v['query_able']==='on')
+                    $data[$k]['query_able']=true;
+                else
+                    $data[$k]['query_able']=false;
+                if ($v['list_show']==='on')
+                    $data[$k]['list_show']=true;
+                else
+                    $data[$k]['list_show']=false;
+                //if ($v['add_show']==='on')
+                //    $data[$k]['add_show']=true;
+                //else
+                //    $data[$k]['add_show']=false;
+                $result=$M->save($data[$k]);
+            }
+            R('Code/build_config',array(MODULE_NAME,$table));
+            $this->msgReturn(1);
+        }
+        else{
+            $M =M('module_column');
+            $map['module']=$table;
+            $this->data=$M->where($map)->order('list_order')->select();
+            $this->display('Code:setting');
+
+        }
+       
+    }
+	public function index($refresh=false){
 		$M= M('Module_table');
 		$count=$M->count();
 		$table_detail=$M->query('SHOW TABLE STATUS');
-        if($refresh)$M->where("name!=''")->setField('status','0');
-        if($refresh){$M->where("status='0'")->delete();}
+        //if($refresh)$M->where("name!=''")->setField('status','0');
+        //if($refresh){$M->where("status='0'")->delete();}
 		foreach ($table_detail as $k => $v) {
 			$data[$k]['name'] 			= $v['name'];
 			$data[$k]['title']			=$v['comment'];
 			$data[$k]['module']			= ucwords($v['name']);
-			$data[$k]['group']			= 'Wms';
+			$data[$k]['group']			= MODULE_NAME;
 			$data[$k]['build']			=0;
 			$data[$k]['status']			='1';
-			if($refresh && $count!=='0')
-				$result = $M->add($data[$k]);
-		}
-		if($count==='0') {$M->addAll($data);}
-		$data=array();
-		foreach ($table_detail as $k => $v) {
-			$data[$k]['name'] 			=$v['name'];
-			$data[$k]['title']			=$v['comment'];
 			$data[$k]['rows']			=$v['rows'];
 			$data[$k]['engine']			=$v['engine'];
 			$data[$k]['collation']		=$v['collation'];
@@ -241,11 +266,17 @@ class CodeController extends CommonController {
 			$data[$k]['index_length']	=$v['index_length'];
 			$data[$k]['create_time']	=$v['create_time'];
 			$data[$k]['update_time']	=$v['update_time'];
-			$M->save($data[$k]);
+			$res = $M->field('name')->find($v['name']);
+			if(empty($res)) {
+				$M->add($data[$k]);
+			}else {
+				$M->save($data[$k]);
+			}
+			
 		}
 		$this->get_refer();
 		$this->showpk=1;
-    	$this->page($M);
+    	$this->mpage($M);
 	}
 
 	public function _before_index (){
@@ -464,8 +495,9 @@ class CodeController extends CommonController {
 
 	protected function get_refer(){
 		$M=M('module_refer');
+		$db = C('DB_NAME');
 		$data=$M->query("select TABLE_NAME module,COLUMN_NAME fk,REFERENCED_TABLE_NAME module_refer,REFERENCED_COLUMN_NAME pk from INFORMATION_SCHEMA.KEY_COLUMN_USAGE 
-					where TABLE_SCHEMA='commlib' and REFERENCED_TABLE_SCHEMA='commlib' and POSITION_IN_UNIQUE_CONSTRAINT=1"
+					where TABLE_SCHEMA='".$db."' and REFERENCED_TABLE_SCHEMA='".$db."' and POSITION_IN_UNIQUE_CONSTRAINT=1"
 		);
 		$pk = $M->getPk();
 
@@ -557,7 +589,7 @@ class CodeController extends CommonController {
         $msg=$result?'Success':'Fail';
         $this->redirect('Code/edit',array('name' => $module),2,$msg);
 	}
-	protected function mapping_save(){ 
+	public function mapping_save(){ 
      	 
      	$data=I();
      	unset($data['_URL_']);
@@ -589,11 +621,13 @@ class CodeController extends CommonController {
 
 	public function view(){
 		$M=M('module_table');
+
 		$this->pk=$M->getPk();
 		$this->modules = $M->getField($M->getPk(),true);
 		$module=I($M->getPk());
 		$result=$M->find($module);
-		
+		$A= A('Code');
+        $A->build_config(MODULE_NAME,$module);
 		if(!empty($result)){
 			$this->group=$result['group'];
 			$M=M('module_column');
@@ -604,11 +638,13 @@ class CodeController extends CommonController {
 			$this->refers=$M->where("module='%s'",$module)->getField('fk,pk,id,module,module_refer,field_show');
 			$this->module = ucwords($module);
 			layout(false);
+			$this->view_show=$this->fetch('view');
 			$this->add_show= $this->fetch('add');
 			$this->edit_show=$this->fetch('edit');
+			$this->view= htmlentities($this->view_show,ENT_NOQUOTES,"utf-8");
 			$this->add= htmlentities($this->add_show,ENT_NOQUOTES,"utf-8");
 			$this->edit=htmlentities($this->edit_show,ENT_NOQUOTES,"utf-8");
-			$this->action=htmlentities($this->fetch('controller'),ENT_NOQUOTES,"utf-8");
+			
 			$data=$this->data;
 			foreach ($data as $key => $v) {
 				if($v['insert_able']==1 || $v['pk']=='PRI'){
@@ -623,7 +659,7 @@ class CodeController extends CommonController {
 			}
 
 			$M=M('module_table');
-			$module=$name;
+			//$module=$name;
 			$result=$M->getByModule($module);
 			$data['validate']=$result['validate'];
 			$data['auto']=$result['auto'];
@@ -646,10 +682,19 @@ class CodeController extends CommonController {
 			$this->data=$data;
 			$this->model=htmlentities($this->fetch('model'),ENT_NOQUOTES,"utf-8");
 			$M=M($module);
-			$this->data=$M->limit(10)->select();
+			$this->data=$M->limit(1)->select();
 			$this->module   = $module;
-	        $this->columns  = C("columns.".$module);
-	        $this->query    = C("query.".$module);
+			$set = get_setting($module);
+			$conf['columns']  = var_export($set['list'],true);
+	        $conf['query']    = var_export($set['query'],true);
+	        $this->columns = $conf['columns'];
+	        $this->query = $conf['query'];
+	        $data = $this->data;
+	        $this->data = $set;
+	        $this->action=htmlentities($this->fetch('controller'),ENT_NOQUOTES,"utf-8");
+	        $this->data = $data;
+	        $this->columns = $set['list'];
+	        $this->query = $set['query'];
 	        $this->toolbar_tr =array(
     	  		'view',
     	  		'edit',
@@ -659,8 +704,8 @@ class CodeController extends CommonController {
     	  	$M=M('module_table');
 			$this->pk=$M->getPk();
 		}
-
-		$this->display();
+		layout(!IS_AJAX);
+		$this->display('preview');
 	}
 
 	public function build_all(){
@@ -711,22 +756,26 @@ class CodeController extends CommonController {
 		
 		$this->build_tpl($group,$module);
 		$this->build_model($group,$module);
+		$this->build_config($group,$module);
 		$this->build_action($group,$module);
+		
 		exit();
-		//$this->build_config($group,$module);
 	}
 	protected function build_tpl($group,$module){
 		$path = APP_PATH."$group/View/$module/";
-		//if(!file_exists($path)){
-    	//    mkdirs($path);
-    	//}
+		if(!file_exists($path)){
+    	    mkdirs($path);
+    	}
     	layout(false);
-    	$file = "add.html";
+    	$file = "view.html".$this->ext;
+		$content=$this->fetch('view');dump($content);
+		file_put_contents($path.$file, $content);
+    	$file = "add.html".$this->ext;
 		$content=$this->fetch('add');dump($content);
-		//file_put_contents($path.$file, $content);
-		$file = "edit.html";
+		file_put_contents($path.$file, $content);
+		$file = "edit.html".$this->ext;
 		$content=$this->fetch('edit');dump($content);
-		//file_put_contents($path.$file, $content);
+		file_put_contents($path.$file, $content);
 	}
 	protected function build_model($group,$module){
 		$insert_fields=array();
@@ -755,7 +804,16 @@ class CodeController extends CommonController {
 		$refers=$this->refers;
 		foreach ($refers as $key => $v) {
 			$scope[]='"inner join '.$v['module_refer'].' on '.$v['module'].'.'.$v['fk'].'='.$v['module_refer'].'.'.$v['pk'].' '.$v['condition'].'"';
-			$refer_fields[]=$v['module_refer'].'.'.$v['field_show'];
+			$fs = explode(',',$v['field_show']);
+			if(is_array($fs)) {
+				foreach ($fs as $k => $value) {
+					$refer_fields[]=$v['module_refer'].'.'.$value.' as '.$v['module_refer'].'_'.$value;
+				}
+			}
+			else{
+				$refer_fields[]=$v['module_refer'].'.'.$v['field_show'].' as '.$v['module_refer'].'_'.$v['field_show'];
+			}
+			
 		}
 		if(count($scope)>0){
 			$data['scope']='"join"=>array('.implode(",", $scope)."),\n";
@@ -806,48 +864,66 @@ class CodeController extends CommonController {
     	    mkdirs($path);
     	}
     	layout(false);
-		$file=$module."Model.class.php";
+		$file=$module."Model.class.php".$this->ext;
 		$content="<?php\n".$this->fetch('model');
 		dump($content);
-		//file_put_contents($path.$file, $content);
+		file_put_contents($path.$file, $content);
 	}
 
 	protected function build_action($group,$module){
 		$path=APP_PATH."$group/Controller/";
-		//if(!file_exists($path)){
-    	//    mkdirs($path);
-    	//}
+		if(!file_exists($path)){
+    	    mkdirs($path);
+    	}
     	layout(false);
-		$file=$module."Controller.class.php";
+		$file=$module."Controller.class.php".$this->ext;
 		$content="<?php\n".$this->fetch('controller');
 		dump($content);
-		//file_put_contents($path.$file, $content);
+		file_put_contents($path.$file, $content);
 	}
-	protected function build_config($group,$module){
+	public function build_config($group,$module){
+		$M=M('module_refer');
+		$refer=$M->where("module='%s'",$module)->getField('fk,pk,id,module,module_refer,field_show');
 		$M=M('module_column');
 		$data = $M->where("module='%s'",strtolower($module))->order('list_order')->select();
-		$M=M('module_refer');
-		$refer = $this->refers;
-
 		$columns=array();
 		$query=array();
 		$join=array();
-		foreach ($this->refers as $key => $v) {
-			$join[$v['fk']]=$v['field_show'];
+		foreach ($refer as $key => $v) {
+			$fs = explode(',',$v['field_show']);
+			if(is_array($fs)) {
+				foreach ($fs as $k => $value) {
+					$join[$v['fk']][]=$v['module_refer'].'_'.$value;
+				}
+			}
+			else{
+				$join[$v['fk']][]=$v['module_refer'].'_'.$v['field_show'];
+			}
 		}
 		foreach ($data as $key => $v) {
 			if($v['list_show']==1 || $v['pk']=='PRI'){
-				if(isset($join[$v['field']]))
-					$columns[$join[$v['field']]]=$v['title'];
-				else
-				$columns[$v['field']]=$v['title'];
+				if(isset($join[$v['field']])) {
+					if(count($join[$v['field']]) == 1 ){
+						$columns[$join[$v['field']][0]]=$v['title'];
+					}else
+					foreach ($join[$v['field']] as $value) {
+						$fk_id = str_replace('_','.',$value);
+						$t = $M->field('title')->find($fk_id);
+						$columns[$value]=$t['title'];
+					}
+				}
+				else{
+					$columns[$v['field']]=$v['title'];
+				}
 			}
-
 			if($v['query_able']==1){
 				if(empty($refer[$v['field']])){
 				 	if($v['control_type']==="select"){
-				 		if(strpos($v['type'],'enum')!==false){
+				 		if(strpos($v['type'],'enum')!=false){
 				 			$value= str_replace("'",'',substr($v['type'],5,-1));
+				 		}
+				 		else{
+				 			$value='';
 				 		}
 				 	}
 				}
@@ -856,7 +932,7 @@ class CodeController extends CommonController {
 			 	elseif($v['control_type']==='getField'){
 			 			$value=ucwords($refer[$v['field']]['module_refer']).'.'.$refer[$v['field']]['pk'].','.$refer[$v['field']]['field_show'];
 			 	}
-				$query[$v['field']]=array(
+				$query[strtolower($module).'.'.$v['field']]=array(
 					'title' => $v['title'], 
 					'query_type'	=>$v['query_type'],		//eq,between,like
 					'control_type'	=>$v['control_type'],	//input select checkboc refer getField
@@ -864,8 +940,18 @@ class CodeController extends CommonController {
 				);
 			}
 		}
-		$this->write_config($group,$module,$columns,'columns');
-		$this->write_config($group,$module,$query,'query');
+		
+		$table = strtolower($module);
+		$map['name'] = $table;
+		unset($data);
+		$data['list'] = var_export($columns, true);
+		$data['query'] = var_export($query, true);
+		$this->columns =$data['list'];
+		$this->query = $data['query'];
+		M('module_table')->where($map)->save($data);
+		
+		//$this->write_config($group,$module,$columns,'columns');
+		//$this->write_config($group,$module,$query,'query');
 	}
 	protected function write_config($group,$module,$value,$type){
 		if($type==='columns' || $type==='query'){
@@ -879,7 +965,7 @@ class CodeController extends CommonController {
 	private $module_table='auth_authority';
 	private $module_folder='Controller';
 	private $module_ext='Controller.class.php';
-
+	private $ext = '.auto';
 	//生成模块结构信息 app/分组/模块/方法
 	public function fetch_module(){
 
@@ -894,12 +980,16 @@ class CodeController extends CommonController {
 		$n=0;
 		$dict=R(MODULE_NAME.'/Dictionary/get_words');
 		$exists = $M->getField('id,url');
-		$data_app[] = array('app' => $app, 'type' => '1', 'name'=>$app,'title'=>isset($dict[$app])?$dict[$app]:$app);
+		$data_app[] = array('app' => $app, 'type' => '1', 'name'=>$app,'title'=> empty($dict[$app])?$app:$dict[$app]);
 		foreach ($groups as $group) {
-			$data_groups[] = array('app' => $app, 'group' =>$group, 'type' => '2','name'=>$group, 'url'=>$group, 'title'=>isset($dict[$group])?$dict[$group] : $group);
+			$data_groups[] = array('app' => $app, 'group' =>$group, 'type' => '2','name'=>$group, 'url'=>$group, 'title'=>empty($dict[$group]) ? $group : $dict[$group]);
 			$modules = $this->getModule($group);
 			foreach ($modules as $module) {
-				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>isset($dict[$module])?$dict[$module]:$module);
+				$in_black_list = auth_module_black_list($module);
+				if($in_black_list){
+					continue;
+				}
+				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
 				$module_name=$group.'/'.$module;
 				$actions = $this->getAction($group, $module);
 				foreach ($actions as $action) {
@@ -909,8 +999,8 @@ class CodeController extends CommonController {
 					$data_actions[$n]['action'] = $action;
 					$data_actions[$n]['type'] 	= '4';
 					$data_actions[$n]['url']  	= $group.'/'.$module.'/'.$action;
-					$data_actions[$n]['url']  	= $module.'/'.$action;
-					$data_actions[$n]['title'] 	= (isset($dict[$action])?$dict[$action]:$action);//(isset($dict[$module])?$dict[$module]:$module).
+					//$data_actions[$n]['url']  	= $module.'/'.$action;
+					$data_actions[$n]['title'] 	= (empty($dict[$action]))?$action:$dict[$action];
 					$data_actions[$n]['name'] 	= $action;
 					++$n;
 				}
@@ -1014,7 +1104,7 @@ class CodeController extends CommonController {
 		foreach ($actions as $action){
 			if(!in_array($action, $inherents_actions)){
 				$func =   $M->getMethod($action);
-                if($func->isPublic()) {
+                if($func->isPublic() && !$func->isProtected()) {
                 	if(substr($action, 0, 1) !='_')
 						$customer_actions[]=$action;
 				}

@@ -1,0 +1,13 @@
+<ol class="breadcrumb">
+  <li><a href="{:U('Pda/index')}">首页</a></li>
+  <li><a href="{:U('__ACTION__')}">{$cur}</a></li>
+  <li class="active">详情</li>
+</ol>
+
+<div class="page-header text-center">
+  <h3>{$title} <small></small></h3>
+</div>
+<notempty name="msg">
+<div class="alert alert-success text-center" role="alert">{$msg}</div>
+</notempty>
+<div class="alert alert-danger text-center hidden" role="alert"></div>

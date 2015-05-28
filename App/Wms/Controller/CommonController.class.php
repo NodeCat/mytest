@@ -3,68 +3,35 @@ namespace Wms\Controller;
 use Think\Controller;
 
 class CommonController extends AuthController {
+
+    //默认显示函数列表
     public function index() {
-    	$this->pk = $M->getPK();
-        $condition = $pill;
-        $condition = I('query');
-        $map=array();
-        if(!empty($condition)){
-            $M = D(CONTROLLER_NAME);
-            $table = $M->tableName;
-            if(empty($table)) {
-                $table = strtolower(CONTROLLER_NAME);
-            }
-            $query = get_setting($table);
-
-            foreach ($query['query'] as $key => $v) {
-                switch ($v['query_type']) {
-                    case 'eq':
-                        $map[$key]=array($v['query_type'],$condition[$key]);
-                        break;
-                    case 'like':
-                        $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
-                        break;
-                    case 'between':
-                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key].'_1');
-                        break;
-                }
-            }
-            $map = queryFilter($map);
-        }
-        else{
-            $condition = I('pill');
-             if(!empty($condition)){
-                $para=explode('&', urldecode($condition));
-                foreach ($para as $key => $v) {
-                    $cond=explode('=', $v);
-                    if(count($cond)===2)
-                        $map[$cond[0]]=$cond[1];
-                }
-            }
-        }
-        $this->page($M,$map);
+        $this->before($map,'index');
+        $this->lists();
     }
-
-    public function _before_index (){
-        $M = D(CONTROLLER_NAME);
-        $table = $M->tableName;
-        if(empty($table)) {
-            $table = strtolower(CONTROLLER_NAME);
-        }
-        $setting = get_setting($table);
-        $this->columns = $setting['list'];
-        $this->query = $setting['query'];
+    //如果需要自定义列表显示，请重写_before_index函数
+    public function _before_index() {
         $this->table = array(
-            'toolbar'   => true,
-            'searchbar' => true, 
-            'checkbox'  => true, 
-            'status'    => true, 
-            'toolbar_tr'=> true
+            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+            'searchbar' => true, //是否显示搜索栏
+            'checkbox'  => true, //是否显示表格中的浮选款
+            'status'    => false, //是否显示状态字段
+            'toolbar_tr'=> true, //是否显示表格内的“操作”列的按钮
+            'statusbar' => false //是否显示状态栏
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false'),
+            array('name'=>'import' ,'show' => !isset($auth['import']),'new'=>'false'),
+            array('name'=>'export' ,'show' => !isset($auth['export']),'new'=>'false'),
+            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => !isset($auth['setting']),'new'=>'false'),
         );
         $this->status =array(
             array(
@@ -72,15 +39,195 @@ class CommonController extends AuthController {
                 array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
             ),
         );
-        $this->status_type='0';
-    }
-    public function _before_view(){
-        
-    }
-    public function view() {
-        $this->display();
     }
 
+    //查询处理函数，根据form上的查询条件返回$map
+    protected function search($query = '') {
+        $this->before($query,'search');//查询前的处理函数
+        $condition = I('query'); //列表页查询框都是动态生成的，名字都是query['abc']
+        $condition = queryFilter($condition); //去空处理
+        $table = get_tablename(CONTROLLER_NAME);
+        $get = I('get.');unset($get['p']);//获取链接中附加的查询条件，状态栏中的按钮url被附带了查询参数
+        //将参数并入$condition
+        foreach ($get as $key => $value) {
+            $param[$table.'.'.$key] = $value;
+            if(!array_key_exists($key, $condition)) {
+                $condition[$table.'.'.$key] = $value;
+            }
+        }
+        $this->condition = $condition;
+        !empty($condition) && $this->filter_list($condition, '1');//反向转义，反向转filter
+        if(!empty($condition)){
+            foreach ($query as $key => $v) {//query是查询条件生成的数组，从query中取出当前提交的查询条件。因此，如果提交了query定义之外的查询条件，是会被过滤掉的
+                if(!array_key_exists($key, $condition)) {
+                    continue;
+                }
+                //查询匹配方式
+                switch ($v['query_type']) {
+                    case 'eq'://相等
+                        $map[$key]=array($v['query_type'],$condition[$key]);
+                        break;
+                    case 'like'://模糊匹配
+                        $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
+                        break;
+                    case 'between'://区间匹配
+                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
+                        break;
+                }
+            }
+        }
+        $condition = I('q');//对状态栏的特殊处理,状态栏中的各种状态按钮实际上是附加了各种status=1 这样的查询条件
+         if(!empty($condition)){
+            $para=explode('&', urldecode($condition));
+            foreach ($para as $key => $v) {
+                $cond=explode('=', $v);
+                if(count($cond)===2)
+                    $map[$table.'.'.$cond[0]]=$cond[1];
+            }
+        }
+        
+        
+        $this->after($map,'search');//查询条件生成以后，这里可以往$map中加入新的查询条件
+        return $map;
+    }
+
+    /* 过滤条件
+    // protect $filter = array(
+    //     'status'=> array(
+    //         '1' => '草稿',
+    //         '2' => '已完成'
+    //     ), 
+    // );
+    */
+    //过滤函数，比如数据表中status值是1，2，3，列表页面中显示的是草稿、审核、已完成
+    protected function filter_list(&$data,$type = '0',$filter = '') {
+        if(!is_array($data)) return;
+        if(empty($filter)){
+            if(empty($this->filter)) {
+                $file = strtolower(CONTROLLER_NAME);
+                $filter = C($file.'.filter');
+            }
+            else {
+                $filter = $this->filter;
+            }
+        }
+        //反向转换
+        if($type == '1') {
+            $table = strtolower(CONTROLLER_NAME);
+            foreach ($filter as $key => $val) {
+                $val = array_flip($val);
+                $filter[$table.'.'.$key] = $val ;
+                unset($filter[$key]);
+            }
+        }
+        else {
+        }
+        //二维数组
+        if(is_array(reset($data))){
+            foreach ($data as $key => $val) {
+                foreach ($filter as $k => $v) {
+                    if(!empty($v[$data[$key][$k]])) {
+                        $data[$key][$k] = $v[$data[$key][$k]];
+                    }
+                }
+            }
+        }
+        else{//一维数组
+            foreach ($filter as $k => $v) {
+                if(!empty($v[$data[$k]])) {
+                    $data[$k] = $v[$data[$k]];
+                }
+            }
+        }
+    }
+
+    //默认获取key,value键值对的方法，主要是在下拉框中显示时的数据源
+    public function get_list($controller,$field = '') {
+        $M = D($controller);
+        $table = $M->tableName;
+        
+        if(empty($table)) {
+            $table = strtolower(CONTROLLER_NAME);
+        }
+        $data = $M->getField($field,true);
+        return $data;
+    }
+
+    //显示数据列表
+    protected function lists($template='') {
+        //先根据控制器名称获取对应的表名
+        $M = D(CONTROLLER_NAME);
+        $table = $M->tableName;
+        
+        if(empty($table)) {
+            $table = strtolower(CONTROLLER_NAME);
+        }
+        $this->pk = $M->getPK();
+        $setting = get_setting($table);//获取该表对应的显示和查询字段
+
+        //如果当前控制器中定义了字段，则优先采用控制器中的定义，为的是项目上线以后，这种配置在文件中生效，放在数据库中可能会丢
+        if(empty($this->columns)) {
+            $this->assign('columns',$setting['list']);
+        }
+        else {
+            $this->assign('columns',$this->columns);
+        }
+        if(empty($this->query)){
+            $this->assign('query',$setting['query']);
+        }
+        else {
+            $this->assign('query',$this->query);
+        }
+        $map = $this->search($this->query);//获取界面上传过来的查询条件
+
+        $p              = I("p",1);
+        $page_size      = C('PAGE_SIZE');
+        $M->scope('default');//默认查询，default中定义了一些预置的查询条件
+
+        if(!empty($map)) {
+            $M->where($map);//用界面上的查询条件覆盖scope中定义的
+        }
+        $this->before($M,'lists');//列表显示前的业务处理
+
+        $M2 = clone $M;//深度拷贝，M2用来统计数量, M 用来select数据。
+        $M->page($p.','.$page_size);//设置分页
+        
+        $data = $M->select();//真正的数据查询在这里生效
+        $count  = $M2->page()->limit()->count();//获取查询总数
+        $this->after($data,'lists');//查询后的业务处理，传入了结果集
+        $this->filter_list($data);//对结果集进行过滤转换
+        $this->data = $data;
+        $maps = $this->condition;
+        $this->page($count,$maps,$template);
+    }
+
+    //引用之前处理模版，隐藏掉不需要的信息
+    public function _before_refer() {
+        $this->refer=I('refer');
+        $this->table = array(
+            'toolbar'   => FALSE,
+            'searchbar' => true, 
+            'checkbox'  => FALSE, 
+            'status'    => FALSE, 
+            'toolbar_tr'=> true
+        );
+        $this->toolbar_tr =array(
+            array('name'=>'refer', 'show' => !isset($auth['refer']),'new'=>'false'), 
+        );
+        $this->status_type='0';
+    }
+
+    public function refer(){
+        $this->before($map,'refer');
+        $this->lists();
+    }
+
+    //查看详情
+    public function view() {
+        $this->edit();
+    }
+
+    //添加
     public function add() {
     	if(IS_POST) {
     		$this->save();
@@ -95,70 +242,94 @@ class CommonController extends AuthController {
     		$this->save();
     	}
     	else {
-            $M = M(CONTROLLER_NAME);
+            $M = D(CONTROLLER_NAME);
     		$pk = $M->getPk();
+            $table = $M->tableName;
+            if(empty($table)) {
+                $table = strtolower(CONTROLLER_NAME);
+            }
 	    	$id=I($pk);
 	      	if(empty($id)){
 	            $this->msgReturn(0,'param_error');
 			}
-	        $map = $M->default_map;
-	        $res = $M->where($map)->find($id);
-
-	        if(!empty($res) && is_array($res)){
-	            //X(CONTROLLER_NAME, $id, $res);
+            $map[$table.'.'.'is_deleted'] = 0; //预置条件
+            $map[$table.'.'.$pk] = $id;
+            $res = $M->scope('default')->where($map)->limit(1)->find();//edit也会走scope,但是不会filter
+	        if(!empty($res) && is_array($res)){//如果查询成功
+                $this->before($res,'edit');//可以在这里写入编辑前的业务
+                if(ACTION_NAME == 'view') {
+                    $this->filter_list($data);//如果是查看，需要filter
+                }
 	            $this->data = $res;
 	        }
 	        else{
-	            $this->msgReturn(0,'not_found');
+                $msg = ' '.$M->getError().' '.$M->_sql();
+	            $this->msgReturn(0,'没有找到该记录，请检查表关联或者纪录状态'.$msg);
 	        }
 	        $this->pk = $pk;
-			$this->display();
+			$this->display(ACTION_NAME);
 		}
     }
 
+    //保存数据，添加时的保存和编辑时的保存都会调用这个函数
     protected function save() {
         $M = D(CONTROLLER_NAME);
         if($M->create()){
-            $this->before($M, 'save');
-            $this->before($M);
-            if(ACTION_NAME === 'add') {
+            $this->before($M, 'save');//before_save无论添加或编辑都会被调用
+            if(ACTION_NAME === 'add') {//添加
+                $this->before($M, 'add');//添加前的逻辑处理
                 $res = $M->add();
             }
-            else {
-                $res = $M->save();
+            else {//编辑
+                $pk = $M->getPk();
+                $map[$pk] = I($pk); 
+                $res = $M->where($map)->save();
             }
-            $this->after($res);
-            $this->after($res, 'save');
             if($res > 0) {
-                $this->msgReturn($res);
+                if(ACTION_NAME === 'add') {//添加成功后
+                    $this->after($res, 'add');
+                }
+                else {
+                    $res = $map[$pk];
+                }
+                $this->after($res, 'save');//保存成功后
+                $this->msgReturn(1);
             }
             else{
-                $this->msgReturn($res);
+                $msg = '保存失败，错误和sql：'.$M->getError().' '.$M->_sql();
+                $this->msgReturn(0,$msg);
             }
         }
         else {
-            $this->error($M->getError());
+            $this->msgReturn(0,$M->getError());
         }
-        $M->where($map)->save($data);
+
     }
 
+    //删除
     public function delete() {
+        $M      =   D(CONTROLLER_NAME);
         $pk     =   $M->getPK();
-    	$ids    =   I($pk);
+    	$ids    =   I($pk);//要删除的主键列表，以逗号分割
         $ids    =   explode(',', $ids);
         $ids    =   array_filter($ids);
         $ids    =   array_unique($ids);
-        $M      =   M(CONTROLLER_NAME);
-        
+        $this->before($ids,'delete');//删除前
         $map[$pk]   =   array('in',$ids);
-        $res = $M->where($map)->delete();
-        $this->msgReturn($result);
+        $data['is_deleted'] = 1;
+        $res = $M->where($map)->save($data);//逻辑删除
+        if($res == true) {
+            $this->after($ids,'delete');//删除后
+        }
+        $this->msgReturn($res);
     }
 
+    //设置要显示的字段和是否是查询条件，开发时使用，线上禁用
     public function setting(){
+        $table = get_tablename();
         if(IS_POST){
             $M =M('module_column');
-            $data=$_POST["query"];
+            $data=I("query");
             foreach ($data as $k => $v) {
                 $data[$k]['id']=$v['id'];
                 $data[$k]['title']=$v['title'];
@@ -176,33 +347,129 @@ class CommonController extends AuthController {
                 //    $data[$k]['add_show']=false;
                 $result=$M->save($data[$k]);
             }
-            R('Code/build_config',array(CONTROLLER_NAME));
-            $this->ajaxReturn(array('data'=>0,'info'=>$result?'Success':'Fail','status'=>$result?'1':'0'));
+            $A= A('Code');
+            $A->build_config(MODULE_NAME,$table);
+            $this->msgReturn(1);
         }
         else{
             $M =M('module_column');
-            $map['module']=CONTROLLER_NAME;
+            $map['module']=$table;
             $this->data=$M->where($map)->order('list_order')->select();
             $this->display('Code:setting');
 
         }
        
     }
+    //excel导入
     public function import() {
-        $info = $this->upload();
-        $data = get_setting(CONTROLLER_NAME);
+        $file = $this->upload();
+
+        $table = get_tablename(CONTROLLER_NAME);
+        $setting = get_setting($table);
+        $columns = $setting['list'];
+        foreach ($columns as $key => $val) {
+            $list[$val] = $key ;
+        }
+
         $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
-        $sheet = $this->get_excel_sheet();
+        
+        import("Common.Lib.PHPExcel");
+        import("Common.Lib.PHPExcel.IOFactory");
+        import("PHPExcel.PHPExcel.Reader.Excel5");  
 
+        $objReader  =  \PHPExcel_IOFactory::createReader('Excel5');
+        $objPHPExcel  =  $objReader->load($file);   
+        $sheet  =  $objPHPExcel->getSheet(0);
+        $rows  =  $sheet->getHighestRow(); // 取得总行数
+        $cols  =  $sheet->getHighestColumn(); // 取得总列数
 
+        //获取关联表中的数据，比如类别表，获取name,id结构的键值对
+        //这样excel中字段值是类别1，那么就被转换成类别1的id
+
+        //读取第一行,将第一行的标题中的中文文字转成数据库中的字段
+        for($i=1,$j = 'A';$j<= $cols;$j++,$i++){
+            $val = trim(iconv('utf-8','gbk',$objPHPExcel->getActiveSheet()->getCell("$j1")->getValue()));
+            if($val == "") {
+               continue;
+            }
+            else {
+                if(array_key_exists($val, $list)) {
+                    $columns[$i] = $list[$val];
+                }
+            }
+        }
+        //遍历数据
+        for($i = 2;$i<= $rows;$i++) {
+            for($k=1,$j = 'A';$j<= $cols;$j++,$k++){
+                $val = trim(iconv('utf-8','gbk',$objPHPExcel->getActiveSheet()->getCell("$j$i")->getValue()));
+                if(array_key_exists($k, $columns)) {
+                    $data[$i][$columns[$k]] = $val;    
+                }
+                
+            }
+        }
+        $this->after($data,'import');//导入后
+        unset($rows);
+        $i = 2;
+        $M = D(CONTROLLER_NAME);
+        foreach ($data as $row) {
+            $row = $M->create($row);
+            $res = $M->add($row);
+            if($res < 1) {
+                $fail[] = $i;
+                $fail_msg = $M->getError();
+            }
+            else {
+                $success[] = $i;
+            }
+            ++$i;
+        }
+        $i = count($fail);
+        $j = count($success);
+        $msg = '成功：'.$j.'条。';
+        if($i > 0) {
+            $msg .= ' 失败：'.$i.'条。最后一条导入失败的错误信息是：'.$fail_msg.'。其中导入失败的行数：'.implode(',', $fail).'。';
+        }
+        $this->msgReturn(1,'导入完成。'.$msg);
     }
 
+    //上传，导入时的前置页面
+    protected function upload(){
+        if(IS_POST) {
+            $upload_path = RUNTIME_PATH;
+            $config = array(
+                'maxSize'    =>    10241024,//C('MAX_UPLOAD_FILE_SIZE'),
+                'rootPath'   =>    $upload_path,
+                'savePath'   =>    '',
+                'saveName'   =>    array('uniqid',''),
+                'exts'       =>    array('jpg', 'gif', 'png', 'jpeg','xls','doc','xlsx','docx'),
+                'autoSub'    =>    false,
+                'subName'    =>    array('date','Ymd'),
+            );
+            $upload = new \Think\Upload($config);
+            $info   =   $upload->upload();
+            if(!$info) {
+                $this->msgReturn(0,$upload->getError());
+            }else{
+                foreach ($info as $v) {
+                    $files[]=$upload_path.$v['savepath'].$v['savename'];
+                }
+                return $files;
+            }
+        }
+        else {
+            $this->display('Index:upload');
+            exit();
+        }
+    }
+    //导出
     public function export() {
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel(); 
         $i = 1;
-        $res = get_setting(CONTROLLER_NAME);
+        $table = get_tablename(CONTROLLER_NAME);
+        $res = get_setting($table);
         $columns = $res['list'];
         $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
         $Sheet = $this->get_excel_sheet($Excel);
@@ -212,8 +479,8 @@ class CommonController extends AuthController {
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
-        $M  =  M(CONTROLLER_NAME);
-        $result = $M->select();
+        $M  =  D(CONTROLLER_NAME);
+        $result = $M->scope('default')->select();
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;
             foreach ($columns as $key  => $value){
@@ -240,6 +507,7 @@ class CommonController extends AuthController {
         $objWriter->save('php://output');
         
     }
+
     protected function get_excel_sheet(&$Excel) {
         $Excel->getProperties()
         ->setCreator("Dachuwang")
@@ -257,153 +525,73 @@ class CommonController extends AuthController {
         $Sheet->getDefaultStyle()->getFont()->setSize(13);
         return $Sheet;
     }
-
-    public function upload(){
-        import('ORG.Net.UploadFile');
-        $upload             = new UploadFile();
-        $upload->maxSize    = C('MAX_UPLOAD_FILE_SIZE');
-        $upload->allowExts  = array('jpg', 'gif', 'png', 'jpeg','xls','doc');
-        $upload->savePath   = __PUBLIC__.'/Upload/';
-        if(!$upload->upload()) {
-            $this->error($upload->getErrorMsg());
-            return null;
-        }else{
-            return $info;
-            $info = $upload->getUploadFileInfo();
-            $this->import($info);
-        }
-    }
-    function file_download($file, $name, $mime_type='') {
-    if(!is_readable($file)) die('File not found or inaccessible!');
-
-    $size = filesize($file);
-    $name = rawurldecode($name);
-
-    /* Figure out the MIME type (if not specified) */
-    $known_mime_types = get_known_mime_types();
-
-    if($mime_type==''){
-        $file_extension = strtolower(substr(strrchr($file,"."),1));
-
-        if(array_key_exists($file_extension, $known_mime_types)){
-            $mime_type=$known_mime_types[$file_extension];
-        } else {
-            $mime_type="application/force-download";
-        }
-    }
-
-    @ob_end_clean(); //turn off output buffering to decrease cpu usage
-
-    // required for IE, otherwise Content-Disposition may be ignored
-    if(ini_get('zlib.output_compression')) {
-        ini_set('zlib.output_compression', 'Off');
-    }
-
-    header('Content-Type: ' . $mime_type);
-    header('Content-Disposition: attachment; filename="'.$name.'"');
-    header("Content-Transfer-Encoding: binary");
-    header('Accept-Ranges: bytes');
-
-    /* The three lines below basically make the download non-cacheable */
-    header("Cache-control: private");
-    header('Pragma: private');
-    header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-
-    // multipart-download and download resuming support
-    if(isset($_SERVER['HTTP_RANGE'])) {
-        list($a, $range) = explode("=",$_SERVER['HTTP_RANGE'],2);
-        list($range) = explode(",",$range,2);
-        list($range, $range_end) = explode("-", $range);
-        $range=intval($range);
-
-        if(!$range_end) {
-            $range_end=$size-1;
-        } else {
-            $range_end=intval($range_end);
-        }
-
-        $new_length = $range_end-$range+1;
-
-        header("HTTP/1.1 206 Partial Content");
-        header("Content-Length: $new_length");
-        header("Content-Range: bytes $range-$range_end/$size");
-    } else {
-        $new_length=$size;
-        header("Content-Length: ".$size);
-    }
-
-    /* output the file itself */
-    $chunksize = 1*(1024*1024); // 1MB, can be tweaked if needed
-    $bytes_send = 0;
-
-    if ($file = fopen($file, 'r')) {
-        if(isset($_SERVER['HTTP_RANGE'])) {
-            fseek($file, $range);
-        }
-
-        while(!feof($file) && (!connection_aborted()) && ($bytes_send<$new_length)) {
-            $buffer = fread($file, $chunksize);
-            print($buffer); //echo($buffer); // is also possible
-            flush();
-            $bytes_send += strlen($buffer);
-        }
-
-        fclose($file);
-    } else {
-        die('Error - can not open file.');
-    }
-
-    die();
-}
+   
+    //访问不存在的方法时
     public function _empty($action){
        $this->error('unknown',U('index'));
     }
-    private function before(&$data, $func_name = '') {
+    //前置函数钩子
+    protected function before(&$data, $func_name = '') {
     	$func = 'before_' . (empty($func_name) ? ACTION_NAME : $func_name);
 		if(method_exists($this, $func)){
             $this->$func($data);
         }
     }
-    private function after(&$res, $func_name = '') {
+    //后置函数钩子
+    protected function after(&$res, $func_name = '') {
     	$func = 'after_' . (empty($func_name) ? ACTION_NAME : $func_name);
 		if(method_exists($this, $func)){
             $this->$func($res);
         }
     }
-    protected function msgReturn($res, $msg='', $data = null){
-        $msg = empty($msg)?(empty($res)?'操作成功':'操作失败'):$msg;
+    //统一的返回方法
+    protected function msgReturn($res, $msg='', $data = '', $url=''){
+        $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
-            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data' => $data));
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
         }
-        else if($result){ 
-                $this->success('操作成功');
+        else if($res){ 
+                $this->success($msg,$url);
             }
             else{
-                $this->error('操作失败');
+                $this->error($msg,$url);
             }
+        exit();
     }
-    protected function page(&$select,$map='',$template){
-        $p              = I("p");
-        if(empty($p))$p = 1;
+    //旧版的分页函数，主要是为了兼容旧代码
+    protected function mpage($M, $map='',$template){
+        $p              = I("p", 1);
         $page_size      = C('PAGE_SIZE');
-        if(isset($select)){
-            if($nopage){
-                $this->data = $select->where($map)->select();
-            }
-            else{
-                $this->data = $select->where($map)->page($p.','.$page_size)->select();
-                $count  = $select->where($map)->count();
-            }
-        }
 
+        $map_default['is_deleted'] = 0; 
+        $M = $M->scope('default')->page($p.','.$page_size)->where($map)->where($map_default)->order($M->getPk().' desc');
+        $data = $M->select();
+        $this->data = $data;
+        $count  = $M->scope('default')->where($map)->where($map_default)->count();
         $target = "table-content";
         $pagesId = 'page';
-        import("@.Lib");
-        $Page = new \Wms\Lib\Page($count, $page_size, $map,$target, $pagesId);
+        import("Common.Lib.Page");
+        $Page = new \Common\Lib\Page($count, $page_size, $map,$target, $pagesId);
         $this->page     = $Page->show();
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;
         if(empty($template)){
+           $template= IS_AJAX ? 'Table:list':'Table:index';
+        }
+        $this->display($template);
+    }
+    //分页函数，具体请参考手册
+    protected function page($count, $map='',$template=''){
+        $p              = I("p", 1);
+        $page_size      = C('PAGE_SIZE');
+        $target = "table-content";
+        $pagesId = 'page';
+        import("Common.Lib.Page");
+        $Page = new \Common\Lib\Page($count, $page_size, $map,$target, $pagesId);
+        $this->page     = $Page->show();
+        $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
+        $this->jump_url = $Page->jump_url;
+        if(empty($template)){//这里根据是否ajax显示不同的模版
            $template= IS_AJAX ? 'Table:list':'Table:index';
         }
         $this->display($template);

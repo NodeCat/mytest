@@ -1,0 +1,47 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="{:U('edit')}" method="post" id='form'>
+    <input type="hidden" name="{$pk}" value="{$data[$pk]}" />
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="name">名称</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.name}" name="name" id="name" placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="contact">联系人</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.contact}" name="contact" id="contact" placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="email">邮箱</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.email}" name="email" id="email" placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="mobile">电话</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.mobile}" name="mobile" id="mobile" placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="street">地址</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.street}" name="street" id="street" placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+    <div class="form-group ">
+        <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="description">备注</label>
+        <div class="col-lg-5 col-sm-5 col-xs-5">
+                        <input type="text" class="form-control {required:true,maxlength:200,}"  value="{$data.description}" name="description" id="description" placeholder="">
+        </div>
+        <label class="control-label col-lg-4" for=""></label>
+    </div>
+</form>
+</div>

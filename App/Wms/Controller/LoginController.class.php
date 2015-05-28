@@ -10,19 +10,30 @@ class LoginController extends Controller {
             exit();
         }
     }
+
     public function index($username = null, $password = null, $verify = null){
         if(IS_POST){
             /* 检测验证码  */
-            if(!check_verify($verify)){
+            /*if(!check_verify($verify)){
                 $this->error('验证码输入错误！');
-            }
+            }*/
             $this->username=$username;
             $User = D('User','Api');
             $uid = $User->login($username, $password);
             if(0 < $uid){
                 //TODO:跳转到登录前页面
                 set_session($uid);
-                $this->success('登录成功！', 'Index/index',3);
+                $url = I('post.url');
+                if(empty($url)) {
+                    $this->success('登录成功！', 'Index/index',3);
+                }
+                else {
+                    $url = urldecode($url);
+                    if($url == 'Login/index') {
+                        $url = "Index/index";
+                    }
+                    $this->success('登录成功！跳转至登录前界面',$url,3);
+                }
             } else { //登录失败
                 switch($uid) {
                     case -1: $error = '用户不存在或被禁用！'; break; //系统级别禁用
@@ -32,9 +43,22 @@ class LoginController extends Controller {
                 $this->error($error);
             }
         } else {
+            $url = I('get.url');
             if(is_login()){
-                $this->redirect('Index/index');
+                if(empty($url)) {
+                    $this->redirect('Index/index');
+                }
+                else{
+                    $url = urldecode($url);
+                    if($url == 'Login/index') {
+                        $url = "Index/index";
+                    }
+                    redirect($url);
+                }
             }else{
+                if(!empty($url)) {
+                    $this->url = urlencode($url);   
+                }
                 $this->display();
             }
         }
@@ -43,21 +67,23 @@ class LoginController extends Controller {
     public function logout(){
         if(is_login()){
             destory_session();
-            $this->success('退出成功！', U('index'),3);
-        } else {
-            $this->redirect('Login/index');
-        }
+        
+        }//$this->success('退出成功！', U('index'),3);
+        
+        $this->redirect('Login/index');
+        
     }
 
 
     public function verify(){
         $config = array(
-            'imageW' => 360, 
+            'imageW' => 260, 
             'imageH' => 60, 
             'useCurve'=> false,
             'fontSize'=> 28
             );
         $verify = new \Think\Verify($config);
+        ob_clean();
         $verify->entry(1);
     }
 
@@ -122,10 +148,12 @@ class LoginController extends Controller {
          if(!isset($this->msg)){
             $data['password'] = $new;
             $uid = is_login();
-            $Api = new UserApi();
+            //$Api = new UserApi();
+            $Api = A('User','Api');
             $res = $Api->updateInfo($uid, $old, $data);
             if($res['status']){
                 $this->success('修改密码成功！');
+                return true;
             }else{
                 $this->error($this->showRegError($res['info']));
             }

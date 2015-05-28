@@ -1,0 +1,118 @@
+<include file="Pda:nav-cur" />
+<form class="form-horizontal form-pda form-scan" action="{:U('__ACTION__')}" method="POST">
+  <input type="hidden" name="t" value="input_qty" />
+  <input type="hidden" name="id" value="{$id}" />
+  <input type="hidden" name="code" value="{$pro_code}" />
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">入库单编号</label>
+      <label for="code" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$code}</label>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品号</label>
+    <label for="code" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$pro_code}</label>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品名称</label>
+      <label for="pro_names" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$pro_names}</label>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">待上架量</label>
+      <label for="pro_qty" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$moved_qty} {$pro_uom}</label>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">库存状态</label>
+      <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">
+        <select class="form-control" name="status">
+          <option value="qualified">合格状态</option>
+          <option value="unqualified">残次状态</option>
+          <option value ="freeze">冻结状态</option>
+        </select>
+      </div>
+  </div>
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">本次上架量</label>
+    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+      <input autocomplete="off" type="text" class="form-control input-lg  input-pda" value="" id="code" name="qty" placeholder="请输入本次上架数量">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">库位</label>
+    <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+      <input autocomplete="off" type="text" class="form-control input-lg  input-pda" value="" name="location" placeholder="请扫描库位">
+    </div>
+  </div>
+ 
+
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+    <button type="submit" class="btn btn-lg btn-primary  btn-block">确定</button>
+  </div>
+</div>
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12  text-right">
+    <a data-href="{:U('__ACTION__')}" class="btn-return btn btn-lg btn-default btn-block">返回</a>
+  </div>
+</div>
+
+</form>
+<script type="text/javascript">
+$(function(){
+  $('.input-pda').on('focus',function(){
+    $(this).select();
+  });
+  $('#code').focus();
+  $('.form-pda .btn-return').on('click',function(){
+    var addr = $(this).data('href');
+    var params = "t=scan_incode&code={$code}";
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        if(msg.data != '' && msg.data != null ){
+            $('.content').html(msg.data);
+        }
+      }
+    }); 
+    return false;
+  });
+
+  $('.form-pda button[type=submit]').on('click',function(){
+    $(this).prop('disabled', true);
+    var addr,params;
+    params=$(this).parents('form').serialize();
+    addr=$(this).parents('form').attr('action');
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        $('.form-pda button[type=submit]').prop('disabled', false);
+        if(msg.status == 0){
+          alert_error(msg.msg);
+            $('.input-pda').focus();
+        }
+        
+        if(msg.data != '' && msg.data != null ){
+           $('.alert').hide();
+            $('.content').html(msg.data);
+        }
+        if(msg.url != '' && msg.url != null ){
+          setTimeout(function() {document.location=msg.url}, 0);
+        }
+      }
+    }); 
+    return false;
+  });
+  
+});
+</script>

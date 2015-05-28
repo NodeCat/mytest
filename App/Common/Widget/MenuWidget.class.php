@@ -5,7 +5,7 @@ class MenuWidget extends Controller {
     public function getlist(){
         $M=M('Menu');
         $map = array('status'=>'1','is_deleted'=>0);
-        $result= $M->field("id,name,level,pid,icon,link,target")->where($map)->order('pid,queue,id')->select();
+        $result= $M->field("id,name,level,pid,icon,link,target,show")->where($map)->order('pid,queue,id')->select();
         foreach ($result as $k => $v) {
             //$result[$k]['link'] = strtolower($v['link']);
             $result[$k]['link'] = $v['link'];
@@ -42,19 +42,18 @@ class MenuWidget extends Controller {
         }
         $data=array();
         foreach ($result as $k => $v) {
-            if($v['level']=='2'){
-                $data[$v['level']][$v['pid']][]=$v;
-            }
-            else{
-                $data[$v['level']][$v['id']]=$v;
-            }
+            $data[$v['level']][$v['pid']][$v['id']]=$v;
         }
         $menu = $data;
-        
-		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>2 );
-		$pid=M('Menu')->where($cond)->getField('pid');
-        $menu['tab'] = $menu[2][$pid];
-        $menu['pid'] =$pid;
+		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
+		$cur=M('Menu')->field('id,pid,name,level')->where($cond)->order('level desc')->find();
+
+        $menu['tab'] = $menu[$cur['level']][$cur['pid']];
+
+        $menu['pid'] =$cur['pid'];
+        $menu['cur'] = $cur['id'];
+        $menu['title'] = $cur['name'];
+        //dump($menu['tab']);exit();
         return $menu;
    }
 

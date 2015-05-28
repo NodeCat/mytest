@@ -1,0 +1,43 @@
+<form class="form-inline well well-small ajax" >
+<div class="row-fluid">
+<div class="col-md-4">调整单号:{$data.code}</div>
+<div class="col-md-4">调整单类型:{:en_to_cn($data['type'])}</div>
+</br>
+</br>
+<div class="col-md-4">调整单状态:已执行</div>
+</br>
+</br>
+<div class="col-md-4">来源单号:{$data.refer_code}</div>
+<div class="col-md-4">来源单类型:{:get_type_by_bill($data['refer_code'])}</div>
+</br>
+</br>
+<div class="col-md-4">创建时间:{$data.created_time}</div>
+<div class="col-md-4">创建人:{$data.user_nickname}</div>
+</br>
+</div>
+</form>
+
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover tablesorter tablesorter-bootstrap" style=""><colgroup><col style="width: 10%;"><col style="width: 14.3%;"><col style="width: 10.2%;"><col style="width: 11.7%;"><col style="width: 11.7%;"><col style="width: 6.5%;"><col style="width: 8.7%;"><col style="width: 2.4%;"><col style="width: 15%;"></colgroup>
+  <thead>
+    <tr class="text-center tablesorter-headerRow">
+      
+      <th id="code" data-column="1" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">调整单明细号 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="location_id" data-column="2" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">货品号 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="type" data-column="3" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">货品名称 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="is_diff" data-column="4" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">状态 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="remark" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">原数量 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="status" data-column="6" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner"> 调整量 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="created_user" data-column="7" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner"> 原状态 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="status" data-column="6" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner"> 调整状态 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <volist name="adjustment_detail_list" id="adjustment_detail">
+        <tr class="odd">
+            
+            <td>{$adjustment_detail.id}</td>
+            <td>{$adjustment_detail.pro_code}</td>
+            <td>{$adjustment_detail.pro_name}</td>
+            <td>已执行</td>
+            <td>{$adjustment_detail.origin_qty}</td>
+            <td>{$adjustment_detail.adjusted_qty}</td>
+            <td>{:en_to_cn($adjustment_detail['origin_status'])}</td>
+            <td>{:en_to_cn($adjustment_detail['adjust_status'])}</td>
+        </tr>
+    </volist>
+  </tbody>
+</table>

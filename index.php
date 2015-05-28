@@ -14,11 +14,11 @@
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
 
-if(isset($_SERVER['SERVER_ENV'])) {
-  define('APP_DEBUG',FALSE);
-} else {
+//if(isset($_SERVER['SERVER_ENV'])) {
+  //define('APP_DEBUG',FALSE);
+//} else {
   define('APP_DEBUG',TRUE);
-}
+//}
 
 define('RUNTIME_PATH','../Runtime/');
 

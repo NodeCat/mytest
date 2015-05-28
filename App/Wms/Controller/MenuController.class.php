@@ -2,53 +2,27 @@
 namespace Wms\Controller;
 use Think\Controller;
 class MenuController extends CommonController {
-    public function index($pill =''){
-        $M = M('menu');
-        $setting = get_setting('menu');
-        $this->columns = $setting['list'];
-        $this->query = $setting['query'];
+    
+    public function before_index() {
+        $this->table = array(
+            'toolbar'   => true,
+            'searchbar' => true, 
+            'checkbox'  => true, 
+            'status'    => true, 
+            'toolbar_tr'=> true
+        );
+        $this->toolbar_tr =array(
+            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+        );
+        $this->status =array(
+            array(
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+            ),
+        );
         $this->status_type='0';
-        $this->pk = $M->getPK();
-        $condition = $pill;
-        $this->pill = array('status=1'=>'已启用','status=0'=>'已禁用');
-        $condition = I('query');
-        $map=array();
-        if(!empty($condition)){
-            $M = D(CONTROLLER_NAME);
-            $table = $M->tableName;
-            if(empty($table)) {
-                $table = strtolower(CONTROLLER_NAME);
-            }
-            $query = get_setting($table);
-
-            foreach ($query['query'] as $key => $v) {
-                switch ($v['query_type']) {
-                    case 'eq':
-                        $map[$key]=array($v['query_type'],$condition[$key]);
-                        break;
-                    case 'like':
-                        $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
-                        break;
-                    case 'between':
-                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key].'_1');
-                        break;
-                }
-            }
-            $map = queryFilter($map);
-        }
-        else{
-            $condition = I('pill');
-             if(!empty($condition)){
-                $para=explode('&', urldecode($condition));
-                foreach ($para as $key => $v) {
-                    $cond=explode('=', $v);
-                    if(count($cond)===2)
-                        $map[$cond[0]]=$cond[1];
-                }
-            }
-        }
-        //dump($map);exit();
-        $this->page($M,$map);
     }
 
     protected function before_add(&$M){
@@ -110,7 +84,6 @@ class MenuController extends CommonController {
         layout(!$this->isAjax());
     	$this->display('Index:sidebar');
     }
-
     public function get_level_nodes(){
         $M=M(CONTROLLER_NAME);
         $condition=array('is_deleted'=>'0','status' =>'1');

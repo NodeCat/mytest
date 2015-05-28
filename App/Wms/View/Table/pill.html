@@ -1,5 +1,9 @@
 <notempty name="pill">
-<ul class="nav nav-pills pull-left" id="nav-pill">
+<div class="table-pill row-fluid">
+<div class="col-lg-12">
+<ul class="nav nav-pills" id="nav-pill" style="  position: relative;
+  display: inline-block;
+  vertical-align: middle;">
 	<li class="active"><a href="{:U('index')}">全部</a></li>
 	<volist name="pill" id="vo">
 		<li><a href="{:U('index',array('pill'=>$key))}">{$vo}</a></li>
@@ -27,4 +31,8 @@ $(function(){
 	});
 });
 </script>
+</div>
+
+<div class="clearfix"></div>
+</div>
 </notempty>

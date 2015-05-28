@@ -15,6 +15,11 @@ class {$module}Model extends Model {
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
         {$data.auto}
+        array('created_user',UID,1,'string'),
+        array('created_time','get_time',1,'function'),
+        array('updated_user',UID,3,'string'),
+        array('updated_time','get_time',3,'function'),
+        array('is_deleted','0',1,'string'),
 
     );
 
@@ -26,13 +31,13 @@ class {$module}Model extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('is_deleted'=>'0'),
-            'order'=>'{$pk} DESC',
+            'where'=>array('{:strtolower($module)}.is_deleted'=>'0'),
+            'order'=>'{:strtolower($module)}.{$pk} DESC',
             {$data.scope}
 
         ),
         'latest'=>array(
-            'where'=>array('is_deleted'=>'0'),
+            'where'=>array('{:strtolower($module)}.is_deleted'=>'0'),
             'order'=>'update_time DESC',
         ),
 

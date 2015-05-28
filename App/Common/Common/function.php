@@ -1,27 +1,51 @@
 <?php
-
+function get_type($type = '') {
+	$map['type'] = $type;
+	$map['is_deleted'] = 0 ;
+	$data = M('category')->where($map)->select();
+	return $data;
+}
+function get_sn($type = '', $wh_id = '') {
+    $sql = "CALL sn('".$type."')";
+    $n = M()->query($sql);
+    $M = M('numbs');
+    $res = $M->field('prefix,mid,suffix')->find($type);
+    $sn = str_pad($n[0]['sn'],$res['suffix'],"0",STR_PAD_LEFT);
+    $numb =$res['prefix'].$res['mid'].$sn;
+    $date = date('ymd',NOW_TIME);
+    $wh_id =  str_pad($wh_id,2,"0",STR_PAD_LEFT);
+    $numb = str_replace(array('%date%','%wh_id%'), array($date,$wh_id), $numb);
+	return $numb;
+}
+function get_batch($code=''){
+    if(empty($code)) {
+        $code = get_sn('batch');
+    }
+    $data['code'] = $code;
+    $data['product_date'] = get_time();
+    M('stock_batch')->add($data);
+    return $code;
+}
+function get_tablename() {
+	$M = D(CONTROLLER_NAME);
+    $table = $M->tableName;
+    if(empty($table)) {
+        $table = strtolower(CONTROLLER_NAME);
+    }
+    return $table;
+}
 function get_setting($table) {
-	$M = M('module_column');
-	$map['module'] = strtolower($table);
-	$map['status'] = '1';
-	$res = $M->field('field,type,title,pk,list_show,list_order,query_able,query_type,control_type')
-			->order('list_order')
-			->where($map)
-			->select()
-	;
-	$pk = $M->getPk();
-	foreach ($res as $key => $val) {
-		if($val['list_show'] == 1 || $val['pk'] === 'PRI') {
-			$list[$val['field']]	= $val['title'];
-		}
-		if($val['query_able'] == 1) {
-			$query[$val['field']]	= array(
-				'title' => $val['title'],
-				'query_type' => $val['query_type'],
-				'control_type' => $val['control_type'],
-			);
-		}
-	}
+	$M = M('module_table');
+	$res = $M->field('list,query')->find(strtolower($table));
+    if(!empty($res)) {
+        if(!empty($res['list']) && $res['list'] != 'array ( )') {
+            eval('$list = '.$res['list'].';');
+        }
+        if(!empty($res['query']) && $res['query'] != 'array ( )') {
+            eval('$query = '.$res['query'].';');
+        }
+        
+    }
 	$data = array(
 			'list' => $list ,
 			'query'=> $query,
@@ -33,7 +57,7 @@ function get_setting($table) {
 //复选框未选择，则不会出现在post中，应添加条件并赋值为false
 function queryFilter($data){
     foreach ($data as $key => $value) {
-        if(empty($value) || empty($value[1])){
+        if($value == '' || (is_array($value) && empty($value[1]))){
             unset($data[$key]);
         }
     }
@@ -187,6 +211,20 @@ function logs($id, $data, $action = ''){
 function get_time(){
     return date('Y-m-d H:i:s',NOW_TIME);
 }
+function mkdirs($dir){       
+    if(!is_dir($dir)){       
+        if(!mkdirs(dirname($dir))){       
+            return false;       
+        }
+        if(!file_exists($dir)){
+            if(!mkdir($dir,0777)){       
+                return false;       
+            }
+        }
+        return true; 
+    }
+    return true;       
+}
 function X($t, $id=null, $value = ''){
     if(empty($id)){
         return null;
@@ -205,4 +243,26 @@ function X($t, $id=null, $value = ''){
         }
     }
     return $data;
+}
+function auth_module_black_list($module){
+    $black_list = array(
+        'Auth',
+        'AuthRole',
+        'Authority',
+        'Category',
+        'Code',
+        'Common',
+        'Config',
+        'Company',
+        'Dictionary',
+        'Empty',
+        'Index',
+        'Menu',
+        'User',
+        );
+    if(in_array($module, $black_list)){
+        return true;
+    }
+
+    return false;
 }

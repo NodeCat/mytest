@@ -1,4 +1,5 @@
 <?php
+define('AUTH_KEY', '_D1i,v5sSp])th$3#w"jx6gW/nYZUl[<Lrb>+uOa');
 return array(
 	//'配置项'=>'配置值'
 	//安全配置
@@ -32,6 +33,10 @@ return array(
 	'PAGE_SIZE'         => 10,
 	'DB_BIND_PARAM'    =>    true,
 
+	//session设置
+	'SESSION_OPTIONS'	=> array('expire'=>'36000'),
+	//'SESSION_PREFIX'	=>'wms',
+
 	//缓存设置
 	'DATA_CACHE_TYPE'   => 'redis',
 	'REDIS_HOST'        => '127.0.0.1',
@@ -46,4 +51,3 @@ return array(
     'URL_404_REDIRECT'	=> '',
 
 );
-define('AUTH_KEY', '_D1i,v5sSp])th$3#w"jx6gW/nYZUl[<Lrb>+uOa');

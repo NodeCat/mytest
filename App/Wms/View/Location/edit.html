@@ -1,0 +1,107 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="{:U('edit')}" method="post" id='form'>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="id"></label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<input type="hidden" value="{$data.id}" name="id" id="id" class="form-control {required:true,digits:true,range:[0,4294967295]}"  placeholder="">
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="wh_id">仓库标识</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<div class="input-group" id="location-wh_id-warehouse-id">
+<input type="text" value="{$data.warehouse_code}" data-target="code" class="form-control {required}" placeholder="" readonly="" disabled>
+<input type="hidden" value="{$data.wh_id}" name="wh_id" id="wh_id" data-target="id" class="form-control {required:true,digits:true,range:[0,4294967295]}" placeholder="">
+<span class="input-group-btn">
+<a href="/Warehouse/refer/refer/location-wh_id-warehouse-id.htm" data-target="#modal-refer"  data-toggle="modal" class="btn btn-default" disabled><i class="glyphicon glyphicon-search"></i></a>
+</span>
+</div>
+
+</div>
+<label class="control-label col-lg-4" for=""></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="area_id">区域名称</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<div class="input-group" id="location-id-area-id">
+<input type="text" value="{$data.area_name}" id="" data-target="name" class="form-control {required}" placeholder="" readonly="">
+<input type="hidden" value="{$data.pid}" name="pid" id="id" data-target="id" class="wh_id {required:true,digits:true,range:[0,4294967295]}" placeholder="">
+<span class="input-group-btn">
+<a href="{:U('LocationArea/refer','refer=location-id-area-id&wh_id='. $data['wh_id'])}" data-target="#modal-refer"  data-toggle="modal" class="btn btn-default">
+<i class="glyphicon glyphicon-search"></i>
+</a>
+</span>
+</div>
+</div>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="code">库位</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.code}" name="code" id="code"  placeholder="库位">
+</div>
+<label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="type_id">类型</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<php>
+$_parm=explode('.','LocationType.id,name');
+if(count($_parm)===2){
+    $A=A($_parm[0]);
+    $items=$A->get_list($_parm[0],$_parm[1]);
+}
+</php>
+<select id="type_id" name="type_id" value="{$data.type_id}" class="form-control selected" data-value="0">
+<option value ="">全部</option>
+<volist name="items" id="op">
+<option value ="{$key}">{$op}</option>
+</volist>
+</select>
+</div>
+<label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="code">拣货路线</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.picking_line}" name="picking_line" id="pick_line"  placeholder="拣货路线">
+</div>
+<label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="code">上架路线</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<input type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.putaway_line}" name="putaway_line" id="putaway_line"  placeholder="上架路线">
+</div>
+<label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="code">混放货品</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<select type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.is_mixed_pro}" name="is_mixed_pro" id="is_mixed_pro">
+    <option value ="0">请选择</option>
+    <option value ="1">是</option>
+    <option value ="2">否</option>
+</select>
+</div>
+<label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+
+<div class="form-group ">
+<label class="control-label col-lg-3 col-sm-3 col-xs-3" for="code">混放批次</label>
+<div class="col-lg-5 col-sm-5 col-xs-5">
+<select type="text" class="form-control {required:true,maxlength:45,}"  value="{$data.is_mixed_batch}" name="is_mixed_batch" id="is_mixed_batch">
+    <option value ="0">请选择</option>
+    <option value ="1">是</option>
+    <option value ="2">否</option>
+</select>
+</div>
+<label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>

@@ -2,9 +2,19 @@
 <notempty name="menu['tab']">
 <ul class="nav nav-tabs" id="nav-tab">
  <volist name="menu['tab']" id="vo" empty="" >
-	<li>
-		<a href="{:U($vo['link'])}" target="{$vo['target']}">{$vo['name']}</a>
-	</li>
+	<eq name="vo['show']" value='0'>
+		<neq name="vo['id']" value="$menu['cur']">
+		<li class="hidden">
+		<else/>
+		<li class="active">
+			<a href="#" target="{$vo['target']}">{$vo['name']}</a>
+		</li>
+		</neq>
+	<else/>
+		<li>
+			<a href="{:U($vo['link'])}" target="{$vo['target']}">{$vo['name']}</a>
+		</li>
+	</eq>
 	</volist>
 </ul>
 </notempty>

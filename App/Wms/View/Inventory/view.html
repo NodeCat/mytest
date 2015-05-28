@@ -1,0 +1,44 @@
+<include file="Table:toolbar"/>
+
+<form class="form-inline well well-small ajax" >
+<div class="row-fluid">
+<div class="col-md-4">盘点单号:{$data.code}</div>
+<div class="col-md-4">盘点单类型:{$data.type}</div>
+</br>
+<div class="col-md-4">盘点单状态:{$data.status}</div>
+<div class="col-md-4">创建人:{$data.created_user}</div>
+<br>
+<div class="col-md-4">盘点人:{$data.updated_user}</div>
+<div class="col-md-4">创建时间:{$data.created_time}</div>
+<br>
+</div>
+</form>
+
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover tablesorter tablesorter-bootstrap" style=""><colgroup><col style="width: 10%;"><col style="width: 14.3%;"><col style="width: 10.2%;"><col style="width: 11.7%;"><col style="width: 11.7%;"><col style="width: 6.5%;"><col style="width: 8.7%;"><col style="width: 2.4%;"><col style="width: 15%;"></colgroup>
+  <thead>
+    <tr class="text-center tablesorter-headerRow">
+      <th data-column="0" class="tablesorter-header sorter-false bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">
+        <label class="checkbox">
+          <input type="checkbox" class="select-all" data-target="data-table"> 全选
+        </label>       <i class=""></i></div></div></th>
+      <th id="code" data-column="1" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">盘点单单号 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="location_id" data-column="2" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">库位 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="type" data-column="3" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">货品标识 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="is_diff" data-column="4" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">货品名称 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="remark" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner">原数量 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="status" data-column="6" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner"> 实盘量 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th><th id="created_user" data-column="7" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;"><div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%"><div class="tablesorter-header-inner"> 差异量 <i class="tablesorter-icon bootstrap-icon-unsorted"></i></div></div></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <volist name="inventory_detail_list" id="inventory_detail">
+        <tr class="odd">
+            <td><label class="checkbox"><input type="checkbox" id="39" data-id="id"></label></td>
+          
+            <td>{$inventory_detail.inventory_code}</td>
+            <td>{$inventory_detail.location_code}</td>
+            <td>{$inventory_detail.pro_code}</td>
+            <td>{$inventory_detail.pro_name}</td>
+            <td>{$inventory_detail.theoretical_qty}</td>
+            <td>{$inventory_detail.pro_qty}</td>
+            <td>{$inventory_detail['theoretical_qty'] - $inventory_detail['pro_qty']}</td>
+        
+        </tr>
+    </volist>
+  </tbody>
+</table>

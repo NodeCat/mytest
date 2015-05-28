@@ -1,0 +1,89 @@
+<ol class="breadcrumb">
+  <li><a href="{:U('Pda/index')}">首页</a></li>
+  <li class="active">库存查询</li>
+</ol>
+
+<div class="page-header text-center">
+  <h1>{$title} <small></small></h1>
+</div>
+<notempty name="msg">
+<div class="alert alert-success text-center" role="alert">{$msg}</div>
+</notempty>
+<div class="alert alert-danger text-center hidden" role="alert"></div>
+<form class="form-horizontal">
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品号</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input type="text" class="form-control input-lg" id="pro_code" name="pro_code" placeholder="请输入货品号">
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品名称</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input type="text" class="form-control input-lg" name="pro_name" id="pro_name" placeholder="请输入货品名称">
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">库位编号</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input type="text" class="form-control input-lg" name="location_code" id="location_code" placeholder="请输入库位编号">
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">库存状态</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <select name="status" id="status" class="form-control input-lg">
+        <option value="qualified">合格</option>
+        <option value="unqualified">残次</option>
+        <option value ="freeze">冻结</option>
+      </select>
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+      <button class="btn btn-lg btn-primary  btn-block" id="submit_search">确定</button>
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12  text-right">
+      <a href="{:U('stock/pdaStockIndex')}" class="btn btn-lg btn-default btn-block">返回</a>
+    </div>
+  </div>
+</form>
+
+<script type="text/javascript">
+$(function(){
+  $('#submit_search').click(function(){
+    var _pro_code = $('#pro_code').val();
+    var _pro_name = $('#pro_name').val();
+    var _location_code = $('#location_code').val();
+    var _status = $('#status').val();
+    if(_pro_name == "" && _pro_code == "" && _location_code == ""){
+      alert_error('请至少输入货品号，货品名称，库位编号其中一个查询条件');
+      return false;
+    }
+
+    $.ajax({
+      url:'/stock/pdaStockSearch',
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:'pro_name='+_pro_name+'&pro_code='+_pro_code+'&location_code='+_location_code+'&status='+_status,
+      success: function(json){
+        if(json.status=='1'){
+          window.location.replace(json.data.redirect_url);
+        }
+        if(json.status=='0'){
+          alert(json.msg);
+        }
+      }
+    });
+    return false;
+  })
+})
+</script>

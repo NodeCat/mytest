@@ -9,43 +9,48 @@ a{
     color:#555;
 }
 .panel-heading{
-    background: url(__PUBLIC__/img/top_bg.jpg) repeat-x left top !important;
+    background: url(__PUBLIC__/img/top_bg.jpg) repeat-x left bottom !important;
     padding: 5px 15px;
     padding-top:0px; 
     padding-bottom: 3px;
 }
-.panel-title{
-    height: 65px;
-    width: 320px;
-    
+.panel-body{
+    padding-top:0px;
 }
+
+@media (min-width: 992px) {
+    .panel-body{
+        padding:20px 35px 15px 35px;
+    }
+}
+
+
     </style>
 <div class="container">
-<div class="wrapper clearfix login">
+<div class="wrapper">
     <include file="Index:nav"/>
-    <div class="col-lg-10 col-sm-10 col-md-10 col-xs-12 col-lg-offset-1 col-sm-offset-1 col-md-offset-1">
-        <div class="col-lg-6 col-sm-8 col-md-8 col-xs-12 border-radius6 col-lg-offset-3 col-sm-offset-2 col-md-offset-2">
+    <div class="col-lg-4 col-md-6  col-sm-8 col-xs-12 col-lg-offset-4 col-md-offset-3 col-sm-offset-2">
             <div class="row">
                 <div class="panel panel-default">
   <div class="panel-heading">
     <div class="panel-title">
         <h2 class="">大厨网 & 大果网</h2>
+        <!--
         <img src="__PUBLIC__/img/logo.jp" class="hidden" />
+        -->
     </div>
   </div>
-  <div class="panel-body" style="padding:25px 30px;">
-
+  <div class="panel-body">
                 <form class="center" action="__SELF__" method="post">
                     <input type="hidden" name="token" value="{$token}" />
-                    <div class="col-lg-12 col-sm-10 col-md-10 col-lg-offset-0  col-xs-12 col-sm-offset-1 col-md-offset-1">
-
-
+                    <input type="hidden" name="url" value="{$url}" />
                     <div class="form-group">
                         <label class="control-label"></label>
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
-                            <input  value="{$username}" name="username" class="form-control input-lg  maxlength="20" " type="text" id="input-email" placeholder="用户名或邮箱" autocomplete="off" tabindex="1">
+                            <input  value="{$username}" name="username" class="form-control input-lg  maxlength="20" " type="text" id="input-email" placeholder="用户名或邮箱" autocomplete="off" tabindex="1"><!--
                             <span class="input-group-addon"><a href="{:U('signup')}" title="注册"><i class="glyphicon glyphicon-envelope"  tabindex="5"></i> 注册</a> </span>
+                            -->
                         </div>
                     </div>
                     <div class="form-group">
@@ -56,7 +61,7 @@ a{
                         </div>
                         
                     </div>
-                    <div class="form-group">
+                    <!--<div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-qrcode"></i></span>
                             <input  name="verify" class="form-control input-lg" type="text" maxlength="6" id="input-verify" placeholder="验证码" autocomplete="off" tabindex="3">
@@ -68,22 +73,18 @@ a{
                         <div class="input-group">
                             <img class="verifyimg reloadverify" alt="点击切换" src="{:U('Login/verify')}">
                         </div>
-                    </div>
+                    </div>-->
 
                     <div class="form-group">
-                        <div class="input-group  col-lg-12">
-                            <button type="submit" class=" btn btn-lg btn-primary col-lg-12" tabindex="4"> 登  陆 </button>
+                        <div class="input-grou">
+                            <button type="submit" class=" btn btn-lg btn-primary btn-block" tabindex="4"> 登  录 </button>
                             <label class="checkbox remember hidden">
                                 <input type="checkbox"> Remember me
                             </label>
                             <p class="help-text-inline"></p>
                         </div>
                     </div>
-                    </div>
                 </form>
-
-
-  </div>
 </div>
 
 
@@ -127,7 +128,7 @@ $("form").submit(function(){
 
 $(function(){
     //初始化选中用户名输入框
-    $("form").find("input[name=username]").focus();
+    //$("form").find("input[name=username]").focus();
     //刷新验证码
     var verifyimg = $(".verifyimg").attr("src");
     $(".reloadverify").click(function(){

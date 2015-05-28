@@ -1,0 +1,95 @@
+<include file="Index:header"/>
+<body>
+<div class="container">
+
+<div class="row">
+<div class="col-md-6 col-md-offset-6"><h3>到货单</h3></div>
+</div>
+</br>
+</br>
+
+<div class="row">
+	<div class="col-md-5">
+		<div><h3>到货单号:{$refer_code}</h3></div>
+	</div>
+	<div class="col-md-6">
+		<img src="http://api.pda.dachuwang.com/barcode/get?text={$refer_code}" style="height:60px;width:240px" class="img-responsive" alt="Responsive image">
+
+	</div>
+</div>
+
+<br/>
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  </thead>
+
+  <tbody>
+  	<tr>
+  		<td>收货人</td><td>{$session_user_name}</td>
+  	</tr>
+  	<tr>
+  		<td>到货时间</td><td>{$expecting_date}</td>
+  	</tr>
+  	<tr>
+  		<td>打印时间</td><td>{$print_time}</td>
+  	</tr>
+  	<tr>
+  		<td>供应商</td><td>{$partner_name}</td>
+  	</tr>
+  	<tr>
+  		<td>采购人</td><td>{$created_user_name}</td>
+  	</tr>
+  	<tr>
+  		<td>目的仓库</td><td>{$dest_wh_name}</td>
+  	</tr>
+  	<tr>
+  		<td>备注</td><td>{$remark}</td>
+  	</tr>
+  </tbody>
+</table>
+</div>
+
+<div class="row">
+<div><h3>货品明细</h3></div>
+</div>
+
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  	<tr>
+  		<td>货品号</td><td>货品条码</td><td>产品名称</td><td>预计到货数量</td><td>累计到货</td><td>本次收货</td>
+  	</tr>
+  </thead>
+
+  <tbody>
+  	<volist name="bill_in_detail_list" id="bill_in_detail">
+	  	<tr>
+	  		<td>{$bill_in_detail.pro_code}</td><td>{$bill_in_detail.barcode}</td><td>{$bill_in_detail.pro_name}</td><td>{$bill_in_detail.expected_qty}</td><td>{$bill_in_detail.receipt_qty}</td><td></td>
+	  	</tr>
+  	</volist>
+  </tbody>
+</table>
+</div>
+</br>
+</br>
+
+<div class="row">
+<div><h5>司机操作人员签字：</h5></div>
+</div>
+</br>
+</br>
+
+<div class="row">
+<div><h5>仓储操作人员签字：</h5></div>
+</div>
+</br>
+</br>
+
+<div class="row">
+<div><h5>品控操作人员签字：</h5></div>
+</div>
+
+</div>
+</body>
+</html>

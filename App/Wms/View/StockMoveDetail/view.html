@@ -1,0 +1,36 @@
+<form class="form-inline well well-small ajax" >
+<div class="row-fluid">
+<div class="col-md-4">仓库:{$data.wh_code}</div>
+<div class="col-md-4">库位:{$data.location_code}</div>
+</br>
+</br>
+<div class="col-md-4">区域:{$data.area_name}</div>
+<div class="col-md-4">货品号:{$data.pro_code}</div>
+
+</br>
+</br>
+<div class="col-md-4">货品名:{$data.pro_name}</div>
+<div class="col-md-4">交易类型:{:en_to_cn($data['type'])}</div>
+
+</br>
+</br>
+<div class="col-md-4">参考单号:{$data.refer_code}</div>
+<div class="col-md-4">方向:{$data.direction}</div>
+</br>
+</br>
+<div class="col-md-4">状态:{:en_to_cn($data['status'])}</div>
+<div class="col-md-4">移动量:{$data.move_qty}</div>
+</br>
+</br>
+<div class="col-md-4">之前数量:{$data.old_qty}</div>
+<div class="col-md-4">之后数量:{$data.new_qty}</div>
+</br>
+</br>
+</br>
+</br>
+<div class="col-md-4">创建时间:{$data.created_time}</div>
+<div class="col-md-4">创建人:{$data.user_nickname}</div>
+
+</br>
+</br>
+</form>
