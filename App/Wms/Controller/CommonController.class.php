@@ -3,6 +3,8 @@ namespace Wms\Controller;
 use Think\Controller;
 
 class CommonController extends AuthController {
+
+    //默认显示函数列表
     public function index() {
         $this->before($map,'index');
         $this->lists();
@@ -13,9 +15,9 @@ class CommonController extends AuthController {
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
-            'status'    => false, 
-            'toolbar_tr'=> true,
-            'statusbar' => false
+            'status'    => false, //是否显示状态字段
+            'toolbar_tr'=> true, //是否显示表格内的“操作”列的按钮
+            'statusbar' => false //是否显示状态栏
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
@@ -37,15 +39,16 @@ class CommonController extends AuthController {
                 array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
             ),
         );
-        $this->status_type='0';
     }
 
+    //查询处理函数，根据form上的查询条件返回$map
     protected function search($query = '') {
-        $this->before($query,'search');
-        $condition = I('query');
-        $condition = queryFilter($condition);
+        $this->before($query,'search');//查询前的处理函数
+        $condition = I('query'); //列表页查询框都是动态生成的，名字都是query['abc']
+        $condition = queryFilter($condition); //去空处理
         $table = get_tablename(CONTROLLER_NAME);
-        $get = I('get.');unset($get['p']);
+        $get = I('get.');unset($get['p']);//获取链接中附加的查询条件，状态栏中的按钮url被附带了查询参数
+        //将参数并入$condition
         foreach ($get as $key => $value) {
             $param[$table.'.'.$key] = $value;
             if(!array_key_exists($key, $condition)) {
@@ -53,26 +56,27 @@ class CommonController extends AuthController {
             }
         }
         $this->condition = $condition;
-        !empty($condition) && $this->filter_list($condition, '1');
+        !empty($condition) && $this->filter_list($condition, '1');//反向转义，反向转filter
         if(!empty($condition)){
-            foreach ($query as $key => $v) {
+            foreach ($query as $key => $v) {//query是查询条件生成的数组，从query中取出当前提交的查询条件。因此，如果提交了query定义之外的查询条件，是会被过滤掉的
                 if(!array_key_exists($key, $condition)) {
                     continue;
                 }
+                //查询匹配方式
                 switch ($v['query_type']) {
-                    case 'eq':
+                    case 'eq'://相等
                         $map[$key]=array($v['query_type'],$condition[$key]);
                         break;
-                    case 'like':
+                    case 'like'://模糊匹配
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
-                    case 'between':
+                    case 'between'://区间匹配
                         $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
                         break;
                 }
             }
         }
-        $condition = I('q');
+        $condition = I('q');//对状态栏的特殊处理,状态栏中的各种状态按钮实际上是附加了各种status=1 这样的查询条件
          if(!empty($condition)){
             $para=explode('&', urldecode($condition));
             foreach ($para as $key => $v) {
@@ -83,11 +87,19 @@ class CommonController extends AuthController {
         }
         
         
-        $this->after($map,'search');
-        //dump($map);
+        $this->after($map,'search');//查询条件生成以后，这里可以往$map中加入新的查询条件
         return $map;
     }
 
+    /* 过滤条件
+    // protect $filter = array(
+    //     'status'=> array(
+    //         '1' => '草稿',
+    //         '2' => '已完成'
+    //     ), 
+    // );
+    */
+    //过滤函数，比如数据表中status值是1，2，3，列表页面中显示的是草稿、审核、已完成
     protected function filter_list(&$data,$type = '0',$filter = '') {
         if(!is_array($data)) return;
         if(empty($filter)){
@@ -99,7 +111,7 @@ class CommonController extends AuthController {
                 $filter = $this->filter;
             }
         }
-
+        //反向转换
         if($type == '1') {
             $table = strtolower(CONTROLLER_NAME);
             foreach ($filter as $key => $val) {
@@ -110,6 +122,7 @@ class CommonController extends AuthController {
         }
         else {
         }
+        //二维数组
         if(is_array(reset($data))){
             foreach ($data as $key => $val) {
                 foreach ($filter as $k => $v) {
@@ -119,7 +132,7 @@ class CommonController extends AuthController {
                 }
             }
         }
-        else{
+        else{//一维数组
             foreach ($filter as $k => $v) {
                 if(!empty($v[$data[$k]])) {
                     $data[$k] = $v[$data[$k]];
@@ -128,6 +141,7 @@ class CommonController extends AuthController {
         }
     }
 
+    //默认获取key,value键值对的方法，主要是在下拉框中显示时的数据源
     public function get_list($controller,$field = '') {
         $M = D($controller);
         $table = $M->tableName;
@@ -138,7 +152,10 @@ class CommonController extends AuthController {
         $data = $M->getField($field,true);
         return $data;
     }
+
+    //显示数据列表
     protected function lists($template='') {
+        //先根据控制器名称获取对应的表名
         $M = D(CONTROLLER_NAME);
         $table = $M->tableName;
         
@@ -146,7 +163,9 @@ class CommonController extends AuthController {
             $table = strtolower(CONTROLLER_NAME);
         }
         $this->pk = $M->getPK();
-        $setting = get_setting($table);
+        $setting = get_setting($table);//获取该表对应的显示和查询字段
+
+        //如果当前控制器中定义了字段，则优先采用控制器中的定义，为的是项目上线以后，这种配置在文件中生效，放在数据库中可能会丢
         if(empty($this->columns)) {
             $this->assign('columns',$setting['list']);
         }
@@ -159,28 +178,30 @@ class CommonController extends AuthController {
         else {
             $this->assign('query',$this->query);
         }
-        $map = $this->search($this->query);
+        $map = $this->search($this->query);//获取界面上传过来的查询条件
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $M->scope('default');
-        if(!empty($map)) {
-            $M->where($map);
-        }
-        $this->before($M,'lists');
+        $M->scope('default');//默认查询，default中定义了一些预置的查询条件
 
-        $M2 = clone $M;
-        $M->page($p.','.$page_size);
+        if(!empty($map)) {
+            $M->where($map);//用界面上的查询条件覆盖scope中定义的
+        }
+        $this->before($M,'lists');//列表显示前的业务处理
+
+        $M2 = clone $M;//深度拷贝，M2用来统计数量, M 用来select数据。
+        $M->page($p.','.$page_size);//设置分页
         
-        $data = $M->select();
-        $count  = $M2->page()->limit()->count();
-        $this->after($data,'lists');
-        $this->filter_list($data);
+        $data = $M->select();//真正的数据查询在这里生效
+        $count  = $M2->page()->limit()->count();//获取查询总数
+        $this->after($data,'lists');//查询后的业务处理，传入了结果集
+        $this->filter_list($data);//对结果集进行过滤转换
         $this->data = $data;
         $maps = $this->condition;
         $this->page($count,$maps,$template);
     }
 
+    //引用之前处理模版，隐藏掉不需要的信息
     public function _before_refer() {
         $this->refer=I('refer');
         $this->table = array(
@@ -201,10 +222,12 @@ class CommonController extends AuthController {
         $this->lists();
     }
 
+    //查看详情
     public function view() {
         $this->edit();
     }
 
+    //添加
     public function add() {
     	if(IS_POST) {
     		$this->save();
@@ -229,13 +252,13 @@ class CommonController extends AuthController {
 	      	if(empty($id)){
 	            $this->msgReturn(0,'param_error');
 			}
-            $map[$table.'.'.'is_deleted'] = 0; 
+            $map[$table.'.'.'is_deleted'] = 0; //预置条件
             $map[$table.'.'.$pk] = $id;
-            $res = $M->scope('default')->where($map)->limit(1)->find();
-	        if(!empty($res) && is_array($res)){
-                $this->before($res,'edit');
+            $res = $M->scope('default')->where($map)->limit(1)->find();//edit也会走scope,但是不会filter
+	        if(!empty($res) && is_array($res)){//如果查询成功
+                $this->before($res,'edit');//可以在这里写入编辑前的业务
                 if(ACTION_NAME == 'view') {
-                    $this->filter_list($data);
+                    $this->filter_list($data);//如果是查看，需要filter
                 }
 	            $this->data = $res;
 	        }
@@ -248,27 +271,28 @@ class CommonController extends AuthController {
 		}
     }
 
+    //保存数据，添加时的保存和编辑时的保存都会调用这个函数
     protected function save() {
         $M = D(CONTROLLER_NAME);
         if($M->create()){
-            $this->before($M, 'save');
-            if(ACTION_NAME === 'add') {
-                $this->before($M, 'add');
+            $this->before($M, 'save');//before_save无论添加或编辑都会被调用
+            if(ACTION_NAME === 'add') {//添加
+                $this->before($M, 'add');//添加前的逻辑处理
                 $res = $M->add();
             }
-            else {
+            else {//编辑
                 $pk = $M->getPk();
                 $map[$pk] = I($pk); 
                 $res = $M->where($map)->save();
             }
             if($res > 0) {
-                if(ACTION_NAME === 'add') {
+                if(ACTION_NAME === 'add') {//添加成功后
                     $this->after($res, 'add');
                 }
                 else {
                     $res = $map[$pk];
                 }
-                $this->after($res, 'save');
+                $this->after($res, 'save');//保存成功后
                 $this->msgReturn(1);
             }
             else{
@@ -282,23 +306,25 @@ class CommonController extends AuthController {
 
     }
 
+    //删除
     public function delete() {
         $M      =   D(CONTROLLER_NAME);
         $pk     =   $M->getPK();
-    	$ids    =   I($pk);
+    	$ids    =   I($pk);//要删除的主键列表，以逗号分割
         $ids    =   explode(',', $ids);
         $ids    =   array_filter($ids);
         $ids    =   array_unique($ids);
-        $this->before($ids,'delete');
+        $this->before($ids,'delete');//删除前
         $map[$pk]   =   array('in',$ids);
         $data['is_deleted'] = 1;
-        $res = $M->where($map)->save($data);
+        $res = $M->where($map)->save($data);//逻辑删除
         if($res == true) {
-            $this->after($ids,'delete');
+            $this->after($ids,'delete');//删除后
         }
         $this->msgReturn($res);
     }
 
+    //设置要显示的字段和是否是查询条件，开发时使用，线上禁用
     public function setting(){
         $table = get_tablename();
         if(IS_POST){
@@ -334,6 +360,7 @@ class CommonController extends AuthController {
         }
        
     }
+    //excel导入
     public function import() {
         $file = $this->upload();
 
@@ -381,7 +408,7 @@ class CommonController extends AuthController {
                 
             }
         }
-        $this->after($data,'import');
+        $this->after($data,'import');//导入后
         unset($rows);
         $i = 2;
         $M = D(CONTROLLER_NAME);
@@ -406,6 +433,7 @@ class CommonController extends AuthController {
         $this->msgReturn(1,'导入完成。'.$msg);
     }
 
+    //上传，导入时的前置页面
     protected function upload(){
         if(IS_POST) {
             $upload_path = RUNTIME_PATH;
@@ -434,6 +462,7 @@ class CommonController extends AuthController {
             exit();
         }
     }
+    //导出
     public function export() {
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -478,6 +507,7 @@ class CommonController extends AuthController {
         $objWriter->save('php://output');
         
     }
+
     protected function get_excel_sheet(&$Excel) {
         $Excel->getProperties()
         ->setCreator("Dachuwang")
@@ -496,21 +526,25 @@ class CommonController extends AuthController {
         return $Sheet;
     }
    
+    //访问不存在的方法时
     public function _empty($action){
        $this->error('unknown',U('index'));
     }
+    //前置函数钩子
     protected function before(&$data, $func_name = '') {
     	$func = 'before_' . (empty($func_name) ? ACTION_NAME : $func_name);
 		if(method_exists($this, $func)){
             $this->$func($data);
         }
     }
+    //后置函数钩子
     protected function after(&$res, $func_name = '') {
     	$func = 'after_' . (empty($func_name) ? ACTION_NAME : $func_name);
 		if(method_exists($this, $func)){
             $this->$func($res);
         }
     }
+    //统一的返回方法
     protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
@@ -524,6 +558,7 @@ class CommonController extends AuthController {
             }
         exit();
     }
+    //旧版的分页函数，主要是为了兼容旧代码
     protected function mpage($M, $map='',$template){
         $p              = I("p", 1);
         $page_size      = C('PAGE_SIZE');
@@ -545,6 +580,7 @@ class CommonController extends AuthController {
         }
         $this->display($template);
     }
+    //分页函数，具体请参考手册
     protected function page($count, $map='',$template=''){
         $p              = I("p", 1);
         $page_size      = C('PAGE_SIZE');
@@ -555,7 +591,7 @@ class CommonController extends AuthController {
         $this->page     = $Page->show();
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;
-        if(empty($template)){
+        if(empty($template)){//这里根据是否ajax显示不同的模版
            $template= IS_AJAX ? 'Table:list':'Table:index';
         }
         $this->display($template);
