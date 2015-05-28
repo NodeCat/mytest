@@ -1,11 +1,12 @@
 <?php
 namespace Wms\Model;
 use Think\Model;
-class StockBillDetailModel extends Model {
+class StockBillInTypeModel extends Model {
 
-    protected $insertFields = array('id','wh_id','pid','type','refer_code','pro_code','pro_name','pro_attrs','pro_uom','pro_qty','status','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('wh_id','pid','type','refer_code','pro_code','pro_name','pro_attrs','pro_uom','pro_qty','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','type','name','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('type','name','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
+    public $tableName = 'stock_bill_in_type';
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
@@ -29,12 +30,12 @@ class StockBillDetailModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('stock_bill_detail.is_deleted'=>'0'),
-            'order'=>'stock_bill_detail.id DESC',
+            'where'=>array('stock_bill_in_type.is_deleted'=>'0'),
+            'order'=>'stock_bill_in_type.id DESC',
             
         ),
         'latest'=>array(
-            'where'=>array('stock_bill_detail.is_deleted'=>'0'),
+            'where'=>array('stock_bill_in_type.is_deleted'=>'0'),
             'order'=>'update_time DESC',
         ),
 

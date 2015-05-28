@@ -150,4 +150,8 @@ class AuthorityController extends CommonController {
         $this->ajaxReturn($result!==false?'Success':'Fail');
     }
 
+    //编辑权限归类
+    public function editCat() {
+        $this->display('Index:tree-edit');
+    }
 }

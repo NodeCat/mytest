@@ -117,7 +117,12 @@ $(function () {
 		}); 
 		return false;
 	});
-
+	$('.selected').each(function (){
+		$(this).val($(this).data('value'));
+	});
+	$('select').each(function (){
+		$(this).val($(this).attr('value'));
+	});
 
 init();
 
@@ -312,10 +317,10 @@ $('#alert').on('close.bs.alert', function () {
 })
 
 function init(){
-	$('.selected').each(function (){
+	$('.modal .selected').each(function (){
 		$(this).val($(this).data('value'));
 	});
-	$('select').each(function (){
+	$('.modal select').each(function (){
 		$(this).val($(this).attr('value'));
 	});
 
@@ -327,7 +332,7 @@ function init(){
         $($(this).parent().parent().children('select')).select2('open');
     });
 
-	$('.content').on('click', '[data-toggle=modal]',function (e) {
+	$('body').on('click', '[data-toggle=modal]',function (e) {
 	    e.preventDefault();
 	    var target=$(this).data('target');
 	    if(target ==null)return;

@@ -12,17 +12,19 @@ function match($table,$field,$fields){
 function set_session($uid){
     $uid =$uid;
     $user = M('User')->find($uid);
-    /*
+    
     $user_roles = M()
         ->table('auth_user_role ur')
         ->join("auth_role r on ur.role_id=r.id")
         ->where("ur.user_id='$uid' and r.status='1'")
         ->field('r.id')->select();
+
     foreach ($user_roles as $value) {
         $roles[] = $value['id'];
     }
-    *
+    
     $roles = implode('_', $roles);
+    
     /* 记录登录SESSION和COOKIES */
     $auth = array(
         'uid'             => $user['id'],
@@ -119,6 +121,7 @@ function en_to_cn($str){
     $filter = array(
         'qualified' => '合格',
         'unqualified' => '残次',
+        'freeze' => '冻结',
         'in' => '收货',
         'on' => '上架',
         'move_location' => '库存移动',
@@ -128,7 +131,7 @@ function en_to_cn($str){
         'noinventory' => '未盘点',
         'inventorying' => '盘点中',
         'confirm' => '待确认',
-        'closed' => '已关闭',
+        'closed' => '已作废',
         'fast' => '快速盘点',
         'again' => '复盘',
         'status' => '状态调整',

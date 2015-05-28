@@ -18,7 +18,7 @@ class PurchaseController extends CommonController {
 			'11'=>'待审核',
 			'13' => '已生效',
 			'23' => '已完成',
-			'04' => '已关闭',
+			'04' => '已作废',
 			'14' => '已驳回'
 		)
 	);
@@ -27,6 +27,7 @@ class PurchaseController extends CommonController {
 		'id' => '',   
 		'code' => '采购单号',   
 		'in_code' =>'采购到货单号',
+		'warehouse_code' =>'仓库',
 		'partner_name' => '供应商',
 		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
@@ -50,14 +51,14 @@ class PurchaseController extends CommonController {
 			 'value' => 'Company.id,name',   
 		),   
 		'stock_purchase.partner_id' =>    array (     
-			'title' => '供货商',    
+			'title' => '供应商',    
 			 'query_type' => 'eq',     
 			 'control_type' => 'refer',     
 			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
 		),   
 		'stock_purchase_detail.pro_code' =>    array (     
 			'title' => '货品编号',    
-			 'query_type' => 'like',     
+			 'query_type' => 'eq',     
 			 'control_type' => 'text',     
 			 'value' => '',   
 		),   
@@ -129,7 +130,19 @@ class PurchaseController extends CommonController {
             ),
         );
     }
-	public function before_add(&$M) {
+	protected function before_add(&$M) {
+		$pros = I('pros');
+
+		//检查采购记录数
+		if(count($pros['pro_code']) == 1){
+			$this->msgReturn(0,'请至少采购一个产品');
+		}
+		//检查采购数量
+		foreach($pros['pro_qty'] as $pro_qty){
+			if($pro_qty == 0){
+				$this->msgReturn(0,'采购数量不能为0');
+			}
+		}
 		$M->type = 'purchase';
 		$M->code = get_sn('purchase');
 		$M->price_total = 0;
@@ -139,14 +152,19 @@ class PurchaseController extends CommonController {
 		$M->picking_status = '0';
 	}
 	
-	public function before_save(&$M){
+	protected function before_save(&$M){
 		$M->status = '11';
 	}
 
-	public function after_save($pid){
+	protected function after_save($pid){
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
+
+			//如果是edit 根据pid 删除所有相关的puchase_detail记录
+			$map['pid'] = $pid;
+			M('stock_purchase_detail')->where($map)->delete();
+			unset($map);
 		}
 		$n = count($pros['pro_code']);
 		if($n <2) {
@@ -166,13 +184,13 @@ class PurchaseController extends CommonController {
 			$row['price_unit'] = $pros['price_unit'][$j];
 			$row['price_subtotal'] = $row['price_unit'] * $row['pro_qty'];
 			$data = $M->create($row);
-			if(!empty($pros['id'][$j])) {
-				$map['id'] = $pros['id'][$j];
-				$res = $M->where($map)->save($data);
-			}
-			else {
-				$res = $M->add($data);
-			}
+			//if(!empty($pros['id'][$j])) {
+				//$map['id'] = $pros['id'][$j];
+				//$res = $M->where($map)->save($data);
+			//}
+			//else {
+			$res = $M->add($data);
+			//}
 			if($res==false){
 				dump($pros);
 				dump($M->getError());
@@ -200,14 +218,14 @@ class PurchaseController extends CommonController {
 		}
 		$this->pros = $pros;
 	}
-	public function before_lists(){
+	protected function before_lists(){
 		$pill = array(
 			'status'=> array(
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				array('value'=>'21','title'=>'待入库','class'=>'primary'),
 				array('value'=>'31','title'=>'待上架','class'=>'info'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
-				array('value'=>'04','title'=>'已关闭','class'=>''),
+				array('value'=>'04','title'=>'已作废','class'=>''),
 			)
 		);
 		//0 草稿 1审核 2入库 3上架 4付款 5完成
@@ -229,17 +247,26 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已关闭','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
 			)
 		);
 		$M = M('stock_purchase');
 		$map['is_deleted'] = 0;
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
 		foreach ($res as $key => $val) {
-			if(array_key_exists($key, $pill)){
+			if(array_key_exists($val['status'], $pill['status'])){
 				$pill['status'][$val['status']]['count'] = $val['qty'];
+				$pill['status']['total'] += $val['qty'];
 			}
 		}
+
+		foreach($pill['status'] as $k => $val){
+			if(empty($val['count'])){
+				$pill['status'][$k]['count'] = 0;
+			}
+		}
+		
 		$this->pill = $pill;
 		
 	}
@@ -278,13 +305,27 @@ class PurchaseController extends CommonController {
 				$res = $in->field('id')->where($where)->find();
 				
 				$A = A('StockIn','Logic');
-				$res = $A->checkIn($res['id']);
-				if($res == 0) {
+				$res = $A->haveCheckIn($res['id']);
+
+				//没有收货
+				if($res == false) {
 					$data['status'] = '04';
-					$data['is_deleted'] = 1;
-					$data = $in->create($data);
-					$res = $in->where($map)->save($data);
+					//$data['is_deleted'] = 1;
+					$data = M('stock_purchase')->create($data);
+					$res = M('stock_purchase')->where($map)->save($data);
+					unset($map);
+					unset($data);
+
+					//关闭对应的到货单
+					$data['status'] = '04';
+					$data = M('stock_bill_in')->create($data);
+					$map['refer_code'] = $where['refer_code'];
+					M('stock_bill_in')->where($map)->save($data);
+					unset($map);
+					unset($data);
+
 				}
+				//已经收获
 				else {
 					$this->msgReturn(0,'操作失败，采购单对应的到货单已收货。');
 					//$A->finishByPurchase($id);
@@ -314,7 +355,7 @@ class PurchaseController extends CommonController {
 		
 		$bill = $Min->create($data);
 		$bill['code'] = get_sn('in');
-		$bill['type'] = 'purchase';
+		$bill['type'] = 'ASN';
 		$bill['status'] = '21';
 		$bill['batch_code'] = 'batch'.NOW_TIME;
 
@@ -346,4 +387,26 @@ class PurchaseController extends CommonController {
 		$this->msgReturn($res);
 	}
 
+	//在search方法执行后 执行该方法
+	protected function after_search(&$map){
+		//获得页面提交过来的货品编号
+		if(array_key_exists('stock_purchase_detail.pro_code', $map)){
+			$pro_code = $map['stock_purchase_detail.pro_code'][1];
+			unset($map['stock_purchase_detail.pro_code']);
+
+			//根据pro_code 查询stock_purchase_detail的pid
+			$purchase_detail_map['pro_code'] = array('like','%'.$pro_code.'%');
+			$pid_list = M('stock_purchase_detail')->where($purchase_detail_map)->field('pid')->group('pid')->select();
+			unset($purchase_detail_map);
+
+			$pid_arr = array();
+			foreach($pid_list as $pid){
+				$pid_arr[] = $pid['pid'];
+			}
+
+			if(!empty($pid_arr)){
+				$map['stock_purchase.id'] = array('in',$pid_arr);
+			}
+		}
+	}
 }

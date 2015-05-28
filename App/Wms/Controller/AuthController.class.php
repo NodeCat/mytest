@@ -19,9 +19,17 @@ class AuthController extends Controller {
             $this->display('index:closed');
             exit();
         }
+
+        //检查节点权限
+        $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
+
+        if ( !$this->check_rule($rule)){
+            $this->error('权限不足，不能访问');
+        }
+
         return ;
         //模块访问控制，判断站点维护及禁止访问的模块，及是否需要登陆才能访问
-        $access = $this->check_access();
+        /*$access = $this->check_access();
         if ( $access === false ) {
             $this->error('unauthorized');
         }
@@ -37,7 +45,53 @@ class AuthController extends Controller {
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
         if ( !$this->check_rule($rule)){
             $this->error('unauthorized');
+        }*/
+    }
+
+    protected function check_rule($cur_rule){
+        //return true;
+        $cur_user = session('user');
+        if($cur_user['uid'] == 1){
+            return true;
         }
+
+        $user_roles = session('user.role');
+        
+        if(empty($user_roles)){
+            return false;
+        }
+
+        //根据id 查询auth_role
+        $user_roles_arr = explode('_', $user_roles);
+        $map['id'] = array('in',$user_roles_arr);
+        $rules = M('auth_role')->where($map)->field('rules')->select();
+        unset($map);
+
+        if(empty($rules)){
+            return false;
+        }
+
+        $rules_arr = array();
+        foreach($rules as $rule){
+            $arr = explode(',', $rule['rules']);
+            foreach($arr as $val){
+                $rules_arr[$val] = $val;
+            }
+        }
+
+        //根据id 查询auth_authority
+        $res = array();
+        $map['id'] = array('in',$rules_arr);
+        $url_arr = M('auth_authority')->where($map)->field('url')->select();
+        foreach($url_arr as $url){
+            $res[] = $url['url'];
+        }
+
+        if(in_array($cur_rule,$res)){
+            return true;
+        }
+
+        return false;
     }
 
     protected function api_auth(){

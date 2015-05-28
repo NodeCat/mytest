@@ -17,16 +17,16 @@
       <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" ><input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" ><input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
       <input type="text" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
         <td  style="width:10%;">
-          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="1" class="pro_qty form-control input-sm text-right" autocomplete="off">
+          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="1" class="pro_qty form-control input-sm text-left" autocomplete="off">
         </td>
         <td style="width:10%;">
           <select name="pros[pro_uom][]" class="form-control input-sm">
-            <option value="箱">箱</option>
+            <!--<option value="箱">箱</option>-->
             <option value="件">件</option>
           </select>
         </td>
         <td style="width:10%;">
-          <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="0.00" class="form-control input-sm text-right">
+          <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="0.00" class="form-control input-sm text-left">
         </td>
         
         <td style="width:10%;" class="text-center">
@@ -113,6 +113,10 @@ $('.tr-cur .pro_names').typeahead({
     }
   });
 }
+//删除操作
+$('.tab-content').delegate( '.btn-delete', 'click', function(){
+  $(this).closest('tr').remove();
+});
 </script>
 
 <style type="text/css">

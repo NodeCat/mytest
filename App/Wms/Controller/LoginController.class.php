@@ -14,9 +14,9 @@ class LoginController extends Controller {
     public function index($username = null, $password = null, $verify = null){
         if(IS_POST){
             /* 检测验证码  */
-            if(!check_verify($verify)){
+            /*if(!check_verify($verify)){
                 $this->error('验证码输入错误！');
-            }
+            }*/
             $this->username=$username;
             $User = D('User','Api');
             $uid = $User->login($username, $password);
@@ -148,10 +148,12 @@ class LoginController extends Controller {
          if(!isset($this->msg)){
             $data['password'] = $new;
             $uid = is_login();
-            $Api = new UserApi();
+            //$Api = new UserApi();
+            $Api = A('User','Api');
             $res = $Api->updateInfo($uid, $old, $data);
             if($res['status']){
                 $this->success('修改密码成功！');
+                return true;
             }else{
                 $this->error($this->showRegError($res['info']));
             }

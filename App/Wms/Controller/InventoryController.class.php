@@ -6,7 +6,7 @@ class InventoryController extends CommonController {
 	protected $filter = array(
 			'type' => array('fast' => '快速盘点','again' => '复盘'),
 			'is_diff' => array('0' => '无', '1' => '有'),
-			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
+			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已作废'),
 		);
 	protected $columns = array('id' => '',
             'code' => '盘点单号',
@@ -36,7 +36,7 @@ class InventoryController extends CommonController {
 		    'title' => '盘点状态',
 		    'query_type' => 'eq',
 		    'control_type' => 'select',
-		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已作废'),
 		),
 		'stock_inventory.is_diff' => array (
 		    'title' => '有无差异',
@@ -93,7 +93,7 @@ class InventoryController extends CommonController {
 	}
 
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
         $this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 
@@ -107,7 +107,7 @@ class InventoryController extends CommonController {
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'add', 'show' => !isset($auth['add']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
@@ -171,7 +171,7 @@ class InventoryController extends CommonController {
 					$data['status'] = '待确认';
 					break;
 				case 'closed':
-					$data['status'] = '已关闭';
+					$data['status'] = '已作废';
 					break;
 				default:
 					break;
@@ -302,6 +302,9 @@ class InventoryController extends CommonController {
 			foreach($inventory_infos as $inventory_info){
 				if($inventory_info['status'] == 'closed'){
 					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'已经经过差异确认，或者盘点单已经关闭');
+				}
+				if($inventory_info['status'] != 'confirm'){
+					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'的状态不是待确认，请操作完毕再进行确认');
 				}
 			}
 			//开始处理盘点单
@@ -495,8 +498,18 @@ class InventoryController extends CommonController {
 			$inventory_infos = M('stock_inventory')->where($map)->select();
 			unset($map);
 
+			//检查是否存在 已经有差异的盘点单，如果有，则提示错误
 			foreach($inventory_infos as $inventory_info){
-				$inventory_is_diff = falseis_diff;
+				if($inventory_info['status'] == 'closed'){
+					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'已经经过差异确认，或者盘点单已经关闭');
+				}
+				if($inventory_info['status'] != 'confirm'){
+					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'的状态不是待确认，请操作完毕再进行确认');
+				}
+			}
+
+			foreach($inventory_infos as $inventory_info){
+				$inventory_is_diff = false;
 				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
 				$map['inventory_code'] = $inventory_info['code'];
 				$inventory_details = M('stock_inventory_detail')->where($map)->select();
@@ -568,7 +581,7 @@ class InventoryController extends CommonController {
 	}
 
 	//手持设备扫描盘点 根据inventory_code返回对应详情
-	public function getInvDetailByInvCode(){
+	/*public function getInvDetailByInvCode(){
 		$inventory_code = I('inventory_code');
 		$map['inventory_code'] = $inventory_code;
 		$inventory_detail_infos = M('stock_inventory_detail')->where($map)->select();
@@ -578,7 +591,7 @@ class InventoryController extends CommonController {
 		$data['data'] = $inventory_detail_infos;
 
 		$this->ajaxReturn($data);
-	}
+	}*/
 
 	//
 }

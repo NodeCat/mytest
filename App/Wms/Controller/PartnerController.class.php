@@ -6,7 +6,7 @@ class PartnerController extends CommonController {
 	protected $query   = array ();
 
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
         $this->toolbar =array(
             array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
