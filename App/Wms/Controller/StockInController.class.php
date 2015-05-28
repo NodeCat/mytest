@@ -150,7 +150,7 @@ class StockInController extends CommonController {
 							$this->msgReturn(1,'查询成功。',$data);
 						}
 						if($res['status'] =='33') {
-							$this->msgReturn(0,'查询失败，该单据已上架。');
+							$this->msgReturn(0,'查询失败，该单据待上架数量为0。');
 						}
 						if($res['status'] == '53'){
 							$this->msgReturn(0,'查询失败，该单据已完成。');
