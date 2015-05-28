@@ -160,6 +160,11 @@ class PurchaseController extends CommonController {
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
+
+			//如果是edit 根据pid 删除所有相关的puchase_detail记录
+			$map['pid'] = $pid;
+			M('stock_purchase_detail')->where($map)->delete();
+			unset($map);
 		}
 		$n = count($pros['pro_code']);
 		if($n <2) {
@@ -179,13 +184,13 @@ class PurchaseController extends CommonController {
 			$row['price_unit'] = $pros['price_unit'][$j];
 			$row['price_subtotal'] = $row['price_unit'] * $row['pro_qty'];
 			$data = $M->create($row);
-			if(!empty($pros['id'][$j])) {
-				$map['id'] = $pros['id'][$j];
-				$res = $M->where($map)->save($data);
-			}
-			else {
-				$res = $M->add($data);
-			}
+			//if(!empty($pros['id'][$j])) {
+				//$map['id'] = $pros['id'][$j];
+				//$res = $M->where($map)->save($data);
+			//}
+			//else {
+			$res = $M->add($data);
+			//}
 			if($res==false){
 				dump($pros);
 				dump($M->getError());
