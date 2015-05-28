@@ -77,6 +77,12 @@ class StockInLogic{
 		}
 	}
 
+	//上架逻辑 
+	//$inId 入库单id 
+	//$code pro_code
+	//$qty 本次上架量
+	//$location_code 上架库位
+	//$status 本次上架状态
 	public function on($inId,$code,$qty,$location_code,$status){
 		if(empty($inId) || empty($code)  || $location_code == '' || empty($status)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
@@ -104,15 +110,16 @@ class StockInLogic{
 		$map['type'] = '2';
 		$map['is_deleted'] = 0;
 		$res = M('location')->field('id')->where($map)->find();
+		unset($map);
 
 		if(empty($res)) {
 			return array('res'=>false,'msg'=>'库位不存在。');
 		}
 		else {
 			$location_id = $res['id'];
-			unset($map);
 			$map['location_id'] = $location_id;
 			$location = M('location_detail')->field('is_mixed_pro,is_mixed_batch')->where($map)->find();
+			unset($map);
 		}
 		
 		//判断目标库位是否可以 混货 混批次
@@ -122,7 +129,9 @@ class StockInLogic{
 		$data['batch'] = $in['code'];
 		$data['pro_code'] = $code;
 		$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
+		unset($data);
 
+		//禁止混批次
 		if($res['status'] == 0){
 			return $res;
 		}
@@ -148,8 +157,22 @@ class StockInLogic{
 				$map['status'] = '31';
 				$map['is_deleted'] = 0;
 				M('stock_bill_in')->where($map)->save($data);
+				unset($map);
+				unset($data);
 			}
 		}
+
+		//更新到货单详情 正品 残品 数量
+		$map['pid'] = $inId;
+		$map['pro_code'] = $code;
+		if($status == 'qualified'){
+			M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$qty);
+		}
+		if($status == 'unqualified'){
+			M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$qty);
+		}
+		unset($map);
+
 		if($res == true){
 			return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$pro_qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
 		}

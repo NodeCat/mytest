@@ -7,7 +7,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-  			<th>名称</th><th>计量单位</th><th>预计数量</th><th>待上架量</th><th>已上架量</th><!--<th>正品</th><th>残品</th>-->
+  			<th>名称</th><th>计量单位</th><th>预计到货数量</th><th>实际收货数量</th><th>采购单价</th><th>正品</th><th>残品</th>
   		</thead>
   		<tbody>
       <volist name="pros" id="vo">
@@ -22,17 +22,17 @@
           {$vo.expected_qty}
         </td>
         <td style="width:10%;"  class="text-left">
-          {$vo.prepare_qty}
+          {$vo['prepare_qty'] + $vo['done_qty']}
         </td>
         <td style="width:10%;"  class="text-left">
-          {$vo.done_qty}
+          {$vo.price_unit}
         </td>
-        <!--<td style="width:10%;"  class="text-left">
-          0
+        <td style="width:10%;"  class="text-left">
+          {$vo.qualified_qty}
         </td>
-        <td style="width:10%;">
-          
-        </td>-->
+        <td style="width:10%;"  class="text-left">
+          {$vo.unqualified_qty}
+        </td>
       </tr>
         
       </volist>

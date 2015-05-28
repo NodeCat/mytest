@@ -96,6 +96,7 @@ class StockInController extends CommonController {
 			$code = I('post.code');
 			$id = I('post.id');
 			$type = I('post.t');
+			//扫描SKU编号
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
 				$res = $A->getOnQty($id,$code);
@@ -112,13 +113,22 @@ class StockInController extends CommonController {
 				}
 			}
 		
+			//上架数量 库位
 			if($type == 'input_qty') {
 				$qty = I('post.qty');
 				$location = I('post.location');
 				$status = I('post.status');
 
+				//上架逻辑
 				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
 				if($res['res'] == true) {
+					//有一件商品上架 更新到货单状态为 已上架
+					$upd_map['id'] = $id;
+					$upd_data['status'] = '33';
+					M('stock_bill_in')->where($upd_map)->data($upd_data)->save();
+					unset($upd_map);
+					unset($upd_data);
+
 					$data['msg'] = '上架成功。'.$res['msg'];
 					$res = M('stock_bill_in')->field('id,code')->find($id);
 					$data['id'] = $res['id'];
@@ -132,6 +142,7 @@ class StockInController extends CommonController {
 					$this->msgReturn(0,'上架失败。'.$res['msg']);
 				}
 			}
+			//扫描入库单号
 			if($type == 'scan_incode') {
 				$map['is_deleted'] = 0;
 				$map['code'] = $code;
@@ -150,7 +161,7 @@ class StockInController extends CommonController {
 							$this->msgReturn(1,'查询成功。',$data);
 						}
 						if($res['status'] =='33') {
-							$this->msgReturn(0,'查询失败，该单据已上架。');
+							$this->msgReturn(0,'查询失败，该单据待上架数量为0。');
 						}
 						if($res['status'] == '53'){
 							$this->msgReturn(0,'查询失败，该单据已完成。');
@@ -230,7 +241,7 @@ class StockInController extends CommonController {
 				$res = M('stock_bill_in')->where($map)->find();
 				if(!empty($res)) {
 					if(true){
-						if($res['status'] =='21' || $res['status'] =='22') {
+						if($res['status'] =='21' || $res['status'] =='22' || $res['status'] == '31' || $res['status'] =='32' || $res['status'] =='33') {
 							$data['id'] = $res['id'];
 							$data['code'] = $res['code'];
 							$data['title'] = '扫描货品';
@@ -241,9 +252,9 @@ class StockInController extends CommonController {
 							$data = $this->fetch('StockIn:scan-procode');
 							$this->msgReturn(1,'查询成功。',$data);
 						}
-						if($res['status'] == '31' || $res['status'] =='32') {
+						/*if($res['status'] == '31' || $res['status'] =='32') {
 							$this->msgReturn(0,'查询失败，该单据已入库。');
-						}
+						}*/
 						if($res['status'] == '53'){
 							$this->msgReturn(0,'查询失败，该单据已完成。');
 						}
@@ -287,7 +298,7 @@ class StockInController extends CommonController {
 			$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			//$pros[$key]['moved_qty'] = $qtyIn;
-			$moved_qty_total += $qtyIn;
+			//$moved_qty_total += $qtyIn;
 			$expected_qty_total += $val['pro_qty'];
 			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
@@ -297,7 +308,11 @@ class StockInController extends CommonController {
 		$bill_in_detail_list = M('stock_bill_in_detail')->where($map)->select();
 		
 		$this->pros = $bill_in_detail_list;
-		$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
+		//已上架量
+		foreach($this->pros as $pro){
+			$data['qtyForIn'] += $pro['done_qty'];
+		}
+		//$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
 		$data['qtyForOn'] =$qtyForIn;
 	}
 	protected function before_index() {
@@ -311,6 +326,7 @@ class StockInController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
         );
         $this->toolbar = array(
         	    array('name' => 'add', 'show' => true, 'new' => 'true'),
@@ -325,6 +341,7 @@ class StockInController extends CommonController {
     	$this->before_index();
     	$this->toolbar_tr =array(
             array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
         );
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
