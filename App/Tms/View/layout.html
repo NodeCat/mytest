@@ -1,0 +1,41 @@
+ <include file="Index:header"/>
+<body>
+<style type="text/css">
+	.message {
+		top:130px;
+	}
+	.page-header{
+		margin-top: 20px;
+	}
+	.content {
+		min-height: 320px
+	}
+</style>
+<include file="index:nav-top" />
+<div class="container-fluid">
+	<div class="row content">
+	<div class="content col-lg- col-sm- col-md- col-xs-">
+			<block name="content">{__CONTENT__}</block>
+<br>
+		<div class="clearfix"></div>
+	</div>
+	</div>
+</div>
+	<include file="Index:footer"/>
+<script type="text/javascript">
+function alert_success(msg){
+	$('.alert').addClass('hidden');
+	var alert=$('.alert-success');
+	alert.text(msg);
+	alert.removeClass('hidden');
+}
+function alert_error(msg){
+	$('.alert').addClass('hidden');
+	var alert=$('.alert-danger');
+	alert.text(msg);
+	alert.removeClass('hidden');
+}
+</script>
+
+</body>
+</html>
