@@ -289,17 +289,21 @@ class StockInController extends CommonController {
 		$pros = M('stock_purchase_detail')->where($map)->select();
 		unset($map);
 		$A = A('StockIn','Logic');
-		$qtyForIn = 0;
+		$qtyForPrepare = 0;
 		foreach ($pros as $key => $val) {
-			$qtyIn = $A->getQtyForIn($id,$val['pro_code']);
-			$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
+			$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
+			//$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
+			$getQtyForReceipt = $A->getQtyForReceipt($id,$val['pro_code']);
 			
-			$qtyForIn += $qtyIn;
-			$qtyForOn += $qtyOn;
+			$qtyForPrepare += $qtyPrepare;
+			//$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			//$pros[$key]['moved_qty'] = $qtyIn;
 			//$moved_qty_total += $qtyIn;
+			//预计收获量
 			$expected_qty_total += $val['pro_qty'];
+			//已收总量
+			$receipt_qty_total += $getQtyForReceipt;
 			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 
@@ -313,7 +317,11 @@ class StockInController extends CommonController {
 			$data['qtyForIn'] += $pro['done_qty'];
 		}
 		//$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
-		$data['qtyForOn'] =$qtyForIn;
+		$data['qtyForPrepare'] = $qtyForPrepare;
+		//预计收获量
+		$data['expected_qty_total'] = $expected_qty_total;
+		//已收总量
+		$data['receipt_qty_total'] = $receipt_qty_total;
 	}
 	protected function before_index() {
         $this->table = array(

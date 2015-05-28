@@ -321,7 +321,8 @@ class StockInLogic{
 		return 2;
 	}
 
-	//已经移动的数量
+	//已经移动的数量 wangshuang
+	//待入库量 prepare_qty的总和 liang
 	public function getQtyForIn($inId,$pro_code){
 		$M = M('stock_bill_in_detail');
 		$map['pid'] = $inId;
@@ -363,6 +364,20 @@ class StockInLogic{
 		}
 		else {
 			return $res['prepare_qty'];
+		}
+	}
+
+	//到货单 实收量 已经收到的货品量
+	public function getQtyForReceipt($batch,$pro_code){
+		$map['pro_code'] = $pro_code;
+		$map['pid'] = $batch;
+		$res = M('stock_bill_in_detail')->where($map)->find();
+
+		if(empty($res)) {
+			return 0;
+		}
+		else {
+			return $res['receipt_qty'];
 		}
 	}
 	public function getLine($inId,$code){
