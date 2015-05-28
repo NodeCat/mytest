@@ -23,15 +23,15 @@ class StockInController extends CommonController {
 	);
 	protected $columns = array (   
 		'code' => '到货单号',   
-		'refer_code' => '采购单号',  
+		'refer_code' => '关联单号', 
+	    'type' => '入库类型',
 		'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
-		//'type' => '单据类型',   
 		'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '采购人',
-  		'sp_created_time' => '采购时间',
+  		'sp_created_time' => '创建时间',
 		'state' => '状态', 
 	);
 	protected $query = array (   
@@ -42,7 +42,7 @@ class StockInController extends CommonController {
 			'value' => 'name',   
 		),  
 		'stock_bill_in.refer_code' =>    array (     
-			'title' => '采购单据',     
+			'title' => '关联单据',     
 			'query_type' => 'like',     
 			'control_type' => 'text',     
 			'value' => 'Company.id,name',   
@@ -59,9 +59,9 @@ class StockInController extends CommonController {
 			'query_type' => 'eq',     
 			'control_type' => 'getField',     
 			'value' => 'Company.id,name',   
-		),   
+		), 
 		
-		'stock_bill_in.partner_id' =>    array (     
+	   'stock_bill_in.partner_id' =>    array (     
 			'title' => '供货商',     
 			'query_type' => 'eq',     
 			'control_type' => 'refer',     
@@ -74,7 +74,7 @@ class StockInController extends CommonController {
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
 		),
 		'stock_bill_in.created_time' =>    array (     
-			'title' => '采购时间',     
+			'title' => '时间',     
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
@@ -276,14 +276,28 @@ class StockInController extends CommonController {
 		$M = D('StockIn');
 		$id = I($M->getPk());
 		$row = $M->find($id);
-		$map['stock_purchase.code'] = $row['refer_code'];
-		$purchase = D('Purchase')->default()->where($map)->find();
-		$data['created_user_name'] = $purchase['created_user_name'];
-		$data['created_user_mobile'] = $purchase['created_user_mobile'];
-		$data['created_time'] = $purchase['created_time'];
-		$data['partner_name'] = $purchase['partner_name'];
-		$data['cat_total'] = $purchase['cat_total'];
-		$data['qty_total'] = $purchase['qty_total'];
+		if (!empty($row['refer_code'])) {
+		    //自动创建的入库单
+		    $map['stock_purchase.code'] = $row['refer_code'];
+		    $purchase = D('Purchase')->default()->where($map)->find();
+		    $data['created_user_name'] = $purchase['created_user_name'];
+		    $data['created_user_mobile'] = $purchase['created_user_mobile'];
+		    $data['created_time'] = $purchase['created_time'];
+		    $data['partner_name'] = $purchase['partner_name'];
+		    $data['cat_total'] = $purchase['cat_total'];
+		    $data['qty_total'] = $purchase['qty_total'];
+		} else {
+		    //手动创建的入库单
+		    $stock_detail = M('stock_bill_in_detail');
+		    $detail = $stock_detail->field('count(*) as cat_total, sum(expected_qty) as qty_total')
+		                ->where(array('pid' => $id))
+		                ->find();
+		    $data['sp_created_time'] = $row['created_time'];
+		    $data['cat_total'] = $detail['cat_total'];
+		    $data['qty_total'] = $detail['qty_total'];
+		}
+		
+		//dump($data);exit;
 		unset($map);
 		$map['pid'] = $purchase['id'];
 		$pros = M('stock_purchase_detail')->where($map)->select();
@@ -317,11 +331,14 @@ class StockInController extends CommonController {
 			$data['qtyForIn'] += $pro['done_qty'];
 		}
 		//$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
+
 		$data['qtyForPrepare'] = $qtyForPrepare;
 		//预计收获量
 		$data['expected_qty_total'] = $expected_qty_total;
 		//已收总量
 		$data['receipt_qty_total'] = $receipt_qty_total;
+
+		$data['qtyForOn'] =$qtyForIn;
 	}
 	protected function before_index() {
         $this->table = array(
@@ -383,6 +400,32 @@ class StockInController extends CommonController {
 
 		$this->pill = $pill;
     }
+    
+    /**
+     * 列表数据后期处理
+     * @param array $data 列表数据
+     */
+    protected function after_lists(&$data) {
+        if (empty($data) || !is_array($data)) {
+            //参数有误
+            return;
+        }
+        $M = M('stock_bill_in_detail');
+        //$value使用了变量引用 如增加代码不可使用
+        foreach ($data as &$value) {
+            //dump($data);exit;
+            //检索手动创建的入库单
+            if (empty($value['cat_total']) && empty($value['qty_total'])) {
+                $detail = $M->field('count(*) as cat_total, sum(expected_qty) as qty_total')
+                            ->where(array('pid' => $value['id']))
+                            ->find();
+                $value['cat_total'] = $detail['cat_total']; //SKU总数
+                $value['qty_total'] = $detail['qty_total']; //总数量
+                $value['sp_created_time'] = $value['created_time']; //创建时间
+            }
+        }
+    }
+    
     //打印
     public function printpage(){
     	$id = I('get.id');
@@ -426,6 +469,10 @@ class StockInController extends CommonController {
      * @param object $M stockin模型（操作数据表stock_bill_in）
      */
     public function before_add(&$M) {
+        if (count(I('post.pros')) < 2) {
+            //没有商品被添加
+            $this->msgReturn(0, '没有商品被添加');
+        }
         $M->code = get_sn('in'); //入库单号
         //$M->type = 'purchase'; //类型
         $M->batch_code = 'batch' . NOW_TIME; //批次
@@ -433,9 +480,10 @@ class StockInController extends CommonController {
         $M->created_user = session()['user']['uid']; //创建管理员
         $M->updated_user = session()['user']['uid']; //更新管理员
         $M->status = 21; //状态 21待入库
-        if (empty(I('post.refer_code'))) {
-            $M->refer_code = '';
-        }
+        $M->partner_id = 1; //手动添加供货商默认为1    
+        //if (empty(I('post.refer_code'))) {
+        //    $M->refer_code = '';
+        //}
     }
     
     /**
@@ -449,7 +497,7 @@ class StockInController extends CommonController {
         unset($pros[0]);
         if (empty($pros)) {
             //没有产品被添加
-            $this->msgReturn(false, '没有添加产品');
+            $this->msgReturn(0, '没有添加产品');
         }
         //获取采购单id
         $stock_in = D('stock_bill_in');
@@ -489,6 +537,6 @@ class StockInController extends CommonController {
                 $stock_detail->add();
             }
         }
-        $this->msgReturn(true, '操作成功', '', 'Stock/index');
+        $this->msgReturn(1, '', '', U('view', 'id='.$id));
     }
 }
