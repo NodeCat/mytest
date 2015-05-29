@@ -483,8 +483,18 @@ class StockInController extends CommonController {
             $this->msgReturn(0, '没有商品被添加');
             return;
         }
+        unset($pros[0]);
+        if (empty($pros)) {
+            //没有商品被添加
+            $this->msgReturn(0, '没有商品被添加');
+            return;
+        }
         
         foreach ($pros as $value) {
+            if (empty($value['pro_name'])) {
+                $this->msgReturn(0, '没有商品被添加');
+                return;
+            }
             //sku数量为0
             if ($value['pro_qty'] <= 0) {
                 $this->msgReturn(0, '数量不可为0');
