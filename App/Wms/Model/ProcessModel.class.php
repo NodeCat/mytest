@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class ProcessModel extends Model {
 
-    protected $insertFields = array('id','type','wh_id','plan_qty','real_qty','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('type','wh_id','plan_qty','real_qty','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','code','type','wh_id','plan_qty','real_qty','p_pro_code','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('code','type','wh_id','plan_qty','real_qty','p_pro_code','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName = 'erp_process';
 
@@ -32,7 +32,11 @@ class ProcessModel extends Model {
         'default'=>array(
             'where'=>array('erp_process.is_deleted'=>'0'),
             'order'=>'erp_process.id DESC',
-            
+            'join'=>array(
+                'inner join warehouse on erp_process.wh_id=warehouse.id ',
+                'inner join user u2 on erp_process.updated_user = u2.id',
+                ),
+            'field'=>'erp_process.*, warehouse.name as wh_name, u2.nickname as updated_user',
         ),
         'latest'=>array(
             'where'=>array('erp_process.is_deleted'=>'0'),

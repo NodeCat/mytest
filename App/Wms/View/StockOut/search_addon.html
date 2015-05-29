@@ -14,11 +14,12 @@ $(function(){
 			data:'ids='+ids,
 			success: function(json){
 				if(json.status=='1'){
-					refresh_list();
+					alert(json.msg);
+                    refresh_list();
 				}
 				if(json.status=='0'){
 					alert(json.msg);
-                    return false;
+                    refresh_list();
 				}
 			}
 		});
