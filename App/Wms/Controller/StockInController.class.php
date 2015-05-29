@@ -30,7 +30,7 @@ class StockInController extends CommonController {
 		'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
-		'sp_created_user_name' => '采购人',
+		'sp_created_user_name' => '创建人',
   		'sp_created_time' => '创建时间',
 		'state' => '状态', 
 	);
@@ -60,15 +60,21 @@ class StockInController extends CommonController {
 			'control_type' => 'getField',     
 			'value' => 'Company.id,name',   
 		), 
+	    'stock_bill_in.type' => array(
+			'title' => '入库类型',
+	        'query_type' => 'eq',
+	        'control_type' => 'getField',
+	        'value' => 'stock_bill_in_type.id,name',
+		),
 		
-	   'stock_bill_in.partner_id' =>    array (     
+	   /*'stock_bill_in.partner_id' =>    array (     
 			'title' => '供货商',     
 			'query_type' => 'eq',     
 			'control_type' => 'refer',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-			),
+			),*/
 		'stock_purchase.created_user' =>    array (     
-			'title' => '采购人',     
+			'title' => '创建人',     
 			'query_type' => 'eq',     
 			'control_type' => 'refer',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
@@ -295,12 +301,14 @@ class StockInController extends CommonController {
 		    $data['sp_created_time'] = $row['created_time'];
 		    $data['cat_total'] = $detail['cat_total'];
 		    $data['qty_total'] = $detail['qty_total'];
+		    $data['refer_code'] = '无';
+		    $data['partner_name'] = '无';
 		}
-		
-		//dump($data);exit;
 		unset($map);
-		$map['pid'] = $purchase['id'];
-		$pros = M('stock_purchase_detail')->where($map)->select();
+		//$map['pid'] = $purchase['id'];
+		//$pros = M('stock_purchase_detail')->where($map)->select();
+		$map['pid'] = $id;
+		$pros = M('stock_bill_in_detail')->where($map)->select();
 		unset($map);
 		$A = A('StockIn','Logic');
 		$qtyForPrepare = 0;
@@ -338,7 +346,7 @@ class StockInController extends CommonController {
 		//已收总量
 		$data['receipt_qty_total'] = $receipt_qty_total;
 
-		$data['qtyForOn'] =$qtyForIn;
+		//$data['qtyForOn'] =$qtyForIn;
 	}
 	protected function before_index() {
         $this->table = array(
@@ -469,9 +477,19 @@ class StockInController extends CommonController {
      * @param object $M stockin模型（操作数据表stock_bill_in）
      */
     public function before_add(&$M) {
-        if (count(I('post.pros')) < 2) {
+        $pros = I('post.pros');
+        if (count($pros) < 2) {
             //没有商品被添加
             $this->msgReturn(0, '没有商品被添加');
+            return;
+        }
+        
+        foreach ($pros as $value) {
+            //sku数量为0
+            if ($value['pro_qty'] <= 0) {
+                $this->msgReturn(0, '数量不可为0');
+                return;
+            }
         }
         $M->code = get_sn('in'); //入库单号
         //$M->type = 'purchase'; //类型
