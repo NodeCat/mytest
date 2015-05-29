@@ -1,0 +1,86 @@
+<div role="tabpanel">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">父SKU信息</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+      <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
+      <thead>
+        <th>加工SKU</th><th>产品名称</th><th>型号</th><th>可能库存</th>
+      </thead>
+      <tbody>
+      <tr class="tr-tpl">
+      <td style="width:10%;">
+        {$p_sku_info.pro_code}
+      </td>
+      <td  style="width:40%;">
+        {$p_sku_info.wms_name}
+      </td>
+      <td  style="width:40%;">
+        {$p_sku_info.pro_attrs_str}
+      </td>
+      <td style="width:10%;">
+        
+      </td>
+      </tr>
+
+      </tbody>
+      </table>
+    </div>
+  </div>
+
+</br>
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">加工单明细</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+      <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
+      <thead>
+        <th>加工SKU</th><th>产品名称</th><th>型号</th><th>可能库存</th><th>组合数量</th>
+      </thead>
+      <tbody>
+      <volist name="c_sku_info" id="c_sku">
+      <tr class="tr-tpl">
+      <td style="width:10%;">
+        {$c_sku.pro_code}
+      </td>
+      <td  style="width:35%;">
+        {$c_sku.wms_name}
+      </td>
+      <td  style="width:35%;">
+        {$c_sku.pro_attrs_str}
+      </td>
+      <td style="width:10%;">
+        
+      </td>
+      <td style="width:10%;">
+        {$ratio[$c_sku['pro_code']]}
+      </td>
+      </tr>
+      </volist>
+
+      </tbody>
+      </table>
+    </div>
+  </div>
+
+
+</div>
+
+  </div>
+</div>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>

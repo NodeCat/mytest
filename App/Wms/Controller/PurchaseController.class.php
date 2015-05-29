@@ -131,6 +131,18 @@ class PurchaseController extends CommonController {
         );
     }
 	protected function before_add(&$M) {
+		$pros = I('pros');
+
+		//检查采购记录数
+		if(count($pros['pro_code']) == 1){
+			$this->msgReturn(0,'请至少采购一个产品');
+		}
+		//检查采购数量
+		foreach($pros['pro_qty'] as $pro_qty){
+			if($pro_qty == 0){
+				$this->msgReturn(0,'采购数量不能为0');
+			}
+		}
 		$M->type = 'purchase';
 		$M->code = get_sn('purchase');
 		$M->price_total = 0;
@@ -142,12 +154,31 @@ class PurchaseController extends CommonController {
 	
 	protected function before_save(&$M){
 		$M->status = '11';
+
+		if(ACTION_NAME == 'edit'){
+			$pros = I('pros');
+			//检查采购记录数
+			if(count($pros['pro_code']) == 1){
+				$this->msgReturn(0,'请至少采购一个产品');
+			}
+			//检查采购数量
+			foreach($pros['pro_qty'] as $pro_qty){
+				if($pro_qty == 0){
+					$this->msgReturn(0,'采购数量不能为0');
+				}
+			}
+		}
 	}
 
 	protected function after_save($pid){
 		$pros = I('pros');
 		if(ACTION_NAME=='edit'){
 			$pid = I('id');
+
+			//如果是edit 根据pid 删除所有相关的puchase_detail记录
+			$map['pid'] = $pid;
+			M('stock_purchase_detail')->where($map)->delete();
+			unset($map);
 		}
 		$n = count($pros['pro_code']);
 		if($n <2) {
@@ -167,13 +198,13 @@ class PurchaseController extends CommonController {
 			$row['price_unit'] = $pros['price_unit'][$j];
 			$row['price_subtotal'] = $row['price_unit'] * $row['pro_qty'];
 			$data = $M->create($row);
-			if(!empty($pros['id'][$j])) {
-				$map['id'] = $pros['id'][$j];
-				$res = $M->where($map)->save($data);
-			}
-			else {
-				$res = $M->add($data);
-			}
+			//if(!empty($pros['id'][$j])) {
+				//$map['id'] = $pros['id'][$j];
+				//$res = $M->where($map)->save($data);
+			//}
+			//else {
+			$res = $M->add($data);
+			//}
 			if($res==false){
 				dump($pros);
 				dump($M->getError());
@@ -354,6 +385,7 @@ class PurchaseController extends CommonController {
 			//$v['type'] = 'in';
 			$v['refer_code'] = $bill['code'];
 			$v['pid'] = $val['pid'];
+			$v['price_unit'] = $val['price_unit'];
 			$bill['detail'][] = $v;
 		}
 
