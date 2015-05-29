@@ -63,6 +63,9 @@ class CommonController extends AuthController {
                     case 'eq':
                         $map[$key]=array($v['query_type'],$condition[$key]);
                         break;
+                    case 'in':
+                        $map[$key]=array($v['query_type'],$condition[$key]);
+                        break;
                     case 'like':
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;

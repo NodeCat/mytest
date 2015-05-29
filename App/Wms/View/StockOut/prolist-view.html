@@ -7,23 +7,23 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-  			<th>行号</th><th>货品号</th><th>货品名</th><th>规格</th><th>订单量</th><th>状态</th>
+  			<th>行号</th><th>货品号</th><th>货品名</th><th>规格</th><th>订单量</th><th>发货量</th>
   		</thead>
   		<tbody>
     <volist name="pros" id="vo" key="key">
         
     <tr class="tr-cur">
-        <th style="width:10%;">{$key}</th>
+        <td style="width:10%;">{$key}</td>
 
-        <th style="width:10%;">{$vo.pro_code}</th>
+        <td style="width:10%;">{$vo.pro_code}</td>
         
-        <th style="width:15%;">{$vo.pro_name}</th>
+        <td style="width:15%;">{$vo.pro_name}</td>
         
-        <th style="width:30%;">{$vo.pro_attrs}</th>
+        <td style="width:30%;">{$vo.pro_attrs}</td>
         
-        <th style="width:10%;">{$vo.order_qty}</th>
+        <td style="width:10%;">{$vo.order_qty}</td>
         
-        <th style="width:10%;">{$vo.status}</th>
+        <td style="width:10%;">{$vo.delivery_qty}</td>
     </tr>
         
     </volist>

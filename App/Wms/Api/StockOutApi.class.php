@@ -16,15 +16,22 @@ class StockOutApi extends Controller{
         
         $stock_out = M('stock_bill_out');
         $stock_detail = M('stock_bill_out_detail');
-
+        $warehouse = M('warehouse');
+        
+        $map['code'] = $post['picking_type_id'];
+        $wh_id = $warehouse->where($map)->getField('id');
+        
+        unset($map);
         $map['code'] = get_sn('out',$post['wh_id']);
-        $map['wh_id'] = $post['picking_type_id'];
+        $map['wh_id'] = $wh_id;
         $map['line_name'] = $post['line_name'];
-        $map['op_date'] = $post['delivery_date'];
-        $map['type'] = 1;//$post['type'];
+        $map['op_date'] = date('Y-m-d H:i:s',strtotime($post['delivery_date']));
+        $map['op_time'] = $post['delivery_time'];
+        $map['type'] = $post['type'];
         $map['status'] = 1;
         $map['process_type'] = 1;
         $map['refused_type'] = 1;
+
         $stock_out_id = $stock_out->add($map);
         if(empty($stock_out_id)) {
             $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
