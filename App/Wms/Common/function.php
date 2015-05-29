@@ -135,6 +135,9 @@ function en_to_cn($str){
         'fast' => '快速盘点',
         'again' => '复盘',
         'status' => '状态调整',
+        'unite' => '组合',
+        'split' => '拆分',
+        'draft' => '草稿',
         );
 
     return $filter[$str];
