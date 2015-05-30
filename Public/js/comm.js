@@ -335,8 +335,12 @@ function init(){
 	$('body').on('click', '[data-toggle=modal]',function (e) {
 	    e.preventDefault();
 	    var target=$(this).data('target');
+	    var href = $(this).data("href");
+	    if(href==null || href == '') {
+	    	href = $(this).attr('href');
+	    }
 	    if(target ==null)return;
-	    $(target+ " .modal-body").load($(this).data("href"), function(response,status,xhr) { 
+	    $(target+ " .modal-body").load(href, function(response,status,xhr) { 
 	    	if (status == "success") {
 		        $(target).modal("show");
 		    }
@@ -441,7 +445,7 @@ function refresh_page(){
     }
 }
 function refresh_list(){
-	
+
 	$('.content [data-toggle="tooltip"]').tooltip('hide');
 	var obj=$('#cur_page').length;
     if( obj== 0){
