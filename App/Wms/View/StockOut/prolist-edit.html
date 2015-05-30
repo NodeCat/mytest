@@ -30,7 +30,7 @@
       <input type="text" value="{$vo.pro_names}"  placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" readonly="">
       </td>
       <td  style="width:10%;">
-      <input type="text" id="order_qty" name="pros[order_qty][]" readonly="" placeholder="数量"  value="{$vo.order_qty}" class="pro_qty form-control input-sm text-left" autocomplete="off" >
+      <input type="text" id="order_qty" name="pros[order_qty][]" readonly="" placeholder="数量"  value="{$vo.order_qty}" class="pro_qty order_qty form-control input-sm text-left" autocomplete="off" >
       </td>
       <td  style="width:10%;">
       <input type="text" id="delivery_qty" name="pros[delivery_qty][]" placeholder="送货量"  value="{$vo.delivery_qty}" class="pro_qty form-control input-sm text-left" autocomplete="off">
@@ -60,14 +60,25 @@
 
 $(function(){
 $('#save_but').on("click",function(){
-    var _delivery_qty = $('#delivery_qty').val();
-    var _order_qty   = $('#order_qty').val();
-    if(parseInt(_delivery_qty) > parseInt(_order_qty)) {
-        alert('发货量不能大于订单量');
+    window.flag = false;
+     $('.order_qty').each(function(){
+        var order_qty = $(this).val();
+        var delivery_qty = $(this).parent().next().find('#delivery_qty'); 
+        if(parseInt(order_qty) < parseInt(delivery_qty.val())){
+          
+           alert('发货量不能大于订单量');
+           window.flag = true;
+           return false;
+        }
+        
+    });
+    if(window.flag == true) {
         return false;
+    }else{
+        $('.form-view').attr('action','/StockOut/edit');
+        $('.form-view').submit();    
     }
-    return false;
-})
+});
 
 typehead();
 $('.add-pro').on('click',function(){
