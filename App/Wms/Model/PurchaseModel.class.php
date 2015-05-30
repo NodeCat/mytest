@@ -38,7 +38,7 @@ class PurchaseModel extends RelationModel {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('stock_purchase.is_deleted'=>'0'),
+            'where'=>array('stock_purchase.is_deleted'=>'0','sbi.is_deleted'=>'0'),
             'order'=>'stock_purchase.id DESC',
             "join"=>array("inner join warehouse on stock_purchase.wh_id=warehouse.id ",
                 "inner join partner on stock_purchase.partner_id=partner.id ",

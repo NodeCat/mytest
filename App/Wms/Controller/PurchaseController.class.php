@@ -332,6 +332,7 @@ class PurchaseController extends CommonController {
 
 					//关闭对应的到货单
 					$data['status'] = '04';
+					$data['is_deleted'] = 1;
 					$data = M('stock_bill_in')->create($data);
 					$map['refer_code'] = $where['refer_code'];
 					M('stock_bill_in')->where($map)->save($data);
