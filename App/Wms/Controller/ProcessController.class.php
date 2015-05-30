@@ -130,6 +130,9 @@ class ProcessController extends CommonController {
 
     		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
 
+    		//添加stock_qty字段
+			$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
+
     		//父SKU信息
     		$p_sku_info = $sku[$process_pro_code];
     		//子SKU信息
@@ -182,6 +185,9 @@ class ProcessController extends CommonController {
 
 		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
 
+		//添加stock_qty字段
+		$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
+
 		//父SKU信息
 		$p_sku_info = $sku[$process_pro_code];
 		//子SKU信息
@@ -203,6 +209,7 @@ class ProcessController extends CommonController {
 
     //批准
     public function pass(){
+
     	echo 123;exit;
     }
 

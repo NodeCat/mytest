@@ -23,7 +23,7 @@
         <input type="text" name="p_sku_attrs" value="{$p_sku_info.pro_attrs_str}" class=" typeahead form-control input-sm" readonly="">
       </td>
       <td style="width:10%;">
-        
+        <input type="text" name="p_sku_stock_qty" value="{$p_sku_info.stock_qty}" class=" typeahead form-control input-sm" readonly="">
       </td>
       </tr>
 
@@ -59,7 +59,7 @@
         <input type="text" name="c_sku_attrs[]" value="{$c_sku.pro_attrs_str}" class="typeahead form-control input-sm" readonly="">
       </td>
       <td style="width:10%;">
-        
+        <input type="text" name="c_sku_stock_qty[]" value="{$c_sku.stock_qty}" class="typeahead form-control input-sm" readonly="">
       </td>
       <td style="width:10%;">
         <input type="text" name="c_sku_ratio[]" value="{$ratio[$c_sku['pro_code']]}" class="typeahead form-control input-sm" readonly="">
