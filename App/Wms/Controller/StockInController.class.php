@@ -27,7 +27,7 @@ class StockInController extends CommonController {
 	    'type' => '入库类型',
 		'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
-		'partner_name' => '供货商',
+		//'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '创建人',
