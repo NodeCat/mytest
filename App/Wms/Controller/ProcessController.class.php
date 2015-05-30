@@ -2,6 +2,18 @@
 namespace Wms\Controller;
 use Think\Controller;
 class ProcessController extends CommonController {
+	protected $filter = array(
+		'type' =>  array(
+			'unite' => '组合',
+			'split' => '拆分',
+		),
+		'status' => array(
+			'confirm' => '待确认',
+			'pass' => '已生效',
+			'reject' => '已驳回',
+			'close' => '已作废', 
+		),
+	);
 	protected $columns = array (
 		'id' => '',
 		'type' => '加工类型',
@@ -24,8 +36,8 @@ class ProcessController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false'),
+            array('name'=>'edit', 'show' => false,'new'=>'true'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => !isset($auth['add']),'new'=>'true'), 
@@ -38,15 +50,68 @@ class ProcessController extends CommonController {
         );
     }
 
+    public function _before_index() {
+        $this->table = array(
+            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+            'searchbar' => true, //是否显示搜索栏
+            'checkbox'  => true, //是否显示表格中的浮选款
+            'status'    => false, 
+            'toolbar_tr'=> true,
+            'statusbar' => true
+        );
+        $this->toolbar_tr =array(
+            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"draft,confirm"), 
+            'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"draft,confirm"),
+            'reject'=>array('name'=>'reject' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"draft,confirm"),
+            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"draft,confirm,pass,reject")
+        );
+        $this->status =array(
+            array(
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+            ),
+        );
+    }
+
     //重写add方法
     public function add(){
     	if(IS_POST){
+    		$wh_id = I('wh_id');
+    		$plan_qty = I('plan_qty');
+    		$type = I('type');
+    		$process_pro_code = I('process_pro_code');
+    		$remark = I('remark');
+    		if(empty($wh_id) || empty($plan_qty) || empty($type) || empty($process_pro_code) ){
+				$this->msgReturn(0,'参数错误，请填写类型，仓库，计划数量，加工SKU');
+    		}
+    		//创建加工单
+    		$data['code'] = get_sn('erp_pro_'.$type);
+    		$data['wh_id'] = $wh_id;
+    		$data['type'] = $type;
+    		$data['plan_qty'] = $plan_qty;
+    		$data['p_pro_code'] = $process_pro_code;
+    		$data['status'] = 'confirm';
+    		$data['remark'] = $remark;
+    		$process = D('Process');
+    		$data = $process->create($data);
+    		$res = $process->data($data)->add();
+
+    		if($res){
+    			$this->msgReturn(1,'创建成功','','/Process/view/id/'.$res);
+    		}
+
+    		$this->msgReturn(0,'创建失败');
+    	}
+
+    	if(I('get.process_pro_code')){
     		//获得加工SKU
     		$process_pro_code = I('process_pro_code');
 
     		//根据父SKU 查询加工关系
     		$map['p_pro_code'] = $process_pro_code;
     		$process_relation = M('erp_process_sku_relation')->where($map)->select();
+    		unset($map);
 
     		//整理比率
     		foreach($process_relation as $relation){
@@ -65,6 +130,9 @@ class ProcessController extends CommonController {
 
     		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
 
+    		//添加stock_qty字段
+			$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
+
     		//父SKU信息
     		$p_sku_info = $sku[$process_pro_code];
     		//子SKU信息
@@ -74,9 +142,92 @@ class ProcessController extends CommonController {
     		$this->p_sku_info = $p_sku_info;
     		$this->c_sku_info = $c_sku_info;
     		$this->ratio = $ratio;
-
-    		$this->display();
+    		$this->process_pro_code = $process_pro_code;
     	}
+
     	$this->display();
+    }
+
+    //重写view
+    public function view() {
+        $this->_before_index();
+        $this->edit();
+    }
+
+    //在edit方法执行之前执行该方法
+    protected function before_edit(){
+    	$M = D('Process');
+		$id = I($M->getPk());
+		$map['id'] = $id;
+		$process_info = M('erp_process')->where($map)->find();
+		unset($map);
+
+		$process_pro_code = $process_info['p_pro_code'];
+		//根据父SKU 查询加工关系
+		$map['p_pro_code'] = $process_pro_code;
+		$process_relation = M('erp_process_sku_relation')->where($map)->select();
+		unset($map);
+
+		//整理比率
+		foreach($process_relation as $relation){
+			$ratio[$relation['c_pro_code']] = $relation['ratio'];
+		}
+
+		if(empty($process_relation)){
+			$this->msgReturn(0,'加工SKU不存在任何加工关系');
+		}
+
+		//根据pro_code查询对应pro_name
+		$pro_codes[] = $process_pro_code;
+		foreach($process_relation as $relation){
+			$pro_codes[] = $relation['c_pro_code'];
+		}
+
+		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+
+		//添加stock_qty字段
+		$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
+
+		//父SKU信息
+		$p_sku_info = $sku[$process_pro_code];
+		//子SKU信息
+		unset($sku[$process_pro_code]);
+		$c_sku_info = $sku;
+
+		$this->p_sku_info = $p_sku_info;
+		$this->c_sku_info = $c_sku_info;
+		$this->ratio = $ratio;
+		$this->process_pro_code = $process_pro_code;
+
+    }
+
+    protected function after_save($pid){
+    	if(ACTION_NAME == 'edit'){
+    		$this->msgReturn(1,'','',U('view','id='.$pid));
+    	}
+    }
+
+    //批准
+    public function pass(){
+
+    	echo 123;exit;
+    }
+
+    //驳回
+    public function reject(){
+    	$map['id'] = I('id');
+    	$data['status'] = 'reject';
+    	$res = M('erp_process')->where($map)->save($data);
+
+    	$this->msgReturn($res);
+    }
+
+    //作废
+    public function close(){
+    	$map['id'] = I('id');
+    	$data['status'] = 'close';
+    	$res = M('erp_process')->where($map)->save($data);
+
+    	$this->msgReturn($res);
     }
 }

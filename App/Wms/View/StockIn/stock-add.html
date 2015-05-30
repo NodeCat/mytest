@@ -28,7 +28,7 @@
         </td>
         <td style="width:10%;">
             <select name="pros[0][pro_uom]" class="form-control input-sm">
-                <option value="箱">箱</option>
+                <!--<option value="箱">箱</option>-->
             		<option value="件">件</option>
             </select>
         </td>
@@ -125,7 +125,11 @@ $('.tr-cur .pro_names').typeahead({
         $('#table-pro .tr-active .pro_attrs').val(val['attrs']);
         $('.tr-active').removeClass('tr-active');
     }
-  });
+  	});
+	//删除操作
+	$('.tab-content').delegate( '.btn-delete', 'click', function(){
+	  $(this).closest('tr').remove();
+	});
 }
 </script>
 
