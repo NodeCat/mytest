@@ -46,7 +46,7 @@
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">入库类型</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
         <select id="company_id" name="type" class="form-control input-sm selected" data-value="0">
-            <potion value="ASN">采购入库</potion>
+            <potion value="1">采购入库</potion>
             <foreach name='stock_in_type' item="value">
             		<option value ="{$value.id}">{$value.name}</option>
             	</foreach>

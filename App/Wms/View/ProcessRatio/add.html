@@ -1,10 +1,59 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=GB18030">
-<title>Insert title here</title>
-</head>
-<body>
+<form class="form-horizontal form-ajax" action="{:U('add')}" method="post" id='form'>
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
 
-</body>
-</html>
+    <h3 class="panel-title"></h3>
+        <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
+  <button type="submit" data-title="保存" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" data-id=""><i class="glyphicon glyphicon-pencil"></i> 保存</button>
+  <a href="{:U('index')}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
+  </div>
+  {~$data['status']= "0";}
+  <include file="status-bar" />
+  <div class="clearfix"></div>
+  </div>
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>物料清单 新建</h3></div>
+		<div class="col-lg-6"></div>
+	</div>
+  	<hr/>
+  	
+  	
+<div class="row">
+<div class="form-group  col-lg-4">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+        <select id="company_id" name="company_id" class="form-control input-sm selected" data-value="0">
+            <option value ="1">大厨网</option>
+            <option value ="2">大果网</option>
+        </select>
+    </div>
+</div>
+
+<div class="form-group col-lg-4">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">父SKU</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+	<input type="text" class="form-control input-sm" name="p_pro_code" placeholder="父SKU">
+    </div>
+</div>
+<div class="form-group col-lg-4">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">子SKU</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+	<input type="text" class="form-control input-sm" name="c_pro_code" placeholder="子SKU">
+    </div>
+</div>
+<div class="form-group col-lg-4">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">比例</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+	<input type="text" class="form-control input-sm" name="ratio" placeholder="比例">
+    </div>
+</div>
+</div>
+</div>
+
+</div>
+<!-- <include file="stock-add" />-->
+<div class="row">
+  <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
+</div>
+</form>
