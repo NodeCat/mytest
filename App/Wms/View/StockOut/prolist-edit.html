@@ -1,0 +1,151 @@
+<div role="tabpanel">
+    <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+            <th>产品名称</th><th>订单量</th><th>发货量</th>
+  		</thead>
+  		<tbody>
+      <tr class="hidden tr-tpl">
+      <td style="width:50%;">
+      <input type="hidden" value="0" name="pros[id][]" />
+      <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" ><input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" ><input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+      <input type="text" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
+        <td  style="width:10%;">
+          <input type="text" id="o_qty" name="pros[order_qty][]" placeholder="数量"  value="" class="pro_qty form-control input-sm text-left" autocomplete="off">
+        </td>
+        <td  style="width:10%;">
+          <input type="text" id="d_qty" name="pros[delivery_qty][]" placeholder="数量"  value="" class="pro_qty form-control input-sm text-left" autocomplete="off">
+        </td>
+      </tr>  
+
+      <volist name="pros" id="vo">
+        
+<tr class="tr-cur">
+      <td style="width:50%;">
+      <input type="hidden" value="{$vo.id}" name="pros[id][]" />
+      <input type="hidden" value="{$vo.pro_code}" name="pros[pro_code][]" class="pro_code form-control input-sm" >
+      <input type="hidden" value="{$vo.pro_name}" name="pros[pro_name][]" class="pro_name form-control input-sm" >
+      <input type="hidden" value="{$vo.pro_attrs}" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+      <input type="text" value="{$vo.pro_names}"  placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" readonly="">
+      </td>
+      <td  style="width:10%;">
+      <input type="text" id="order_qty" name="pros[order_qty][]" readonly="" placeholder="数量"  value="{$vo.order_qty}" class="pro_qty order_qty form-control input-sm text-left" autocomplete="off" >
+      </td>
+      <td  style="width:10%;">
+      <input type="text" id="delivery_qty" name="pros[delivery_qty][]" placeholder="送货量"  value="{$vo.delivery_qty}" class="pro_qty form-control input-sm text-left" autocomplete="off">
+      </td>
+        
+      </tr>
+        
+      </volist>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+</div>
+
+  </div>
+</div>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>
+<script type="text/javascript">
+
+$(function(){
+$('#save_but').on("click",function(){
+    window.flag = false;
+     $('.order_qty').each(function(){
+        var order_qty = $(this).val();
+        var delivery_qty = $(this).parent().next().find('#delivery_qty'); 
+        if(parseInt(order_qty) < parseInt(delivery_qty.val())){
+          
+           alert('发货量不能大于订单量');
+           window.flag = true;
+           return false;
+        }
+        
+    });
+    if(window.flag == true) {
+        return false;
+    }else{
+        $('.form-view').attr('action','/StockOut/edit');
+        $('.form-view').submit();    
+    }
+});
+
+typehead();
+$('.add-pro').on('click',function(){
+  var val = $('.tr-cur .pro_code').val();
+    if(val == '' && val != null) {
+      $('.tr-cur .pro_names').focus();
+      alert('请输入产品编号选择产品。');
+      return;
+    }
+    $('.tr-cur').removeClass('tr-cur');
+    var tr = $('#table-pro tr.tr-tpl').clone();
+    tr.removeClass('tr-tpl');
+    tr.addClass('tr-cur');
+    tr.removeClass('hidden');
+    $('#table-pro tr:eq(2)').after(tr);
+    typehead();
+    $('#table-pro tr.tr-cur .pro_name').focus();
+    
+});
+
+});
+
+function typehead() {
+$('#table-pro .pro_names').on('focus',function(){
+  $(this).parent().addClass('tr-active');
+});
+$('.tr-cur input').on('focus',function(){
+  $(this).select();
+});
+$('.tr-cur .pro_names').typeahead({ 
+    display: 'name',
+    val: 'val',
+    items:10,
+    ajax: {
+      url:"{:U('Purchase/match_code')}",
+      triggerLength: 1,
+      method: 'post',
+      preDispatch: function(data) {
+          return { 'q': data };
+      },
+      preProcess: function(data) {
+        var n =$.parseJSON(data);
+        $.each(n,function(a,b){
+          n[a]['val'] = JSON.stringify(b['val']);
+        }); 
+        return n;
+      }
+    },
+    itemSelected:function(item,val,text) {
+        val = $.parseJSON(val);
+        $('#table-pro .tr-active .pro_code').val(val['code']);
+        $('#table-pro .tr-active .pro_name').val(val['name']);
+        $('#table-pro .tr-active .pro_attrs').val(val['attrs']);
+        $('.tr-active').removeClass('tr-active');
+    }
+  });
+}
+</script>
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

@@ -67,7 +67,10 @@ class CommonController extends AuthController {
                     case 'eq'://相等
                         $map[$key]=array($v['query_type'],$condition[$key]);
                         break;
-                    case 'like'://模糊匹配
+                    case 'in':
+                        $map[$key]=array($v['query_type'],$condition[$key]);
+                        break;
+                    case 'like':
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
                     case 'between'://区间匹配

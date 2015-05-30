@@ -3,6 +3,39 @@ namespace Wms\Logic;
 
 class StockLogic{
 	/**
+	 * 检查是否可以一键出库，按照先进先出原则 
+	 * @param 
+	 * $wh_id 仓库id
+	 * $pro_code sku编号
+	 * $pro_qty 产品数量
+	 * $refer_code 出库单号
+	 * )
+	 */
+	public function outStockBySkuFIFOCheck($params = array()){
+		if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+			return array('status'=>0,'msg'=>'参数有误！');
+		}
+
+		$diff_qty = $params['pro_qty'];
+
+		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
+		$map['pro_code'] = $params['pro_code'];
+		$map['wh_id'] = $params['wh_id'];
+		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+		unset($map);
+
+		//检查所有的 库存量 是否满足 出库量
+		foreach($stock_list as $stock){
+			$stock_total += $stock['stock_qty'] - $stock['assign_qty'];
+		}
+
+		if($stock_total < $params['pro_qty']){
+			return array('status'=>0,'msg'=>'库存总量不足！');
+		}
+
+		return array('status'=>1);
+	}
+	/**
 	 * 一键出库，按照先进先出原则 减少库存 如果库存不够 则返回失败
 	 * @param 
 	 * $wh_id 仓库id

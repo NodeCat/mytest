@@ -156,6 +156,7 @@ class PmsLogic{
 			$return_data[$value['sku_number']]['wms_name'] = $value['name'].'('.$value['spec'][0]['name'].':'.$value['spec'][0]['val'].','.$value['spec'][1]['name'].':'.$value['spec'][1]['val'].')';
 			$return_data[$value['sku_number']]['name'] = $value['name'];
 			$return_data[$value['sku_number']]['pro_code'] = $value['sku_number'];
+			$return_data[$value['sku_number']]['pro_attrs_str'] = $value['spec'][0]['name'].':'.$value['spec'][0]['val'].','.$value['spec'][1]['name'].':'.$value['spec'][1]['val'];
 			$return_data[$value['sku_number']]['pro_attrs'] = $value['spec'];
 		}
 

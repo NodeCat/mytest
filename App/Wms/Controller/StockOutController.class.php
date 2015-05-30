@@ -17,13 +17,18 @@ class StockOutController extends CommonController {
                         '1'=>'待生产',
                         '2'=>'已出库'
                         ),
-                    'process_type'=>array(
+                   'process_type'=>array(
                         '1'=>'正常单',
                         '2'=>'取消单'
                         ),
                     'refused_type'=>array(
                         '1'=>'空',
                         '2'=>'缺货'
+                        ),
+                    'op_time'=>array(
+                        '0'=>'全天',
+                        '1'=>'上午',
+                        '2'=>'下午'
                         )
                     );
 
@@ -37,7 +42,7 @@ class StockOutController extends CommonController {
         'status' => '出库单状态',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
-        'op_date' => '送货时间',
+        'delivery_time' => '送货时间',
         'order_time' => '下单时间'
 	);
 	protected $query = array (   
@@ -84,17 +89,11 @@ class StockOutController extends CommonController {
                         ),   
 		),
         
-	/*	'stock_bill_in.created_time' => array (     
-			'title' => '送货时间',     
-			'query_type' => 'between',     
-			'control_type' => 'datetime',     
-			'value' => '',   
-		), */
 	);
 
     protected function before_index() {
         $this->table = array(
-            'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
+            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => false, 
@@ -102,13 +101,18 @@ class StockOutController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
+                    'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
+                    'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true'),
+                    'delete'=>array('name'=>'delete' ,'icon'=>'remove', 'show' => !isset($auth['audit']),'new'=>'true','domain'=>"1"),
         );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => ! isset($auth['add']),'new'=>'true'),
+            );
         $this->search_addon = true;
     }
 
     protected function before_lists(){
-    	
+        
         $pill = array(
 			'status'=> array(
 				'1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
@@ -118,15 +122,89 @@ class StockOutController extends CommonController {
 		$stock_out = M('stock_bill_out');
 		$map['is_deleted'] = 0;
 		$res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
-		foreach ($res as $key => $val) {
-            //if(array_key_exists($key, $pill)){
+		foreach ($res as $val) {
+            if(array_key_exists($val['status'], $pill['status'])) {
 			    $pill['status'][$val['status']]['count'] = $val['qty'];
-		    //}
+                $pill['status']['total'] += $val['qty'];
+		    }
         }
+
+        foreach($pill['status'] as $k => $val){
+			if(empty($val['count'])){
+				$pill['status'][$k]['count'] = 0;
+			}
+		}
+
 		$this->pill = $pill;
 
     }
+   
+    protected function after_lists(&$data) {
+        foreach($data as &$val) {
+            $val['delivery_time'] = date('Y-m-d', $val['op_date']) . $this->filter['op_time'][$val['op_time']];
+        }
+    }
+
+    protected function before_add(&$M) {
+        $post = I('post.');
+        $n = count($post['pros']['pro_code']);
+		if($n < 2) {
+            $this->msgReturn(0,'请至少填写一个货品');
+		}
+        $data = $M->data();         
+        $M->code = get_sn('out',$post['wh_id']);
+        $M->status = 1;
+        $M->process_type = 1;
+        $M->refused_type = 1;
+    }
     
+    protected function before_save() {
+        if(ACTION_NAME == 'edit') {
+            $post = I('post.');
+            //dump($post); 
+        }
+    }
+
+    protected function after_save($id) {
+        $post = I('pros');
+        $stock_bill_detail = M('stock_bill_out_detail'); 
+        $column['pid'] = $id;
+        $column['status'] = 1;
+        
+        $n = count($post['pro_code']);
+		if($n < 2) {
+			$this->msgReturn(1,'','',U('view','id='.$id));
+		}
+        
+        for($i = $n-1;$i > 0;$i--) {
+            if(empty($post['pro_code'][$i])) {
+				continue;
+			}
+            $column['pro_code'] = $post['pro_code'][$i];
+            $column['pro_name'] = $post['pro_name'][$i];
+            $column['pro_attrs'] = $post['pro_attrs'][$i];
+            $column['order_qty'] = $post['order_qty'][$i];
+            $column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
+            $data = $stock_bill_detail->create($column);
+            if(! empty($post['id'][$i])) {
+                $map['id'] = $post['id'][$i];
+                $res = $stock_bill_detail->where($map)->save($data);  
+            }else {
+                $stock_bill_detail->add($data);
+            }
+        }
+        unset($map);
+		$field="sum(order_qty) as total_qty";
+		$map['pid'] = $id;
+		$data = $stock_bill_detail->field($field)->where($map)->group('pid')->find();
+		$where['id'] = $id;
+		$stock_bill_out = M('stock_bill_out');
+		$stock_bill_out->where($where)->save($data);
+
+		$this->msgReturn(1,'','',U('view','id='.$id));
+        
+    }
+
     protected function before_edit(&$data) {
        $stock_out = M('stock_bill_out');
        $stock_detail = M('stock_bill_out_detail');
@@ -134,8 +212,13 @@ class StockOutController extends CommonController {
 
        $map['pid'] = $data['id'];
        $pros = $stock_detail->where($map)->select();
-        
+       
+       foreach ($pros as $key => $val) {
+            $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
+	   }
+
        $data['wh_name'] = $warehouse->where($data['wh_id'])->getField('name');
+       $data['delivery_time'] = date('Y-m-d', $data['op_date']) . $this->filter['op_time'][$data['op_time']];
 
        $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
                        'type' => array('1'=>'普通订单','2'=>'采购退货','3'=>'库内样品出库'),
@@ -157,7 +240,7 @@ class StockOutController extends CommonController {
         $stock_detail = M('stock_bill_out_detail');
         
         
-        //$flag标识判断所有的出库是否成功
+        //$flag标识判断出库单是否出库成功
         $state = 'succ';
         
         foreach($ids_arr as $id) {
@@ -167,44 +250,59 @@ class StockOutController extends CommonController {
             
             //查找出库单信息
             $map['id'] = $id;
-            $stock_info = $stock_out->field('wh_id,code')->where($map)->find();
+            $stock_info = $stock_out->field('wh_id,code,total_qty,status')->where($map)->find();
+            //如果出库单的总数为0，不能出库
+            if(empty($stock_info['total_qty'])) {
+                $state = 'failed';
+                break; 
+            }
+            //如果是状态是已出库的出库单，则不能再次出库 
+            if($stock_info['status'] == 2) {
+                $state = 'failed';
+                break;
+            }
+
             //查找出库单明细
             unset($map);
             $map['pid'] = $id;
-            //只查没有出库成功的货品
-            $map['status'] = 1;
-            $detail_info = $stock_detail->where($map)->field('pro_code,order_qty')->select();
+            $detail_info = $stock_detail->where($map)->field('pro_code,delivery_qty')->select();
             
             $data['wh_id'] = $stock_info['wh_id'];
             $data['refer_code'] = $stock_info['code'];
             foreach($detail_info as $val) {
                 $data['pro_code'] = $val['pro_code'];
-                $data['pro_qty'] = $val['order_qty'];
+                $data['pro_qty'] = $val['delivery_qty'];
                 
-                $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
-                if($res['status'] == 1) {
-                    $status = 2;      
-                }else {
-                    $status = 1;
+                $check_stock = A('Stock', 'Logic')->outStockBySkuFIFOCheck($data);
+                if($check_stock['status'] == 0) {
                     $flag = 'failed';
                     $state = 'failed';
+                    break;
                 }
-                $list['status'] = $status;
-                $condition['pid'] = $id;
-                $condition['pro_code'] = $val['pro_code'];
-                $stock_detail->where($condition)->save($list);
             }
-           
+            if($flag == 'succ') {
+                //销库存
+                foreach($detail_info as $val) {
+                    $data['pro_code'] = $val['pro_code'];
+                    $data['pro_qty'] = $val['delivery_qty'];
+                    $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
+                    /*if($res['status'] == 0) {
+                        $flag = 'failed';
+                        $state = 'failed';
+                    }*/
+                }
+            }
+
             if($flag == 'failed') {
-                $refused['refused_type'] = 2;
+                $list['refused_type'] = 2;
             }else {
-                $refused['status'] = 2;
-                $refused['refused_type'] = 1;
+                $list['status'] = 2;
+                $list['refused_type'] = 1;
             }
             
             unset($map);
             $map['id'] = $id;
-            $stock_out->where($map)->save($refused);
+            $stock_out->where($map)->save($list);
         }
 
         if($state == 'failed') {
