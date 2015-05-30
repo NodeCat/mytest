@@ -73,7 +73,13 @@ class PurchaseController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
-		), 
+		),
+		'stock_purchase.code' => array (
+			'title' => '采购单号',
+			'query_type' => 'like',
+			'control_type' => 'text',
+			'value' => '',
+		),
 	);
 	public function match_code() {
         $code=I('q');
