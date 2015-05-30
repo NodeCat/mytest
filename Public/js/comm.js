@@ -441,6 +441,8 @@ function refresh_page(){
     }
 }
 function refresh_list(){
+	
+	$('.content [data-toggle="tooltip"]').tooltip('hide');
 	var obj=$('#cur_page').length;
     if( obj== 0){
     	var link=$('#jump-btn').data('href');
