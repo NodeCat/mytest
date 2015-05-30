@@ -33,15 +33,15 @@ class StockOutModel extends Model {
             'default'=>array(
                 'where'=>array('stock_bill_out.is_deleted'=>'0'),
                 'order'=>'stock_bill_out.id DESC',
-                //"join"=>array("inner join stock_bill_out_detail sbod on stock_bill_out.id=sbod.pid",
-                   // ),
-                "field"=>"stock_bill_out.*,stock_bill_out.status as state"
+                "join"=>array(//"inner join stock_bill_out_detail sbod on stock_bill_out.id=sbod.pid",
+                              "inner join stock_bill_out_type sbot on stock_bill_out.type = sbot.id"
+                ),
+                "field"=>"stock_bill_out.*,stock_bill_out.status as state,sbot.name as type_name "
                 ),
             'latest'=>array(
                 'where'=>array('stock_bill_out.is_deleted'=>'0'),
                 'order'=>'update_time DESC',
                 ),
-
 
             );
 }

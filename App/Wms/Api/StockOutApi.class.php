@@ -9,15 +9,17 @@ class StockOutApi extends Controller{
         else{
             $post = I('post.');
         }
-       /*if(empty($post) || !array_key_exists('biz_type', $post) || !array_key_exists('line_name', $post) || !array_key_exists('product_list', $post) || !array_key_exists('delivery_date', $post)) {
-            $data = array('error_code' => '201', 'error_message' => 'parameter error', 'data' => '' );
-            $this->_return_json($data);
-        }*/
         
         $stock_out = M('stock_bill_out');
         $stock_detail = M('stock_bill_out_detail');
         $warehouse = M('warehouse');
-        
+        $stock_type = M('stock_bill_out_type');
+
+        //查找出库单类型
+        $map['type'] = 'SO';
+        $type = $stock_type->where($map)->getField('id');
+        //查找仓库名
+        unset($map);
         $map['code'] = $post['picking_type_id'];
         $wh_id = $warehouse->where($map)->getField('id');
         
@@ -25,9 +27,9 @@ class StockOutApi extends Controller{
         $map['code'] = get_sn('out',$post['wh_id']);
         $map['wh_id'] = $wh_id;
         $map['line_name'] = $post['line_name'];
-        $map['op_date'] = date('Y-m-d H:i:s',strtotime($post['delivery_date']));
+        $map['op_date'] = date('Y-m-d',strtotime($post['delivery_date']));
         $map['op_time'] = $post['delivery_time'];
-        $map['type'] = $post['type'];
+        $map['type'] = $type;
         $map['status'] = 1;
         $map['process_type'] = 1;
         $map['refused_type'] = 1;
@@ -49,6 +51,7 @@ class StockOutApi extends Controller{
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['product_code'];
             $detail['order_qty'] = $val['qty'];
+            $detail['delivery_qty'] = $val['qty'];
             $detail['pro_name'] = $pms[$val['product_code']]['name'];  
             $detail['pro_attrs'] = $pms[$val['product_code']]['pro_attrs'][0]['name'] . ":" . $pms[$val['product_code']]['pro_attrs'][0]['val'] . "," . $pms[$val['product_code']]['pro_attrs'][1]['name'] . ":" . $pms[$val['product_code']]['pro_attrs'][1]['val'];
             $detail['status'] = 1;
