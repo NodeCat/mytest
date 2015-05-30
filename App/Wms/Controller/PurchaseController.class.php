@@ -37,7 +37,13 @@ class PurchaseController extends CommonController {
 		'qty_total' => '采购总数',   
 		'price_total' => '采购总金额',   
 	);
-	protected $query = array (   
+	protected $query = array (
+		'stock_purchase.code' => array (
+			'title' => '采购单号',
+			'query_type' => 'like',
+			'control_type' => 'text',
+			'value' => '',
+		),
 		'stock_purchase.wh_id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
@@ -73,12 +79,6 @@ class PurchaseController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
-		),
-		'stock_purchase.code' => array (
-			'title' => '采购单号',
-			'query_type' => 'like',
-			'control_type' => 'text',
-			'value' => '',
 		),
 	);
 	public function match_code() {

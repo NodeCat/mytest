@@ -53,7 +53,6 @@ class MenuWidget extends Controller {
         $menu['pid'] =$cur['pid'];
         $menu['cur'] = $cur['id'];
         $menu['title'] = $cur['name'];
-        //var_dump($menu[0][0],session('user'));exit;
         //dump($menu['tab']);exit();
         return $menu;
    }
