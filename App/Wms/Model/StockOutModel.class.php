@@ -10,8 +10,8 @@ class StockOutModel extends Model {
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-                array('wh_id','require','仓库不能为空',1,'regex',1),
                 array('type','require','订单类型不能为空',1,'regex',1),
+                array('wh_id','require','仓库不能为空',1,'regex',1),
             );
 
     //array(填充字段,填充内容,[填充条件,附加规则])
