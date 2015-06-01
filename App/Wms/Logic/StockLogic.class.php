@@ -54,6 +54,8 @@ class StockLogic{
 		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 		$map['pro_code'] = $params['pro_code'];
 		$map['wh_id'] = $params['wh_id'];
+		//目前只出合格商品
+		$map['status'] = 'qualified';
 		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 

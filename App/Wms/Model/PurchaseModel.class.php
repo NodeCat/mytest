@@ -44,7 +44,7 @@ class PurchaseModel extends RelationModel {
                 "inner join partner on stock_purchase.partner_id=partner.id ",
                 "inner join user on stock_purchase.created_user = user.id ",
                 "inner join company on stock_purchase.company_id=company.id ",
-                "left join stock_bill_in sbi on sbi.refer_code = stock_purchase.code"
+                "left join stock_bill_in sbi on sbi.refer_code = stock_purchase.code AND sbi.is_deleted = 0"
             ),
 "field"=>"stock_purchase.*,stock_purchase.status as state,sbi.code as in_code,warehouse.code as warehouse_code,warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname,user.mobile as user_mobile,company.name as company_name",
         ),
