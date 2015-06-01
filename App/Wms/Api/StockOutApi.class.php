@@ -33,6 +33,8 @@ class StockOutApi extends Controller{
         $map['status'] = 1;
         $map['process_type'] = 1;
         $map['refused_type'] = 1;
+        $map['created_time'] = get_time();
+        $map['updated_time'] = get_time();       
 
         $stock_out_id = $stock_out->add($map);
         if(empty($stock_out_id)) {
