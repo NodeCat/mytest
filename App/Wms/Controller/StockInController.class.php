@@ -27,7 +27,7 @@ class StockInController extends CommonController {
 	    'type' => '入库类型',
 		'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
-		'partner_name' => '供货商',
+		//'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '创建人',
@@ -478,30 +478,49 @@ class StockInController extends CommonController {
      */
     public function before_add(&$M) {
         $pros = I('post.pros');
+        
         if (count($pros) < 2) {
             //没有商品被添加
             $this->msgReturn(0, '没有商品被添加');
             return;
         }
+        unset($pros[0]);
+        if (empty($pros)) {
+            //没有商品被添加
+            $this->msgReturn(0, '没有商品被添加');
+            return;
+        }
+        
+        //获取入库类型 生成对应的入库单号
+        $type = I('post.type');
+        if (empty($type)) {
+            //没有选择入库类型
+            $this->msgReturn(0, '请选择入库类型');
+            return;
+        }
+        $stock_type = M('stock_bill_in_type');
+        $type_name = $stock_type->field('type')->where(array('id' => $type))->find();
+        $numbs = M('numbs');
+        $name = $numbs->field('name')->where(array('type' => $type_name['type']))->find();
         
         foreach ($pros as $value) {
+            if (empty($value['pro_name'])) {
+                $this->msgReturn(0, '没有商品被添加');
+                return;
+            }
             //sku数量为0
             if ($value['pro_qty'] <= 0) {
                 $this->msgReturn(0, '数量不可为0');
                 return;
             }
         }
-        $M->code = get_sn('in'); //入库单号
-        //$M->type = 'purchase'; //类型
+        $M->code = get_sn($name['name']); //入库单号
         $M->batch_code = 'batch' . NOW_TIME; //批次
         $M->updated_time = date('Y-m-d H:i:s', time()); //更新时间
         $M->created_user = session()['user']['uid']; //创建管理员
         $M->updated_user = session()['user']['uid']; //更新管理员
         $M->status = 21; //状态 21待入库
         $M->partner_id = 1; //手动添加供货商默认为1    
-        //if (empty(I('post.refer_code'))) {
-        //    $M->refer_code = '';
-        //}
     }
     
     /**

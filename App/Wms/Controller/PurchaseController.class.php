@@ -37,7 +37,13 @@ class PurchaseController extends CommonController {
 		'qty_total' => '采购总数',   
 		'price_total' => '采购总金额',   
 	);
-	protected $query = array (   
+	protected $query = array (
+		'stock_purchase.code' => array (
+			'title' => '采购单号',
+			'query_type' => 'like',
+			'control_type' => 'text',
+			'value' => '',
+		),
 		'stock_purchase.wh_id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
@@ -73,7 +79,7 @@ class PurchaseController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
-		), 
+		),
 	);
 	public function match_code() {
         $code=I('q');
@@ -118,10 +124,10 @@ class PurchaseController extends CommonController {
         );
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,14"), 
+            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
             'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
             'reject'=>array('name'=>'reject' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11")
+            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11,13")
         );
         $this->status =array(
             array(
@@ -332,6 +338,7 @@ class PurchaseController extends CommonController {
 
 					//关闭对应的到货单
 					$data['status'] = '04';
+					$data['is_deleted'] = 1;
 					$data = M('stock_bill_in')->create($data);
 					$map['refer_code'] = $where['refer_code'];
 					M('stock_bill_in')->where($map)->save($data);

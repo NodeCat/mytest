@@ -989,7 +989,7 @@ class CodeController extends CommonController {
 				if($in_black_list){
 					continue;
 				}
-				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
+				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$group.'/'.$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
 				$module_name=$group.'/'.$module;
 				$actions = $this->getAction($group, $module);
 				foreach ($actions as $action) {
