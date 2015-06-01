@@ -19,6 +19,7 @@ class AuthController extends Controller {
             $this->display('index:closed');
             exit();
         }
+        return true;
         /*
         //检查节点权限
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;

@@ -17,7 +17,7 @@ class MenuWidget extends Controller {
         $map = array('status'=>'1','is_deleted'=>0);
         $result= $M->field("id,name,level,pid,icon,link,concat(module,'/',link) url,target,show")->where($map)->order('pid,queue,id')->select();
         foreach ($result as $k => $v) {
-            $result[$k]['link'] = strtolower($v['url']);
+            //$result[$k]['link'] = strtolower($v['url']);
             $menu_link[$v['id']] = $result[$k]['link'];
         }
         $menu = $menu_link;
