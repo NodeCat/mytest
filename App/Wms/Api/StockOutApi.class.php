@@ -14,7 +14,7 @@ class StockOutApi extends Controller{
         $stock_detail = M('stock_bill_out_detail');
         $warehouse = M('warehouse');
         $stock_type = M('stock_bill_out_type');
-
+        $user = M('user');
         //查找出库单类型
         $map['type'] = 'SO';
         $type = $stock_type->where($map)->getField('id');
@@ -22,7 +22,11 @@ class StockOutApi extends Controller{
         unset($map);
         $map['code'] = $post['picking_type_id'];
         $wh_id = $warehouse->where($map)->getField('id');
-        
+        //查找用户id（默认用户名是api）
+        unset($map);
+        $map['username'] = 'api';
+        $user_id = $user->where($map)->getField('id');
+
         unset($map);
         $map['code'] = get_sn('out',$post['wh_id']);
         $map['wh_id'] = $wh_id;
@@ -35,6 +39,8 @@ class StockOutApi extends Controller{
         $map['refused_type'] = 1;
         $map['created_time'] = get_time();
         $map['updated_time'] = get_time();       
+        $map['created_user'] = $user_id;
+        $map['updated_user'] = $user_id;
 
         $stock_out_id = $stock_out->add($map);
         if(empty($stock_out_id)) {
@@ -42,7 +48,6 @@ class StockOutApi extends Controller{
             $this->ajaxReturn($return);
         }
         $total = 0;
-        
         $pro_codes = array_column($post['product_list'],'product_code');
         $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
         if(empty($pms)) {

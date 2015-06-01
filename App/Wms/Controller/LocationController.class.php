@@ -68,6 +68,8 @@ class LocationController extends CommonController {
         if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['picking_line']) || empty($data['putaway_line']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
             $this->msgReturn(0,'请填写完整信息');
         }
+
+        dump($data);exit;
     }
     
     protected function after_add($data) {
