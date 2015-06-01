@@ -241,8 +241,10 @@ class StockOutController extends CommonController {
        foreach ($pros as $key => $val) {
             $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 	   }
-
-       $data['wh_name'] = $warehouse->where($data['wh_id'])->getField('name');
+        
+       unset($map);
+       $map['id'] = $data['wh_id'];
+       $data['wh_name'] = $warehouse->where($map)->getField('name');
        $data['delivery_time'] = date('Y-m-d', $data['op_date']) . $this->filter['op_time'][$data['op_time']];
 
        $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
@@ -349,6 +351,23 @@ class StockOutController extends CommonController {
             $str = implode(",", $arr);
             $map['stock_bill_out.id'][1] = $str;
         }
+    }
+
+    protected function before_delete($ids) {
+        $stock_out = M('stock_bill_out');
+        $stock_out_type = M('stock_bill_out_type');
+        foreach($ids as $id) {
+            $map['id'] = $id;
+            $type_id = $stock_out->where($map)->getField('type');
+            unset($map);
+            $map['id'] = $type_id;
+            $stock_type = $stock_out_type->field('type, name')->where($map)->find();
+       
+            if($stock_type['type'] == 'SO') {
+                $this->msgReturn(0,'不能删除' . $stock_type['name']);
+            }
+        }
+    
     }
 
 }
