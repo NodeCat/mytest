@@ -21,9 +21,16 @@ function get_batch($code=''){
     if(empty($code)) {
         $code = get_sn('batch');
     }
-    $data['code'] = $code;
-    $data['product_date'] = get_time();
-    M('stock_batch')->add($data);
+
+    $map['code'] = $code;
+    $re = M('stock_batch')->where($map)->find();
+
+    if(empty($re)){
+        $data['code'] = $code;
+        $data['product_date'] = get_time();
+        M('stock_batch')->add($data);
+    }
+    
     return $code;
 }
 function get_tablename() {
