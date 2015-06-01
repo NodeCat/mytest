@@ -142,6 +142,14 @@ class LoginController extends Controller {
          empty($new) && $this->msg = '请输入新密码';
          empty($confirm) && $this->msg = '请输入确认密码';
 
+         $Api = A('User','Api');
+         $res = $Api->verifyUser(session('user.uid'),$old);
+         if(!$res){
+            $this->msg = '原密码输入错误';
+         }
+         unset($Api);
+         unset($res);
+
          if($new!==$confirm){
             $this->msg = '两次密码输入不一致';
          }

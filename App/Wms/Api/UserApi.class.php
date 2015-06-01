@@ -163,7 +163,7 @@ class UserApi extends Controller{
         }
         return $return;
     }
-    protected function verifyUser($uid, $password_in){
+    public function verifyUser($uid, $password_in){
         $map['id'] = $uid;
         $password = M('user')->where($map)->field('password')->find();
         unset($map);
