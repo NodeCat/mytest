@@ -9,9 +9,9 @@ class MenuWidget extends Controller {
         if (!$Auth) {
             $Auth       =   new \Common\Lib\Auth();
         }
-        $menu = $Auth->getMenu($user['uid']);
-        /*
-        $authList = $Auth->getAuthList($uid);
+        //$menu = $Auth->getMenu($user['uid']);
+        
+        //$authList = $Auth->getAuthList($uid);
 
         $M=M('Menu');
         $map = array('status'=>'1','is_deleted'=>0);
@@ -22,7 +22,7 @@ class MenuWidget extends Controller {
         }
         $menu = $menu_link;
         
-        $menu = array_intersect($menu_link,$authList);
+        //$menu = array_intersect($menu_link,$authList);
         foreach ($result as $k => $v) {
             if(!(empty($v['link']) || in_array($v['link'],$menu))){
                unset($result[$k]);
@@ -55,7 +55,7 @@ class MenuWidget extends Controller {
             $data[$v['level']][$v['pid']][$v['id']]=$v;
         }
         $menu = $data;
-        */
+        
 		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
 		$cur=M('Menu')->field('id,pid,name,level')->where($cond)->order('level desc')->find();
 
