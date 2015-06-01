@@ -3,16 +3,26 @@ namespace Common\Widget;
 use Think\Controller;
 class MenuWidget extends Controller {
     public function getlist(){
+        $user = I('session.user');
+        if(empty($user['uid']))return;
+        static $Auth    =   null;
+        if (!$Auth) {
+            $Auth       =   new \Common\Lib\Auth();
+        }
+        $menu = $Auth->getMenu($user['uid']);
+        /*
+        $authList = $Auth->getAuthList($uid);
+
         $M=M('Menu');
         $map = array('status'=>'1','is_deleted'=>0);
-        $result= $M->field("id,name,level,pid,icon,link,target,show")->where($map)->order('pid,queue,id')->select();
+        $result= $M->field("id,name,level,pid,icon,link,concat(module,'/',link) url,target,show")->where($map)->order('pid,queue,id')->select();
         foreach ($result as $k => $v) {
-            //$result[$k]['link'] = strtolower($v['link']);
-            $result[$k]['link'] = $v['link'];
+            $result[$k]['link'] = strtolower($v['url']);
             $menu_link[$v['id']] = $result[$k]['link'];
         }
         $menu = $menu_link;
-
+        
+        $menu = array_intersect($menu_link,$authList);
         foreach ($result as $k => $v) {
             if(!(empty($v['link']) || in_array($v['link'],$menu))){
                unset($result[$k]);
@@ -45,6 +55,7 @@ class MenuWidget extends Controller {
             $data[$v['level']][$v['pid']][$v['id']]=$v;
         }
         $menu = $data;
+        */
 		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
 		$cur=M('Menu')->field('id,pid,name,level')->where($cond)->order('level desc')->find();
 
