@@ -529,7 +529,7 @@ class InventoryController extends CommonController {
 					$inventory_data = array(
 						'location_id' => $inventory_info['location_id'],
 						'code' => $inventory_code,
-						'type' => 'again',
+						'type' => 'fast',
 						'status' => 'noinventory',
 						);
 					$stock_inventory = D('Inventory');
