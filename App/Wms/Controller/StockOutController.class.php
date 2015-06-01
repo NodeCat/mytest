@@ -2,13 +2,19 @@
 namespace Wms\Controller;
 use Think\Controller;
 class StockOutController extends CommonController {
-    
+    public function __construct(){
+        parent::__construct();
+        if(IS_GET && ACTION_NAME == 'add'){
+            $stock_out_type = M('stock_bill_out_type');
+            $this->stock_out_type = $stock_out_type->select();
+        }
+    }
     protected $filter = array(
-                    'type'=>array(
+                    /*'type'=>array(
                         '1'=>'普通订单',
                         '2'=>'采购退货',
                         '3'=>'库内样品出库',
-                        ),
+                        ),*/
                     'line_name'=>array(
                         '1'=>'海淀黄庄北',
                         '2'=>'知春路锦秋国际'
@@ -34,7 +40,7 @@ class StockOutController extends CommonController {
 
     protected $columns = array (  
         'code' => '出库单号',
-        'type' => '出库单类型',
+        'type_name' => '出库单类型',
         'wave_code' => '波次号',
         'packing_code' => '装车号',
         'total_qty' => '总件数',
@@ -46,7 +52,13 @@ class StockOutController extends CommonController {
         'order_time' => '下单时间'
 	);
 	protected $query = array (   
-		 'stock_bill_out.id' =>    array (     
+		 'stock_bill_out.code' =>    array (     
+			'title' => '出库单号',     
+			'query_type' => 'like',     
+			'control_type' => 'text',     
+			'value' => 'code',   
+		),
+         'stock_bill_out.id' =>    array (     
 			'title' => '货品号',     
 			'query_type' => 'in',     
 			'control_type' => 'text',     
@@ -56,12 +68,9 @@ class StockOutController extends CommonController {
 		'stock_bill_out.type' =>    array (     
 			'title' => '出库单类型',     
 			'query_type' => 'eq',     
-			'control_type' => 'select',     
-			'value' => array(
-                        '1'=>'普通订单',
-                        '2'=>'采购退货',
-                        '3'=>'库内样品出库',
-                        ),    
+			'control_type' => 'getField',     
+			'value' => 'stock_bill_out_type.id,name'
+                            
 		),
 		'stock_bill_out.refused_type' =>    array (     
 			'title' => '拒绝标识',     
@@ -75,8 +84,8 @@ class StockOutController extends CommonController {
 		
 		'stock_bill_out.line_name' => array (     
 			'title' => '路线片区',     
-			'query_type' => 'eq',     
-			'control_type' => 'getField',     
+			'query_type' => 'like',     
+			'control_type' => 'text',     
 			'value' => 'StockOut.line_name,line_name ln' 
 			),
 		'stock_bill_out.process_type' => array (     
@@ -101,9 +110,9 @@ class StockOutController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-                    'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
-                    'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true'),
-                    'delete'=>array('name'=>'delete' ,'icon'=>'remove', 'show' => !isset($auth['audit']),'new'=>'true','domain'=>"1"),
+            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
+            'edit'=>array('name'=>'edit','show' => !isset($auth['edit']),'new'=>'true','domain'=>"1"),
+            'delete'=>array('name'=>'delete', 'show' => !isset($auth['delete']),'new'=>'true','domain'=>"1"),
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => ! isset($auth['add']),'new'=>'true'),
@@ -129,7 +138,7 @@ class StockOutController extends CommonController {
 		    }
         }
 
-        foreach($pill['status'] as $k => $val){
+        foreach($pill['status'] as $k => $val) {
 			if(empty($val['count'])){
 				$pill['status'][$k]['count'] = 0;
 			}
@@ -141,16 +150,26 @@ class StockOutController extends CommonController {
    
     protected function after_lists(&$data) {
         foreach($data as &$val) {
-            $val['delivery_time'] = date('Y-m-d', $val['op_date']) . $this->filter['op_time'][$val['op_time']];
+            if($val['op_date'] == "0000-00-00 00:00:00") {
+                $val['delivery_time'] = '无';
+            }else {
+                $val['delivery_time'] = date('Y-m-d', strtotime($val['op_date'])) . $this->filter['op_time'][$val['op_time']];
+            }
+            
         }
     }
 
     protected function before_add(&$M) {
         $post = I('post.');
         $n = count($post['pros']['pro_code']);
-		if($n < 2) {
+		if($n < 2 || empty($post['pros']['pro_code'][1])) {
             $this->msgReturn(0,'请至少填写一个货品');
 		}
+        foreach($post['pros']['order_qty'] as $val) {
+            if(empty($val)) {
+                $this->msgReturn(0,'订单数量不能为0');    
+            }
+        }
         $data = $M->data();         
         $M->code = get_sn('out',$post['wh_id']);
         $M->status = 1;
@@ -160,8 +179,12 @@ class StockOutController extends CommonController {
     
     protected function before_save() {
         if(ACTION_NAME == 'edit') {
-            $post = I('post.');
-            //dump($post); 
+            $pros = I('pros');
+            foreach($pros as $val) {
+                if($val['order_qty'] < $val['delivery_qty']) {
+                    $this->msgReturn(0,'发货量不能大于订单量');
+                }
+            }
         }
     }
 
@@ -184,8 +207,7 @@ class StockOutController extends CommonController {
             $column['pro_name'] = $post['pro_name'][$i];
             $column['pro_attrs'] = $post['pro_attrs'][$i];
             $column['order_qty'] = $post['order_qty'][$i];
-            $column['delivery_qty'] = ($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
-            
+            $column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
             $data = $stock_bill_detail->create($column);
             if(! empty($post['id'][$i])) {
                 $map['id'] = $post['id'][$i];
@@ -308,7 +330,7 @@ class StockOutController extends CommonController {
 
         if($state == 'failed') {
             $return['status'] = 0;
-            $return['msg'] = '出库失败';
+            $return['msg'] = '库存不足，出库失败';
             $this->ajaxReturn($return);
         }else {
             $return['status'] = 1;

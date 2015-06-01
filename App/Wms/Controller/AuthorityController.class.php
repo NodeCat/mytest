@@ -100,7 +100,7 @@ class AuthorityController extends CommonController {
         $data['rules']=I('auth_ids');
         $M=M('auth_role');
         $res = $M->where($map)->save($data);
-        $this->msgReturn($res);
+        $this->msgReturn(1);
     }
     public function nodes(){
         $id=I('id',0);

@@ -1,0 +1,32 @@
+<div class="panel panel-yellow text-center">
+	<div class="panel-heading">{$title}</div>
+</div>
+<div class="col-xs-12">
+<notempty name="msg">
+<div class="alert alert-success text-center " role="alert">{$msg}</div>
+</notempty>
+<notempty name="error">
+<div class="alert alert-danger text-center" role="alert">{$error}</div>
+<else/>
+<div class="alert alert-danger text-center hidden" role="alert"></div>
+</notempty>
+</div>
+<style type="text/css">
+.panel-yellow {
+  background-color: #ec5a05;
+  color: #eee;
+  font-weight: bold;
+  font-size: 15px;
+}
+.panel-yellow .panel-heading{
+	border-top-left-radius: 0px;
+  	border-top-right-radius: 0px;
+  	letter-spacing:3px;
+}
+.panel {
+	border-radius: 0px;
+}
+.navbar{
+	  margin-bottom: 0px;
+}
+</style>

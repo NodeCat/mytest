@@ -54,6 +54,8 @@ class StockLogic{
 		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 		$map['pro_code'] = $params['pro_code'];
 		$map['wh_id'] = $params['wh_id'];
+		//目前只出合格商品
+		$map['status'] = 'qualified';
 		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
@@ -79,6 +81,10 @@ class StockLogic{
 					$log_qty = $stock['stock_qty'];
 					$log_old_qty = $stock['stock_qty'];
 					$log_new_qty = 0;
+
+					if($stock['stock_qty'] == $diff_qty){
+						break;
+					}
 				}else{
 					//根据id 更新库存表
 					$map['id'] = $stock['id'];
@@ -89,6 +95,8 @@ class StockLogic{
 					M('stock')->where($map)->data($data)->save();
 					unset($map);
 					unset($data);
+
+					break;
 				}
 
 				//写入库存交易日志
@@ -967,5 +975,37 @@ class StockLogic{
 		unset($map);
 		
 		return true;
+	}
+
+	//为数组添加pro_name字段
+	public function add_fields($data = array(),$add_field = ''){
+		if(empty($data) || empty($add_field)){
+			return $data;
+		}
+
+		if($add_field == 'stock_qty'){
+			$prepare_data = array();
+			//整理pro_codes
+			foreach($data as $k => $val){
+				$pro_codes[] = $val['pro_code'];
+			}
+
+			$map['pro_code'] = array('in',$pro_codes);
+			$stock_infos = M('stock')->where($map)->field('sum(stock_qty) as stock_qty, pro_code')->group('pro_code')->select();
+
+			foreach($data as $k => $val){
+				$prepare_data[$k] = $val;
+				foreach($stock_infos as $stock_info){
+					if($val['pro_code'] == $stock_info['pro_code']){
+						$prepare_data[$k]['stock_qty'] = $stock_info['stock_qty'];
+						break;
+					}
+				}
+			}
+
+			return $prepare_data;
+		}
+
+		return $data;
 	}
 }

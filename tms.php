@@ -1,5 +1,4 @@
 <?php
-
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
@@ -23,9 +22,9 @@ if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
 
 define('RUNTIME_PATH','../Runtime/');
 
-define('BIND_MODULE','Wms');
+define('BIND_MODULE','Tms');
 
-define('APP_NAME','Wms');
+define('APP_NAME','ERP');
 
 // 定义应用目录
 define('APP_PATH','./App/');

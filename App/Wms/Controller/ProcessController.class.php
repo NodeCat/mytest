@@ -90,6 +90,7 @@ class ProcessController extends CommonController {
     		$data['wh_id'] = $wh_id;
     		$data['type'] = $type;
     		$data['plan_qty'] = $plan_qty;
+            $data['real_qty'] = $plan_qty;
     		$data['p_pro_code'] = $process_pro_code;
     		$data['status'] = 'confirm';
     		$data['remark'] = $remark;
@@ -129,6 +130,9 @@ class ProcessController extends CommonController {
     		}
 
     		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+
+    		//添加stock_qty字段
+			$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
 
     		//父SKU信息
     		$p_sku_info = $sku[$process_pro_code];
@@ -182,6 +186,9 @@ class ProcessController extends CommonController {
 
 		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
 
+		//添加stock_qty字段
+		$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
+
 		//父SKU信息
 		$p_sku_info = $sku[$process_pro_code];
 		//子SKU信息
@@ -203,7 +210,75 @@ class ProcessController extends CommonController {
 
     //批准
     public function pass(){
-    	echo 123;exit;
+        $map['id'] = I('id');
+        $process = M('erp_process')->where($map)->find();
+        unset($map);
+
+        //获得物料清单
+        $map['p_pro_code'] = $process['p_pro_code'];
+        $process_relation = M('erp_process_sku_relation')->where($map)->select();
+        unset($map);
+
+        if($process['status'] != 'confirm'){
+            $this->msgReturn(0,'加工单状态异常');
+        }
+
+        if(empty($process)){
+            $this->msgReturn(0,'加工单未找到');
+        }
+
+        //如果是组合
+        if($process['type'] == 'unite'){
+            //写入加工入库单 父SKU
+            $process_in = D('ProcessIn');
+            $data['wh_id'] = $process['wh_id'];
+            $data['code'] = get_sn('erp_pro_in');
+            $data['refer_code'] = $process['code'];
+            $data['process_type'] = $process['type'];
+            $data['status'] = 'prepare';
+            $data['remark'] = $process['remark'];
+            $data = $process_in->create($data);
+
+            //写入加工入库单详情 父SKU
+            $process_in_detail = D('ProcessInDetail');
+            $detail_data['pro_code'] = $process['p_pro_code'];
+            $detail_data['batch'] = $process['code'];
+            $detail_data['plan_qty'] = $process['plan_qty'];
+            $detail_data['real_qty'] = $process['real_qty'];
+            $detail_data['status'] = 'prepare';
+            $detail_data = $process_in_detail->create($detail_data);
+            $data['detail'][] = $detail_data;
+            
+            $process_in->relation(true)->add($data);
+            unset($data);
+
+            //写入加工出库单 子SKU
+            $process_on = D('ProcessOn');
+            $data['wh_id'] = $process['wh_id'];
+            $data['code'] = get_sn('erp_pro_on');
+            $data['refer_code'] = $process['code'];
+            $data['process_type'] = $process['type'];
+            $data['status'] = 'prepare';
+            $data['remark'] = $process['remark'];
+            $data = $process_on->create($data);
+
+            foreach($process_relation as $k => $val){
+                
+            }
+
+
+            var_dump($data);exit;
+        }
+        
+
+        
+        //$process_in = D('ProcessIn');
+        //$data = $process_in->create($data);
+        //$process_in->data($data)->save();
+
+
+        var_dump($process,$data);exit;
+
     }
 
     //驳回

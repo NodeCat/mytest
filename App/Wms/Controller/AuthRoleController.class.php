@@ -20,8 +20,8 @@ class AuthRoleController extends CommonController {
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
             array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['view']),'new'=>'false'),
-            'setauth'=>array('name'=>'setauth','title'=>'设置权限','icon'=>'user' ,'show' => true,'new'=>'true','link'=>"Authority/edit"),
+            array('name'=>'delete' ,'show' => isset($auth['view']),'new'=>'false'),
+            'setauth'=>array('name'=>'setauth','title'=>'设置权限','icon'=>'cog' ,'show' => true,'new'=>'true','link'=>"Authority/edit"),
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => true,'new'=>'false'), 
