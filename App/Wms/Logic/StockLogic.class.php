@@ -21,6 +21,7 @@ class StockLogic{
 		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 		$map['pro_code'] = $params['pro_code'];
 		$map['wh_id'] = $params['wh_id'];
+		$map['stock.status'] = 'qualified';
 		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
@@ -29,7 +30,7 @@ class StockLogic{
 			$stock_total += $stock['stock_qty'] - $stock['assign_qty'];
 		}
 
-		if($stock_total < $params['pro_qty']){
+		if($stock_total < intval($params['pro_qty'])){
 			return array('status'=>0,'msg'=>'库存总量不足！');
 		}
 
