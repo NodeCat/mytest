@@ -10,7 +10,7 @@ class IndexController extends Controller {
         }
     }
     public function index(){
-    	$this->display();    
+        $this->redirect('delivery');
     }
     public function login() {
         if(IS_GET) {
@@ -43,6 +43,7 @@ class IndexController extends Controller {
         $this->redirect('login');
     }
     public function orders(){
+        //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
             $map['dist_id'] = $id;
@@ -72,7 +73,7 @@ class IndexController extends Controller {
         $map['order_id'] = I('post.id/d',0);
         $map['status'] = '6';
         $map['deal_price'] = I('post.deal_price/d',0);
-        $map['sign_msg'] = '';
+        $map['sign_msg'] = I('post.sign_msg');
 
         $pro_id = I('post.pro_id');
         $price_unit = I('post.price_unit');
@@ -85,7 +86,7 @@ class IndexController extends Controller {
             $row['actual_sum_price'] = $price_sum[$key];
             $map['order_details'][] = $row;
         }
-
+        $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
         $res = $A->sign($map);
         $this->ajaxReturn($res);
@@ -93,7 +94,9 @@ class IndexController extends Controller {
     public function reject() {
         $map['order_id'] = I('post.id/d',0);
         $map['status'] = '7';
-        $map['sign_msg'] = '';
+        $map['sign_msg'] = I('post.sign_msg');
+
+        $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
         $res = $A->sign($map);
         $this->ajaxReturn($res);
@@ -115,7 +118,7 @@ class IndexController extends Controller {
                 $map['dist_number'] = substr($id, 2);
                 $A = A('Tms/Order','Logic');
                 $dist = $A->distInfo($map);
-                if(empty($dist)) {
+                if($id != $dist['dist_number']) {
                     $this->error = '未找到该单据';
                 }
                 else {
