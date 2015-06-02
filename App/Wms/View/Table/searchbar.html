@@ -1,5 +1,5 @@
 <notempty name="query">
-<form class="form-horizontal ajax table-search" action="{:U('index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
+<form class="form-horizontal ajax table-search" action="__SELF__" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
 <div class="row">
 <include file="search" />
 <volist name="query" id="vo" key="k">
@@ -85,7 +85,7 @@
 </volist>
 <div class="form-group  col-lg-3">
 <div class="col-lg-10 col-lg-offset-2">
-   <button type="submit" data-href="{:U('index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
+   <button type="submit" data-href="__SELF__" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
    <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
 </div>
 </div>
