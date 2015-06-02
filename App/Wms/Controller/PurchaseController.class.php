@@ -106,16 +106,16 @@ class PurchaseController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11,13")
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13")
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
             ),
         );
     }

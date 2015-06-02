@@ -358,11 +358,11 @@ class StockInController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
-        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
+            array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['view']),'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
         $this->toolbar = array(
-        	    array('name' => 'add', 'show' => true, 'new' => 'true'),
+        	    array('name' => 'add', 'show' => isset($this->auth['add']), 'new' => 'true'),
         );
         
     }
@@ -373,8 +373,8 @@ class StockInController extends CommonController {
     	$this->_before_index();
     	$this->before_index();
     	$this->toolbar_tr =array(
-            array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
-        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
+            array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['pview']),'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
