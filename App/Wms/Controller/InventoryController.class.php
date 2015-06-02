@@ -118,25 +118,20 @@ class InventoryController extends CommonController {
     }
 
 	//serach方法执行后，执行该方法
-	/*protected function after_search(&$map){
+	protected function after_search(&$map){
 		if(IS_AJAX){
 			//用于重新整理查询条件
-			//盘点单类型
-			$inventory_type = I('type');
-			if(!empty($inventory_type)){
-				$map['stock_inventory.type'] = array('eq',$inventory_type);
+			if(!empty($map['stock_inventory.created_user'])){
+				$created_user_name = $map['stock_inventory.created_user'][1];
+
+				$user_info_map['nickname'] = $created_user_name;
+				$user_info = M('user')->where($user_info_map)->find();
+				unset($user_info_mapmap);
+
+				$map['stock_inventory.created_user'][1] = $user_info['id'];
 			}
-			//盘点单状态
-			$inventory_status = I('status');
-			if(!empty($inventory_status)){
-				$map['stock_inventory.status'] = array('eq',$inventory_status);
-			}
-			//有无差异
-			$inventory_is_diff = I('is_diff');
-			$map['stock_inventory.is_diff'] = array('eq',$inventory_is_diff);
-			
 		}
-	}*/
+	}
 
 	//edit方法执行前，执行该方法
 	protected function before_edit(&$data){
