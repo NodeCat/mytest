@@ -126,7 +126,7 @@ class Auth{
             $data[$v['level']][$v['pid']][$v['id']]=$v;
         }
         foreach ($menu as $k => $v) {
-            if(!array_key_exists($k, $data[1])) {
+            if(!empty($v['link']) && !array_key_exists($k, $data[1])) {
                 unset($data[0][0][$k]);
             }
         }

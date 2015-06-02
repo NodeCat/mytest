@@ -19,24 +19,25 @@ class CommonController extends AuthController {
             'toolbar_tr'=> true, //是否显示表格内的“操作”列的按钮
             'statusbar' => false //是否显示状态栏
         );
+        $auth=$this->getAuth();
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'view', 'show' => isset($auth['view']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => isset($auth['edit']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => isset($auth['delete']),'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false'),
-            array('name'=>'import' ,'show' => !isset($auth['import']),'new'=>'false'),
-            array('name'=>'export' ,'show' => !isset($auth['export']),'new'=>'false'),
-            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
-            array('name'=>'setting' ,'show' => !isset($auth['setting']),'new'=>'false'),
+            array('name'=>'add', 'show' => isset($auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => isset($auth['view']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => isset($auth['delete']),'new'=>'false'),
+            array('name'=>'import' ,'show' => isset($auth['import']),'new'=>'false'),
+            array('name'=>'export' ,'show' => isset($auth['export']),'new'=>'false'),
+            array('name'=>'print' ,'show' => isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => isset($auth['setting']),'new'=>'false'),
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($auth['resume']))
             ),
         );
     }

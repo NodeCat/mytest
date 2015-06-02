@@ -11,7 +11,7 @@ return array(
 
 	'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
 	//应用设置
-	'MODULE_ALLOW_LIST' => 'Wms,Tms',
+	'MODULE_ALLOW_LIST' => 'Wms',
 
 	//模版设置
 	'LAYOUT_ON'         => TRUE,
