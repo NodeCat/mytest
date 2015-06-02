@@ -9,14 +9,6 @@ return array(
 	'API_TIME_DEVIATION'   => 300, //API请求时间戳与服务器时间戳的允许误差范围，单位秒，
 	'USER_ALLOW_REGISTER'  => 'TRUE',
 
-	//DB
-	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型
-	'DB_HOST'   		=> 	'',// 服务器地址
-	'DB_NAME'   		=> 	'wms', 		// 数据库名
-	'DB_USER'   		=> 	'root', 	// 用户名
-	'DB_PWD'    		=> 	'', // 密码
-	'DB_PORT'   		=> 	3306, 		// 端口
-	'DB_PREFIX' 		=> 	'', 		// 数据库表前缀
 	'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
 	//应用设置
 	'MODULE_ALLOW_LIST' => 'Wms',

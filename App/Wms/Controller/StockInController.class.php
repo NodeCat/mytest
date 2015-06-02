@@ -358,11 +358,11 @@ class StockInController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
-        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
+            array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['view']),'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
         $this->toolbar = array(
-        	    array('name' => 'add', 'show' => true, 'new' => 'true'),
+        	    array('name' => 'add', 'show' => isset($this->auth['add']), 'new' => 'true'),
         );
         
     }
@@ -373,8 +373,8 @@ class StockInController extends CommonController {
     	$this->_before_index();
     	$this->before_index();
     	$this->toolbar_tr =array(
-            array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => true,'new'=>'true'), 
-        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
+            array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['pview']),'new'=>'true'), 
+        	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
@@ -444,7 +444,7 @@ class StockInController extends CommonController {
     	->join('partner on partner.id = stock_bill_in.partner_id' )
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
-    	->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+    	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
     	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
     	unset($map);
 
@@ -476,7 +476,7 @@ class StockInController extends CommonController {
      * (初始化入库数据 写入操作由父类add方法完成)
      * @param object $M stockin模型（操作数据表stock_bill_in）
      */
-    public function before_add(&$M) {
+    protected function before_add(&$M) {
         $pros = I('post.pros');
         
         if (count($pros) < 2) {
@@ -501,7 +501,7 @@ class StockInController extends CommonController {
         $stock_type = M('stock_bill_in_type');
         $type_name = $stock_type->field('type')->where(array('id' => $type))->find();
         $numbs = M('numbs');
-        $name = $numbs->field('name')->where(array('type' => $type_name['type']))->find();
+        $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
         
         foreach ($pros as $value) {
             if (empty($value['pro_name'])) {
@@ -575,5 +575,15 @@ class StockInController extends CommonController {
             }
         }
         $this->msgReturn(1, '', '', U('view', 'id='.$id));
+    }
+
+    //按照pro_code模糊匹配sku
+    public function match_code() {
+        $code=I('q');
+        $A = A('Pms',"Logic");
+        $data = $A->get_SKU_by_pro_codes_fuzzy_return_data($code);
+
+        if(empty($data))$data['']='';
+        echo json_encode($data);
     }
 }

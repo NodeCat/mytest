@@ -19,24 +19,26 @@ class CommonController extends AuthController {
             'toolbar_tr'=> true, //是否显示表格内的“操作”列的按钮
             'statusbar' => false //是否显示状态栏
         );
+        
+        $auth = $this->auth;
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'view', 'show' => isset($auth['view']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => isset($auth['edit']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => isset($auth['delete']),'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false'),
-            array('name'=>'import' ,'show' => !isset($auth['import']),'new'=>'false'),
-            array('name'=>'export' ,'show' => !isset($auth['export']),'new'=>'false'),
-            array('name'=>'print' ,'show' => !isset($auth['print']),'new'=>'false'),
-            array('name'=>'setting' ,'show' => !isset($auth['setting']),'new'=>'false'),
+            array('name'=>'add', 'show' => isset($auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => isset($auth['view']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => isset($auth['delete']),'new'=>'false'),
+            array('name'=>'import' ,'show' => isset($auth['import']),'new'=>'false'),
+            array('name'=>'export' ,'show' => isset($auth['export']),'new'=>'false'),
+            array('name'=>'print' ,'show' => isset($auth['print']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => isset($auth['setting']),'new'=>'false'),
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($auth['resume']))
             ),
         );
     }
@@ -74,7 +76,15 @@ class CommonController extends AuthController {
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
                     case 'between'://区间匹配
-                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
+                        if(empty($condition[$key]) && !empty($condition[$key.'_1'])) {
+                            $map[$key]=array('lt',$condition[$key.'_1']);
+                        }
+                        elseif(!empty($condition[$key]) && empty($condition[$key.'_1'])) {
+                            $map[$key]=array('gt',$condition[$key]);
+                        }
+                        else {
+                            $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
+                        }
                         break;
                 }
             }
@@ -186,7 +196,18 @@ class CommonController extends AuthController {
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
         $M->scope('default');//默认查询，default中定义了一些预置的查询条件
-
+        $controllers = array(
+            'Warehouse',
+            'StockIn',
+            'StockOut',
+            'Invertory',
+            'Stock',
+            'StockMoveDetail'
+        );
+        //dump(in_array(CONTROLLER_NAME, $controllers));exit();
+        if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
+            $map['warehouse.id'] = array('in',WHID);
+        }
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }

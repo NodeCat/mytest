@@ -47,8 +47,8 @@ class PurchaseController extends CommonController {
 		'stock_purchase.wh_id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
-			'control_type' => 'refer',     
-			'value' => 'stock_purchase-wh_id-warehouse-id,id,name,Warehouse/refer',   
+			'control_type' => 'getField',     
+			'value' => 'Warehouse.id,name',   
 		),
 		'stock_purchase.company_id' =>    array (     
 			'title' => '所属系统',     
@@ -84,35 +84,15 @@ class PurchaseController extends CommonController {
 	public function match_code() {
         $code=I('q');
         $A = A('Pms',"Logic");
-        G('start');
-        $res = $A->get_SKU_by_pro_codes_fuzzy($code);
-        G('end');
-        if(!empty($res['list'])){
-              $i = 0;
-              foreach ($res['list'] as $key => $val) {
-                    $data[$i]['val']['code'] = $val['sku_number'];
-                    $data[$i]['val']['name'] = $val['name'];
-                    
-                    foreach ($val['description'] as $k => $v) {
-                          $attrs[]= $v['name'].':'.$v['val'];
-                    }
-                    $data[$i]['val']['attrs'] = implode(',',$attrs);
-                    $data[$i]['name'] = '['.$val['sku_number'].'] '.$val['name'] .'（'. $data[$i]['val']['attrs'].'）';
-                    unset($attrs);
-                    $i++;
-              }
-        }
+        $data = $A->get_SKU_by_pro_codes_fuzzy_return_data($code);
         if(empty($data))$data['']='';
         echo json_encode($data);
-      }
+    }
 	public function view() {
         $this->_before_index();
         $this->edit();
     }
-	public function index() {
-		$tmpl = IS_AJAX ? 'Table:list':'index';
-        $this->lists($tmpl);
-    }
+	
 	public function _before_index() {
         $this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
@@ -123,16 +103,19 @@ class PurchaseController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11,13")
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13")
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
             ),
         );
     }

@@ -31,10 +31,10 @@ class StockBillInTypeController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array( 
-            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'false'), 
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['add']),'new'=>'false'), 
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
@@ -43,4 +43,21 @@ class StockBillInTypeController extends CommonController {
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
 	}
+
+    protected function after_save($id){
+        $map['id'] = $id;
+        $stock_bill_in_type_info = M('stock_bill_in_type')->where($map)->find();
+
+        if(!empty($stock_bill_in_type_info)){
+            //写入numbs表进行维护
+            $data['name'] = strtolower($stock_bill_in_type_info['type']);
+            $data['prefix'] = $stock_bill_in_type_info['type'];
+            $data['mid'] = '%date%%wh_id%';
+            $data['suffix'] = 4;
+            $data['sn'] = 1;
+            $data['status'] = 1;
+            M('numbs')->data($data)->add();
+        }
+
+    }
 }

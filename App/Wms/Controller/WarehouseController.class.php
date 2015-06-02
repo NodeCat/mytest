@@ -12,7 +12,18 @@ class WarehouseController extends CommonController {
             
         }
     }
-   
+    public function get_list($controller,$field = '') {
+        $M = D($controller);
+        $table = $M->tableName;
+        
+        if(empty($table)) {
+            $table = strtolower($controller);
+        }
+        $ids = session('user.rule');//dump($ids);exit();
+        $map['id'] = array('in',$ids);
+        $data = $M->where($map)->getField($field,true);
+        return $data;
+    }
     protected function before_lists(&$M) {
         //无效仓库不能展示在区域创建的选择中
         if(ACTION_NAME == 'refer') {
