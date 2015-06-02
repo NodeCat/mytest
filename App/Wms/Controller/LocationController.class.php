@@ -96,7 +96,21 @@ class LocationController extends CommonController {
     protected function after_save() {
         if(ACTION_NAME == 'edit') {
             
-            $post_data = I('post.');       
+            $post_data = I('post.');
+            if(empty($post_data['pid']) || empty($post_data['code']) || empty($post_data['type_id']) || empty($post_data['picking_line']) || empty($post_data['putaway_line']) || empty($post_data['is_mixed_pro']) || empty($post_data['is_mixed_batch'])) {
+            
+                $this->msgReturn(0,'请填写完整信息');
+            
+            }
+            //若编辑库位的所属区域，需要将库位的库存状态修改成新所属区域的库存状态
+            $location = M('location');
+            $map['id'] = $post_data['pid'];
+            $status = $location->where($map)->getField('status');
+            unset($map);
+            $map['id'] = $post_data['id'];
+            $data['status'] = $status;
+            $location->where($map)->save($data);
+
             $location_detail = M('location_detail');
             $list['location_id'] = $post_data['id'];
             $list['picking_line'] = $post_data['picking_line'];
