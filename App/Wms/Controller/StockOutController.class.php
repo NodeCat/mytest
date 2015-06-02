@@ -370,4 +370,13 @@ class StockOutController extends CommonController {
     
     }
 
+    //按照pro_code模糊匹配sku
+    public function match_code() {
+        $code=I('q');
+        $A = A('Pms',"Logic");
+        $data = $A->get_SKU_by_pro_codes_fuzzy_return_data($code);
+
+        if(empty($data))$data['']='';
+        echo json_encode($data);
+    }
 }
