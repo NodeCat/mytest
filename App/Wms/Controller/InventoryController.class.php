@@ -325,6 +325,7 @@ class InventoryController extends CommonController {
 						'code'=>$adjustment_code,
 						'type'=>'inventory',
 						'refer_code'=>$refer_code,
+						'wh_id'=>session('user.wh_id');
 						);
 					$stock_adjustment = D('Adjustment');
 					$adjust_data = $stock_adjustment->create($adjust_data);

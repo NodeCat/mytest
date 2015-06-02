@@ -964,6 +964,7 @@ class StockLogic{
 				'code' => $adjustment_code,
 				'type' => 'change_status',
 				'refer_code' => 'STOCK'.$stock_info['id'],
+				'wh_id'=>session('user.wh_id');
 				);
 			$stock_adjustment = D('Adjustment');
 			$adjustment_data = $stock_adjustment->create($adjustment_data);
