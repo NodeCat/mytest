@@ -207,11 +207,18 @@ class CommonController extends AuthController {
             'StockMoveDetail',
             'Adjustment',
             'Purchase',
+            'LocationArea',
+            'Location'
         );
-        //dump(in_array(CONTROLLER_NAME, $controllers));exit();
+        
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('in',WHID);
         }
+        /*
+        if(in_array(CONTROLLER_NAME, $controllers) && empty($map[$table.'.wh_id'])) {
+            $map[$table.'.wh_id'] = array('in',WHID);
+        }
+        */
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }
