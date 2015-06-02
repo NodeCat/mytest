@@ -72,10 +72,10 @@ class Auth{
         $map['is_deleted'] = 0;
         $res = $M->where($map)->getField('id,rule_id');
         if(!empty($res)) {
-            $res = implode($res, ',');
+            
         }
         else {
-            $res = '';
+            //$res = '';
         }
         return $res;
     }

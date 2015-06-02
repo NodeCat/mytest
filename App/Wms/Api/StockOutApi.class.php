@@ -31,9 +31,9 @@ class StockOutApi extends Controller{
         unset($map);
         $map['code'] = get_sn($stock_out_type, $post['wh_id']);
         $map['wh_id'] = $wh_id;
-        $map['line_name'] = $post['line_name'];
-        $map['op_date'] = date('Y-m-d',strtotime($post['delivery_date']));
-        $map['op_time'] = $post['delivery_time'];
+        $map['line_name'] = isset($post['line_name'])? $post['line_name']:'';
+        $map['op_date'] = isset($post['delivery_date'])? date('Y-m-d',strtotime($post['delivery_date'])) : '';
+        $map['op_time'] = isset($post['delivery_time'])? $post['delivery_time'] : '';
         $map['type'] = $type;
         $map['status'] = 1;
         $map['process_type'] = 1;
@@ -45,15 +45,23 @@ class StockOutApi extends Controller{
 
         $stock_out_id = $stock_out->add($map);
         if(empty($stock_out_id)) {
-            $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
-            $this->ajaxReturn($return);
+            if(isset($post['return_type'])) {
+                return false;
+            }else {
+                $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
+                $this->ajaxReturn($return);
+            }
         }
         $total = 0;
         $pro_codes = array_column($post['product_list'],'product_code');
         $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
         if(empty($pms)) {
-            $return = array('error_code' => '501', 'error_message' => 'pms infomation error', 'data' => '' );
-            $this->ajaxReturn($return);
+            if(isset($post['return_type'])) {
+                return false;
+            }else {
+                $return = array('error_code' => '501', 'error_message' => 'pms infomation error', 'data' => '' );
+                $this->ajaxReturn($return);
+            }
         }
         foreach($post['product_list'] as $val) {
             $detail['pid'] = $stock_out_id;
@@ -67,8 +75,12 @@ class StockOutApi extends Controller{
             $total += $val['qty'];
             $res = $stock_detail->add($detail);
             if(empty($res)) {
-                $return = array('error_code' => '501', 'error_message' => 'created detail error', 'data' => '' );
-                $this->ajaxReturn($return);
+                if(isset($post['return_type'])){
+                    return false;
+                }else {
+                    $return = array('error_code' => '501', 'error_message' => 'created detail error', 'data' => '' );
+                    $this->ajaxReturn($return);
+                }
             }
         }
         
@@ -76,8 +88,12 @@ class StockOutApi extends Controller{
         $data['total_qty'] = $total;
         $map['id'] = $stock_out_id;
         $stock_out->where($map)->save($data);
-        
-        $return = array('error_code' => '0', 'error_message' => 'success', 'data' => '' );
-        $this->ajaxReturn($return);
+       
+        if(isset($post['return_type'])) {
+            return true;
+        }else {
+            $return = array('error_code' => '0', 'error_message' => 'success', 'data' => '' );
+            $this->ajaxReturn($return);
+        }
     } 
 }

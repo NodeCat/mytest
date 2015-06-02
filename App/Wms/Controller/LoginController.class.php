@@ -12,6 +12,7 @@ class LoginController extends Controller {
     }
 
     public function index($username = null, $password = null, $verify = null){
+
         if(IS_POST){
             /* 检测验证码  */
             /*if(!check_verify($verify)){
@@ -25,12 +26,12 @@ class LoginController extends Controller {
                 set_session($uid);
                 $url = I('post.url');
                 if(empty($url)) {
-                    $this->success('登录成功！', 'Index/index',3);
+                    $this->success('登录成功！', '/Index/index',3);
                 }
                 else {
                     $url = urldecode($url);
                     if($url == 'Login/index') {
-                        $url = "Index/index";
+                        $url = "/Index/index";
                     }
                     $this->success('登录成功！跳转至登录前界面',$url,3);
                 }
@@ -50,12 +51,14 @@ class LoginController extends Controller {
                 }
                 else{
                     $url = urldecode($url);
-                    if($url == 'Login/index') {
-                        $url = "Index/index";
+
+                    if($url == '/Login/index') {
+                        $url = "/Index/index";
                     }
-                    redirect($url);
+                    $this->redirect($url);
                 }
             }else{
+                
                 if(!empty($url)) {
                     $this->url = urlencode($url);   
                 }
@@ -67,13 +70,22 @@ class LoginController extends Controller {
     public function logout(){
         if(is_login()){
             destory_session();
-        
-        }//$this->success('退出成功！', U('index'),3);
-        
-        $this->redirect('Login/index');
-        
+        }   
+        $this->redirect('/Login/index');
     }
 
+    public function wh() {
+        $id = I('get.id/d',0);
+        $A = A('Warehouse');
+        $whs = $A->get_list('Warehouse','id,name');
+        if(array_key_exists($id, $whs)) {
+            $auth = session('user');
+            $auth['wh_id'] = $id;
+            session('user',$auth); 
+            session('user_auth_sign', data_auth_sign($auth));
+        }
+        $this->success('切换成功','/Index/index');
+    }
 
     public function verify(){
         $config = array(

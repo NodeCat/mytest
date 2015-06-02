@@ -72,6 +72,7 @@ class LocationController extends CommonController {
         $location_area = M('location');
         $map['id'] = $data['area_id'];
         $M->status = $location_area->where($map)->getField('status');
+        
     }
     
     protected function after_add($data) {
@@ -90,9 +91,10 @@ class LocationController extends CommonController {
         }
             $location_data['pid'] = $post_data['area_id'];
             $location_data['path'] = $post_data['area_id'] . '.' . $data  . '.'; 
-            $location->where('id='.$data)->save($location_data); 
+            $map['id'] = $data;
+            $location->where($map)->save($location_data); 
     }
-    
+
     protected function after_save() {
         if(ACTION_NAME == 'edit') {
             
@@ -102,8 +104,11 @@ class LocationController extends CommonController {
                 $this->msgReturn(0,'请填写完整信息');
             
             }
-            //若编辑库位的所属区域，需要将库位的库存状态修改成新所属区域的库存状态
+            
             $location = M('location');
+            
+            //若编辑库位的所属区域，需要将库位的库存状态修改成新所属区域的库存状态
+            unset($map);
             $map['id'] = $post_data['pid'];
             $status = $location->where($map)->getField('status');
             unset($map);
@@ -118,11 +123,14 @@ class LocationController extends CommonController {
             $list['type_id'] = $post_data['type_id'];
             $list['is_mixed_pro'] = $post_data['is_mixed_pro'];
             $list['is_mixed_batch'] = $post_data['is_mixed_batch'];
-            $location_detail->where('location_id=' . $post_data['id'])->save($list);
+            unset($map);
+            $map['location_id'] = $post_data['id'];
+            $location_detail->where($map)->save($list);
         
-            $location = M('location');
-            $location_data['path'] = $post_data['pid'] . '.' . $post_data['id']; 
-            $location->where('id='.$post_data['id'])->save($location_data); 
+            $location_data['path'] = $post_data['pid'] . '.' . $post_data['id'] . '.'; 
+            unset($map);
+            $map['id'] = $post_data['id'];
+            $location->where($map)->save($location_data); 
         }
     }
     
