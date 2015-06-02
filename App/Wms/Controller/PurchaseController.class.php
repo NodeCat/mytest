@@ -355,6 +355,7 @@ class PurchaseController extends CommonController {
 		$data['wh_id'] = $res['wh_id'];
 		$data['company_id'] = $res['company_id'];
 		$data['partner_id'] = $res['partner_id'];
+		$data['type'] = 1;
 		$Min = D('StockIn');
 		
 		$bill = $Min->create($data);
