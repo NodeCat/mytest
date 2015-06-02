@@ -24,13 +24,22 @@ function set_session($uid){
     $roles = implode('_', $roles);
 
     $rules = $Auth->getRule($uid);
+    if(empty($rules)) {
+        $rules = 0;
+        $wh = 0;
+    }
+    else {
+        $wh = current($rules);
+        $rules = implode($rules, ',');
+    }
+    
     /* 记录登录SESSION和COOKIES */
     $auth = array(
         'uid'             => $user['id'],
         'username'        => $user['nickname'],
         'role'            => $roles,
         'rule'           => $rules,
-        'wh_id'           => 1
+        'wh_id'           => $wh
     );
 
     session('user', $auth);

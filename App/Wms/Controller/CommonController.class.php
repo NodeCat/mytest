@@ -162,7 +162,9 @@ class CommonController extends AuthController {
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $data = $M->getField($field,true);
+        $map['is_deleted'] = 0 ;
+        //$map['status'] = '1';
+        $data = $M->where($map)->getField($field,true);
         return $data;
     }
 
@@ -200,10 +202,11 @@ class CommonController extends AuthController {
             'Warehouse',
             'StockIn',
             'StockOut',
-            'Invertory',
+            'Inventory',
             'Stock',
             'StockMoveDetail',
             'Adjustment',
+            'Purchase',
         );
         //dump(in_array(CONTROLLER_NAME, $controllers));exit();
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {

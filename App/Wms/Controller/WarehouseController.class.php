@@ -19,7 +19,8 @@ class WarehouseController extends CommonController {
         if(empty($table)) {
             $table = strtolower($controller);
         }
-        $ids = session('user.rule');//dump($ids);exit();
+        $ids = session('user.rule');
+        if(empty($ids)) return;
         $map['id'] = array('in',$ids);
         $data = $M->where($map)->getField($field,true);
         return $data;
@@ -28,10 +29,8 @@ class WarehouseController extends CommonController {
         //无效仓库不能展示在区域创建的选择中
         if(ACTION_NAME == 'refer') {
             $map['status'] = 2;
+            $M = $M->where($map);
         }
-            
-        $M = $M->where($map);
-    
     }
 
 }
