@@ -6,15 +6,17 @@ class StockOutController extends CommonController {
         parent::__construct();
         if(IS_GET && ACTION_NAME == 'add'){
             $stock_out_type = M('stock_bill_out_type');
-            $this->stock_out_type = $stock_out_type->select();
+            $data = $stock_out_type->select();
+            //手动新建出库单时剔除掉普通订单类型
+            foreach($data as $key=>$val) {
+                if($val['type'] == 'SO' ) {
+                    unset($data[$key]);
+                }
+            }
+            $this->stock_out_type = $data; 
         }
     }
     protected $filter = array(
-                    /*'type'=>array(
-                        '1'=>'普通订单',
-                        '2'=>'采购退货',
-                        '3'=>'库内样品出库',
-                        ),*/
                     'line_name'=>array(
                         '1'=>'海淀黄庄北',
                         '2'=>'知春路锦秋国际'
@@ -49,7 +51,7 @@ class StockOutController extends CommonController {
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_time' => '送货时间',
-        'order_time' => '下单时间'
+        'created_time' => '下单时间'
 	);
 	protected $query = array (   
 		 'stock_bill_out.code' =>    array (     
@@ -170,8 +172,12 @@ class StockOutController extends CommonController {
                 $this->msgReturn(0,'订单数量不能为0');    
             }
         }
-        $data = $M->data();         
-        $M->code = get_sn('out',$post['wh_id']);
+        $data = $M->data();
+        $stock_out_type = M('stock_bill_out_type');
+        $map['id'] = $data['type'];
+        $type = $stock_out_type->where($map)->getField('type');
+        
+        $M->code = get_sn($type, $post['wh_id']);
         $M->status = 1;
         $M->process_type = 1;
         $M->refused_type = 1;
@@ -239,8 +245,10 @@ class StockOutController extends CommonController {
        foreach ($pros as $key => $val) {
             $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 	   }
-
-       $data['wh_name'] = $warehouse->where($data['wh_id'])->getField('name');
+        
+       unset($map);
+       $map['id'] = $data['wh_id'];
+       $data['wh_name'] = $warehouse->where($map)->getField('name');
        $data['delivery_time'] = date('Y-m-d', $data['op_date']) . $this->filter['op_time'][$data['op_time']];
 
        $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
@@ -261,7 +269,6 @@ class StockOutController extends CommonController {
         $ids_arr = explode(",",$ids);
         $stock_out = M('stock_bill_out');
         $stock_detail = M('stock_bill_out_detail');
-        
         
         //$flag标识判断出库单是否出库成功
         $state = 'succ';
@@ -348,6 +355,23 @@ class StockOutController extends CommonController {
             $str = implode(",", $arr);
             $map['stock_bill_out.id'][1] = $str;
         }
+    }
+
+    protected function before_delete($ids) {
+        $stock_out = M('stock_bill_out');
+        $stock_out_type = M('stock_bill_out_type');
+        foreach($ids as $id) {
+            $map['id'] = $id;
+            $type_id = $stock_out->where($map)->getField('type');
+            unset($map);
+            $map['id'] = $type_id;
+            $stock_type = $stock_out_type->field('type, name')->where($map)->find();
+       
+            if($stock_type['type'] == 'SO') {
+                $this->msgReturn(0,'不能删除' . $stock_type['name']);
+            }
+        }
+    
     }
 
 }

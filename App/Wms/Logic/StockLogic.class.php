@@ -55,7 +55,7 @@ class StockLogic{
 		$map['pro_code'] = $params['pro_code'];
 		$map['wh_id'] = $params['wh_id'];
 		//目前只出合格商品
-		$map['status'] = 'qualified';
+		$map['stock.status'] = 'qualified';
 		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
