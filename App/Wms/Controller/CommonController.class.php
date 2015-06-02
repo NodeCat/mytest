@@ -202,7 +202,8 @@ class CommonController extends AuthController {
             'StockOut',
             'Invertory',
             'Stock',
-            'StockMoveDetail'
+            'StockMoveDetail',
+            'Adjustment',
         );
         //dump(in_array(CONTROLLER_NAME, $controllers));exit();
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
