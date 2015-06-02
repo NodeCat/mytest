@@ -112,12 +112,12 @@ class StockOutController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
-            'edit'=>array('name'=>'edit','show' => !isset($auth['edit']),'new'=>'true','domain'=>"1"),
-            'delete'=>array('name'=>'delete', 'show' => !isset($auth['delete']),'new'=>'true','domain'=>"1"),
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+            'edit'=>array('name'=>'edit','show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1"),
+            'delete'=>array('name'=>'delete', 'show' => isset($this->auth['delete']),'new'=>'true','domain'=>"1"),
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => ! isset($auth['add']),'new'=>'true'),
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
             );
         $this->search_addon = true;
     }

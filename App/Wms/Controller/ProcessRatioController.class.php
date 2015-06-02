@@ -58,8 +58,8 @@ class ProcessRatioController extends CommonController {
 	    );
 	    $this->status =array(
 	            array(
-	                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])),
-	                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+	                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])),
+	                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
 	            ),
 	    );
 	    $this->toolbar_tr =array(

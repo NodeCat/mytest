@@ -21,11 +21,11 @@ class InventoryDetailController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),

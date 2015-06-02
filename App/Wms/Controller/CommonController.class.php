@@ -217,7 +217,7 @@ class CommonController extends AuthController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'refer', 'show' => !isset($auth['refer']),'new'=>'false'), 
+            array('name'=>'refer', 'show' => isset($this->auth['refer']),'new'=>'false'), 
         );
         $this->status_type='0';
     }
