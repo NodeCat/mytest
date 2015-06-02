@@ -22,14 +22,14 @@
       <php>
 $A=A('Warehouse');
 $items=$A->get_list('Warehouse','id,name');
-$warehouse = $items[session('user.wh_id')];
+$_wh = $items[session('user.wh_id')];
 unset($items[session('user.wh_id')]);
 </php>
 <empty name="items">
-<li><a>{$warehouse}</a></li>
+<li><a>{$_wh}</a></li>
 <else/>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{$warehouse} <span class="caret"></span></a>
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{$_wh} <span class="caret"></span></a>
   <ul class="dropdown-menu" role="menu">
   <foreach name="items" item="wh">
     <li><a href="{:U('Login/wh','id='.$key)}">{$wh}</a></li>
