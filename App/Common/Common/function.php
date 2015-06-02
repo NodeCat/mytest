@@ -254,8 +254,6 @@ function X($t, $id=null, $value = ''){
 function auth_module_black_list($module){
     $black_list = array(
         'Auth',
-        'AuthRole',
-        'Authority',
         'Category',
         'Code',
         'Common',
@@ -263,9 +261,10 @@ function auth_module_black_list($module){
         'Company',
         'Dictionary',
         'Empty',
-        'Index',
         'Menu',
-        'User',
+        'Article',
+        'Wave',
+
         );
     if(in_array($module, $black_list)){
         return true;

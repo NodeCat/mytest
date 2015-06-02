@@ -476,7 +476,7 @@ class StockInController extends CommonController {
      * (初始化入库数据 写入操作由父类add方法完成)
      * @param object $M stockin模型（操作数据表stock_bill_in）
      */
-    public function before_add(&$M) {
+    protected function before_add(&$M) {
         $pros = I('post.pros');
         
         if (count($pros) < 2) {
