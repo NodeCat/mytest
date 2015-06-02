@@ -64,6 +64,11 @@ class Auth{
         return $list;
     }
 
+    public function getRule($uid) {
+        $M = M('auth_user_rule');
+        
+    }
+
     public function getMenu($uid){
         $M=M('Menu');
         $cur = CONTROLLER_NAME.'/'.ACTION_NAME;
@@ -208,7 +213,7 @@ class Auth{
         if (isset($_authList[$uid.$t])) {
             return $_authList[$uid.$t];
         }
-        $user = I('session.user_auth');
+        $user = I('session.user');
         
         //$authList = S('_AUTH_LIST_'.$user['role'].'_'.$type);
         if( $this->_config['AUTH_TYPE']==2 && !empty($authList)){

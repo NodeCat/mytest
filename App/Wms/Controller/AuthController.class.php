@@ -19,6 +19,9 @@ class AuthController extends Controller {
             $this->display('index:closed');
             exit();
         }
+
+        $this->auth=$this->getAuth();
+
         if(session('user.uid') == 1){
             return true;
         }

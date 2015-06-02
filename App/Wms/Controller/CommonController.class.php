@@ -19,7 +19,8 @@ class CommonController extends AuthController {
             'toolbar_tr'=> true, //是否显示表格内的“操作”列的按钮
             'statusbar' => false //是否显示状态栏
         );
-        $auth=$this->getAuth();
+        
+        $auth = $this->auth;
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => isset($auth['view']),'new'=>'true'), 
             array('name'=>'edit', 'show' => isset($auth['edit']),'new'=>'false'), 
