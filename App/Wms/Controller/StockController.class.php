@@ -27,6 +27,12 @@ class StockController extends CommonController {
 		    'control_type' => 'text',
 		    'value' => '',
 		),
+		'stock.wh_id' => array (
+		    'title' => '仓库',
+		    'query_type' => 'eq',
+		    'control_type' => 'getField',
+		    'value' => 'warehouse.id,name',
+		),
 	);
 	//页面展示数据映射关系 例如取出数据是qualified 显示为合格
 	protected $filter = array(
