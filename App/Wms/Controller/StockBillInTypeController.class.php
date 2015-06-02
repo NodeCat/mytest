@@ -43,4 +43,21 @@ class StockBillInTypeController extends CommonController {
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
 	}
+
+    protected function after_save($id){
+        $map['id'] = $id;
+        $stock_bill_in_type_info = M('stock_bill_in_type')->where($map)->find();
+
+        if(!empty($stock_bill_in_type_info)){
+            //写入numbs表进行维护
+            $data['name'] = $stock_bill_in_type_info['type'];
+            $data['prefix'] = $stock_bill_in_type_info['type'];
+            $data['mid'] = '%date%%wh_id%';
+            $data['suffix'] = 4;
+            $data['sn'] = 1;
+            $data['status'] = 1;
+            M('numbs')->data($data)->add();
+        }
+
+    }
 }
