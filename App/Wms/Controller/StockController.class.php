@@ -27,6 +27,12 @@ class StockController extends CommonController {
 		    'control_type' => 'text',
 		    'value' => '',
 		),
+		'stock.wh_id' => array (
+		    'title' => '仓库',
+		    'query_type' => 'eq',
+		    'control_type' => 'getField',
+		    'value' => 'warehouse.id,name',
+		),
 	);
 	//页面展示数据映射关系 例如取出数据是qualified 显示为合格
 	protected $filter = array(
@@ -42,7 +48,7 @@ class StockController extends CommonController {
             'toolbar_tr'=> true,
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
+            array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );

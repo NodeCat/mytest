@@ -58,8 +58,8 @@ class ProcessRatioController extends CommonController {
 	    );
 	    $this->status =array(
 	            array(
-	                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])),
-	                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+	                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])),
+	                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
 	            ),
 	    );
 	    $this->toolbar_tr =array(
@@ -70,21 +70,21 @@ class ProcessRatioController extends CommonController {
 	/**
 	 * 完整添加数据
 	 */
-	public function before_add(&$M) {
+	protected function before_add(&$M) {
 	    $M->create_user = session()['user']['uid']; //创建人
 	    $M->update_user = session()['user']['uid']; //更新人
 	}
 	/**
 	 * 添加完成页面跳转
 	 */
-	public function after_add() {
+	protected function after_add() {
 	    $this->msgReturn(true, '', '', U('index'));
 	}
 	
 	/**
 	 * 列表信息处理
 	 */
-	public function after_lists(&$data) {
+	protected function after_lists(&$data) {
 	    if (empty($data)) {
 	        return;
 	    }

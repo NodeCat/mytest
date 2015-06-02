@@ -102,12 +102,12 @@ class InventoryController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
+            array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['add']),'new'=>'false'), 
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
@@ -118,25 +118,20 @@ class InventoryController extends CommonController {
     }
 
 	//serach方法执行后，执行该方法
-	/*protected function after_search(&$map){
+	protected function after_search(&$map){
 		if(IS_AJAX){
 			//用于重新整理查询条件
-			//盘点单类型
-			$inventory_type = I('type');
-			if(!empty($inventory_type)){
-				$map['stock_inventory.type'] = array('eq',$inventory_type);
+			if(!empty($map['stock_inventory.created_user'])){
+				$created_user_name = $map['stock_inventory.created_user'][1];
+
+				$user_info_map['nickname'] = $created_user_name;
+				$user_info = M('user')->where($user_info_map)->find();
+				unset($user_info_mapmap);
+
+				$map['stock_inventory.created_user'][1] = $user_info['id'];
 			}
-			//盘点单状态
-			$inventory_status = I('status');
-			if(!empty($inventory_status)){
-				$map['stock_inventory.status'] = array('eq',$inventory_status);
-			}
-			//有无差异
-			$inventory_is_diff = I('is_diff');
-			$map['stock_inventory.is_diff'] = array('eq',$inventory_is_diff);
-			
 		}
-	}*/
+	}
 
 	//edit方法执行前，执行该方法
 	protected function before_edit(&$data){
@@ -330,6 +325,7 @@ class InventoryController extends CommonController {
 						'code'=>$adjustment_code,
 						'type'=>'inventory',
 						'refer_code'=>$refer_code,
+						'wh_id'=>session('user.wh_id'),
 						);
 					$stock_adjustment = D('Adjustment');
 					$adjust_data = $stock_adjustment->create($adjust_data);

@@ -202,7 +202,8 @@ class CommonController extends AuthController {
             'StockOut',
             'Invertory',
             'Stock',
-            'StockMoveDetail'
+            'StockMoveDetail',
+            'Adjustment',
         );
         //dump(in_array(CONTROLLER_NAME, $controllers));exit();
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
@@ -236,7 +237,7 @@ class CommonController extends AuthController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'refer', 'show' => !isset($auth['refer']),'new'=>'false'), 
+            array('name'=>'refer', 'show' => isset($this->auth['refer']),'new'=>'false'), 
         );
         $this->status_type='0';
     }
