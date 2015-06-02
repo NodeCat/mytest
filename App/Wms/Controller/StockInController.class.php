@@ -73,11 +73,17 @@ class StockInController extends CommonController {
 			'control_type' => 'refer',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
 			),*/
-		'stock_purchase.created_user' =>    array (     
+		/*'stock_purchase.created_user' =>    array (     
 			'title' => '创建人',     
 			'query_type' => 'eq',     
 			'control_type' => 'refer',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
+		),*/
+		'stock_bill_in.created_user' =>    array (     
+			'title' => '创建人',     
+			'query_type' => 'eq',     
+			'control_type' => 'getField',     
+			'value' => 'User.id,nickname',   
 		),
 		'stock_bill_in.created_time' =>    array (     
 			'title' => '时间',     
@@ -379,7 +385,7 @@ class StockInController extends CommonController {
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
     }
-    protected function before_lists(){
+    protected function before_lists(&$M){
     	$pill = array(
 			'status'=> array(
 				//'0'=>array('value'=>'0','title'=>'草稿','class'=>'warning'),
@@ -389,9 +395,9 @@ class StockInController extends CommonController {
 				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger'),
 			)
 		);
-		$M = M('stock_bill_in');
+		$M_bill_in = M('stock_bill_in');
 		$map['is_deleted'] = 0;
-		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+		$res = $M_bill_in->field('status,count(status) as qty')->where($map)->group('status')->select();
 
 		foreach ($res as $key => $val) {
 			if(array_key_exists($val['status'], $pill['status'])){
@@ -407,6 +413,14 @@ class StockInController extends CommonController {
 		}
 
 		$this->pill = $pill;
+
+		if(ACTION_NAME == 'pindex'){
+			//如果是采购到货单，只显示采购相关的到货单据
+			$M->where(array('stock_bill_in.type'=>'1'));
+			//删除入库类型查找
+			unset($this->query['stock_bill_in.type']);
+			$this->assign('query',$this->query);
+		}
     }
     
     /**
