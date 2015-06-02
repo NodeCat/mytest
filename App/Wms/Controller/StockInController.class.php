@@ -444,7 +444,7 @@ class StockInController extends CommonController {
     	->join('partner on partner.id = stock_bill_in.partner_id' )
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
-    	->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+    	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
     	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
     	unset($map);
 
@@ -501,7 +501,7 @@ class StockInController extends CommonController {
         $stock_type = M('stock_bill_in_type');
         $type_name = $stock_type->field('type')->where(array('id' => $type))->find();
         $numbs = M('numbs');
-        $name = $numbs->field('name')->where(array('type' => $type_name['type']))->find();
+        $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
         
         foreach ($pros as $value) {
             if (empty($value['pro_name'])) {
