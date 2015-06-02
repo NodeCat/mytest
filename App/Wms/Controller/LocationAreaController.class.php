@@ -40,6 +40,18 @@ class LocationAreaController extends CommonController {
             $val['warehouse_code'] = $list['code'];
         }*/
     }
+    
+    protected function after_save(&$data) {
+        $location = M('location');
+        //如果修改区域的库存状态,则同时修改此区域下所有的库位的库存状态
+        $map['id'] = $data;
+        $status = $location->where($map)->getField('status');
+        unset($map);
+        $map['pid'] = $data;
+        $map['is_deleted'] = 0;
+        $list['status'] = $status;
+        $location->where($map)->save($list);
+    }
 
     protected function after_add($id) {
         $location = M('location');

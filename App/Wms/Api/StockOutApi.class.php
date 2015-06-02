@@ -16,7 +16,8 @@ class StockOutApi extends Controller{
         $stock_type = M('stock_bill_out_type');
         $user = M('user');
         //查找出库单类型
-        $map['type'] = 'SO';
+        $stock_out_type = isset($post['stock_out_type'])? $post['stock_out_type'] : 'SO';
+        $map['type'] = $stock_out_type;
         $type = $stock_type->where($map)->getField('id');
         //查找仓库名
         unset($map);
@@ -28,7 +29,7 @@ class StockOutApi extends Controller{
         $user_id = $user->where($map)->getField('id');
 
         unset($map);
-        $map['code'] = get_sn('out',$post['wh_id']);
+        $map['code'] = get_sn($stock_out_type, $post['wh_id']);
         $map['wh_id'] = $wh_id;
         $map['line_name'] = $post['line_name'];
         $map['op_date'] = date('Y-m-d',strtotime($post['delivery_date']));

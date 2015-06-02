@@ -172,8 +172,12 @@ class StockOutController extends CommonController {
                 $this->msgReturn(0,'订单数量不能为0');    
             }
         }
-        $data = $M->data(); 
-        $M->code = get_sn('out',$post['wh_id']);
+        $data = $M->data();
+        $stock_out_type = M('stock_bill_out_type');
+        $map['id'] = $data['type'];
+        $type = $stock_out_type->where($map)->getField('type');
+        
+        $M->code = get_sn($type, $post['wh_id']);
         $M->status = 1;
         $M->process_type = 1;
         $M->refused_type = 1;
