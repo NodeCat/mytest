@@ -31,9 +31,9 @@ class StockOutApi extends Controller{
         unset($map);
         $map['code'] = get_sn($stock_out_type, $post['wh_id']);
         $map['wh_id'] = $wh_id;
-        $map['line_name'] = $post['line_name'];
-        $map['op_date'] = date('Y-m-d',strtotime($post['delivery_date']));
-        $map['op_time'] = $post['delivery_time'];
+        $map['line_name'] = isset($post['line_name'])? $post['line_name']:'';
+        $map['op_date'] = isset($post['delivery_date'])? date('Y-m-d',strtotime($post['delivery_date'])) : '';
+        $map['op_time'] = isset($post['delivery_time'])? $post['delivery_time'] : '';
         $map['type'] = $type;
         $map['status'] = 1;
         $map['process_type'] = 1;
