@@ -47,8 +47,8 @@ class PurchaseController extends CommonController {
 		'stock_purchase.wh_id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
-			'control_type' => 'refer',     
-			'value' => 'stock_purchase-wh_id-warehouse-id,id,name,Warehouse/refer',   
+			'control_type' => 'getField',     
+			'value' => 'Warehouse.id,name',   
 		),
 		'stock_purchase.company_id' =>    array (     
 			'title' => '所属系统',     

@@ -34,6 +34,7 @@ class InventoryModel extends Model {
             'order'=>'stock_inventory.id DESC',
             "join"=>array(
                 "left join location on stock_inventory.location_id=location.id ",
+                "inner join warehouse on warehouse.id = stock_inventory.wh_id",
                 "left join user on stock_inventory.created_user = user.id "),
 "field"=>"stock_inventory.*,location.name as location_name,user.nickname as user_nickname",
         ),

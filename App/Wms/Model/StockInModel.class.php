@@ -42,7 +42,7 @@ class StockInModel extends RelationModel {
         'default'=>array(
             'where'=>array('stock_bill_in.is_deleted'=>'0'),
             'order'=>'stock_bill_in.id DESC',
-            "join"=>array("inner join warehouse on stock_bill_in.wh_id=warehouse.id ",
+            "join"=>array("inner join warehouse on stock_bill_in.wh_id=warehouse.id",
                 "inner join company on stock_bill_in.company_id=company.id ",
                 //"inner join partner on stock_bill_in.partner_id=partner.id ",
                 "inner join user u on stock_bill_in.created_user = u.id",

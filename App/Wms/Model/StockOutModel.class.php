@@ -34,7 +34,8 @@ class StockOutModel extends Model {
                 'where'=>array('stock_bill_out.is_deleted'=>'0'),
                 'order'=>'stock_bill_out.id DESC',
                 "join"=>array(//"inner join stock_bill_out_detail sbod on stock_bill_out.id=sbod.pid",
-                              "inner join stock_bill_out_type sbot on stock_bill_out.type = sbot.id"
+                              "inner join stock_bill_out_type sbot on stock_bill_out.type = sbot.id",
+                              "inner join warehouse on warehouse.id = stock_bill_out.wh_id"
                 ),
                 "field"=>"stock_bill_out.*,stock_bill_out.status as state,sbot.name as type_name "
                 ),
