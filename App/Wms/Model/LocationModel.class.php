@@ -10,9 +10,26 @@ class LocationModel extends Model {
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-                //array('wh_id','require','请填写仓库标识'),
+                array('code','checkCode','此区域标识已存在',1,'callback')
             );
+    
+    protected function checkCode($data){
+        $location = M('location');
+        $id = I('id');
+        $wh_id = I('wh_id');
+        $map['code'] = $data;
+        $map['id'] = array('neq', $id);
+        $map['wh_id'] = $wh_id;
+        $map['is_deleted'] = 0;
+        $res = $location->where($map)->count();
 
+        if(! empty($res)) {
+            return false;    
+        }else {
+            return true;
+        }
+        
+    }
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
             array('type','2'),
