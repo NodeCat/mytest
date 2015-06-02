@@ -302,6 +302,11 @@ class StockOutController extends CommonController {
             foreach($detail_info as $val) {
                 $data['pro_code'] = $val['pro_code'];
                 $data['pro_qty'] = $val['delivery_qty'];
+
+                //如果出库量是0 放弃处理 处理下一条
+                if(intval($data['pro_qty']) === 0){
+                    continue;
+                }
                 
                 $check_stock = A('Stock', 'Logic')->outStockBySkuFIFOCheck($data);
                 if($check_stock['status'] == 0) {
