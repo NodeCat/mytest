@@ -528,7 +528,7 @@ class StockInController extends CommonController {
      * @param int $id 入库单id
      * (操作数据表 stock_bill_in_detail)
      */
-    public function after_add($id) {
+    protected function after_add($id) {
         $pros = I('pros'); //入库单详情数据
         //去除隐藏域
         unset($pros[0]);
