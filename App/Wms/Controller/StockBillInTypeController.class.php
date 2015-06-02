@@ -50,7 +50,7 @@ class StockBillInTypeController extends CommonController {
 
         if(!empty($stock_bill_in_type_info)){
             //写入numbs表进行维护
-            $data['name'] = $stock_bill_in_type_info['type'];
+            $data['name'] = strtolower($stock_bill_in_type_info['type']);
             $data['prefix'] = $stock_bill_in_type_info['type'];
             $data['mid'] = '%date%%wh_id%';
             $data['suffix'] = 4;
