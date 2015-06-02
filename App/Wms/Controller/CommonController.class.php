@@ -76,7 +76,15 @@ class CommonController extends AuthController {
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
                     case 'between'://区间匹配
-                        $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
+                        if(empty($condition[$key]) && !empty($condition[$key.'_1'])) {
+                            $map[$key]=array('lt',$condition[$key.'_1']);
+                        }
+                        elseif(!empty($condition[$key]) && empty($condition[$key.'_1'])) {
+                            $map[$key]=array('gt',$condition[$key]);
+                        }
+                        else {
+                            $map[$key]=array($v['query_type'],$condition[$key].','.$condition[$key.'_1']);
+                        }
                         break;
                 }
             }
@@ -188,7 +196,18 @@ class CommonController extends AuthController {
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
         $M->scope('default');//默认查询，default中定义了一些预置的查询条件
-
+        $controllers = array(
+            'Warehouse',
+            'StockIn',
+            'StockOut',
+            'Invertory',
+            'Stock',
+            'StockMoveDetail'
+        );
+        //dump(in_array(CONTROLLER_NAME, $controllers));exit();
+        if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
+            $map['warehouse.id'] = array('in',WHID);
+        }
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }

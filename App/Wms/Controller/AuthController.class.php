@@ -13,6 +13,9 @@ class AuthController extends Controller {
         if(!defined('UID')) {
             define('UID',session('user.uid'));
         }
+        if(!defined('WHID')) {
+            define('WHID',session('user.rule'));
+        }
         if(!check_maintain()){
             destory_session();
             layout(FALSE);

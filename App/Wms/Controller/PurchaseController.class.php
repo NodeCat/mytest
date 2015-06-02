@@ -47,8 +47,8 @@ class PurchaseController extends CommonController {
 		'stock_purchase.wh_id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
-			'control_type' => 'refer',     
-			'value' => 'stock_purchase-wh_id-warehouse-id,id,name,Warehouse/refer',   
+			'control_type' => 'getField',     
+			'value' => 'Warehouse.id,name',   
 		),
 		'stock_purchase.company_id' =>    array (     
 			'title' => '所属系统',     
@@ -92,10 +92,7 @@ class PurchaseController extends CommonController {
         $this->_before_index();
         $this->edit();
     }
-	public function index() {
-		$tmpl = IS_AJAX ? 'Table:list':'index';
-        $this->lists($tmpl);
-    }
+	
 	public function _before_index() {
         $this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
@@ -111,6 +108,9 @@ class PurchaseController extends CommonController {
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13")
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
         );
         $this->status =array(
             array(

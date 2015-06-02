@@ -66,7 +66,18 @@ class Auth{
 
     public function getRule($uid) {
         $M = M('auth_user_rule');
-        
+        $map['user_id'] = $uid;
+        $map['type'] = 'warehouse';
+        $map['status'] = '1';
+        $map['is_deleted'] = 0;
+        $res = $M->where($map)->getField('id,rule_id');
+        if(!empty($res)) {
+            $res = implode($res, ',');
+        }
+        else {
+            $res = '';
+        }
+        return $res;
     }
 
     public function getMenu($uid){
@@ -197,7 +208,7 @@ class Auth{
             ->table($this->_config['AUTH_GROUP_ACCESS'] . ' ur')
             ->where("ur.user_id='$uid' and r.status='1'")
             ->join($this->_config['AUTH_GROUP']." r on ur.role_id=r.id")
-            ->field('r.id,rules')->select();
+            ->field('r.id,rules')->order('r.id ASC')->select();
         $roles[$uid]=$user_groups?$user_groups:array();
         return $roles[$uid];
     }
