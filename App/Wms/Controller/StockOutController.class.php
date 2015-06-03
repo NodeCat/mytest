@@ -269,28 +269,26 @@ class StockOutController extends CommonController {
         $ids_arr = explode(",",$ids);
         $stock_out = M('stock_bill_out');
         $stock_detail = M('stock_bill_out_detail');
-        
+       
+        foreach($ids_arr as $id) {
+           $map['id'] = $id;
+           $stock_status = $stock_out->where($map)->getField('status');
+           if($stock_status == 2) {
+                $return['status'] = 0;
+                $return['msg'] = '已出库的出库单不能再次出库，请重新选择';
+                $this->ajaxReturn($return);
+           }
+        }
+
         //$flag标识判断出库单是否出库成功
         $state = 'succ';
-        
         foreach($ids_arr as $id) {
-           
             //$flag标识判断此次出库是否成功
             $flag = 'succ';
             
             //查找出库单信息
             $map['id'] = $id;
             $stock_info = $stock_out->field('wh_id,code,total_qty,status')->where($map)->find();
-            //如果出库单的总数为0，不能出库
-            if(empty($stock_info['total_qty'])) {
-                $state = 'failed';
-                break; 
-            }
-            //如果是状态是已出库的出库单，则不能再次出库 
-            if($stock_info['status'] == 2) {
-                $state = 'failed';
-                break;
-            }
 
             //查找出库单明细
             unset($map);
@@ -321,25 +319,20 @@ class StockOutController extends CommonController {
                     $data['pro_code'] = $val['pro_code'];
                     $data['pro_qty'] = $val['delivery_qty'];
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
-                    /*if($res['status'] == 0) {
-                        $flag = 'failed';
-                        $state = 'failed';
-                    }*/
                 }
             }
-
+            unset($list);
             if($flag == 'failed') {
                 $list['refused_type'] = 2;
             }else {
                 $list['status'] = 2;
                 $list['refused_type'] = 1;
             }
-            
             unset($map);
             $map['id'] = $id;
             $stock_out->where($map)->save($list);
         }
-
+        
         if($state == 'failed') {
             $return['status'] = 0;
             $return['msg'] = '库存不足，出库失败';
