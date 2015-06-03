@@ -12,15 +12,24 @@ class MenuController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => !isset($auth['delete']),'new'=>'false')
+            array('name'=>'view', 'show' => true,'new'=>'false'), 
+            array('name'=>'edit', 'show' => true,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => true,'new'=>'false')
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
             ),
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => true,'new'=>'false'), 
+            array('name'=>'edit', 'show' => true,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => true,'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => false,'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
         $this->status_type='0';
     }

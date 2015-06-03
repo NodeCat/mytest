@@ -10,7 +10,8 @@ class StockOutModel extends Model {
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-
+                array('type','require','订单类型不能为空',1,'regex',1),
+                array('wh_id','require','仓库不能为空',1,'regex',1),
             );
 
     //array(填充字段,填充内容,[填充条件,附加规则])
@@ -32,15 +33,16 @@ class StockOutModel extends Model {
             'default'=>array(
                 'where'=>array('stock_bill_out.is_deleted'=>'0'),
                 'order'=>'stock_bill_out.id DESC',
-                //"join"=>array("inner join stock_bill_out_detail sbod on stock_bill_out.id=sbod.pid",
-                   // ),
-                //"field"=>"stock_bill_out.*,sbod.customer_name as "
+                "join"=>array(//"inner join stock_bill_out_detail sbod on stock_bill_out.id=sbod.pid",
+                              "inner join stock_bill_out_type sbot on stock_bill_out.type = sbot.id",
+                              "inner join warehouse on warehouse.id = stock_bill_out.wh_id"
+                ),
+                "field"=>"stock_bill_out.*,stock_bill_out.status as state,sbot.name as type_name "
                 ),
             'latest'=>array(
                 'where'=>array('stock_bill_out.is_deleted'=>'0'),
                 'order'=>'update_time DESC',
                 ),
-
 
             );
 }

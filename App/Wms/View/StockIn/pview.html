@@ -22,8 +22,8 @@
 		        </div>
 		    </div>
 		    <div class="media-body">
-			  	<h4 class="list-group-item-heading">{$data.qtyForOn}</h4>
-			    <p class="list-group-item-text">待上架</p>
+			  	<h4 class="list-group-item-heading">{$data.expected_qty_total}</h4>
+			    <p class="list-group-item-text">预计量</p>
 			</div>
 		  </a>
 
@@ -34,8 +34,8 @@
 		        </div>
 		    </div>
 		    <div class="media-body">
-			  	<h4 class="list-group-item-heading">{$data.qtyForIn}</h4>
-			    <p class="list-group-item-text">已上架</p>
+			  	<h4 class="list-group-item-heading">{$data.receipt_qty_total}</h4>
+			    <p class="list-group-item-text">实收量</p>
 			</div>
 		  </a>
 
@@ -129,12 +129,12 @@
 <div class="form-group  col-lg-3">
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">关联单据</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-    <label class="control-label label-field">{$data.refer_code}</label>
+    <label class="control-label label-field"><a href="{:U('Purchase/view','id='.$data['sp_id'])}">{$data.refer_code}</a></label>
     </div>
 </div>
 </div>
 
-<include file="prolist-view" />
+<include file="prolist-pview" />
 </div>
 </div>
 </form>

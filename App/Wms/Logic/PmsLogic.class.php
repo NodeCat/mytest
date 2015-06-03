@@ -156,9 +156,36 @@ class PmsLogic{
 			$return_data[$value['sku_number']]['wms_name'] = $value['name'].'('.$value['spec'][0]['name'].':'.$value['spec'][0]['val'].','.$value['spec'][1]['name'].':'.$value['spec'][1]['val'].')';
 			$return_data[$value['sku_number']]['name'] = $value['name'];
 			$return_data[$value['sku_number']]['pro_code'] = $value['sku_number'];
+			$return_data[$value['sku_number']]['pro_attrs_str'] = $value['spec'][0]['name'].':'.$value['spec'][0]['val'].','.$value['spec'][1]['name'].':'.$value['spec'][1]['val'];
 			$return_data[$value['sku_number']]['pro_attrs'] = $value['spec'];
 		}
 
 		return $return_data;
+	}
+
+	//根据pro_code 模糊查询对应的SKU
+	public function get_SKU_by_pro_codes_fuzzy_return_data($pro_code, $page = 1, $count = 10){
+		if(empty($pro_code)){
+			return false;
+		}
+
+		$res = $this->get_SKU_by_pro_codes_fuzzy($pro_code);
+        if(!empty($res['list'])){
+            $i = 0;
+            foreach ($res['list'] as $key => $val) {
+                $data[$i]['val']['code'] = $val['sku_number'];
+                $data[$i]['val']['name'] = $val['name'];
+                    
+                foreach ($val['description'] as $k => $v) {
+                      $attrs[]= $v['name'].':'.$v['val'];
+                }
+                $data[$i]['val']['attrs'] = implode(',',$attrs);
+                $data[$i]['name'] = '['.$val['sku_number'].'] '.$val['name'] .'（'. $data[$i]['val']['attrs'].'）';
+                unset($attrs);
+                $i++;
+        	}
+        }
+		
+		return $data;
 	}
 }

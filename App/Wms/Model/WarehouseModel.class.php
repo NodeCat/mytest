@@ -9,7 +9,7 @@ class WarehouseModel extends Model {
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
             array('code','require','仓库标识必填'),
-            array('code','','此仓库标识已存在',1,'unique',1),
+            array('code','','此库位已存在',1,'unique',1),
             array('name','require','仓库名称必填'),
             array('name','','此仓库名称已存在',1,'unique',1)
             );

@@ -14,8 +14,45 @@ class LocationAreaModel extends Model {
                 array('code','require','区域标识必填'),
                 array('wh_id','require','仓库标识必选'),
                 array('status','require','区域状态必选'),
+                array('code','checkCode','此区域标识已存在',1,'callback'),
+                array('name','checkName','此区域名称已存在',1,'callback'),
             );
+   
+    protected function checkName($data) {
+        $location = M('location');
+        $id = I('id');
+        $wh_id = I('wh_id');
+        $map['name'] = $data;
+        $map['id'] = array('neq', $id);
+        $map['wh_id'] = $wh_id;
+        $map['is_deleted'] = 0;
+        $map['type'] = 1;
+        $res = $location->where($map)->count();
 
+        if(! empty($res)) {
+            return false;    
+        }else {
+            return true;
+        }
+    }
+
+    protected function checkCode($data) {
+        $location = M('location');
+        $id = I('id');
+        $wh_id = I('wh_id');
+        $map['code'] = $data;
+        $map['id'] = array('neq', $id);
+        $map['wh_id'] = $wh_id;
+        $map['is_deleted'] = 0;
+        $map['type'] = 1;
+        $res = $location->where($map)->count();
+
+        if(! empty($res)) {
+            return false;    
+        }else {
+            return true;
+        }
+    }
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
             array('type','1'),

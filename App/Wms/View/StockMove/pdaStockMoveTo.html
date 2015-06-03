@@ -86,22 +86,7 @@ $(function(){
     
     $('.form-view').attr('action','/StockMove/pdaStock');
     $('.form-view').submit();
-    /*$.ajax({
-      url:'/StockMove/check_stock_move',
-      type:'post',
-      cache : false,
-      dataType:'json',
-      data:'location_code='+_location_code,
-      success: function(json){
-        if(json.status=='1'){
-            $('.form-view').attr('action','/StockMove/pda_stock');
-            $('.form-view').submit();
-        }
-        if(json.status=='0'){
-          alert(json.msg);
-        }
-      }
-    });*/
+    
     return false;
   })
 })

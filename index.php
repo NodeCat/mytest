@@ -1,4 +1,5 @@
 <?php
+
 // +----------------------------------------------------------------------
 // | ThinkPHP [ WE CAN DO IT JUST THINK ]
 // +----------------------------------------------------------------------
@@ -14,11 +15,13 @@
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
 
-//if(isset($_SERVER['SERVER_ENV'])) {
-  //define('APP_DEBUG',FALSE);
-//} else {
+if($_SERVER['SERVER_ENV'] == 'production') {
+  define('APP_DEBUG',FALSE);
+  define('APP_STATUS','production');
+} else {
   define('APP_DEBUG',TRUE);
-//}
+}
+
 
 define('RUNTIME_PATH','../Runtime/');
 

@@ -8,7 +8,7 @@ class PartnerController extends CommonController {
 	//设置列表页选项
 	protected function before_index() {
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['print']),'new'=>'false'), 
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),

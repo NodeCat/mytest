@@ -5,7 +5,7 @@ return array(
 	'SESSION_OPTIONS'	=> array('expire'=>'43200'),
 	'SITE_TITLE' =>'大厨网物流配送系统',
 	'LAYOUT_ON'         => TRUE,
-	'URL_MODEL'			=> 1,
+	'URL_MODEL'			=> 2,
 
 	//Database
 	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型

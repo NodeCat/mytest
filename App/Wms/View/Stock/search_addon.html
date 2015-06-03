@@ -1,3 +1,13 @@
-<a data-remote="/Stock/editStatus.htm" data-target="#modal" role="button" data-title="状态调整" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="search-addon-edit">状态调整</a>
-
-<a data-remote="/Stock/editStockMove.htm" data-target="#modal" role="button" data-title="库存移动" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="search-addon-edit">库存移动</a>
+<div class="row">
+	<div class="form-group  col-lg-3">
+		<div class="col-lg-10 col-lg-offset-2">
+<notempty name="auth['editStatus']">
+<a data-remote="{:U('Stock/editStatus')}" data-target="#modal" role="button" data-title="状态调整" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="search-addon-edit">状态调整</a>
+</notempty>
+&nbsp;
+<notempty name="auth['editStockMove']">
+<a data-remote="{:U('Stock/editStockMove')}" data-target="#modal" role="button" data-title="库存移动" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="search-addon-edit">库存移动</a>
+</notempty>
+		</div>
+	</div>
+</div>

@@ -974,7 +974,7 @@ class CodeController extends CommonController {
 
 		$M = M($this->module_table);
 		$map=array('app' =>$app);
-		$M->execute('truncate table auth_authority');//先删除当前项目已经生成的节点数据 建议首次执行采用这种方式，以后采用下面的，不然，深坑
+		//$M->execute('truncate table auth_authority');//先删除当前项目已经生成的节点数据 建议首次执行采用这种方式，以后采用下面的，不然，深坑
 		$data = array('status' => '0' );//逻辑置0，不可用，后面如果已经存在，再改为1，这样，被删除的方法就逻辑删除了
 		$M->where($map)->save($data);
 		$n=0;
@@ -989,7 +989,7 @@ class CodeController extends CommonController {
 				if($in_black_list){
 					continue;
 				}
-				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
+				$data_modules[] = array('app' => $app, 'group' =>$group, 'module'=>$module, 'type' => '3', 'name'=>$module, 'url'=>$group.'/'.$module.'/index', 'title'=>empty($dict[$module])?$module:$dict[$module]);
 				$module_name=$group.'/'.$module;
 				$actions = $this->getAction($group, $module);
 				foreach ($actions as $action) {

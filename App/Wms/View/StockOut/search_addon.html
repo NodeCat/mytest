@@ -4,7 +4,6 @@
 <script type="text/javascript">
 $(function(){
 	$('#stock_out').on('click',function(){
-		//获得盘点单id
 		var ids = getChecked();
 		$.ajax({
 			url:'/StockOut/stockOut',
@@ -14,11 +13,12 @@ $(function(){
 			data:'ids='+ids,
 			success: function(json){
 				if(json.status=='1'){
-					refresh_list();
+					alert(json.msg);
+                    refresh_list();
 				}
 				if(json.status=='0'){
 					alert(json.msg);
-                    return false;
+                    refresh_list();
 				}
 			}
 		});

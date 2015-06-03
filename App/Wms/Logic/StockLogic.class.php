@@ -3,6 +3,40 @@ namespace Wms\Logic;
 
 class StockLogic{
 	/**
+	 * 检查是否可以一键出库，按照先进先出原则 
+	 * @param 
+	 * $wh_id 仓库id
+	 * $pro_code sku编号
+	 * $pro_qty 产品数量
+	 * $refer_code 出库单号
+	 * )
+	 */
+	public function outStockBySkuFIFOCheck($params = array()){
+		if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+			return array('status'=>0,'msg'=>'参数有误！');
+		}
+
+		$diff_qty = $params['pro_qty'];
+
+		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
+		$map['pro_code'] = $params['pro_code'];
+		$map['wh_id'] = $params['wh_id'];
+		$map['stock.status'] = 'qualified';
+		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+		unset($map);
+
+		//检查所有的 库存量 是否满足 出库量
+		foreach($stock_list as $stock){
+			$stock_total += $stock['stock_qty'] - $stock['assign_qty'];
+		}
+
+		if($stock_total < intval($params['pro_qty'])){
+			return array('status'=>0,'msg'=>'库存总量不足！');
+		}
+
+		return array('status'=>1);
+	}
+	/**
 	 * 一键出库，按照先进先出原则 减少库存 如果库存不够 则返回失败
 	 * @param 
 	 * $wh_id 仓库id
@@ -21,6 +55,8 @@ class StockLogic{
 		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
 		$map['pro_code'] = $params['pro_code'];
 		$map['wh_id'] = $params['wh_id'];
+		//目前只出合格商品
+		$map['stock.status'] = 'qualified';
 		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
@@ -33,11 +69,13 @@ class StockLogic{
 			return array('status'=>0,'msg'=>'库存总量不足！');
 		}
 
+		$diff_qty = intval($diff_qty);
+
 		//按照现进先出原则 减去最早的批次量
 		foreach($stock_list as $stock){
 			if($diff_qty > 0){
 				//如果库存量小于等于差异量 则删除该条库存记录 然后减去差异量diff_qty
-				if($stock['stock_qty'] <= $diff_qty){
+				if($stock['stock_qty'] < $diff_qty){
 					$map['id'] = $stock['id'];
 					M('Stock')->where($map)->delete();
 					unset($map);
@@ -46,6 +84,62 @@ class StockLogic{
 					$log_qty = $stock['stock_qty'];
 					$log_old_qty = $stock['stock_qty'];
 					$log_new_qty = 0;
+
+					//写入库存交易日志
+					$stock_move_data = array(
+						'wh_id' => session('user.wh_id'),
+						'location_id' => $stock['location_id'],
+						'pro_code' => $stock['pro_code'],
+						'type' => 'move',
+						'refer_code' => $params['refer_code'],
+						'direction' => 'OUT',
+						'move_qty' => $log_qty,
+						'old_qty' => $log_old_qty,
+						'new_qty' => $log_new_qty,
+						'batch' => $stock['batch'],
+						'status' => $stock['status'],
+						);
+					$stock_move = D('StockMoveDetail');
+					$stock_move_data = $stock_move->create($stock_move_data);
+					$stock_move->data($stock_move_data)->add();
+					unset($log_qty);
+					unset($log_old_qty);
+					unset($log_new_qty);
+					unset($stock_move_data);
+
+				}elseif($stock['stock_qty'] == $diff_qty){
+					$map['id'] = $stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+
+					$diff_qty = $diff_qty - $stock['stock_qty'];
+					$log_qty = $stock['stock_qty'];
+					$log_old_qty = $stock['stock_qty'];
+					$log_new_qty = 0;
+
+					//写入库存交易日志
+					$stock_move_data = array(
+						'wh_id' => session('user.wh_id'),
+						'location_id' => $stock['location_id'],
+						'pro_code' => $stock['pro_code'],
+						'type' => 'move',
+						'refer_code' => $params['refer_code'],
+						'direction' => 'OUT',
+						'move_qty' => $log_qty,
+						'old_qty' => $log_old_qty,
+						'new_qty' => $log_new_qty,
+						'batch' => $stock['batch'],
+						'status' => $stock['status'],
+						);
+					$stock_move = D('StockMoveDetail');
+					$stock_move_data = $stock_move->create($stock_move_data);
+					$stock_move->data($stock_move_data)->add();
+					unset($log_qty);
+					unset($log_old_qty);
+					unset($log_new_qty);
+					unset($stock_move_data);
+
+					break;
 				}else{
 					//根据id 更新库存表
 					$map['id'] = $stock['id'];
@@ -56,31 +150,34 @@ class StockLogic{
 					M('stock')->where($map)->data($data)->save();
 					unset($map);
 					unset($data);
-				}
 
-				//写入库存交易日志
-				$stock_move_data = array(
-					'wh_id' => session('user.wh_id'),
-					'location_id' => $stock['location_id'],
-					'pro_code' => $stock['pro_code'],
-					'type' => 'move',
-					'refer_code' => $params['refer_code'],
-					'direction' => 'OUT',
-					'move_qty' => $log_qty,
-					'old_qty' => $log_old_qty,
-					'new_qty' => $log_new_qty,
-					'batch' => $stock['batch'],
-					'status' => $stock['status'],
-					);
-				$stock_move = D('StockMoveDetail');
-				$stock_move_data = $stock_move->create($stock_move_data);
-				$stock_move->data($stock_move_data)->add();
-				unset($log_qty);
-				unset($log_old_qty);
-				unset($log_new_qty);
-				unset($stock_move_data);
+					//写入库存交易日志
+					$stock_move_data = array(
+						'wh_id' => session('user.wh_id'),
+						'location_id' => $stock['location_id'],
+						'pro_code' => $stock['pro_code'],
+						'type' => 'move',
+						'refer_code' => $params['refer_code'],
+						'direction' => 'OUT',
+						'move_qty' => $log_qty,
+						'old_qty' => $log_old_qty,
+						'new_qty' => $log_new_qty,
+						'batch' => $stock['batch'],
+						'status' => $stock['status'],
+						);
+					$stock_move = D('StockMoveDetail');
+					$stock_move_data = $stock_move->create($stock_move_data);
+					$stock_move->data($stock_move_data)->add();
+					unset($log_qty);
+					unset($log_old_qty);
+					unset($log_new_qty);
+					unset($stock_move_data);
+
+					break;
+				}
 			}
 		}
+
 		
 		return array('status'=>1);
 	}
@@ -867,6 +964,7 @@ class StockLogic{
 				'code' => $adjustment_code,
 				'type' => 'change_status',
 				'refer_code' => 'STOCK'.$stock_info['id'],
+				'wh_id'=>session('user.wh_id'),
 				);
 			$stock_adjustment = D('Adjustment');
 			$adjustment_data = $stock_adjustment->create($adjustment_data);
@@ -934,5 +1032,37 @@ class StockLogic{
 		unset($map);
 		
 		return true;
+	}
+
+	//为数组添加pro_name字段
+	public function add_fields($data = array(),$add_field = ''){
+		if(empty($data) || empty($add_field)){
+			return $data;
+		}
+
+		if($add_field == 'stock_qty'){
+			$prepare_data = array();
+			//整理pro_codes
+			foreach($data as $k => $val){
+				$pro_codes[] = $val['pro_code'];
+			}
+
+			$map['pro_code'] = array('in',$pro_codes);
+			$stock_infos = M('stock')->where($map)->field('sum(stock_qty) as stock_qty, pro_code')->group('pro_code')->select();
+
+			foreach($data as $k => $val){
+				$prepare_data[$k] = $val;
+				foreach($stock_infos as $stock_info){
+					if($val['pro_code'] == $stock_info['pro_code']){
+						$prepare_data[$k]['stock_qty'] = $stock_info['stock_qty'];
+						break;
+					}
+				}
+			}
+
+			return $prepare_data;
+		}
+
+		return $data;
 	}
 }

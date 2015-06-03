@@ -65,9 +65,14 @@ class LocationController extends CommonController {
 
     protected function before_add($M) {
         $data = I('post.');
-        if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['picking_line']) || empty($data['putaway_line']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
+        if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
             $this->msgReturn(0,'请填写完整信息');
         }
+        //获取所属区域的库存状态，将其设为此新建库位的默认库存状态    
+        $location_area = M('location');
+        $map['id'] = $data['area_id'];
+        $M->status = $location_area->where($map)->getField('status');
+        
     }
     
     protected function after_add($data) {
@@ -86,13 +91,31 @@ class LocationController extends CommonController {
         }
             $location_data['pid'] = $post_data['area_id'];
             $location_data['path'] = $post_data['area_id'] . '.' . $data  . '.'; 
-            $location->where('id='.$data)->save($location_data); 
+            $map['id'] = $data;
+            $location->where($map)->save($location_data); 
     }
-    
+
     protected function after_save() {
         if(ACTION_NAME == 'edit') {
             
-            $post_data = I('post.');       
+            $post_data = I('post.');
+            if(empty($post_data['pid']) || empty($post_data['code']) || empty($post_data['type_id']) || empty($post_data['is_mixed_pro']) || empty($post_data['is_mixed_batch'])) {
+            
+                $this->msgReturn(0,'请填写完整信息');
+            
+            }
+            
+            $location = M('location');
+            
+            //若编辑库位的所属区域，需要将库位的库存状态修改成新所属区域的库存状态
+            unset($map);
+            $map['id'] = $post_data['pid'];
+            $status = $location->where($map)->getField('status');
+            unset($map);
+            $map['id'] = $post_data['id'];
+            $data['status'] = $status;
+            $location->where($map)->save($data);
+
             $location_detail = M('location_detail');
             $list['location_id'] = $post_data['id'];
             $list['picking_line'] = $post_data['picking_line'];
@@ -100,11 +123,14 @@ class LocationController extends CommonController {
             $list['type_id'] = $post_data['type_id'];
             $list['is_mixed_pro'] = $post_data['is_mixed_pro'];
             $list['is_mixed_batch'] = $post_data['is_mixed_batch'];
-            $location_detail->where('location_id=' . $post_data['id'])->save($list);
+            unset($map);
+            $map['location_id'] = $post_data['id'];
+            $location_detail->where($map)->save($list);
         
-            $location = M('location');
-            $location_data['path'] = $post_data['pid'] . '.' . $post_data['id']; 
-            $location->where('id='.$post_data['id'])->save($location_data); 
+            $location_data['path'] = $post_data['pid'] . '.' . $post_data['id'] . '.'; 
+            unset($map);
+            $map['id'] = $post_data['id'];
+            $location->where($map)->save($location_data); 
         }
     }
     

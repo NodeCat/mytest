@@ -34,7 +34,7 @@ a{
                 <div class="panel panel-default">
   <div class="panel-heading">
     <div class="panel-title">
-        <h2 class="">大厨网 & 大果网</h2>
+        <h2 class="">仓储管理系统</h2>
         <!--
         <img src="__PUBLIC__/img/logo.jp" class="hidden" />
         -->
@@ -53,6 +53,7 @@ a{
                             -->
                         </div>
                     </div>
+                    <br />
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
@@ -74,7 +75,7 @@ a{
                             <img class="verifyimg reloadverify" alt="点击切换" src="{:U('Login/verify')}">
                         </div>
                     </div>-->
-
+                    <br />
                     <div class="form-group">
                         <div class="input-grou">
                             <button type="submit" class=" btn btn-lg btn-primary btn-block" tabindex="4"> 登  录 </button>
@@ -84,9 +85,9 @@ a{
                             <p class="help-text-inline"></p>
                         </div>
                     </div>
+
                 </form>
 </div>
-
 
             <div class="row hidden">
                 <div class="mobile text-center">
@@ -121,7 +122,7 @@ $("form").submit(function(){
             window.location.href = data.url;
         } else {
             alert(data.info);
-            $(".reloadverify")[0].click();
+            //$(".reloadverify")[0].click();
         }
     }
 });
