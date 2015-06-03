@@ -19,6 +19,7 @@ $(function(){
 			data:'ids='+ids,
 			success: function(json){
 				if(json.status=='1'){
+					alert('操作成功');
 					refresh_list();
 				}
 				if(json.status=='0'){

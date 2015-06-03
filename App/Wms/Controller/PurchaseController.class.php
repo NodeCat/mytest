@@ -35,7 +35,8 @@ class PurchaseController extends CommonController {
 		'status' => '单据状态',    
 		'cat_total' => 'sku种数',  
 		'qty_total' => '采购总数',   
-		'price_total' => '采购总金额',   
+		'price_total' => '采购总金额',
+		'paid_amount' => '已结算金额',  
 	);
 	protected $query = array (
 		'stock_purchase.code' => array (
@@ -206,9 +207,21 @@ class PurchaseController extends CommonController {
 		$field="count(*) as cat_total,sum(pro_qty) as qty_total,sum(price_subtotal) as price_total";
 		$map['pid'] = $pid;
 		$data = $M->field($field)->where($map)->group('pid')->find();
+		unset($map);
 		$where['id'] = $pid;
 		$M = D(CONTROLLER_NAME);
 		$M->where($where)->save($data);
+		unset($data);
+
+		//如果是先款后货 更新结算金额为采购总金额
+		$map['id'] = $pid;
+		$purchase_info = M('stock_purchase')->where($map)->find();
+
+		if($purchase_info['invoice_method'] == 0){
+			$data['paid_amount'] = $purchase_info['price_total'];
+			M('stock_purchase')->where($map)->save($data);
+		}
+
 
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
