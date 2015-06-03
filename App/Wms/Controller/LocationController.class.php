@@ -65,7 +65,7 @@ class LocationController extends CommonController {
 
     protected function before_add($M) {
         $data = I('post.');
-        if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['picking_line']) || empty($data['putaway_line']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
+        if(empty($data['wh_id']) || empty($data['area_id']) || empty($data['code']) || empty($data['type_id']) || empty($data['is_mixed_pro']) || empty($data['is_mixed_batch'])) {
             $this->msgReturn(0,'请填写完整信息');
         }
         //获取所属区域的库存状态，将其设为此新建库位的默认库存状态    
@@ -99,7 +99,7 @@ class LocationController extends CommonController {
         if(ACTION_NAME == 'edit') {
             
             $post_data = I('post.');
-            if(empty($post_data['pid']) || empty($post_data['code']) || empty($post_data['type_id']) || empty($post_data['picking_line']) || empty($post_data['putaway_line']) || empty($post_data['is_mixed_pro']) || empty($post_data['is_mixed_batch'])) {
+            if(empty($post_data['pid']) || empty($post_data['code']) || empty($post_data['type_id']) || empty($post_data['is_mixed_pro']) || empty($post_data['is_mixed_batch'])) {
             
                 $this->msgReturn(0,'请填写完整信息');
             

@@ -4,8 +4,11 @@ use Think\Controller;
 class WarehouseController extends CommonController {
     protected function before_delete ($ids) {
         $location_area = M('location'); 
+        $map['type'] = 1;
+        $map['is_deleted'] = 0;
         foreach ($ids as $val) {
-            $res = $location_area->where('type=1 AND is_deleted=0 AND wh_id=' . $val)->count();
+            $map['wh_id'] = $val; 
+            $res = $location_area->where($map)->count();
             if($res) {
 	            $this->msgReturn(0,'仓库下存在区域，无法删除');
             }
@@ -19,7 +22,7 @@ class WarehouseController extends CommonController {
         if(empty($table)) {
             $table = strtolower($controller);
         }
-        $ids = session('user.rule');//dump($ids);exit();
+        $ids = session('user.rule');
         $map['id'] = array('in',$ids);
         $data = $M->where($map)->getField($field,true);
         return $data;
