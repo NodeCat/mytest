@@ -12,7 +12,7 @@ class PurchaseInDetailController extends CommonController {
 		'pro_qty' => '上架数量',
 		'price_unit' => '单价',
 		'price_subtotal' => '小计',
-		'status' => '状态'
+		'status' => '支付状态'
     );
     protected $query   = array (
 		'erp_purchase_in_detail.purchase_code' => array (
@@ -59,6 +59,15 @@ class PurchaseInDetailController extends CommonController {
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
         $this->search_addon = true;
+    }
+
+    protected function after_lists(&$data){
+        //过滤所有不合格
+        foreach($data as $k => $val){
+            if($val['pro_status'] != 'qualified'){
+                unset($data[$k]);
+            }
+        }
     }
 
     //支付
