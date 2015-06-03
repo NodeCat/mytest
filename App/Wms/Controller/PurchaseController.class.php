@@ -109,8 +109,9 @@ class PurchaseController extends CommonController {
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13")
         );
+        
         $this->toolbar =array(
-            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
+            array('name'=>'add', 'show' =>isset($this->auth['add']),'new'=>'true'),
         );
         $this->status =array(
             array(

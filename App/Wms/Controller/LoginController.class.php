@@ -84,7 +84,7 @@ class LoginController extends Controller {
             session('user',$auth); 
             session('user_auth_sign', data_auth_sign($auth));
         }
-        $this->success('切换成功','/Index/index');
+        $this->success('切换成功');
     }
 
     public function verify(){

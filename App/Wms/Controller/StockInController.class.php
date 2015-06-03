@@ -311,7 +311,6 @@ class StockInController extends CommonController {
 				}
 			}
 		}
-		
 	}
 	
 	protected function before_edit(&$data) {
@@ -397,8 +396,14 @@ class StockInController extends CommonController {
             array('name'=>'view','link'=>'view','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['view']),'new'=>'true'), 
         	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
+        if(ACTION_NAME == 'pindex') {
+        	$show =false;
+        }
+        else {
+        	$show = true;
+        }
         $this->toolbar = array(
-        	    array('name' => 'add', 'show' => isset($this->auth['add']), 'new' => 'true'),
+        	    array('name' => 'add', 'show' => $show && isset($this->auth['add']), 'new' => 'true'),
         );
         
     }

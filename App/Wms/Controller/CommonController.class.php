@@ -212,7 +212,7 @@ class CommonController extends AuthController {
         );
         
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
-            $map['warehouse.id'] = array('in',WHID);
+            $map['warehouse.id'] = array('eq',session('user.wh_id'));
         }
         /*
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map[$table.'.wh_id'])) {
@@ -398,10 +398,14 @@ class CommonController extends AuthController {
     //excel导入
     public function import() {
         $file = $this->upload();
-
-        $table = get_tablename(CONTROLLER_NAME);
-        $setting = get_setting($table);
-        $columns = $setting['list'];
+        if(empty($this->columns)) {
+            $table = get_tablename(CONTROLLER_NAME);
+            $setting = get_setting($table);
+            $columns = $setting['list'];
+        }
+        else {
+            $columns = $this->columns;
+        }
         foreach ($columns as $key => $val) {
             $list[$val] = $key ;
         }
@@ -503,9 +507,15 @@ class CommonController extends AuthController {
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel(); 
         $i = 1;
-        $table = get_tablename(CONTROLLER_NAME);
-        $res = get_setting($table);
-        $columns = $res['list'];
+        if(empty($this->columns)) {
+            $table = get_tablename(CONTROLLER_NAME);
+            $res = get_setting($table);
+            $columns = $res['list'];
+        }
+        else {
+            $columns = $this->columns;
+        }
+        
         $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
         $Sheet = $this->get_excel_sheet($Excel);
         foreach ($columns as $key  => $value) { 

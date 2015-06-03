@@ -26,7 +26,7 @@
   </div>
   <div class="panel-body">
   	<div class="row">
-		<div class="col-lg-6"><h3>采购单 {$data.code}</h3></div>
+		<div class="col-lg-6"><h3>采购单 {$data.code} <small><a href="{:U('StockIn/pview','id='.$data['in_id'])}">到货单 {$data.in_code}</a></small></h3></div>
 		<div class="col-lg-6">
 <div class="btn-group pull-right" role="group" aria-label="...">
 		  <a href="#" class="list-group-item">
