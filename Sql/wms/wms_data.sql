@@ -165,6 +165,25 @@ INSERT INTO `numbs` VALUES ('adjust',0,'AD','%date%%wh_id%','4',120,'1','0000-00
 UNLOCK TABLES;
 
 --
+-- Dumping data for table `stock_bill_in_type`
+--
+LOCK TABLES `stock_bill_in_type` WRITE;
+/*!40000 ALTER TABLE `stock_bill_in_type` DISABLE KEYS */;
+INSERT INTO `stock_bill_in_type` VALUES (1,'ASN','采购入库单',1,'2015-05-27 16:44:41',1,'2015-06-01 17:34:11',0),(2,'MNI','加工入库单',1,'2015-05-27 16:44:41',1,'2015-06-02 11:25:21',0),(3,'RMA','客退入库单',1,'2015-05-28 11:31:22',1,'2015-06-01 17:33:55',0),(4,'STI','调拨入库单',1,'2015-05-28 11:31:32',1,'2015-06-01 17:33:48',0),(5,'RBI','领用入库单',1,'2015-06-02 11:25:51',1,'2015-06-02 11:25:51',0);
+/*!40000 ALTER TABLE `stock_bill_in_type` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `stock_bill_out_type`
+--
+
+LOCK TABLES `stock_bill_out_type` WRITE;
+/*!40000 ALTER TABLE `stock_bill_out_type` DISABLE KEYS */;
+INSERT INTO `stock_bill_out_type` VALUES (1,'SO','销售订单',0,1,'0000-00-00 00:00:00','2015-06-01 17:21:00',0),(2,'MNO','加工出库单',1,1,'2015-05-29 19:40:06','2015-06-02 11:21:43',0),(3,'RTSG','采购正品退货单',1,1,'2015-05-30 12:03:53','2015-06-01 17:24:52',0),(4,'RBO','领用出库单',1,1,'2015-06-01 16:25:12','2015-06-01 17:33:12',0),(5,'STO','调拨出库单',1,1,'2015-06-01 16:25:38','2015-06-01 17:33:33',0);
+/*!40000 ALTER TABLE `stock_bill_out_type` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping data for table `user`
 --
 
