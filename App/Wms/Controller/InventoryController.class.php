@@ -126,7 +126,7 @@ class InventoryController extends CommonController {
 
 				$user_info_map['nickname'] = $created_user_name;
 				$user_info = M('user')->where($user_info_map)->find();
-				unset($user_info_mapmap);
+				unset($user_info_map);
 
 				$map['stock_inventory.created_user'][1] = $user_info['id'];
 			}

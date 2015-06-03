@@ -134,6 +134,36 @@ class StockInController extends CommonController {
 				//上架逻辑
 				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
 				if($res['res'] == true) {
+					//写入采购入库单 erp_in_detail
+					//根据stock_bill_in id 查询相关数据
+					$map['stock_bill_in_detail.pid'] = $id;
+					$map['stock_bill_in_detail.pro_code'] = $code;
+					$bill_in_detail_info = M('stock_bill_in_detail')
+					->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
+					->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+					->where($map)
+					->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
+					->find();
+					unset($map);
+
+					$data['price_unit'] = $bill_in_detail_info['price_unit'];
+					$data['pro_code'] = $code;
+					$data['pro_qty'] = $qty;
+					$data['stock_in_code'] = $bill_in_detail_info['code'];
+					$data['purchase_code'] = $bill_in_detail_info['refer_code'];
+					$data['pro_status'] = $status;
+					$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * intval($qty);
+
+					if($bill_in_detail_info['invoice_method'] == 0){
+						$data['status'] = 'paid';
+					}else{
+						$data['status'] = 'nopaid';
+					}
+
+					$purchase_in_detail = D('PurchaseInDetail');
+					$data = $purchase_in_detail->create($data);
+					$purchase_in_detail->data($data)->add();
+
 					//有一件商品上架 更新到货单状态为 已上架
 					$upd_map['id'] = $id;
 					$upd_data['status'] = '33';
@@ -161,7 +191,7 @@ class StockInController extends CommonController {
 				$res = M('stock_bill_in')->where($map)->find();
 				if(!empty($res)) {
 					if(true){
-						if($res['status'] =='31' || $res['status'] =='32' || $res['status'] == '21') {
+						if($res['status'] =='31' || $res['status'] =='32' || $res['status'] == '21' || $res['status'] =='33') {
 							$data['id'] = $res['id'];
 							$data['code'] = $res['code'];
 							$data['title'] = '扫描货品';
@@ -172,9 +202,9 @@ class StockInController extends CommonController {
 							$data = $this->fetch('StockIn:scan-procode');
 							$this->msgReturn(1,'查询成功。',$data);
 						}
-						if($res['status'] =='33') {
+						/*if($res['status'] =='33') {
 							$this->msgReturn(0,'查询失败，该单据待上架数量为0。');
-						}
+						}*/
 						if($res['status'] == '53'){
 							$this->msgReturn(0,'查询失败，该单据已完成。');
 						}
