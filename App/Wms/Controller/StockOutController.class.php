@@ -112,12 +112,12 @@ class StockOutController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
-            'edit'=>array('name'=>'edit','show' => !isset($auth['edit']),'new'=>'true','domain'=>"1"),
-            'delete'=>array('name'=>'delete', 'show' => !isset($auth['delete']),'new'=>'true','domain'=>"1"),
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+            'edit'=>array('name'=>'edit','show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1"),
+            'delete'=>array('name'=>'delete', 'show' => isset($this->auth['delete']),'new'=>'true','domain'=>"1"),
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => ! isset($auth['add']),'new'=>'true'),
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
             );
         $this->search_addon = true;
     }
@@ -302,6 +302,11 @@ class StockOutController extends CommonController {
             foreach($detail_info as $val) {
                 $data['pro_code'] = $val['pro_code'];
                 $data['pro_qty'] = $val['delivery_qty'];
+
+                //如果出库量是0 放弃处理 处理下一条
+                if(intval($data['pro_qty']) === 0){
+                    continue;
+                }
                 
                 $check_stock = A('Stock', 'Logic')->outStockBySkuFIFOCheck($data);
                 if($check_stock['status'] == 0) {

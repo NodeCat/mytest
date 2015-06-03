@@ -32,8 +32,11 @@ class AdjustmentModel extends Model {
         'default'=>array(
             'where'=>array('stock_adjustment.is_deleted'=>'0'),
             'order'=>'stock_adjustment.id DESC',
-            'join' => array('left join user on stock_adjustment.created_user = user.id ',),
-            'field' => array('stock_adjustment.*,user.nickname as user_nickname'),
+            'join' => array(
+                'left join user on stock_adjustment.created_user = user.id ',
+                "inner join warehouse on stock_adjustment.wh_id=warehouse.id ",
+                ),
+            'field' => array('stock_adjustment.*,user.nickname as user_nickname, warehouse.code as wh_code'),
         ),
         'latest'=>array(
             'where'=>array('stock_adjustment.is_deleted'=>'0'),

@@ -162,7 +162,9 @@ class CommonController extends AuthController {
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
-        $data = $M->getField($field,true);
+        $map['is_deleted'] = 0 ;
+        //$map['status'] = '1';
+        $data = $M->where($map)->getField($field,true);
         return $data;
     }
 
@@ -200,14 +202,23 @@ class CommonController extends AuthController {
             'Warehouse',
             'StockIn',
             'StockOut',
-            'Invertory',
+            'Inventory',
             'Stock',
-            'StockMoveDetail'
+            'StockMoveDetail',
+            'Adjustment',
+            'Purchase',
+            'LocationArea',
+            'Location'
         );
-        //dump(in_array(CONTROLLER_NAME, $controllers));exit();
+        
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('in',WHID);
         }
+        /*
+        if(in_array(CONTROLLER_NAME, $controllers) && empty($map[$table.'.wh_id'])) {
+            $map[$table.'.wh_id'] = array('in',WHID);
+        }
+        */
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }
@@ -236,7 +247,7 @@ class CommonController extends AuthController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'refer', 'show' => !isset($auth['refer']),'new'=>'false'), 
+            array('name'=>'refer', 'show' => isset($this->auth['refer']),'new'=>'false'), 
         );
         $this->status_type='0';
     }
