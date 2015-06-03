@@ -12,8 +12,8 @@ class ProcessRatioModel extends Model {
     protected $_validate = array(
         array('company_id', 'require', '请选择所属系统', 1, 'regex', 1), //所属系统
         array('p_pro_code', 'require', '请输入父SKU', 1, 'regex', 1), //父SKU
-        array('c_pro_code', 'require', '请输入子SKU', 1, 'regex', 1), //子SKU
-        array('ratio', 'require', '请输入比例', 1, 'regex', 1), //比例关系
+        //array('c_pro_code', 'require', '请输入子SKU', 1, 'regex', 1), //子SKU
+        //array('ratio', 'require', '请输入比例', 1, 'regex', 1), //比例关系
     );
 
     //array(填充字段,填充内容,[填充条件,附加规则])
@@ -33,9 +33,10 @@ class ProcessRatioModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
+            'join' => array('inner join company on company.id=erp_process_sku_relation.company_id'),
             'where'=>array('erp_process_sku_relation.is_deleted'=>'0'),
             'order'=>'erp_process_sku_relation.id',
-            'field' => 'erp_process_sku_relation.*',
+            'field' => 'erp_process_sku_relation.*,company.name',
         ),
         'latest'=>array(
             'where'=>array('erp_process_sku_relation.is_deleted'=>'0'),

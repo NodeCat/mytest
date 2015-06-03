@@ -15,10 +15,16 @@ class StockInModel extends RelationModel {
     );
     protected $_link = array(
         "Detail" => array(
-            'mapping_type' => self::HAS_MANY, 
-            'class_name'  => 'StockBillInDetail',
+            'mapping_type' => self::HAS_ONE, 
+            'class_name' => 'StockBillInDetail',
             'foreign_key' => 'pid',
             'mapping_name' => 'detail',
+        ),
+        "Netail" => array(
+        	    'mapping_type' => self::HAS_MANY,
+            'class_name' => 'StockBillInDetail',
+            'foreign_key' => 'pid',
+            'mapping_name' => 'netail',
         ),
     );
     //array(填充字段,填充内容,[填充条件,附加规则])

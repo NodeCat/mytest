@@ -40,7 +40,7 @@ class ProcessController extends CommonController {
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['add']),'new'=>'true'), 
+            array('name'=>'add', 'show' => true,'new'=>'true'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
@@ -90,7 +90,7 @@ class ProcessController extends CommonController {
     		$data['wh_id'] = $wh_id;
     		$data['type'] = $type;
     		$data['plan_qty'] = $plan_qty;
-            $data['real_qty'] = $plan_qty;
+        $data['real_qty'] = 0;
     		$data['p_pro_code'] = $process_pro_code;
     		$data['status'] = 'confirm';
     		$data['remark'] = $remark;
@@ -211,9 +211,20 @@ class ProcessController extends CommonController {
     //批准
     public function pass(){
         $map['id'] = I('id');
-        $process = M('erp_process')->where($map)->find();
+        $erp_process = M('erp_process');
+        $process = $erp_process->where($map)->find();
+        
+        //是否已经批准
+        if ($process['status'] != 'confirm') {
+            $this->msgReturn(false, '非新建加工单');
+        }
+        
+        //更新状态
+        $data['status'] = 'pass'; //批准
+        $erp_process->where($map)->save($data);
         unset($map);
-
+        unset($data);
+        
         //获得物料清单
         $map['p_pro_code'] = $process['p_pro_code'];
         $process_relation = M('erp_process_sku_relation')->where($map)->select();
@@ -229,58 +240,254 @@ class ProcessController extends CommonController {
 
         //如果是组合
         if($process['type'] == 'unite'){
+            /**
+             * 组合状态下 分别在erp wms上创建单据
+             * 父SKU创建入库及入库详情单
+             * 子SKU创建出库及出库详情单
+             */
+            //-----erp start-----
+            
             //写入加工入库单 父SKU
             $process_in = D('ProcessIn');
-            $data['wh_id'] = $process['wh_id'];
-            $data['code'] = get_sn('erp_pro_in');
-            $data['refer_code'] = $process['code'];
-            $data['process_type'] = $process['type'];
-            $data['status'] = 'prepare';
-            $data['remark'] = $process['remark'];
-            $data = $process_in->create($data);
+            $data['wh_id'] = $process['wh_id']; //所属仓库
+            $data['code'] = get_sn('erp_pro_in'); //加工入库单号
+            $data['refer_code'] = $process['code']; //关联加工单号
+            $data['process_type'] = $process['type']; //类型 组合 or 拆分
+            $data['status'] = 'prepare'; //状态 待入库
+            $data['remark'] = $process['remark']; //备注
 
             //写入加工入库单详情 父SKU
-            $process_in_detail = D('ProcessInDetail');
-            $detail_data['pro_code'] = $process['p_pro_code'];
-            $detail_data['batch'] = $process['code'];
-            $detail_data['plan_qty'] = $process['plan_qty'];
-            $detail_data['real_qty'] = $process['real_qty'];
-            $detail_data['status'] = 'prepare';
-            $detail_data = $process_in_detail->create($detail_data);
-            $data['detail'][] = $detail_data;
+            $detail_data['pro_code'] = $process['p_pro_code']; //sku编号
+            $detail_data['batch'] = $process['code']; //批次 关联加工单号
+            $detail_data['plan_qty'] = $process['plan_qty']; //计划量
+            $detail_data['real_qty'] = $process['real_qty']; //实际量
+            $detail_data['status'] = 'prepare'; //状态 
+            //关联操作
+            $data['detail'] = $detail_data;
             
-            $process_in->relation(true)->add($data);
+            $process_in->relation('detail')->add($data);
             unset($data);
-
+            unset($detail_data);
+            
             //写入加工出库单 子SKU
-            $process_on = D('ProcessOn');
-            $data['wh_id'] = $process['wh_id'];
-            $data['code'] = get_sn('erp_pro_on');
-            $data['refer_code'] = $process['code'];
-            $data['process_type'] = $process['type'];
-            $data['status'] = 'prepare';
-            $data['remark'] = $process['remark'];
-            $data = $process_on->create($data);
-
+            $process_out = D('ProcessOut');
+            $data['wh_id'] = $process['wh_id']; //所属仓库
+            $data['code'] = get_sn('erp_pro_out'); //出库单号
+            $data['refer_code'] = $process['code']; //关联加工单号
+            $data['process_type'] = $process['type']; //出库类型
+            $data['status'] = 'prepare'; //状态
+            $data['remark'] = $process['remark']; //备注
+            
+            //写入加工出库单详情 子SKU详情
+            $company_id = 1; //所属系统 默认大厨网
             foreach($process_relation as $k => $val){
-                
+                $detail_data = array();
+                $company_id = $val['company_id']; //所属系统
+                $detail_data['pro_code'] = $val['c_pro_code']; //sku编号
+                $detail_data['batch'] = $process['code']; //批次＝＝加工出库单号
+                $detail_data['plan_qty'] = $process['plan_qty'] * $val['ratio']; //计划出库量 父sku * 比例
+                $detail_data['real_qty'] = $process['real_qty'] * $val['ratio']; //实际出库量 子sku ＊ 比例
+                $detail_data['status'] = 'prepare'; //壮态 待出库
+                //关联操作
+                $data['detail'][] = $detail_data; 
             }
-
-
-            var_dump($data);exit;
+            $process_out->relation('detail')->add($data);
+            unset($data);
+            unset($detail_data);
+            //-----------erp end--------
+            
+            //-----------wms start------
+            //写入wms入库单
+            //获取入库类型id
+            $name = 'wms_pro_in'; //入库类型名称
+            $stock_type = D('stock_bill_in_type');
+            $numbs = M('numbs');
+            $map['name'] = $name;
+            $type_info = $numbs->field('prefix')->where($map)->find();
+            $id_info = $stock_type->field('id')->where(array('type' => $type_info['prefix']))->find();
+            unset($map);
+            //创建数据
+            $data['code'] = get_sn($name); //入库单号
+            $data['wh_id'] = $process['wh_id']; //仓库id
+            $data['type'] = $id_info['id']; //入库类型ID
+            $data['company_id'] = $company_id; //所属系统
+            $data['refer_code'] = ''; //关联采购单号
+            $data['pid'] = 0; //关联采购单号ID
+            $data['batch_code'] = get_sn('batch'); //批次号
+            $data['partner_id'] = 0; //供应商
+            $data['remark'] = $process['remark']; //备注
+            $data['status'] = 21; //状态 21待入库
+            
+            //创建wms入库详情单数据
+            $detail_data['wh_id'] = $process['wh_id']; //所属仓库
+            $detail_data['refer_code'] = $data['code']; //关联入库单号
+            $detail_data['pro_code'] = $process['p_pro_code']; //SKU编号
+            $detail_data['expetced_qty'] = $process['plan_qty']; //预计数量
+            $detail_data['prepare_qty'] = 0; //待上架量
+            $detail_data['done_qty'] = 0; //已上架量
+            $detail_data['pro_uom'] = '件';
+            $detail_data['remark'] = $process['remark'];
+            
+            //调用PMS接口根据编号查询SKU名称规格
+            $pms = D('Pms', 'Logic');
+            $sku_info = $pms->get_SKU_field_by_pro_codes($process['p_pro_code']);
+            $detail_data['pro_name'] = $sku_info[$process['p_pro_code']]['name']; //SKU名称
+            $detail_data['pro_attrs'] = $sku_info[$process['p_pro_code']]['pro_attrs_str']; //SKU规格
+            
+            //写入入库单
+            $stock_in = D('StockIn');
+            $data['detail'] = $detail_data;
+            $stock_in->relation('detail')->add($data);
+            unset($data);
+            unset($detail_data);
+            
+            //创建出库数据
+            $data['biz_type'] = $company_id;//所属系统
+            //查询仓库code
+            $wh = M('warehouse');
+            $code_arr = $wh->field('code')->where(array('id', $process['wh_id']))->find();
+            $data['picking_type_id'] = $code_arr['code']; //所属仓库
+            $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
+            $data['return_type'] = true; //定义接口不输出数据
+            foreach ($process_relation as $v) {
+                //出库sku
+                $data['product_list'][] = array(
+                	    'product_code' => $v['c_pro_code'], //sku编号
+                    'qty' => $v['ratio'] * $process['plan_qty'], //出库量
+                );
+            }
+            //创建API对象
+            $API = new \Wms\Api\StockOutApi();
+            //写入出库单
+            $_POST = array();
+            $_POST = $data;
+            //调用stockout方法自动生成出库单
+            $API->stockout();
+            //-----------wms end-------------
+            $this->msgReturn(true, '已批准');
+        } else {
+            //拆分
+            /**
+             * 拆分状态下分别在 erp wms上创建单据
+             * 父SKU创建出库及出库详情单
+             * 子SKU创建入库及入库详情单
+             */
+            //--------------erp start-------
+            //父SKU加工出库单
+            $data['wh_id'] = $process['wh_id']; //所属仓库
+            $data['code'] = get_sn('erp_pro_out'); //加工入库单号
+            $data['refer_code'] = $process['code']; //关联加工单号
+            $data['process_type'] = $process['type']; //类型 组合 or 拆分
+            $data['status'] = 'prepare'; //状态 待入库
+            $data['remark'] = $process['remark']; //备注
+            
+            //父SKU加工出库单详情
+            $detail_data['pro_code'] = $process['p_pro_code']; //sku编号
+            $detail_data['batch'] = $process['code']; //批次 关联加工单号
+            $detail_data['plan_qty'] = $process['plan_qty']; //计划量
+            $detail_data['real_qty'] = $process['real_qty']; //实际量
+            $detail_data['status'] = 'prepare'; //状态
+            //关联操作
+            $data['netail'] = $detail_data;
+            $process_out = D('ProcessOut');
+            $process_out->relation('netail')->add($data);
+            unset($data);
+            unset($detail_data);
+            
+            //子SKU加工入库单
+            $data['wh_id'] = $process['wh_id']; //所属仓库
+            $data['code'] = get_sn('erp_pro_in'); //出库单号
+            $data['refer_code'] = $process['code']; //关联加工单号
+            $data['process_type'] = $process['type']; //出库类型
+            $data['status'] = 'prepare'; //状态
+            $data['remark'] = $process['remark']; //备注
+            
+            //子SKU加工入库单详情
+            $company_id = 1; //所属系统 默认大厨网
+            foreach($process_relation as $k => $val){
+                $detail_data = array();
+                $company_id = $val['company_id']; //所属系统
+                $detail_data['pro_code'] = $val['c_pro_code']; //sku编号
+                $detail_data['batch'] = $process['code']; //批次＝＝加工出库单号
+                $detail_data['plan_qty'] = $process['plan_qty'] * $val['ratio']; //计划出库量 父sku * 比例
+                $detail_data['real_qty'] = $process['real_qty'] * $val['ratio']; //实际出库量 子sku ＊ 比例
+                $detail_data['status'] = 'prepare'; //壮态 待出库
+                //关联操作
+                $data['netail'][] = $detail_data;
+            }
+            $process_in = D('ProcessIn');
+            $process_in->relation('netail')->add($data);
+            unset($data);
+            unset($detail_data);
+            
+            //-------------erp end---------
+            //-------------wms start-------
+            
+            //wms父SKU入库单
+            //获取入库类型id
+            $name = 'wms_pro_in'; //入库类型名称
+            $stock_type = D('stock_bill_in_type');
+            $numbs = M('numbs');
+            $map['name'] = $name;
+            $type_info = $numbs->field('prefix')->where($map)->find();
+            $id_info = $stock_type->field('id')->where(array('type' => $type_info['prefix']))->find();
+            unset($map);
+            $data['code'] = get_sn($name); //入库单号
+            $data['wh_id'] = $process['wh_id']; //仓库id
+            $data['type'] = $id_info['id']; //入库类型ID
+            $data['company_id'] = $company_id; //所属系统
+            $data['refer_code'] = ''; //关联采购单号
+            $data['pid'] = 0; //关联采购单号ID
+            $data['batch_code'] = get_sn('batch'); //批次号
+            $data['partner_id'] = 0; //供应商
+            $data['remark'] = $process['remark']; //备注
+            $data['status'] = 21; //状态 21待入库
+            
+            //wms父SKU入库单详情
+            foreach ($process_relation as $value) {
+                $detail_data['wh_id'] = $process['wh_id']; //所属仓库
+                $detail_data['refer_code'] = $data['code']; //关联入库单号
+                $detail_data['pro_code'] = $value['c_pro_code']; //SKU编号
+                $detail_data['expetced_qty'] = $process['plan_qty'] * $value['ratio']; //预计数量
+                $detail_data['prepare_qty'] = 0; //待上架量
+                $detail_data['done_qty'] = 0; //已上架量
+                $detail_data['pro_uom'] = '件';
+                $detail_data['remark'] = $process['remark'];
+                //关联操作
+                $data['netail'][] = $detail_data;
+            }
+            //写入操作
+            $stock_in = D('StockIn');
+            $stock_in->relation('netail')->add($data);
+            unset($data);
+            unset($detail_data);
+            
+            //wms出库单
+            $data['biz_type'] = $company_id;//所属系统
+            //查询仓库code
+            $wh = M('warehouse');
+            $code_arr = $wh->field('code')->where(array('id', $process['wh_id']))->find();
+            $data['picking_type_id'] = $code_arr['code']; //所属仓库
+            $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
+            $data['return_type'] = true; //定义此接口不输出数据
+            //出库sku
+            $data['product_list'][] = array(
+            	    'product_code' => $process['p_pro_code'], //sku编号
+                'qty' => $process['plan_qty'], //出库量
+            );
+            //创建API对象
+            $API = new \Wms\Api\StockOutApi();
+            //写入出库单
+            $_POST = array();
+            $_POST = $data;
+            //调用stockout方法自动生成出库单
+            $API->stockout();
+            
+            //-----------wms end-------------
+            $this->msgReturn(true, '已批准');
         }
-        
-
-        
-        //$process_in = D('ProcessIn');
-        //$data = $process_in->create($data);
-        //$process_in->data($data)->save();
-
-
-        var_dump($process,$data);exit;
-
     }
-
+    
     //驳回
     public function reject(){
     	$map['id'] = I('id');

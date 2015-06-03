@@ -30,8 +30,8 @@ class ProcessRatioController extends CommonController {
 	        'erp_process_sku_relation.company_id' => array(
 	                'title' => '所属系统',
 	                'query_type' => 'eq',
-	                'control_type' => 'text',
-	                'value' => 'company_id',
+	                'control_type' => 'getField',
+	                'value' => 'company.id,name',
 	        ),
     );
 	
@@ -63,22 +63,91 @@ class ProcessRatioController extends CommonController {
 	            ),
 	    );
 	    $this->toolbar_tr =array(
+	            array('name'=>'view','link'=>'view','title'=>'查看', 'show' => true,'new'=>'true'),
 	            array('name'=>'edit','link'=>'edit','title'=>'编辑', 'show' => true,'new'=>'false'),
 	            array('name'=>'delete','link'=>'delete','title'=>'删除', 'show'=>true,'new'=>'true','target'=>'_blank'),
 	    );
 	}
+	
 	/**
-	 * 完整添加数据
+	 * 查看详情
 	 */
-	public function before_add(&$M) {
-	    $M->create_user = session()['user']['uid']; //创建人
-	    $M->update_user = session()['user']['uid']; //更新人
+	public function before_edit(&$data) {
+	    $code[] = $data['p_pro_code'];
+	    $code[] = $data['c_pro_code'];
+	    //调用Pms接口查询sku信息
+	    $pms = D('Pms', 'Logic');
+	    $sku_info = $pms->get_SKU_field_by_pro_codes($code);
+	    foreach ($sku_info as $key => $value) {
+	        if ($key == $data['p_pro_code']) {
+	            $data['p_name'] = $value['name'];
+	            $data['p_attrs'] = $value['pro_attrs_str'];
+	        } elseif($key == $data['c_pro_code']) {
+	            $data['c_name'] = $value['name'];
+	            $data['c_attrs'] = $value['pro_attrs_str'];
+	        }
+	    }
 	}
 	/**
-	 * 添加完成页面跳转
+	 * 批量添加比例关系（重写父类add方法）
 	 */
-	public function after_add() {
-	    $this->msgReturn(true, '', '', U('index'));
+	public function add() {
+	    if (IS_POST) {
+        	    //数据处理
+        	    $post = I('post.');
+        	    if (empty($post['company_id']) || empty($post['p_pro_code_hidden'])) {
+        	        $this->msgReturn(0, '必须填写所属系统和父SKU');
+        	    }
+        	     
+        	    if (count($post['pros']) < 2) {
+        	        $this->msgReturn(0, '请添加一个子SKU');
+        	    }
+        	    
+        	    //去除隐藏域
+        	    unset($post['pros'][0]);
+
+        	    //叠加同类子SKU
+        	    $new_pros = array();
+        	    foreach ($post['pros'] as $key=>$v) {
+        	        if (!isset($new_pros[$v['pro_code']])) {
+        	            $new_pros[$v['pro_code']] = $v;
+        	        } else {
+        	            $new_pros[$v['pro_code']]['pro_qty'] += $v['pro_qty'];
+        	        }
+        	    }
+        	    $post['pros'] = $new_pros;
+        	    
+        	    //创建物料清单
+        	    $info = array();
+        	    foreach ($post['pros'] as $key => $value) {
+        	        if (empty($value['pro_code'])) {
+        	            $this->msgReturn(0, '请选择子SKU');
+        	            return;
+        	        }
+        	        if ($value['pro_qty'] < 1) {
+        	            $this->msgReturn(0, '数量不可小于1');
+        	            return;
+        	        }
+        	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
+        	        $info[$key]['c_pro_code'] = $value['pro_code'];
+        	        $info[$key]['ratio'] = $value['pro_qty'];
+        	        $info[$key]['company_id'] = $post['company_id'];
+        	        $info[$key]['created_user'] = session()['user']['uid'];
+        	        $info[$key]['updated_user'] = session()['user']['uid'];
+        	        $info[$key]['created_time'] = get_time();
+        	        $info[$key]['updated_time'] = get_time();
+        	    }
+        	    //批量写入
+        	    $M = D('ProcessRatio');
+        	    foreach ($info as $val) {
+        	        if ($M->create($val)) {
+        	            $M->add();
+        	        }
+	       }
+	       $this->msgReturn(true, '', '', U('index'));
+	    } else {
+	        $this->display();
+	    }
 	}
 	
 	/**

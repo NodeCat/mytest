@@ -9,7 +9,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
       <thead>
-        <th>加工SKU</th><th>产品名称</th><th>型号</th><th>可能库存</th>
+        <th>加工SKU</th><th>产品名称</th><th>型号</th><!--<th>可能库存</th>-->
       </thead>
       <tbody>
       <tr class="tr-tpl">
@@ -22,9 +22,9 @@
       <td  style="width:40%;">
         <input type="text" name="p_sku_attrs" value="{$p_sku_info.pro_attrs_str}" class=" typeahead form-control input-sm" readonly="">
       </td>
-      <td style="width:10%;">
+      <!--<td style="width:10%;">
         <input type="text" name="p_sku_stock_qty" value="{$p_sku_info.stock_qty}" class=" typeahead form-control input-sm" readonly="">
-      </td>
+      </td>-->
       </tr>
 
       </tbody>
@@ -44,7 +44,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
       <thead>
-        <th>加工SKU</th><th>产品名称</th><th>型号</th><th>可能库存</th><th>组合数量</th>
+        <th>加工SKU</th><th>产品名称</th><th>型号</th><!--<th>可能库存</th>--><th>组合数量</th>
       </thead>
       <tbody>
       <volist name="c_sku_info" id="c_sku">
@@ -58,9 +58,9 @@
       <td  style="width:35%;">
         <input type="text" name="c_sku_attrs[]" value="{$c_sku.pro_attrs_str}" class="typeahead form-control input-sm" readonly="">
       </td>
-      <td style="width:10%;">
+      <!--<td style="width:10%;">
         <input type="text" name="c_sku_stock_qty[]" value="{$c_sku.stock_qty}" class="typeahead form-control input-sm" readonly="">
-      </td>
+      </td>-->
       <td style="width:10%;">
         <input type="text" name="c_sku_ratio[]" value="{$ratio[$c_sku['pro_code']]}" class="typeahead form-control input-sm" readonly="">
       </td>

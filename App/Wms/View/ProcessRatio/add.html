@@ -11,7 +11,7 @@
   <include file="status-bar" />
   <div class="clearfix"></div>
   </div>
-  <div class="panel-body">
+<div class="panel-body">
   	<div class="row">
 		<div class="col-lg-6"><h3>物料清单 新建</h3></div>
 		<div class="col-lg-6"></div>
@@ -19,40 +19,37 @@
   	<hr/>
   	
   	
-<div class="row">
-<div class="form-group  col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-        <select id="company_id" name="company_id" class="form-control input-sm selected" data-value="0">
-            <option value ="1">大厨网</option>
-            <option value ="2">大果网</option>
-        </select>
-    </div>
-</div>
-
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">父SKU</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-	<input type="text" class="form-control input-sm" name="p_pro_code" placeholder="父SKU">
-    </div>
-</div>
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">子SKU</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-	<input type="text" class="form-control input-sm" name="c_pro_code" placeholder="子SKU">
-    </div>
-</div>
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">比例</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-	<input type="text" class="form-control input-sm" name="ratio" placeholder="比例">
-    </div>
-</div>
-</div>
+	<div class="row">
+		<div class="form-group  col-lg-4">
+		    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
+		    <div class="col-lg-8 col-sm-8 col-xs-8">
+		        <select id="company_id" name="company_id" class="form-control input-sm selected" data-value="0">
+		            <option value ="1">大厨网</option>
+		            <option value ="2">大果网</option>
+		        </select>
+		    </div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="form-group col-lg-8">
+		    <label class="control-label col-lg-2 col-sm-2 col-xs-2" for="expecting_date">父SKU</label>
+		    <div class="col-lg-10 col-sm-10 col-xs-10">
+		    <input type="hidden" id="p_pro_code_hidden" name="p_pro_code_hidden" />
+			<input type="text" id="p_pro_code" class="form-control typeahead input-sm" name="p_pro_code" placeholder="父SKU">
+		    </div>
+		</div>
+		<div class="form-group col-lg-4">
+		    <label class="control-label col-lg-4 col-sm-4 col-xs-4" data-provide="typeahead" for="expecting_date">数量</label>
+		    <div class="col-lg-8 col-sm-8 col-xs-8">
+				<input type="text" id="typeahead" class="form-control typeahead input-sm" name="c_pro_code" placeholder="默认1" readonly="true">
+		    </div>
+		</div>
+		
+	</div>
 </div>
 
 </div>
-<!-- <include file="stock-add" />-->
+   <include file="process-add" />
 <div class="row">
   <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
 </div>
