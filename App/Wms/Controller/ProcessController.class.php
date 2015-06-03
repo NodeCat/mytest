@@ -311,7 +311,7 @@ class ProcessController extends CommonController {
             $data['wh_id'] = $process['wh_id']; //仓库id
             $data['type'] = $id_info['id']; //入库类型ID
             $data['company_id'] = $company_id; //所属系统
-            $data['refer_code'] = ''; //关联采购单号
+            $data['refer_code'] = $process['code']; //关联采购单号
             $data['pid'] = 0; //关联采购单号ID
             $data['batch_code'] = get_sn('batch'); //批次号
             $data['partner_id'] = 0; //供应商
@@ -436,7 +436,7 @@ class ProcessController extends CommonController {
             $data['wh_id'] = $process['wh_id']; //仓库id
             $data['type'] = $id_info['id']; //入库类型ID
             $data['company_id'] = $company_id; //所属系统
-            $data['refer_code'] = ''; //关联采购单号
+            $data['refer_code'] = $process['code']; //关联采购单号
             $data['pid'] = 0; //关联采购单号ID
             $data['batch_code'] = get_sn('batch'); //批次号
             $data['partner_id'] = 0; //供应商
