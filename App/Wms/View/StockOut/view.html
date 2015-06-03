@@ -3,7 +3,9 @@
   <div class="panel-heading" style="padding:0px 15px;">
     <h3 class="panel-title">
       <div class="col-lg-6 col-sm-6 col-md-6 col-xs-12">
+      <if condition="($data.status eq 2)">
   <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="修改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-edit"></i> 编辑</a>
+       </if>
    <a href="#" id="stock_out" data-title="添加" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon"></i> 出库</a>
   <input type="hidden" id="stock_out_id" value="{$data.id}">
   </div>
