@@ -3,6 +3,7 @@ namespace Wms\Controller;
 use Think\Controller;
 class StockController extends CommonController {
 	protected $columns = array('id' => '',
+			'wh_name' => '仓库',
             'area' => '区域标识',
             'pro_code' => '货品号',
             'pro_name' => '货品名称',

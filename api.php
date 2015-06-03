@@ -14,11 +14,13 @@
 // 检测PHP环境
 if(version_compare(PHP_VERSION,'5.3.0','<'))  die('require PHP > 5.3.0 !');
 
-if(isset($_SERVER['SERVER_ENV'])) {
+if($_SERVER['SERVER_ENV'] == 'production') {
   define('APP_DEBUG',FALSE);
+  define('APP_STATUS','production');
 } else {
   define('APP_DEBUG',TRUE);
 }
+
 define('BIND_MODULE','Wms');
 
 define('DEFAULT_C_LAYER','Api');
