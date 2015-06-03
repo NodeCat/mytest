@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Controller;
 use Think\Controller;
+use Wms\Model\Stock_bill_in_detailModel;
 class ProcessController extends CommonController {
 	protected $filter = array(
 		'type' =>  array(
@@ -255,13 +256,21 @@ class ProcessController extends CommonController {
             $data['process_type'] = $process['type']; //类型 组合 or 拆分
             $data['status'] = 'prepare'; //状态 待入库
             $data['remark'] = $process['remark']; //备注
-
+            $data['created_user'] = session()['user']['uid']; //创建人
+            $data['updated_user'] = session()['user']['uid']; //修改人
+            $data['created_time'] = get_time(); //创建时间
+            $data['updated_time'] = get_time(); //修改时间
+ 
             //写入加工入库单详情 父SKU
             $detail_data['pro_code'] = $process['p_pro_code']; //sku编号
             $detail_data['batch'] = $process['code']; //批次 关联加工单号
             $detail_data['plan_qty'] = $process['plan_qty']; //计划量
             $detail_data['real_qty'] = $process['real_qty']; //实际量
             $detail_data['status'] = 'prepare'; //状态 
+            $detail_data['created_user'] = session()['user']['uid']; //创建人
+            $detail_data['updated_user'] = session()['user']['uid']; //修改人
+            $detail_data['created_time'] = get_time(); //创建时间
+            $detail_data['updated_time'] = get_time(); //修改时间
             //关联操作
             $data['detail'] = $detail_data;
             
@@ -277,6 +286,10 @@ class ProcessController extends CommonController {
             $data['process_type'] = $process['type']; //出库类型
             $data['status'] = 'prepare'; //状态
             $data['remark'] = $process['remark']; //备注
+            $data['created_user'] = session()['user']['uid']; //创建人
+            $data['updated_user'] = session()['user']['uid']; //修改人
+            $data['created_time'] = get_time(); //创建时间
+            $data['updated_time'] = get_time(); //修改时间
             
             //写入加工出库单详情 子SKU详情
             $company_id = 1; //所属系统 默认大厨网
@@ -288,6 +301,10 @@ class ProcessController extends CommonController {
                 $detail_data['plan_qty'] = $process['plan_qty'] * $val['ratio']; //计划出库量 父sku * 比例
                 $detail_data['real_qty'] = $process['real_qty'] * $val['ratio']; //实际出库量 子sku ＊ 比例
                 $detail_data['status'] = 'prepare'; //壮态 待出库
+                $detail_data['created_user'] = session()['user']['uid']; //创建人
+                $detail_data['updated_user'] = session()['user']['uid']; //修改人
+                $detail_data['created_time'] = get_time(); //创建时间
+                $detail_data['updated_time'] = get_time(); //修改时间
                 //关联操作
                 $data['detail'][] = $detail_data; 
             }
@@ -313,20 +330,28 @@ class ProcessController extends CommonController {
             $data['company_id'] = $company_id; //所属系统
             $data['refer_code'] = $process['code']; //关联采购单号
             $data['pid'] = 0; //关联采购单号ID
-            $data['batch_code'] = get_sn('batch'); //批次号
+            $data['batch_code'] = 'batch' . NOW_TIME; //批次号
             $data['partner_id'] = 0; //供应商
             $data['remark'] = $process['remark']; //备注
             $data['status'] = 21; //状态 21待入库
+            $data['created_user'] = session()['user']['uid']; //创建人
+            $data['updated_user'] = session()['user']['uid']; //修改人
+            $data['created_time'] = get_time(); //创建时间
+            $data['updated_time'] = get_time(); //修改时间
             
             //创建wms入库详情单数据
             $detail_data['wh_id'] = $process['wh_id']; //所属仓库
             $detail_data['refer_code'] = $data['code']; //关联入库单号
             $detail_data['pro_code'] = $process['p_pro_code']; //SKU编号
-            $detail_data['expetced_qty'] = $process['plan_qty']; //预计数量
+            $detail_data['expected_qty'] = $process['plan_qty']; //预计数量
             $detail_data['prepare_qty'] = 0; //待上架量
             $detail_data['done_qty'] = 0; //已上架量
             $detail_data['pro_uom'] = '件';
             $detail_data['remark'] = $process['remark'];
+            $detail_data['created_user'] = session()['user']['uid']; //创建人
+            $detail_data['updated_user'] = session()['user']['uid']; //修改人
+            $detail_data['created_time'] = get_time(); //创建时间
+            $detail_data['updated_time'] = get_time(); //修改时间
             
             //调用PMS接口根据编号查询SKU名称规格
             $pms = D('Pms', 'Logic');
@@ -349,6 +374,7 @@ class ProcessController extends CommonController {
             $data['picking_type_id'] = $code_arr['code']; //所属仓库
             $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
             $data['return_type'] = true; //定义接口不输出数据
+            $data['refer_code'] = $process['code']; //关联单号 ＝＝加工单号
             foreach ($process_relation as $v) {
                 //出库sku
                 $data['product_list'][] = array(
@@ -380,6 +406,10 @@ class ProcessController extends CommonController {
             $data['process_type'] = $process['type']; //类型 组合 or 拆分
             $data['status'] = 'prepare'; //状态 待入库
             $data['remark'] = $process['remark']; //备注
+            $data['created_user'] = session()['user']['uid']; //创建人
+            $data['updated_user'] = session()['user']['uid']; //修改人
+            $data['created_time'] = get_time(); //创建时间
+            $data['updated_time'] = get_time(); //修改时间
             
             //父SKU加工出库单详情
             $detail_data['pro_code'] = $process['p_pro_code']; //sku编号
@@ -387,6 +417,10 @@ class ProcessController extends CommonController {
             $detail_data['plan_qty'] = $process['plan_qty']; //计划量
             $detail_data['real_qty'] = $process['real_qty']; //实际量
             $detail_data['status'] = 'prepare'; //状态
+            $detail_data['created_user'] = session()['user']['uid']; //创建人
+            $detail_data['updated_user'] = session()['user']['uid']; //修改人
+            $detail_data['created_time'] = get_time(); //创建时间
+            $detail_data['updated_time'] = get_time(); //修改时间
             //关联操作
             $data['netail'] = $detail_data;
             $process_out = D('ProcessOut');
@@ -401,6 +435,10 @@ class ProcessController extends CommonController {
             $data['process_type'] = $process['type']; //出库类型
             $data['status'] = 'prepare'; //状态
             $data['remark'] = $process['remark']; //备注
+            $data['created_user'] = session()['user']['uid']; //创建人
+            $data['updated_user'] = session()['user']['uid']; //修改人
+            $data['created_time'] = get_time(); //创建时间
+            $data['updated_time'] = get_time(); //修改时间
             
             //子SKU加工入库单详情
             $company_id = 1; //所属系统 默认大厨网
@@ -412,6 +450,10 @@ class ProcessController extends CommonController {
                 $detail_data['plan_qty'] = $process['plan_qty'] * $val['ratio']; //计划出库量 父sku * 比例
                 $detail_data['real_qty'] = $process['real_qty'] * $val['ratio']; //实际出库量 子sku ＊ 比例
                 $detail_data['status'] = 'prepare'; //壮态 待出库
+                $detail_data['created_user'] = session()['user']['uid']; //创建人
+                $detail_data['updated_user'] = session()['user']['uid']; //修改人
+                $detail_data['created_time'] = get_time(); //创建时间
+                $detail_data['updated_time'] = get_time(); //修改时间
                 //关联操作
                 $data['netail'][] = $detail_data;
             }
@@ -438,21 +480,29 @@ class ProcessController extends CommonController {
             $data['company_id'] = $company_id; //所属系统
             $data['refer_code'] = $process['code']; //关联采购单号
             $data['pid'] = 0; //关联采购单号ID
-            $data['batch_code'] = get_sn('batch'); //批次号
+            $data['batch_code'] = 'batch' . NOW_TIME; //批次号
             $data['partner_id'] = 0; //供应商
             $data['remark'] = $process['remark']; //备注
             $data['status'] = 21; //状态 21待入库
+            $data['created_user'] = session()['user']['uid']; //创建人
+            $data['updated_user'] = session()['user']['uid']; //修改人
+            $data['created_time'] = get_time(); //创建时间
+            $data['updated_time'] = get_time(); //修改时间
             
             //wms父SKU入库单详情
             foreach ($process_relation as $value) {
                 $detail_data['wh_id'] = $process['wh_id']; //所属仓库
                 $detail_data['refer_code'] = $data['code']; //关联入库单号
                 $detail_data['pro_code'] = $value['c_pro_code']; //SKU编号
-                $detail_data['expetced_qty'] = $process['plan_qty'] * $value['ratio']; //预计数量
+                $detail_data['expected_qty'] = $process['plan_qty'] * $value['ratio']; //预计数量
                 $detail_data['prepare_qty'] = 0; //待上架量
                 $detail_data['done_qty'] = 0; //已上架量
                 $detail_data['pro_uom'] = '件';
                 $detail_data['remark'] = $process['remark'];
+                $detail_data['created_user'] = session()['user']['uid']; //创建人
+                $detail_data['updated_user'] = session()['user']['uid']; //修改人
+                $detail_data['created_time'] = get_time(); //创建时间
+                $detail_data['updated_time'] = get_time(); //修改时间
                 //关联操作
                 $data['netail'][] = $detail_data;
             }
@@ -470,6 +520,7 @@ class ProcessController extends CommonController {
             $data['picking_type_id'] = $code_arr['code']; //所属仓库
             $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
             $data['return_type'] = true; //定义此接口不输出数据
+            $data['refer_code'] = $process['code']; //关联单号 ＝＝加工单号
             //出库sku
             $data['product_list'][] = array(
             	    'product_code' => $process['p_pro_code'], //sku编号
@@ -504,5 +555,165 @@ class ProcessController extends CommonController {
     	$res = M('erp_process')->where($map)->save($data);
 
     	$this->msgReturn($res);
+    }
+    
+    /**
+     * 出入库单据操作
+     */
+    public function order() {
+        $post = I('post.');
+        
+        //查询加工单是否存在
+        $process = D('erp_process');
+        $map['code'] = $post['code'];
+        $process_info = $process->where($map)->find();
+        if (empty($process_info)) {
+            $this->msgReturn(false, '加工单不存在');
+        }
+        
+        //查询加工入库单是否存在
+        $in = D('StockIn');
+        $map['refer_code'] = $post['in_code'];
+        $info_in = $in->where($map)->find();
+        if (empty($info_in)) {
+            $this->msgReturn(false, '加工入库单不存在');
+        }
+        unset($map);
+        
+        //查询加工出库单是否存在
+        $out = D('StockOut');
+        $map['refer_code'] = $post['out_code'];
+        $info_out = $out->where($map)->find();
+        if (empty($info_out)) {
+            $this->msgReturn(false, '加工出库单不存在');
+        }
+        $url = 'process';
+        $url .= '/in_code/'.$info_in['code']; //入库单号
+        $url .= '/out_code/'.$info_out['code']; //出库单号
+        $url .= '/process_code/'.$post['code']; //加工单号
+        $url .= '/type/'.$process_info['type']; //加工类型
+        $url .= '/p_pro_code/'.$process_info['p_pro_code']; //父sku编号
+        $this->redirect($url);
+    }
+    
+    /**
+     * 加工区操作
+     */
+    public function process() {
+        if (IS_POST) {
+            $post = I('post');
+            $real_qty = $post['real_qty']; 
+            
+            //实际生产量是否合法
+            if ($real_qty <= 0) {
+                //非法
+                $this->msgReturn(false, '此货品没有可入库数量');
+            }
+            
+            //查询加工单
+            $process = M('erp_process');
+            $map['code'] = $post['process_code'];
+            $process_info = $process->where($map)->find();
+            unset($map);
+            
+            //查询加工比例
+            $process_ratio = D('ProcessRatio');
+            $map['p_pro_code'] = $process_info['p_pro_code'];
+            $process_ratio_info = $process_ratio->where($map)->select();
+            unset($map);
+            
+            //查询库存是否充足
+            //所有加工区库位
+            $location = M('location');
+            $map['code'] = 'MN'; //加工区标识
+            $location_pos = $location->field('id')->where($map)->find();
+            if (empty($location)) {
+                $this->msgReturn(false, '加工区不存在');
+            }
+            unset($map);
+            //所有库位
+            $map['pid'] = $location['id'];
+            $location_pos_arr = $location->field('id')->where($map)->select();
+            $pos = array();
+            foreach ($location_pos_arr as $val) {
+                $pos[] = $val['id'];
+            }
+            
+            $stock = D('Stock');
+            if ($process_info['type'] == 'unite') {
+                /**
+                 * 组合状态下 查看子SKU库存量是否充足
+                 */
+                if ($real_qty > $process_info['plan_qty']) {
+                    //非法
+                    $this->msgReturn(false, '加工数量不可大于待入库数量');
+                    return;
+                }
+                foreach ($process_ratio_info as $value) {
+                    //库存量
+                    $map['wh_id'] = $process_info['wh_id'];
+                    $map['pro_code'] = $value['c_pro_code'];
+                    $map['location_id'] = array('in', $pos);
+                    $map['status'] = 'qualified';
+                    $stock_info = $stock->where($map)->select();
+                    $stock_num = 0; //库存量
+                    foreach ($stock_info as $v) {
+                        $stock_num += $v['stock_qty'];
+                    }
+                    $real_num = $real_qty * $value['ratio']; //需求量
+                    if ($stock_num < $real_num) {
+                        //库存不足
+                        $this->msgReturn(false, '库存不足');
+                        return;
+                    }
+                }
+            } else {
+                /**
+                 * 拆分状态下 查看父SKU库存量是否充足
+                 */
+                if ($real_qty > $process_info['plan_qty']) {
+                    //非法
+                    $this->msgReturn(false, '加工数量不可大于待出库数量');
+                    return;
+                }
+                $map['wh_id'] = $process_info['wh_id'];
+                $map['pro_code'] = $process_info['p_pro_code'];
+                $map['location_id'] = array('in', $pos);
+                $map['status'] = 'qualified';
+                $stock_info = $stock->where($map)->select();
+                $stock_num = 0; //库存量  
+                foreach ($stock_info as $value) {
+                    $stock_num += $value['stock_qty'];
+                }         
+                
+                if ($stock_num < $real_num) {
+                    //库存不足
+                    $this->msgReturn(false, '库存不足');
+                    return;
+                }
+            }
+            
+        } else {
+            $get = I('get.');
+            if (empty($get)) {
+                $this->msgReturn(false, '获取数据失败');
+            }
+            
+            $data['in_code'] = $get['in_code'];
+            $data['out_code'] = $get['out_code'];
+            $data['process_code'] = $get['process_code'];
+            switch ($get['type']) {
+            	    case 'unite': //组合
+            	        $data['type'] = '组合';
+            	        break;
+            	    case 'split': //拆分
+            	        $data['type'] = '拆分';
+            	        break;
+            }
+            $data['p_pro_code'] = $get['p_pro_code'];
+            $this->data = $data;
+            
+            $this->display();
+        }
     }
 }

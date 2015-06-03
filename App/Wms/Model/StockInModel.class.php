@@ -54,8 +54,8 @@ class StockInModel extends RelationModel {
                 "inner join stock_bill_in_type t on stock_bill_in.type=t.id",
                 "left join stock_purchase sp on stock_bill_in.refer_code = sp.code",
             ),
-"field"=>"stock_bill_in.*,stock_bill_in.status as state,warehouse.name as warehouse_name,company.name as company_name,
-          u.nickname as sp_created_user_name,u.mobile as sp_created_user_mobile,sp.created_time as sp_created_time,sp.cat_total,sp.qty_total,t.name as type",            
+            "field"=>"stock_bill_in.*,stock_bill_in.status as state,warehouse.name as warehouse_name,company.name as company_name,
+            u.nickname as sp_created_user_name,u.mobile as sp_created_user_mobile,sp.created_time as sp_created_time,sp.cat_total,sp.qty_total,t.name as type",            
         ),
         'latest'=>array(
             'where'=>array('stock_bill_in.is_deleted'=>'0'),

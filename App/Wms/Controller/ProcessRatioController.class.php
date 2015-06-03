@@ -128,6 +128,10 @@ class ProcessRatioController extends CommonController {
         	            $this->msgReturn(0, '数量不可小于1');
         	            return;
         	        }
+        	        //子SKU父SKU不可相同
+        	        if ($value['pro_code'] == $post['p_pro_code_hidden']) {
+        	            $this->msgReturn(0, '创建规则错误');
+        	        }
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
         	        $info[$key]['ratio'] = $value['pro_qty'];
