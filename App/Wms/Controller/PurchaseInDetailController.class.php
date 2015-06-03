@@ -45,7 +45,7 @@ class PurchaseInDetailController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => true,'new'=>'false'), 
+            array('name'=>'view', 'show' => false,'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
@@ -69,13 +69,28 @@ class PurchaseInDetailController extends CommonController {
     	$purchase_in_details = M('erp_purchase_in_detail')->where($map)->select();
     	unset($map);
 
+    	$paid_amount = 0;
     	foreach($purchase_in_details as $purchase_in_detail){
     		if($purchase_in_detail['status'] == 'paid'){
     			$data['status'] = 0;
     			$data['msg'] = '所选单据中有已支付状态的单据，请选择未支付的单据';
     			$this->ajaxReturn($data);
     		}
+
+    		$paid_amount += $purchase_in_detail['price_subtotal'];
+    		$purchase_code = $purchase_in_detail['purchase_code'];
     	}
+
+    	//更新为支付状态
+    	$map['id'] = array('in',$ids);
+    	$data['status'] = 'paid';
+    	M('erp_purchase_in_detail')->where($map)->data($data)->save();
+    	unset($map);
+    	unset($data);
+
+    	//更新采购单 paid_amount
+    	$map['code'] = $purchase_code;
+    	M('stock_purchase')->where($map)->setInc('paid_amount',$paid_amount);
 
     	$data['status'] = 1;
 
