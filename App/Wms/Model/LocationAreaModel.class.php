@@ -26,6 +26,7 @@ class LocationAreaModel extends Model {
         $map['id'] = array('neq', $id);
         $map['wh_id'] = $wh_id;
         $map['is_deleted'] = 0;
+        $map['type'] = 1;
         $res = $location->where($map)->count();
 
         if(! empty($res)) {
@@ -43,6 +44,7 @@ class LocationAreaModel extends Model {
         $map['id'] = array('neq', $id);
         $map['wh_id'] = $wh_id;
         $map['is_deleted'] = 0;
+        $map['type'] = 1;
         $res = $location->where($map)->count();
 
         if(! empty($res)) {
