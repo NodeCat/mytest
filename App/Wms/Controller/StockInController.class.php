@@ -600,4 +600,9 @@ class StockInController extends CommonController {
         if(empty($data))$data['']='';
         echo json_encode($data);
     }
+
+    //结算到货单
+    public function pay(){
+    	
+    }
 }

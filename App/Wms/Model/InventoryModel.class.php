@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class InventoryModel extends Model {
 
-    protected $insertFields = array('id','code','location_id','type','is_diff','remark','status','op_date','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('code','location_id','type','is_diff','remark','status','op_date','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','wh_id','code','location_id','type','is_diff','remark','status','op_date','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('wh_id','code','location_id','type','is_diff','remark','status','op_date','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName = 'stock_inventory';
 

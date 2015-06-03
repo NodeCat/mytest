@@ -5,6 +5,7 @@
     <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
   <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul hidden"><i class="glyphicon glyphicon-edit"></i> 修改</a>
   <a href="{:U('audit',array($pk => $data[$pk]))}" data-title="审核" rel="tooltip" data-placement="bottom" class="btn btn-sm hidden"><i class="glyphicon glyphicon-ok"></i> 审核</a>
+  <a href="{:U('pay',array($pk => $data[$pk]))}" data-title="结算" rel="tooltip" data-placement="bottom" class="btn btn-sm <if condition='$data.status neq 33'>hidden</if>"><i class="glyphicon glyphicon-yen"></i> 结算</a>
   </div>
       <include file="status-bar" />
       <div class="clearfix"></div>
