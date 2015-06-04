@@ -7,6 +7,7 @@ class UserApi extends Controller{
      */
     protected function _initialize(){
         $this->model = D('User');
+        define('AUTH_KEY', C('AUTH_KEY'));
     }
 
     /**

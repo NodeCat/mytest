@@ -358,6 +358,8 @@ class PurchaseController extends CommonController {
 	}
 
 	public function refund() {
+		//通过采购id获取采购单，复制一份改变编号后存到红冲单
+		//通过
 		$M = D(CONTROLLER_NAME);
 		$pk = $M->getPk();
 		$id = I($pk);
@@ -366,6 +368,7 @@ class PurchaseController extends CommonController {
 		unset($res[$pk]);
 		$res['refer_code'] = $res['code'];
 		$res['code'] = get_sn('out');
+		
 		
 	}
 

@@ -136,7 +136,10 @@ function check_verify($code, $id = 1){
  * @param  string $str 要加密的字符串
  * @return string 
  */
-function auth_md5($str, $key = 'dachuwang@!#$*&^%'){
+function auth_md5($str, $key = ''){
+    if(empty($key)) {
+        $key = C('AUTH_KEY');
+    }
 	return '' === $str ? '' : md5(sha1($str) . $key);
 }
 

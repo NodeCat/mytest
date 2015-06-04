@@ -23,4 +23,5 @@ return array(
 
 	//测试PMS接口
 	'PMS_API'			=> 'http://s.test.dachuwang.com',
+	'AUTH_KEY'			=> '1&%^$@('
 );

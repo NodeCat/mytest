@@ -1,5 +1,4 @@
 <?php
-define('AUTH_KEY', '_D1i,v5sSp])th$3#w"jx6gW/nYZUl[<Lrb>+uOa');
 return array(
 	//'配置项'=>'配置值'
 	//安全配置
