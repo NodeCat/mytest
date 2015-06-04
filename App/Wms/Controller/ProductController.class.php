@@ -32,7 +32,8 @@ class ProductController extends AuthController {
 
         $this->assign('product_info', $pms_info['list']);
         $this->assign('total', $pms_info['total']);
-        $this->display('list');
+        $tmpl = IS_AJAX?'list':'index';
+        $this->display($tmpl);
     }
     
     public function view() {
