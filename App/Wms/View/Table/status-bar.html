@@ -6,7 +6,9 @@
   <volist name="pill" id="p">
   {~$k=$key}
   <volist name="p" id="vo">
+  <notempty name="vo['title']">
 <a href="{:U('index','q='.$k.'%3D'.$vo['value'])}" class="btn btn-{$vo['class']} btn-sm">{$vo.title} {$vo.count}</a>
+</notempty>
 </volist>
 </volist>
 

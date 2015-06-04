@@ -37,7 +37,7 @@ return array(
     //错误及日志
     'LOG_RECORD' 		=> true,
 	'LOG_LEVEL'  		=> 'EMERG,ALERT,CRIT,ERR',
-	'SHOW_ERROR_MSG' 	=> false,
+	'SHOW_ERROR_MSG' 	=> TRUE,
     'ERROR_MESSAGE'    	=> '页面错误！请稍后再试～',
     'URL_404_REDIRECT'	=> '',
 
