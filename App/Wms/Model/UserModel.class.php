@@ -17,7 +17,7 @@ class UserModel extends Model {
 
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
-        array('password', 'auth_md5', 3, 'function', AUTH_KEY),
+        array('password', 'auth_md5', 3, 'function'),
         array('password','',2,'ignore'),
         array('status', 'job'),
         array('created_user',UID,1,'string'),

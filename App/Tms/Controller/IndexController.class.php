@@ -51,6 +51,22 @@ class IndexController extends Controller {
             $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
             foreach ($orders as &$val) {
+                //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
+                //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
+                switch ($val['pay_status']) {
+                    case -1:
+                        $s = '未付款';
+                        break;
+                    case 0:
+                        $s = '未付款';
+                        break;
+                    case 1:
+                        $s = '已付款';
+                    default:
+                        # code...
+                        break;
+                };
+                $val['pay_status'] = $s;
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         $val['quantity'] +=$v['actual_quantity'];   

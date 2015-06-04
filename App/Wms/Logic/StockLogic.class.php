@@ -70,12 +70,17 @@ class StockLogic{
 		}
 
 		$diff_qty = intval($diff_qty);
-
+        
 		//按照现进先出原则 减去最早的批次量
-		foreach($stock_list as $stock){
+		foreach($stock_list as $key=>$stock){
 			if($diff_qty > 0){
 				//如果库存量小于等于差异量 则删除该条库存记录 然后减去差异量diff_qty
 				if($stock['stock_qty'] < $diff_qty){
+                    //获取此次销库存的相关信息
+                    $return[$key]['location_id'] = $stock['location_id'];
+                    $return[$key]['batch'] = $stock['batch'];
+                    $return[$key]['qty'] = $stock['stock_qty'];
+
 					$map['id'] = $stock['id'];
 					M('Stock')->where($map)->delete();
 					unset($map);
@@ -84,7 +89,7 @@ class StockLogic{
 					$log_qty = $stock['stock_qty'];
 					$log_old_qty = $stock['stock_qty'];
 					$log_new_qty = 0;
-
+                    
 					//写入库存交易日志
 					$stock_move_data = array(
 						'wh_id' => session('user.wh_id'),
@@ -108,6 +113,11 @@ class StockLogic{
 					unset($stock_move_data);
 
 				}elseif($stock['stock_qty'] == $diff_qty){
+                    //返回销库存的相关信息
+                    $return[$key]['location_id'] = $stock['location_id'];
+                    $return[$key]['batch'] = $stock['batch'];
+                    $return[$key]['qty'] = $stock['stock_qty'];
+
 					$map['id'] = $stock['id'];
 					M('Stock')->where($map)->delete();
 					unset($map);
@@ -141,6 +151,10 @@ class StockLogic{
 
 					break;
 				}else{
+                    //返回销库存的相关信息
+                    $return[$key]['location_id'] = $stock['location_id'];
+                    $return[$key]['batch'] = $stock['batch'];
+                    $return[$key]['qty'] = $diff_qty;
 					//根据id 更新库存表
 					$map['id'] = $stock['id'];
 					$log_qty = $diff_qty;
@@ -179,7 +193,7 @@ class StockLogic{
 		}
 
 		
-		return array('status'=>1);
+		return array('status'=>1, 'data'=>$return);
 	}
 
 	/**

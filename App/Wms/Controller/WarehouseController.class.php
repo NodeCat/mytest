@@ -2,6 +2,7 @@
 namespace Wms\Controller;
 use Think\Controller;
 class WarehouseController extends CommonController {
+    
     protected function before_delete ($ids) {
         $location_area = M('location'); 
         $map['type'] = 1;
@@ -31,7 +32,7 @@ class WarehouseController extends CommonController {
     protected function before_lists(&$M) {
         //无效仓库不能展示在区域创建的选择中
         if(ACTION_NAME == 'refer') {
-            $map['status'] = 2;
+            $map['warehouse.status'] = 2;
             $M = $M->where($map);
         }
     }

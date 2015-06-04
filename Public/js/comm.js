@@ -60,6 +60,7 @@ $(function () {
 			url:addr,
 			type:'post',
 			cache : false,
+			async:true,
 			dataType:'json',
 			data:params,
 			success: function(msg){
@@ -83,6 +84,7 @@ $(function () {
 			url:addr,
 			type:'post',
 			cache : false,
+			async:true,
 			dataType:'html',
 			data:params,
 			success: function(msg){
@@ -103,6 +105,7 @@ $(function () {
 			url:addr,
 			type:'post',
 			cache : false,
+			async:true,
 			dataType:'json',
 			data:params,
 			success: function(msg){
@@ -206,6 +209,7 @@ $('.modal').on('shown.bs.modal', function (e) {
 			url:addr,
 			type:'post',
 			cache : false,
+			async:true,
 			dataType:'json',
 			data:{id:params},
 			success: function(msg){
@@ -225,6 +229,7 @@ $('.modal').on('shown.bs.modal', function (e) {
 			url:addr,
 			type:'get',
 			cache : false,
+			async:true,
 			dataType:'json',
 			success: function(msg){
 				alert(msg.msg);
@@ -250,6 +255,7 @@ $('.modal').on('shown.bs.modal', function (e) {
 			url:addr,
 			type:'post',
 			cache : false,
+			async:true,
 			data:{id:id},
 			dataType:'json',
 			success: function(msg){
@@ -269,6 +275,7 @@ $('.modal').on('shown.bs.modal', function (e) {
 			url:addr,
 			type:'post',
 			cache : false,
+			async:true,
 			data:{id:params},
 			dataType:'json',
 			success: function(msg){
@@ -495,6 +502,7 @@ $.ajax({
 	url:addr,
 	type:'post',
 	cache : false,
+	async:true,
 	dataType:'json',
 	data:{id:params},	
 	success: function(data){

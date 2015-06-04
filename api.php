@@ -25,6 +25,8 @@ define('BIND_MODULE','Wms');
 
 define('DEFAULT_C_LAYER','Api');
 
+define('RUNTIME_PATH','../Runtime/');
+
 // 定义应用目录
 define('APP_PATH','./App/');
 

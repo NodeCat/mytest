@@ -31,9 +31,13 @@ class WarehouseModel extends Model {
 
     protected $_scope = array(
             'default'=>array(
-                'where'=>array('is_deleted'=>'0'),
-                'order'=>'id DESC',
-
+                'where'=>array('warehouse.is_deleted'=>'0'),
+                'order'=>'warehouse.id DESC',
+                "join"=>array(
+                             'inner join user on warehouse.created_user=user.id ',
+                             'inner join user u on warehouse.updated_user=u.id ',
+                            ),
+                "field"=>"warehouse.*, user.nickname as created_name, u.nickname as updated_name",
                 ),
             'latest'=>array(
                 'where'=>array('is_deleted'=>'0'),

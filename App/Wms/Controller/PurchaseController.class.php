@@ -35,7 +35,8 @@ class PurchaseController extends CommonController {
 		'status' => '单据状态',    
 		'cat_total' => 'sku种数',  
 		'qty_total' => '采购总数',   
-		'price_total' => '采购总金额',   
+		'price_total' => '采购总金额',
+		'paid_amount' => '已结算金额',  
 	);
 	protected $query = array (
 		'stock_purchase.code' => array (
@@ -44,7 +45,7 @@ class PurchaseController extends CommonController {
 			'control_type' => 'text',
 			'value' => '',
 		),
-		'stock_purchase.wh_id' =>    array (     
+		'warehouse.id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
 			'control_type' => 'getField',     
@@ -105,9 +106,9 @@ class PurchaseController extends CommonController {
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
             'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13")
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
         );
         
         $this->toolbar =array(
@@ -206,10 +207,20 @@ class PurchaseController extends CommonController {
 		$field="count(*) as cat_total,sum(pro_qty) as qty_total,sum(price_subtotal) as price_total";
 		$map['pid'] = $pid;
 		$data = $M->field($field)->where($map)->group('pid')->find();
+		unset($map);
 		$where['id'] = $pid;
 		$M = D(CONTROLLER_NAME);
 		$M->where($where)->save($data);
+		unset($data);
 
+		//如果是先款后货 更新结算金额为采购总金额
+		$map['id'] = $pid;
+		$purchase_info = M('stock_purchase')->where($map)->find();
+
+		if($purchase_info['invoice_method'] == 0){
+			$data['paid_amount'] = $purchase_info['price_total'];
+			M('stock_purchase')->where($map)->save($data);
+		}
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
 	protected function before_edit() {
@@ -251,7 +262,7 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning')
 			)
 		);
 		$M = M('stock_purchase');
@@ -271,7 +282,6 @@ class PurchaseController extends CommonController {
 				$pill['status'][$k]['count'] = 0;
 			}
 		}
-		
 		$this->pill = $pill;
 		
 	}
@@ -342,6 +352,44 @@ class PurchaseController extends CommonController {
 		$res = $M->where($map)->save($data);
 	
 		$this->msgReturn($res);
+	}
+
+	public function refund() {
+		//通过采购id获取采购单，复制一份改变编号后存到红冲单
+		$M = M('purchase');
+		$pk = $M->getPk();
+		$id = I($pk);
+		$map[$M->tableName.'.'.$pk] = $id;
+		$res = $M->where($map)->find();
+
+		//通过采购单号获取到货单id
+		unset($res[$pk]);
+		$res['refer_code'] = $res['code'];
+		$res['code'] = get_sn('out');
+		unset($res['id']);
+		$npid = M('erp_purchase_refund')->add($res);
+
+		//根据到货单id获取到货详情
+		unset($map);
+		$map['refer_code'] = $res['refer_code'];
+		$map['type'] = 1;//采购入库单类型id
+		$map['is_deleted'] = 0;
+		$in = M('stock_bill_in')->field('id')->where($map)->select();
+		$pid = $in[0]['pid'];
+		unset($map);
+
+		//把到货详情拷贝到红冲单详情
+		$map['pid'] = $pid;
+		$detail = M('stock_bill_in_detail')->where($map)->select();
+		$sum = 0;
+		foreach ($detail as $key => &$val) {
+			unset($val['id']);
+			$val['pid'] = $npid;
+			$sum += $val['qualified_qty'] * $val['price_unit'];
+		}
+		$data['for_paid_amount'] = $in['price_total'] - $sum;
+
+		
 	}
 
 	public function pass(){

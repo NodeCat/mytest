@@ -2,20 +2,7 @@
 namespace Wms\Controller;
 use Think\Controller;
 class StockOutController extends CommonController {
-    public function __construct(){
-        parent::__construct();
-        if(IS_GET && ACTION_NAME == 'add'){
-            $stock_out_type = M('stock_bill_out_type');
-            $data = $stock_out_type->select();
-            //手动新建出库单时剔除掉普通订单类型
-            foreach($data as $key=>$val) {
-                if($val['type'] == 'SO' ) {
-                    unset($data[$key]);
-                }
-            }
-            $this->stock_out_type = $data; 
-        }
-    }
+    
     protected $filter = array(
                     'line_name'=>array(
                         '1'=>'海淀黄庄北',
@@ -102,6 +89,21 @@ class StockOutController extends CommonController {
         
 	);
 
+    public function __construct(){
+        parent::__construct();
+        if(IS_GET && ACTION_NAME == 'add'){
+            $stock_out_type = M('stock_bill_out_type');
+            $data = $stock_out_type->select();
+            //手动新建出库单时剔除掉普通订单类型和加工出库单类型
+            foreach($data as $key=>$val) {
+                if($val['type'] == 'SO' || $val['type'] == 'MNO') {
+                    unset($data[$key]);
+                }
+            }
+            $this->stock_out_type = $data; 
+        }
+    }
+
     protected function before_index() {
         $this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
@@ -127,7 +129,7 @@ class StockOutController extends CommonController {
         $pill = array(
 			'status'=> array(
 				'1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
-				'2'=>array('value'=>'2','title'=>'已出库','class'=>'primary'),
+				'2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
 			)
 		);
 		$stock_out = M('stock_bill_out');
@@ -196,7 +198,7 @@ class StockOutController extends CommonController {
 
     protected function after_save($id) {
         $post = I('pros');
-        $stock_bill_detail = M('stock_bill_out_detail'); 
+        $stock_bill_detail = D('stock_bill_out_detail'); 
         $column['pid'] = $id;
         $column['status'] = 1;
         
@@ -319,6 +321,19 @@ class StockOutController extends CommonController {
                     $data['pro_code'] = $val['pro_code'];
                     $data['pro_qty'] = $val['delivery_qty'];
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
+                    //存储此货品出库的相关内容
+                    $stock_container = D('stock_bill_out_container');
+
+                    $container['refer_code'] = $stock_info['code'];
+                    $container['pro_code'] = $val['pro_code'];
+                    $container['wh_id'] = $stock_info['wh_id'];
+                    foreach($res['data'] as $v) {
+                        $container['batch'] = $v['batch'];
+                        $container['location_id'] = $v['location_id'];
+                        $container['qty'] = $v['qty'];
+                        $columns = $stock_container->create($container);
+                        $stock_container->add();
+                    }
                 }
             }
             unset($list);
@@ -334,9 +349,15 @@ class StockOutController extends CommonController {
         }
         
         if($state == 'failed') {
-            $return['status'] = 0;
-            $return['msg'] = '库存不足，出库失败';
-            $this->ajaxReturn($return);
+            if(count($ids_arr) == 1) {
+                $return['status'] = 0;
+                $return['msg'] = '库存不足，出库失败';
+                $this->ajaxReturn($return);
+            }else {
+                $return['status'] = 0;
+                $return['msg'] = '部分出库单库存不足，出库失败';
+                $this->ajaxReturn($return);
+            }
         }else {
             $return['status'] = 1;
             $return['msg'] = '出库成功';
