@@ -94,9 +94,9 @@ class StockOutController extends CommonController {
         if(IS_GET && ACTION_NAME == 'add'){
             $stock_out_type = M('stock_bill_out_type');
             $data = $stock_out_type->select();
-            //手动新建出库单时剔除掉普通订单类型
+            //手动新建出库单时剔除掉普通订单类型和加工出库单类型
             foreach($data as $key=>$val) {
-                if($val['type'] == 'SO' ) {
+                if($val['type'] == 'SO' || $val['type'] == 'MNO') {
                     unset($data[$key]);
                 }
             }
