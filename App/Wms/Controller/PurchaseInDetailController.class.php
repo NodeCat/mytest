@@ -3,13 +3,15 @@ namespace Wms\Controller;
 use Think\Controller;
 class PurchaseInDetailController extends CommonController {
 	protected $filter = array(
-			'status' => array('paid' => '已支付', 'nopaid' => '未支付',),
+			'status' => array('paid' => '已付款', 'nopaid' => '未付款',),
 		);
 	protected $columns = array(
+        'id' => '',
+        'code' => '入库单号',
 		'purchase_code' => '采购单号',
 		'stock_in_code' => '到货单号',
 		'pro_code' => '货品号',
-		'pro_qty' => '上架数量',
+		'pro_qty' => '入库数量',
 		'price_unit' => '单价',
 		'price_subtotal' => '小计',
 		'status' => '支付状态'
@@ -61,6 +63,7 @@ class PurchaseInDetailController extends CommonController {
         $this->search_addon = true;
     }
 
+    //付款
     protected function after_lists(&$data){
         //过滤所有不合格
         foreach($data as $k => $val){
@@ -82,7 +85,7 @@ class PurchaseInDetailController extends CommonController {
     	foreach($purchase_in_details as $purchase_in_detail){
     		if($purchase_in_detail['status'] == 'paid'){
     			$data['status'] = 0;
-    			$data['msg'] = '所选单据中有已支付状态的单据，请选择未支付的单据';
+    			$data['msg'] = '所选单据中有已付款状态的单据，请选择未支付的单据';
     			$this->ajaxReturn($data);
     		}
 

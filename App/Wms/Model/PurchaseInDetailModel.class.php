@@ -32,8 +32,9 @@ class PurchaseInDetailModel extends Model {
         'default'=>array(
             'where'=>array('erp_purchase_in_detail.is_deleted'=>'0'),
             'order'=>'erp_purchase_in_detail.id DESC',
-            
+            'field' => 'erp_purchase_in_detail.*,erp_purchase_in_detail.id as code',
         ),
+
         'latest'=>array(
             'where'=>array('erp_purchase_in_detail.is_deleted'=>'0'),
             'order'=>'update_time DESC',
