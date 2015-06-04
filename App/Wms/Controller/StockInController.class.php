@@ -432,6 +432,7 @@ class StockInController extends CommonController {
 		);
 		$M_bill_in = M('stock_bill_in');
 		$map['is_deleted'] = 0;
+		$map['wh_id'] = session('user.wh_id');
 		$res = $M_bill_in->field('status,count(status) as qty')->where($map)->group('status')->select();
 
 		foreach ($res as $key => $val) {

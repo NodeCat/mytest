@@ -256,6 +256,7 @@ class PurchaseController extends CommonController {
 		);
 		$M = M('stock_purchase');
 		$map['is_deleted'] = 0;
+		$map['wh_id'] = session('user.wh_id');
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
 
 		foreach ($res as $key => $val) {
