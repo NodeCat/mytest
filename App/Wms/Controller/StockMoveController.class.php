@@ -50,7 +50,8 @@ class StockMoveController extends CommonController {
         $stock = M('stock');
         $location = M('location');
         $map['type'] ='2'; 
-        $map['code'] = $data['location_code']; 
+        $map['code'] = $data['location_code'];
+        $map['wh_id'] = session('user.wh_id');
         $location_id = $location->where($map)->getField('id');
 
         if(! $location_id) {
@@ -72,6 +73,7 @@ class StockMoveController extends CommonController {
         //检查库位上pro_code是否存在
         $map['pro_code'] = $data['pro_code'];
         $map['location_id'] = $location_id;
+        $map['wh_id'] = session('user.wh_id');
         $stock_info = $stock->where($map)->find();
         if(empty($stock_info)){
             $return['status'] = 0;
