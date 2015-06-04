@@ -99,7 +99,7 @@ class StockInController extends CommonController {
 			switch ($t) {
 				case 'scan_incode':
 					$this->title = '扫描入库单';
-					$tmpl = 'StockIn:scan-incode';
+					$tmpl = 'StockIn:on-scan-incode';
 					break;
 			}
 			$this->display($tmpl);
@@ -177,7 +177,7 @@ class StockInController extends CommonController {
 					$data['code'] = $res['code'];
 					$this->assign($data);
 					$this->title = '扫描货品号';
-					$data = $this->fetch('StockIn:scan-procode');
+					$data = $this->fetch('StockIn:on-scan-procode');
 					$this->msgReturn(1,'上架成功。',$data);
 				}
 				else {
@@ -199,7 +199,7 @@ class StockInController extends CommonController {
 							layout(false);
 							$this->msg = '查询成功。';
 							$this->title = '扫描货品';
-							$data = $this->fetch('StockIn:scan-procode');
+							$data = $this->fetch('StockIn:on-scan-procode');
 							$this->msgReturn(1,'查询成功。',$data);
 						}
 						/*if($res['status'] =='33') {
@@ -227,7 +227,7 @@ class StockInController extends CommonController {
 			switch ($t) {
 				case 'scan_incode':
 					$this->title = '扫描入库单';
-					$tmpl = 'StockIn:scan-incode';
+					$tmpl = 'StockIn:in-scan-incode';
 					break;
 			}
 			$this->display($tmpl);
@@ -270,7 +270,7 @@ class StockInController extends CommonController {
 					$data['code'] = $res['code'];
 					$this->assign($data);
 					$this->title = '扫描货品号';
-					$data = $this->fetch('StockIn:scan-procode');
+					$data = $this->fetch('StockIn:in-scan-procode');
 					$this->msgReturn(1,'验收成功。',$data);
 				}
 				else {
@@ -291,7 +291,7 @@ class StockInController extends CommonController {
 							layout(false);
 							$this->msg = '查询成功。';
 							$this->title = '扫描货品';
-							$data = $this->fetch('StockIn:scan-procode');
+							$data = $this->fetch('StockIn:in-scan-procode');
 							$this->msgReturn(1,'查询成功。',$data);
 						}
 						/*if($res['status'] == '31' || $res['status'] =='32') {
