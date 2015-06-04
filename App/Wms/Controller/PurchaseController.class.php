@@ -282,7 +282,6 @@ class PurchaseController extends CommonController {
 				$pill['status'][$k]['count'] = 0;
 			}
 		}
-		dump($pill);exit();
 		$this->pill = $pill;
 		
 	}
