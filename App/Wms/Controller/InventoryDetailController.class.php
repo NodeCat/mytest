@@ -12,6 +12,20 @@ class InventoryDetailController extends CommonController {
             );
 	//设置列表页选项
 	protected function before_index() {
+        $id = I('id');
+        //根据inventory_detail 的id 查询对应的inventory信息
+        $map['id'] = $id;
+        $inventory_info = M('stock_inventory')
+        ->where($map)
+        ->field('stock_inventory.status')
+        ->find();
+
+        //如果不是已关闭的盘点单 可以修改实盘量
+        $toolbar_tr_is_edit = false;    
+        if(isset($this->auth['edit']) && $inventory_info['status'] != 'closed'){
+            $toolbar_tr_is_edit = true;
+        }
+
         $this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 
@@ -21,7 +35,7 @@ class InventoryDetailController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
-            array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => $toolbar_tr_is_edit,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
