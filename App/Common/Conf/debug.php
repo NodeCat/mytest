@@ -21,4 +21,7 @@ return array(
 	'DB_PORT'   		=> 	3306, 		// 端口
 	'DB_PREFIX' 		=> 	'', 		// 数据库表前缀
 
+	//测试PMS接口
+	'PMS_API'			=> 'http://s.test.dachuwang.com',
+	'AUTH_KEY'			=> '1&%^$@('
 );

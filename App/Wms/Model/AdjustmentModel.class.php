@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class AdjustmentModel extends Model {
 
-    protected $insertFields = array('id','type','code','pro_code','refer_code','status','batch','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('type','code','pro_code','refer_code','status','batch','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','wh_id','type','code','pro_code','refer_code','status','batch','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('wh_id','type','code','pro_code','refer_code','status','batch','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName = 'stock_adjustment';
 
@@ -32,8 +32,11 @@ class AdjustmentModel extends Model {
         'default'=>array(
             'where'=>array('stock_adjustment.is_deleted'=>'0'),
             'order'=>'stock_adjustment.id DESC',
-            'join' => array('left join user on stock_adjustment.created_user = user.id ',),
-            'field' => array('stock_adjustment.*,user.nickname as user_nickname'),
+            'join' => array(
+                'left join user on stock_adjustment.created_user = user.id ',
+                "inner join warehouse on stock_adjustment.wh_id=warehouse.id ",
+                ),
+            'field' => array('stock_adjustment.*,user.nickname as user_nickname, warehouse.code as wh_code'),
         ),
         'latest'=>array(
             'where'=>array('stock_adjustment.is_deleted'=>'0'),

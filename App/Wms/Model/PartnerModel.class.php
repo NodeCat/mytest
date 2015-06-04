@@ -3,13 +3,13 @@ namespace Wms\Model;
 use Think\Model;
 class PartnerModel extends Model {
 
-    protected $insertFields = array('id','code','name','contact','email','tel','mobile','street','zip','score','status','description','updated_user','updated_time','created_user','created_time','is_deleted');
-    protected $updateFields = array('code','name','contact','email','tel','mobile','street','zip','score','status','description','updated_user','updated_time','created_user','created_time','is_deleted');
+    protected $insertFields = array('id','code','name','contact','email','tel','mobile','street','zip','score','company_id','status','description','updated_user','updated_time','created_user','created_time','is_deleted');
+    protected $updateFields = array('code','name','contact','email','tel','mobile','street','zip','score','company_id','status','description','updated_user','updated_time','created_user','created_time','is_deleted');
     protected $readonlyField = array('id');
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-        
+        array('company_id','require','所属系统不能为空',1,'regex',1),
     );
 
     //array(填充字段,填充内容,[填充条件,附加规则])

@@ -10,7 +10,7 @@ class IndexController extends Controller {
         }
     }
     public function index(){
-    	$this->display();    
+        $this->redirect('delivery');
     }
     public function login() {
         if(IS_GET) {
@@ -43,6 +43,7 @@ class IndexController extends Controller {
         $this->redirect('login');
     }
     public function orders(){
+        //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
             $map['dist_id'] = $id;
@@ -50,6 +51,22 @@ class IndexController extends Controller {
             $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
             foreach ($orders as &$val) {
+                //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
+                //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
+                switch ($val['pay_status']) {
+                    case -1:
+                        $s = '未付款';
+                        break;
+                    case 0:
+                        $s = '未付款';
+                        break;
+                    case 1:
+                        $s = '已付款';
+                    default:
+                        # code...
+                        break;
+                };
+                $val['pay_status'] = $s;
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         $val['quantity'] +=$v['actual_quantity'];   
@@ -72,7 +89,7 @@ class IndexController extends Controller {
         $map['order_id'] = I('post.id/d',0);
         $map['status'] = '6';
         $map['deal_price'] = I('post.deal_price/d',0);
-        $map['sign_msg'] = '';
+        $map['sign_msg'] = I('post.sign_msg');
 
         $pro_id = I('post.pro_id');
         $price_unit = I('post.price_unit');
@@ -85,7 +102,7 @@ class IndexController extends Controller {
             $row['actual_sum_price'] = $price_sum[$key];
             $map['order_details'][] = $row;
         }
-
+        $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
         $res = $A->sign($map);
         $this->ajaxReturn($res);
@@ -93,7 +110,9 @@ class IndexController extends Controller {
     public function reject() {
         $map['order_id'] = I('post.id/d',0);
         $map['status'] = '7';
-        $map['sign_msg'] = '';
+        $map['sign_msg'] = I('post.sign_msg');
+
+        $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
         $res = $A->sign($map);
         $this->ajaxReturn($res);
@@ -115,7 +134,7 @@ class IndexController extends Controller {
                 $map['dist_number'] = substr($id, 2);
                 $A = A('Tms/Order','Logic');
                 $dist = $A->distInfo($map);
-                if(empty($dist)) {
+                if($id != $dist['dist_number']) {
                     $this->error = '未找到该单据';
                 }
                 else {

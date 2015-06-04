@@ -154,7 +154,6 @@ class Page{
             $("#next-page").unbind( "click" );
             $('#{$this->pagesId} a,#prev-page,#next-page').on('click',function(){
                 var link=$(this).attr('href');
-                console.log(link, link)
                 if(!link)return false;
                 $.ajax({
                     url: link,

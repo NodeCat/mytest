@@ -40,8 +40,8 @@
     </h4>
     <hr/>
     <i class="glyphicon glyphicon-user"></i> {$vo.realname}  &nbsp;&nbsp;
-    <i class="glyphicon glyphicon-phone"></i> {$vo.mobile}
-    
+    <i class="glyphicon glyphicon-phone"></i> <a href="tel:{$vo.mobile}">{$vo.mobile} <i class="glyphicon glyphicon-earphone"></i></a> 
+    {$vo.pay_status} 
   </div>
   <notempty name="vo['remarks']">
   <div class="panel-footer"><i class="glyphicon glyphicon-comment"></i> {$vo.remarks}</div>
@@ -60,10 +60,10 @@
 <default />
 <a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
 </switch>
- {$vo.id} &nbsp;
+订单 {$vo.id} &nbsp;
   <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
     <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
-    <i class="glyphicon glyphicon-yen"></i> {$vo.total_price} 元 
+    <i class="glyphicon glyphicon-yen"></i> {$vo.final_price} 元 
 
 点击展开
 <switch name="vo['status_cn']" >
@@ -129,9 +129,16 @@
 
 </ul>
     <div class="panel-footer">
-        <div class="input-group row">
+      <div class="input-group row">
             <span class="input-group-addon">下单金额</span>
-        <input type="text" class="form-control" placeholder="{$vo.total_price}" value="{$vo.total_price}" readonly>
+          <input type="text" class="form-control" placeholder="{$vo.total_price}" value="{$vo.total_price}" readonly>
+
+            <span class="input-group-addon">优惠金额</span>
+          <input type="text" class="form-control" placeholder="" value="{$vo.minus_amount}" readonly>
+        </div>
+        <div class="input-group row">
+            <span class="input-group-addon">应收金额</span>
+        <input type="text" class="form-control" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
 
             <span class="input-group-addon">实收金额</span>
         <input type="text" name="deal_price" class="form-control" placeholder="" value="{$vo.deal_price}">
@@ -158,13 +165,12 @@
 </case>
 </switch>
 <div class="panel-footer">
-      <input class="form-control" type="text" name="msg" value="" placeholder="签收或退货备注">
+      <input class="form-control" type="text" name="sign_msg" value="{$vo.sign_msg}" placeholder="签收或退货备注">
     </div>
 
 
     </form>
 </div>
-
 
 <eq name="i" value="1">
 {~$user_id = $vo['user_id']}
@@ -195,6 +201,11 @@ form.order ul.list-group{
 
 <script type="text/javascript">
   $(function(){
+
+    $('#code').on('input', function(){
+      //待完成，全局搜索;
+    });
+
     $('.btn-sign').on('click',function(){
         var params = $(this).closest('form.order').serialize();
         var addr = "{:U('sign')}";

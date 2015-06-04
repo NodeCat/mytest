@@ -13,7 +13,7 @@ class PmsLogic{
 	public function get_SKU_category(){
 		import("Common.Lib.HttpCurl");
 		$request = new \HttpCurl();
-		$url = 'http://s.test.dachuwang.com/category/lists';
+		$url = C('PMS_API').'/category/lists';
 		$result = $request->get($url);
 		return json_decode($result,true);
 	}
@@ -26,7 +26,7 @@ class PmsLogic{
 			'currentPage' => $page,
 			'itemsPerPage' => $count,
 			);
-		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$url = C('PMS_API').'/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
 		return json_decode($result,true);
@@ -44,7 +44,7 @@ class PmsLogic{
 			'itemsPerPage' => 15,
 			'where' => array('in'=>array('category_id'=>$category_ids)),
 			);
-		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$url = C('PMS_API').'/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
 		return json_decode($result,true);
@@ -62,7 +62,7 @@ class PmsLogic{
 			'itemsPerPage' => 15,
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
-		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$url = C('PMS_API').'/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
 		return json_decode($result,true);
@@ -80,7 +80,7 @@ class PmsLogic{
 			'itemsPerPage' => $count,
 			'where' => array('like'=>array('sku_number'=>$pro_code)),
 			);
-		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$url = C('PMS_API').'/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
 		return json_decode($result,true);
@@ -95,7 +95,7 @@ class PmsLogic{
 			'itemsPerPage' => 15,
 			'where' => array('like'=>array('name'=>$pro_name)),
 			);
-		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$url = C('PMS_API').'/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
 		return json_decode($result,true);
@@ -144,7 +144,7 @@ class PmsLogic{
 			'itemsPerPage' => 15,
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
-		$url = 'http://s.test.dachuwang.com/sku/manage';
+		$url = C('PMS_API').'/sku/manage';
 		$json_data = json_encode($data);
 		$result = $request->post($url,$json_data);
 
@@ -161,5 +161,31 @@ class PmsLogic{
 		}
 
 		return $return_data;
+	}
+
+	//根据pro_code 模糊查询对应的SKU
+	public function get_SKU_by_pro_codes_fuzzy_return_data($pro_code, $page = 1, $count = 10){
+		if(empty($pro_code)){
+			return false;
+		}
+
+		$res = $this->get_SKU_by_pro_codes_fuzzy($pro_code);
+        if(!empty($res['list'])){
+            $i = 0;
+            foreach ($res['list'] as $key => $val) {
+                $data[$i]['val']['code'] = $val['sku_number'];
+                $data[$i]['val']['name'] = $val['name'];
+                    
+                foreach ($val['description'] as $k => $v) {
+                      $attrs[]= $v['name'].':'.$v['val'];
+                }
+                $data[$i]['val']['attrs'] = implode(',',$attrs);
+                $data[$i]['name'] = '['.$val['sku_number'].'] '.$val['name'] .'（'. $data[$i]['val']['attrs'].'）';
+                unset($attrs);
+                $i++;
+        	}
+        }
+		
+		return $data;
 	}
 }

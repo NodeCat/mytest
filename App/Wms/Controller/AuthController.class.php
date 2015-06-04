@@ -13,6 +13,9 @@ class AuthController extends Controller {
         if(!defined('UID')) {
             define('UID',session('user.uid'));
         }
+        if(!defined('WHID')) {
+            define('WHID',session('user.rule'));
+        }
         if(!check_maintain()){
             destory_session();
             layout(FALSE);
@@ -20,14 +23,19 @@ class AuthController extends Controller {
             exit();
         }
 
+        $this->auth=$this->getAuth();
+
+        if(session('user.uid') == 1){
+            return true;
+        }
+        /*
         //检查节点权限
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
 
         if ( !$this->check_rule($rule)){
             $this->error('权限不足，不能访问');
         }
-
-        return ;
+        */
         //模块访问控制，判断站点维护及禁止访问的模块，及是否需要登陆才能访问
         /*$access = $this->check_access();
         if ( $access === false ) {
@@ -38,14 +46,12 @@ class AuthController extends Controller {
         if(C('check_limit') && !$this->check_limit()){
 			$this->error('403:forbidden');
         }
-
-        
-
+        */
         //检查节点权限
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
-        if ( !$this->check_rule($rule)){
-            $this->error('unauthorized');
-        }*/
+        if ( !$this->checkRule($rule)){
+            $this->error('未授权访问！');
+        }
     }
 
     protected function check_rule($cur_rule){
@@ -92,6 +98,31 @@ class AuthController extends Controller {
         }
 
         return false;
+    }
+
+    final protected function getAuth() {
+        static $Auth    =   null;
+        if (!$Auth) {
+            $Auth       =   new \Common\Lib\Auth();
+        }
+        $rules = $Auth->getAuthsByModule(MODULE_NAME,  CONTROLLER_NAME, UID) ;
+        return $rules;
+    }
+    /**
+     * 权限检测
+     * @param string  $rule    检测的规则
+     * @param string  $mode    check模式
+     * @return boolean
+     */
+    final protected function checkRule($rule, $type='4', $mode='main'){
+        static $Auth    =   null;
+        if (!$Auth) {
+            $Auth       =   new \Common\Lib\Auth();
+        }
+        if(!$Auth->check($rule,UID,$type,$mode)){
+            return false;
+        }
+        return true;
     }
 
     protected function api_auth(){

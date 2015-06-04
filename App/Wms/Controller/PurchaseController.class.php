@@ -27,15 +27,17 @@ class PurchaseController extends CommonController {
 		'id' => '',   
 		'code' => '采购单号',   
 		'in_code' =>'采购到货单号',
-		'warehouse_code' =>'仓库',
+		'warehouse_name' =>'仓库',
 		'partner_name' => '供应商',
+		'invoice_method' =>'付款方式',
 		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
 		'status' => '单据状态',    
 		'cat_total' => 'sku种数',  
 		'qty_total' => '采购总数',   
-		'price_total' => '采购总金额',   
+		'price_total' => '采购总金额',
+		'paid_amount' => '已结算金额',  
 	);
 	protected $query = array (
 		'stock_purchase.code' => array (
@@ -44,11 +46,11 @@ class PurchaseController extends CommonController {
 			'control_type' => 'text',
 			'value' => '',
 		),
-		'stock_purchase.wh_id' =>    array (     
+		'warehouse.id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
-			'control_type' => 'refer',     
-			'value' => 'stock_purchase-wh_id-warehouse-id,id,name,Warehouse/refer',   
+			'control_type' => 'getField',     
+			'value' => 'Warehouse.id,name',   
 		),
 		'stock_purchase.company_id' =>    array (     
 			'title' => '所属系统',     
@@ -61,7 +63,7 @@ class PurchaseController extends CommonController {
 			 'query_type' => 'eq',     
 			 'control_type' => 'refer',     
 			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
-		),   
+		),
 		'stock_purchase_detail.pro_code' =>    array (     
 			'title' => '货品编号',    
 			 'query_type' => 'eq',     
@@ -80,39 +82,29 @@ class PurchaseController extends CommonController {
 			'control_type' => 'datetime',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
 		),
+		'stock_purchase.invoice_method' => array(
+			'title'=> '付款方式',
+			'query_type'=>'eq',
+			'control_type' => 'select',     
+			 'value' => array(
+			 	'0' => '先款后货',
+				'1' => '先货后款',
+			 ), 
+		),   
+
 	);
 	public function match_code() {
         $code=I('q');
         $A = A('Pms',"Logic");
-        G('start');
-        $res = $A->get_SKU_by_pro_codes_fuzzy($code);
-        G('end');
-        if(!empty($res['list'])){
-              $i = 0;
-              foreach ($res['list'] as $key => $val) {
-                    $data[$i]['val']['code'] = $val['sku_number'];
-                    $data[$i]['val']['name'] = $val['name'];
-                    
-                    foreach ($val['description'] as $k => $v) {
-                          $attrs[]= $v['name'].':'.$v['val'];
-                    }
-                    $data[$i]['val']['attrs'] = implode(',',$attrs);
-                    $data[$i]['name'] = '['.$val['sku_number'].'] '.$val['name'] .'（'. $data[$i]['val']['attrs'].'）';
-                    unset($attrs);
-                    $i++;
-              }
-        }
+        $data = $A->get_SKU_by_pro_codes_fuzzy_return_data($code);
         if(empty($data))$data['']='';
         echo json_encode($data);
-      }
+    }
 	public function view() {
         $this->_before_index();
         $this->edit();
     }
-	public function index() {
-		$tmpl = IS_AJAX ? 'Table:list':'index';
-        $this->lists($tmpl);
-    }
+	
 	public function _before_index() {
         $this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
@@ -123,16 +115,20 @@ class PurchaseController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => !isset($auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => !isset($auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => !isset($auth['close']),'new'=>'true','domain'=>"0,11,13")
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
+        );
+        
+        $this->toolbar =array(
+            array('name'=>'add', 'show' =>isset($this->auth['add']),'new'=>'true'),
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => !isset($auth['forbid'])), 
-                array('name'=>'resume', 'title'=>'启用', 'show' => !isset($auth['resume']))
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
             ),
         );
     }
@@ -222,10 +218,20 @@ class PurchaseController extends CommonController {
 		$field="count(*) as cat_total,sum(pro_qty) as qty_total,sum(price_subtotal) as price_total";
 		$map['pid'] = $pid;
 		$data = $M->field($field)->where($map)->group('pid')->find();
+		unset($map);
 		$where['id'] = $pid;
 		$M = D(CONTROLLER_NAME);
 		$M->where($where)->save($data);
+		unset($data);
 
+		//如果是先款后货 更新结算金额为采购总金额
+		$map['id'] = $pid;
+		$purchase_info = M('stock_purchase')->where($map)->find();
+
+		if($purchase_info['invoice_method'] == 0){
+			$data['paid_amount'] = $purchase_info['price_total'];
+			M('stock_purchase')->where($map)->save($data);
+		}
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
 	protected function before_edit() {
@@ -267,11 +273,12 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning')
 			)
 		);
 		$M = M('stock_purchase');
 		$map['is_deleted'] = 0;
+		$map['wh_id'] = session('user.wh_id');
 		$res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
 
 		foreach ($res as $key => $val) {
@@ -286,7 +293,6 @@ class PurchaseController extends CommonController {
 				$pill['status'][$k]['count'] = 0;
 			}
 		}
-		
 		$this->pill = $pill;
 		
 	}
@@ -359,6 +365,44 @@ class PurchaseController extends CommonController {
 		$this->msgReturn($res);
 	}
 
+	public function refund() {
+		//通过采购id获取采购单，复制一份改变编号后存到红冲单
+		$M = M('purchase');
+		$pk = $M->getPk();
+		$id = I($pk);
+		$map[$M->tableName.'.'.$pk] = $id;
+		$res = $M->where($map)->find();
+
+		//通过采购单号获取到货单id
+		unset($res[$pk]);
+		$res['refer_code'] = $res['code'];
+		$res['code'] = get_sn('out');
+		unset($res['id']);
+		$npid = M('erp_purchase_refund')->add($res);
+
+		//根据到货单id获取到货详情
+		unset($map);
+		$map['refer_code'] = $res['refer_code'];
+		$map['type'] = 1;//采购入库单类型id
+		$map['is_deleted'] = 0;
+		$in = M('stock_bill_in')->field('id')->where($map)->select();
+		$pid = $in[0]['pid'];
+		unset($map);
+
+		//把到货详情拷贝到红冲单详情
+		$map['pid'] = $pid;
+		$detail = M('stock_bill_in_detail')->where($map)->select();
+		$sum = 0;
+		foreach ($detail as $key => &$val) {
+			unset($val['id']);
+			$val['pid'] = $npid;
+			$sum += $val['qualified_qty'] * $val['price_unit'];
+		}
+		$data['for_paid_amount'] = $in['price_total'] - $sum;
+
+		
+	}
+
 	public function pass(){
 		$M = D(CONTROLLER_NAME);
 		$pk = $M->getPk();
@@ -372,6 +416,7 @@ class PurchaseController extends CommonController {
 		$data['wh_id'] = $res['wh_id'];
 		$data['company_id'] = $res['company_id'];
 		$data['partner_id'] = $res['partner_id'];
+		$data['type'] = 1;
 		$Min = D('StockIn');
 		
 		$bill = $Min->create($data);

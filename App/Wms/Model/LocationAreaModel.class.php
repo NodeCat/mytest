@@ -26,6 +26,7 @@ class LocationAreaModel extends Model {
         $map['id'] = array('neq', $id);
         $map['wh_id'] = $wh_id;
         $map['is_deleted'] = 0;
+        $map['type'] = 1;
         $res = $location->where($map)->count();
 
         if(! empty($res)) {
@@ -43,6 +44,7 @@ class LocationAreaModel extends Model {
         $map['id'] = array('neq', $id);
         $map['wh_id'] = $wh_id;
         $map['is_deleted'] = 0;
+        $map['type'] = 1;
         $res = $location->where($map)->count();
 
         if(! empty($res)) {
@@ -70,8 +72,11 @@ class LocationAreaModel extends Model {
             'default'=>array(
                 'where'=>array('location.is_deleted'=>'0'),
                 'order'=>'location.id DESC',
-                "join"=>array("inner join warehouse on location.wh_id=warehouse.id "),
-                "field"=>"location.*,warehouse.code as wh_code",
+                "join"=>array('inner join warehouse on location.wh_id=warehouse.id ',
+                             'inner join user on location.created_user=user.id ',
+                             'inner join user u on location.updated_user=u.id ',
+                            ),
+                "field"=>"location.*,warehouse.code as wh_code,user.nickname as created_name, u.nickname as updated_name",
                 ),
             'latest'=>array(
                 'where'=>array('is_deleted'=>'0'),

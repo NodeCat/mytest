@@ -9,8 +9,9 @@ class StockInModel extends RelationModel {
     public $tableName='stock_bill_in';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-            array('wh_id','require','目标仓库不能为空',1,'regex',1),
+            array('wh_id','require','所属仓库不能为空',1,'regex',1),
             array('company_id','require','所属系统不能为空',1,'regex',1),
+            array('type','require','入库类型不能为空',1,'regex',1),
             //array('partner_id','require','供货商不能为空',1,'regex',1),
     );
     protected $_link = array(
@@ -47,14 +48,14 @@ class StockInModel extends RelationModel {
         'default'=>array(
             'where'=>array('stock_bill_in.is_deleted'=>'0'),
             'order'=>'stock_bill_in.id DESC',
-            "join"=>array("inner join warehouse on stock_bill_in.wh_id=warehouse.id ",
+            "join"=>array("inner join warehouse on stock_bill_in.wh_id=warehouse.id",
                 "inner join company on stock_bill_in.company_id=company.id ",
                 //"inner join partner on stock_bill_in.partner_id=partner.id ",
                 "inner join user u on stock_bill_in.created_user = u.id",
                 "inner join stock_bill_in_type t on stock_bill_in.type=t.id",
                 "left join stock_purchase sp on stock_bill_in.refer_code = sp.code",
             ),
-            "field"=>"stock_bill_in.*,stock_bill_in.status as state,warehouse.name as warehouse_name,company.name as company_name,
+            "field"=>"stock_bill_in.*,stock_bill_in.status as state,warehouse.name as warehouse_name,company.name as company_name,sp.id as sp_id,
             u.nickname as sp_created_user_name,u.mobile as sp_created_user_mobile,sp.created_time as sp_created_time,sp.cat_total,sp.qty_total,t.name as type",            
         ),
         'latest'=>array(

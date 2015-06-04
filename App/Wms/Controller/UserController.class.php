@@ -44,8 +44,8 @@ class UserController extends CommonController {
             'toolbar_tr'=> true,
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
+            array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
         );
         $this->toolbar =array(

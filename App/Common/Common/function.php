@@ -21,9 +21,16 @@ function get_batch($code=''){
     if(empty($code)) {
         $code = get_sn('batch');
     }
-    $data['code'] = $code;
-    $data['product_date'] = get_time();
-    M('stock_batch')->add($data);
+
+    $map['code'] = $code;
+    $re = M('stock_batch')->where($map)->find();
+
+    if(empty($re)){
+        $data['code'] = $code;
+        $data['product_date'] = get_time();
+        M('stock_batch')->add($data);
+    }
+    
     return $code;
 }
 function get_tablename() {
@@ -129,7 +136,10 @@ function check_verify($code, $id = 1){
  * @param  string $str 要加密的字符串
  * @return string 
  */
-function auth_md5($str, $key = 'dachuwang@!#$*&^%'){
+function auth_md5($str, $key = ''){
+    if(empty($key)) {
+        $key = C('AUTH_KEY');
+    }
 	return '' === $str ? '' : md5(sha1($str) . $key);
 }
 
@@ -247,8 +257,6 @@ function X($t, $id=null, $value = ''){
 function auth_module_black_list($module){
     $black_list = array(
         'Auth',
-        'AuthRole',
-        'Authority',
         'Category',
         'Code',
         'Common',
@@ -256,9 +264,10 @@ function auth_module_black_list($module){
         'Company',
         'Dictionary',
         'Empty',
-        'Index',
         'Menu',
-        'User',
+        'Article',
+        'Wave',
+
         );
     if(in_array($module, $black_list)){
         return true;

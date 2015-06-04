@@ -74,7 +74,7 @@ $('.tr-cur .pro_names').typeahead({
     val: 'val',
     items:10,
     ajax: {
-      url:"{:U('Purchase/match_code')}",
+      url:"{:U('StockOut/match_code')}",
       triggerLength: 1,
       method: 'post',
       preDispatch: function(data) {

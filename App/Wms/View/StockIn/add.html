@@ -25,6 +25,7 @@
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
         <select id="company_id" name="company_id" class="form-control input-sm selected" data-value="0">
+            <option value="">请选择</option>
             <option value ="1">大厨网</option>
             <option value ="2">大果网</option>
         </select>
@@ -43,9 +44,10 @@
     </div>
 </div>
 <div class="form-group  col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">入库类型</label>
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="type">入库类型</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-        <select id="company_id" name="type" class="form-control input-sm selected" data-value="0">
+        <select id="type" name="type" class="form-control input-sm selected" data-value="0">
+            <option value="">请选择</option>
             <potion value="1">采购入库</potion>
             <foreach name='stock_in_type' item="value">
             		<option value ="{$value.id}">{$value.name}</option>
@@ -95,7 +97,4 @@
 
 </div>
 <include file="stock-add" />
-<div class="row">
-  <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
-</div>
 </form>

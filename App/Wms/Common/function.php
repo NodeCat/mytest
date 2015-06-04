@@ -10,27 +10,36 @@ function match($table,$field,$fields){
   return json_encode($data);
 }
 function set_session($uid){
-    $uid =$uid;
     $user = M('User')->find($uid);
-    
-    $user_roles = M()
-        ->table('auth_user_role ur')
-        ->join("auth_role r on ur.role_id=r.id")
-        ->where("ur.user_id='$uid' and r.status='1'")
-        ->field('r.id')->select();
+    static $Auth    =   null;
+    if (!$Auth) {
+        $Auth       =   new \Common\Lib\Auth();
+    }
 
+    $user_roles = $Auth->getRoles($uid);
     foreach ($user_roles as $value) {
         $roles[] = $value['id'];
     }
     
     $roles = implode('_', $roles);
+
+    $rules = $Auth->getRule($uid);
+    if(empty($rules)) {
+        $rules = 0;
+        $wh = 0;
+    }
+    else {
+        $wh = current($rules);
+        $rules = implode($rules, ',');
+    }
     
     /* 记录登录SESSION和COOKIES */
     $auth = array(
         'uid'             => $user['id'],
         'username'        => $user['nickname'],
         'role'            => $roles,
-        'wh_id'           => 1,
+        'rule'           => $rules,
+        'wh_id'           => $wh
     );
 
     session('user', $auth);

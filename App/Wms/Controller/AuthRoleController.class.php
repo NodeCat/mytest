@@ -9,7 +9,7 @@ class AuthRoleController extends CommonController {
 	);
 
 	//设置列表页选项
-	public function before_index() {
+	protected function before_index() {
 		$this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 
@@ -19,8 +19,8 @@ class AuthRoleController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
-            array('name'=>'edit', 'show' => !isset($auth['view']),'new'=>'false'), 
-            array('name'=>'delete' ,'show' => isset($auth['view']),'new'=>'false'),
+            array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => isset($this->auth['delete']),'new'=>'false'),
             'setauth'=>array('name'=>'setauth','title'=>'设置权限','icon'=>'cog' ,'show' => true,'new'=>'true','link'=>"Authority/edit"),
         );
         $this->toolbar =array(

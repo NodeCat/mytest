@@ -1,5 +1,4 @@
 <?php
-define('AUTH_KEY', '_D1i,v5sSp])th$3#w"jx6gW/nYZUl[<Lrb>+uOa');
 return array(
 	//'配置项'=>'配置值'
 	//安全配置
@@ -9,28 +8,23 @@ return array(
 	'API_TIME_DEVIATION'   => 300, //API请求时间戳与服务器时间戳的允许误差范围，单位秒，
 	'USER_ALLOW_REGISTER'  => 'TRUE',
 
-	//DB
-	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型
-	'DB_HOST'   		=> 	'',// 服务器地址
-	'DB_NAME'   		=> 	'wms', 		// 数据库名
-	'DB_USER'   		=> 	'root', 	// 用户名
-	'DB_PWD'    		=> 	'', // 密码
-	'DB_PORT'   		=> 	3306, 		// 端口
-	'DB_PREFIX' 		=> 	'', 		// 数据库表前缀
 	'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
 	//应用设置
 	'MODULE_ALLOW_LIST' => 'Wms',
 
 	//模版设置
 	'LAYOUT_ON'         => TRUE,
-
+	'TMPL_CACHE_ON'   => FALSE,  // 默认开启模板编译缓存 false 的话每次都重新编译模板
+	'ACTION_CACHE_ON' => FALSE,  // 默认关闭Action 缓存
+	'HTML_CACHE_ON'   => FALSE,
+	
 	//URL设置
 	'URL_MODEL'			=> 2,
 	'URL_HTML_SUFFIX'	=> 'htm',
 	'URL_CASE_INSENSITIVE' => FALSE,
 
 	//数据设置
-	'PAGE_SIZE'         => 10,
+	'PAGE_SIZE'         => 50,
 	'DB_BIND_PARAM'    =>    true,
 
 	//session设置
@@ -46,8 +40,10 @@ return array(
     //错误及日志
     'LOG_RECORD' 		=> true,
 	'LOG_LEVEL'  		=> 'EMERG,ALERT,CRIT,ERR',
-	'SHOW_ERROR_MSG' 	=> false,
+	'SHOW_ERROR_MSG' 	=> TRUE,
     'ERROR_MESSAGE'    	=> '页面错误！请稍后再试～',
     'URL_404_REDIRECT'	=> '',
 
+    //正式PMS接口
+	'PMS_API'			=> 'http://s.dachuwang.com',
 );

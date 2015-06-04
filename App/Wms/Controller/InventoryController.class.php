@@ -6,7 +6,7 @@ class InventoryController extends CommonController {
 	protected $filter = array(
 			'type' => array('fast' => '快速盘点','again' => '复盘'),
 			'is_diff' => array('0' => '无', '1' => '有'),
-			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已作废'),
+			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
 		);
 	protected $columns = array('id' => '',
             'code' => '盘点单号',
@@ -36,7 +36,7 @@ class InventoryController extends CommonController {
 		    'title' => '盘点状态',
 		    'query_type' => 'eq',
 		    'control_type' => 'select',
-		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已作废'),
+		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
 		),
 		'stock_inventory.is_diff' => array (
 		    'title' => '有无差异',
@@ -102,12 +102,12 @@ class InventoryController extends CommonController {
             'toolbar_tr'=> true
         );
         $this->toolbar_tr =array(
-            array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
+            array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
-            array('name'=>'add', 'show' => !isset($auth['add']),'new'=>'false'), 
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
@@ -118,25 +118,20 @@ class InventoryController extends CommonController {
     }
 
 	//serach方法执行后，执行该方法
-	/*protected function after_search(&$map){
+	protected function after_search(&$map){
 		if(IS_AJAX){
 			//用于重新整理查询条件
-			//盘点单类型
-			$inventory_type = I('type');
-			if(!empty($inventory_type)){
-				$map['stock_inventory.type'] = array('eq',$inventory_type);
+			if(!empty($map['stock_inventory.created_user'])){
+				$created_user_name = $map['stock_inventory.created_user'][1];
+
+				$user_info_map['nickname'] = $created_user_name;
+				$user_info = M('user')->where($user_info_map)->find();
+				unset($user_info_map);
+
+				$map['stock_inventory.created_user'][1] = $user_info['id'];
 			}
-			//盘点单状态
-			$inventory_status = I('status');
-			if(!empty($inventory_status)){
-				$map['stock_inventory.status'] = array('eq',$inventory_status);
-			}
-			//有无差异
-			$inventory_is_diff = I('is_diff');
-			$map['stock_inventory.is_diff'] = array('eq',$inventory_is_diff);
-			
 		}
-	}*/
+	}
 
 	//edit方法执行前，执行该方法
 	protected function before_edit(&$data){
@@ -171,7 +166,7 @@ class InventoryController extends CommonController {
 					$data['status'] = '待确认';
 					break;
 				case 'closed':
-					$data['status'] = '已作废';
+					$data['status'] = '已关闭';
 					break;
 				default:
 					break;
@@ -330,6 +325,7 @@ class InventoryController extends CommonController {
 						'code'=>$adjustment_code,
 						'type'=>'inventory',
 						'refer_code'=>$refer_code,
+						'wh_id'=>session('user.wh_id'),
 						);
 					$stock_adjustment = D('Adjustment');
 					$adjust_data = $stock_adjustment->create($adjust_data);
@@ -344,81 +340,28 @@ class InventoryController extends CommonController {
 						$map['pro_code'] = $inventory_detail['pro_code'];
 						$map['location_id'] = $inventory_detail['location_id'];
 						//根据pro_code location_id 查询是否有记录
-						$stock_info = M('stock')->where($map)->find();
+						$stock_info = M('stock')
+						->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')
+						->where($map)
+						->order('stock_batch.product_date')
+						->field('stock.*,stock_batch.product_date')
+						->group('stock_batch.code')
+						->find();
+						unset($map);
 
 						//判断 盘盈 盘亏 
 						//盘盈 添加盘盈批次 创建新的库存记录
 						if($inventory_detail['pro_qty'] > $inventory_detail['theoretical_qty']){
-							$data['location_id'] = $inventory_detail['location_id'];
-							$data['pro_code'] = $inventory_detail['pro_code'];
-							$data['batch'] = get_sn('profit');
-							//管理批次号
-							get_batch($data['batch']);
-							$data['stock_qty'] = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
-							$data['refer_code'] = $data['batch'];
-							A('Stock','Logic')->addStock($data);
-							unset($data);
+							//盘盈批次：有库存记录的用最早批次，没库存的用最近批次
+							$this->profit_todo($stock_info,$inventory_detail);
+
+							//默认为合格状态
+							$stock_info['status'] = (empty($stock_info['status'])) ? 'qualified' : $stock_info['status'];
 						}
 						//盘亏 按照先进先出原则 减去最早的批次量
 						if($inventory_detail['pro_qty'] < $inventory_detail['theoretical_qty']){
 							//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
-							$map['pro_code'] = $inventory_detail['pro_code'];
-							$map['location_id'] = $inventory_detail['location_id'];
-							$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
-							unset($map);
-
-							$diff_qty = $inventory_detail['theoretical_qty'] - $inventory_detail['pro_qty'];
-							//按照现进先出原则 减去最早的批次量
-							foreach($stock_list as $stock){
-								if($diff_qty > 0){
-									//如果库存量小于等于差异量 则删除该条库存记录 然后减去差异量diff_qty
-									if($stock['stock_qty'] <= $diff_qty){
-										$map['id'] = $stock['id'];
-										M('Stock')->where($map)->delete();
-										unset($map);
-
-										$diff_qty = $diff_qty - $stock['stock_qty'];
-										$log_qty = $stock['stock_qty'];
-										$log_old_qty = $stock['stock_qty'];
-										$log_new_qty = 0;
-									}else{
-										//根据id 更新库存表
-										$map['id'] = $stock['id'];
-										$log_qty = $diff_qty;
-										$log_old_qty = $stock['stock_qty'];
-										$data['stock_qty'] = $stock['stock_qty'] - $diff_qty;
-										$log_new_qty = $data['stock_qty'];
-										M('stock')->where($map)->data($data)->save();
-										unset($map);
-										unset($data);
-
-										//跳出循环
-										$diff_qty = 0;
-									}
-
-									//写入库存交易日志
-									$stock_move_data = array(
-										'wh_id' => session('user.wh_id'),
-										'location_id' => $stock['location_id'],
-										'pro_code' => $stock['pro_code'],
-										'type' => 'move',
-										'refer_code' => $inventory_info['code'],
-										'direction' => 'OUT',
-										'move_qty' => $log_qty,
-										'old_qty' => $log_old_qty,
-										'new_qty' => $log_new_qty,
-										'batch' => $stock['batch'],
-										'status' => $stock['status'],
-										);
-									$stock_move = D('StockMoveDetail');
-									$stock_move_data = $stock_move->create($stock_move_data);
-									$stock_move->data($stock_move_data)->add();
-									unset($log_qty);
-									unset($log_old_qty);
-									unset($log_new_qty);
-									unset($stock_move_data);
-								}
-							}
+							$this->loss_todo($inventory_detail);
 						}
 
 						//新建库存调整单详情
@@ -456,6 +399,150 @@ class InventoryController extends CommonController {
 				unset($map);
 			}
 			$this->msgReturn(1);
+		}
+	}
+
+	//盘盈处理
+	public function profit_todo($stock_info,$inventory_detail){
+		//盘盈批次：有库存记录的用最早批次，没库存的用最近批次
+		if(empty($stock_info)){
+			//没库存的 查询所有采购单 再查询最近的到货单 当做批次 最近批次
+			$map['pro_code'] = $inventory_detail['pro_code'];
+			$batch = M('stock_purchase_detail')
+			->join(' stock_purchase on stock_purchase.id = stock_purchase_detail.pid')
+			->join(' stock_bill_in on stock_bill_in.refer_code = stock_purchase.code')
+			->where($map)
+			->order('stock_purchase.created_time desc')
+			->field('stock_bill_in.code as batch')
+			->find();
+			unset($map);
+
+			if(!empty($batch['batch'])){
+				$data['location_id'] = $inventory_detail['location_id'];
+				$data['pro_code'] = $inventory_detail['pro_code'];
+				$data['batch'] = $batch['batch'];
+				//管理批次号
+				get_batch($data['batch']);
+				$data['stock_qty'] = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
+				//$data['refer_code'] = $data['batch'];
+				A('Stock','Logic')->addStock($data);
+				unset($data);
+
+				//写入库存交易日志
+				$stock_move_data = array(
+					'wh_id' => session('user.wh_id'),
+					'location_id' => $inventory_detail['location_id'],
+					'pro_code' => $inventory_detail['pro_code'],
+					'type' => 'move',
+					'refer_code' => $inventory_info['code'],
+					'direction' => 'IN',
+					'move_qty' => $inventory_detail['pro_qty'],
+					'old_qty' => 0,
+					'new_qty' => $inventory_detail['pro_qty'],
+					'batch' => $batch['batch'],
+					'status' => 'qualified',
+					);
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+				unset($log_qty);
+				unset($log_old_qty);
+				unset($log_new_qty);
+				unset($stock_move_data);
+			}
+			
+		}else{
+			//有库存记录的用最早批次
+			$map['pro_code'] = $inventory_detail['pro_code'];
+			$map['location_id'] = $inventory_detail['location_id'];
+			$map['batch'] = $stock_info['batch'];
+			$map['status'] = $stock_info['status'];
+			//更新库存记录
+			$profit_qty = $inventory_detail['pro_qty'] - $inventory_detail['theoretical_qty'];
+			M('stock')->where($map)->setInc('stock_qty',$profit_qty);
+			unset($map);
+			unset($data);
+
+			//写入库存交易日志
+			$stock_move_data = array(
+				'wh_id' => session('user.wh_id'),
+				'location_id' => $inventory_detail['location_id'],
+				'pro_code' => $inventory_detail['pro_code'],
+				'type' => 'move',
+				'refer_code' => $inventory_info['code'],
+				'direction' => 'IN',
+				'move_qty' => $profit_qty,
+				'old_qty' => $inventory_detail['theoretical_qty'],
+				'new_qty' => $inventory_detail['pro_qty'],
+				'batch' => $stock_info['batch'],
+				'status' => $stock_info['status'],
+				);
+			$stock_move = D('StockMoveDetail');
+			$stock_move_data = $stock_move->create($stock_move_data);
+			$stock_move->data($stock_move_data)->add();
+			unset($stock_move_data);
+		}
+	}
+
+	//盘亏处理
+	public function loss_todo($inventory_detail){
+		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
+		$map['pro_code'] = $inventory_detail['pro_code'];
+		$map['location_id'] = $inventory_detail['location_id'];
+		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+		unset($map);
+
+		$diff_qty = $inventory_detail['theoretical_qty'] - $inventory_detail['pro_qty'];
+		//按照现进先出原则 减去最早的批次量
+		foreach($stock_list as $stock){
+			if($diff_qty > 0){
+				//如果库存量小于等于差异量 则删除该条库存记录 然后减去差异量diff_qty
+				if($stock['stock_qty'] <= $diff_qty){
+					$map['id'] = $stock['id'];
+					M('Stock')->where($map)->delete();
+					unset($map);
+
+					$diff_qty = $diff_qty - $stock['stock_qty'];
+					$log_qty = $stock['stock_qty'];
+					$log_old_qty = $stock['stock_qty'];
+					$log_new_qty = 0;
+				}else{
+					//根据id 更新库存表
+					$map['id'] = $stock['id'];
+					$log_qty = $diff_qty;
+					$log_old_qty = $stock['stock_qty'];
+					$data['stock_qty'] = $stock['stock_qty'] - $diff_qty;
+					$log_new_qty = $data['stock_qty'];
+					M('stock')->where($map)->data($data)->save();
+					unset($map);
+					unset($data);
+
+					//跳出循环
+					$diff_qty = 0;
+				}
+
+				//写入库存交易日志
+				$stock_move_data = array(
+					'wh_id' => session('user.wh_id'),
+					'location_id' => $stock['location_id'],
+					'pro_code' => $stock['pro_code'],
+					'type' => 'move',
+					'refer_code' => $inventory_info['code'],
+					'direction' => 'OUT',
+					'move_qty' => $log_qty,
+					'old_qty' => $log_old_qty,
+					'new_qty' => $log_new_qty,
+					'batch' => $stock['batch'],
+					'status' => $stock['status'],
+					);
+				$stock_move = D('StockMoveDetail');
+				$stock_move_data = $stock_move->create($stock_move_data);
+				$stock_move->data($stock_move_data)->add();
+				unset($log_qty);
+				unset($log_old_qty);
+				unset($log_new_qty);
+				unset($stock_move_data);
+			}
 		}
 	}
 
@@ -529,8 +616,9 @@ class InventoryController extends CommonController {
 					$inventory_data = array(
 						'location_id' => $inventory_info['location_id'],
 						'code' => $inventory_code,
-						'type' => 'again',
+						'type' => 'fast',
 						'status' => 'noinventory',
+						'wh_id' => session('user.wh_id'),
 						);
 					$stock_inventory = D('Inventory');
 					$inventory_data = $stock_inventory->create($inventory_data);
