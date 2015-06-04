@@ -262,7 +262,7 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning')
 			)
 		);
 		$M = M('stock_purchase');
@@ -282,7 +282,7 @@ class PurchaseController extends CommonController {
 				$pill['status'][$k]['count'] = 0;
 			}
 		}
-		
+		dump($pill);exit();
 		$this->pill = $pill;
 		
 	}
