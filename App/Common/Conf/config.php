@@ -14,7 +14,7 @@ return array(
 
 	//模版设置
 	'LAYOUT_ON'         => TRUE,
-
+	'TMPL_CACHE_ON'		=> FALSE,
 	//URL设置
 	'URL_MODEL'			=> 2,
 	'URL_HTML_SUFFIX'	=> 'htm',
