@@ -22,7 +22,7 @@ return array(
 	'URL_CASE_INSENSITIVE' => FALSE,
 
 	//数据设置
-	'PAGE_SIZE'         => 10,
+	'PAGE_SIZE'         => 50,
 	'DB_BIND_PARAM'    =>    true,
 
 	//session设置
@@ -42,4 +42,6 @@ return array(
     'ERROR_MESSAGE'    	=> '页面错误！请稍后再试～',
     'URL_404_REDIRECT'	=> '',
 
+    //正式PMS接口
+	'PMS_API'			=> 's.dachuwang.com',
 );
