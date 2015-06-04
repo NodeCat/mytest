@@ -6,13 +6,10 @@ function get_type($type = '') {
 	return $data;
 }
 function get_sn($type = '', $wh_id = '') {
-    $sql = "CALL sn('".$type."')";
-    $n = M()->query($sql);
-    $M = M('numbs');
-    $res = $M->field('prefix,mid,suffix')->find($type);
-    $sn = str_pad($n[0]['sn'],$res['suffix'],"0",STR_PAD_LEFT);
-    $numb =$res['prefix'].$res['mid'].$sn;
     $date = date('ymd',NOW_TIME);
+    $sql = "CALL sn('$type','$date')";
+    $n = M()->query($sql);
+    $numb = $n[0]['sn'];
     $wh_id =  str_pad($wh_id,2,"0",STR_PAD_LEFT);
     $numb = str_replace(array('%date%','%wh_id%'), array($date,$wh_id), $numb);
 	return $numb;

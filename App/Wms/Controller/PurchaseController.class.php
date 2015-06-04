@@ -4,8 +4,8 @@ use Think\Controller;
 class PurchaseController extends CommonController {
 	protected $filter = array(
 		'invoice_method' =>  array(
-			'0' => '先款后货',
-			'1' => '先货后款',
+			'0' => '预付款',
+			'1' => '货到付款',
 		),
 		'invoice_status' => array(
 			'0' => '未付款', 
