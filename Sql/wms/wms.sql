@@ -1350,7 +1350,7 @@ CREATE TABLE `warehouse` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-CREATE DEFINER=`dev`@`%` PROCEDURE `sn`(in id varchar(45))
+CREATE  PROCEDURE `sn`(in id varchar(45))
 BEGIN
 select `sn` from `numbs` where `name` = id limit 1 for update;
 UPDATE numbs 
