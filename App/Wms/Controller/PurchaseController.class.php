@@ -27,8 +27,9 @@ class PurchaseController extends CommonController {
 		'id' => '',   
 		'code' => '采购单号',   
 		'in_code' =>'采购到货单号',
-		'warehouse_code' =>'仓库',
+		'warehouse_name' =>'仓库',
 		'partner_name' => '供应商',
+		'invoice_method' =>'付款方式',
 		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
@@ -62,7 +63,7 @@ class PurchaseController extends CommonController {
 			 'query_type' => 'eq',     
 			 'control_type' => 'refer',     
 			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
-		),   
+		),
 		'stock_purchase_detail.pro_code' =>    array (     
 			'title' => '货品编号',    
 			 'query_type' => 'eq',     
@@ -81,6 +82,16 @@ class PurchaseController extends CommonController {
 			'control_type' => 'datetime',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
 		),
+		'stock_purchase.invoice_method' => array(
+			'title'=> '付款方式',
+			'query_type'=>'eq',
+			'control_type' => 'select',     
+			 'value' => array(
+			 	'0' => '先款后货',
+				'1' => '先货后款',
+			 ), 
+		),   
+
 	);
 	public function match_code() {
         $code=I('q');
