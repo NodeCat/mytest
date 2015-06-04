@@ -593,6 +593,7 @@ class ProcessController extends CommonController {
         $url .= '/process_code/'.$post['code']; //加工单号
         $url .= '/type/'.$process_info['type']; //加工类型
         $url .= '/p_pro_code/'.$process_info['p_pro_code']; //父sku编号
+        
         $this->redirect($url);
     }
     
@@ -622,77 +623,116 @@ class ProcessController extends CommonController {
             $process_ratio_info = $process_ratio->where($map)->select();
             unset($map);
             
-            //查询库存是否充足
-            //所有加工区库位
-            $location = M('location');
-            $map['code'] = 'MN'; //加工区标识
-            $location_pos = $location->field('id')->where($map)->find();
-            if (empty($location)) {
-                $this->msgReturn(false, '加工区不存在');
-            }
-            unset($map);
-            //所有库位
-            $map['pid'] = $location['id'];
-            $location_pos_arr = $location->field('id')->where($map)->select();
-            $pos = array();
-            foreach ($location_pos_arr as $val) {
-                $pos[] = $val['id'];
+            if ($real_qty > $process_info['plan_qty']) {
+                //非法
+                $this->msgReturn(false, '加工数量不可大于待入库数量');
+                return;
             }
             
-            $stock = D('Stock');
-            if ($process_info['type'] == 'unite') {
+            $param['code'] = array(); //创建出库单更新数据
+            if ($process['type'] == 'unite') {
                 /**
-                 * 组合状态下 查看子SKU库存量是否充足
+                 * 组合状态下 扣减子sku库存
                  */
-                if ($real_qty > $process_info['plan_qty']) {
-                    //非法
-                    $this->msgReturn(false, '加工数量不可大于待入库数量');
-                    return;
-                }
+                $stock_out = D('Process', 'Logic');
+                
                 foreach ($process_ratio_info as $value) {
-                    //库存量
-                    $map['wh_id'] = $process_info['wh_id'];
-                    $map['pro_code'] = $value['c_pro_code'];
-                    $map['location_id'] = array('in', $pos);
-                    $map['status'] = 'qualified';
-                    $stock_info = $stock->where($map)->select();
-                    $stock_num = 0; //库存量
-                    foreach ($stock_info as $v) {
-                        $stock_num += $v['stock_qty'];
-                    }
-                    $real_num = $real_qty * $value['ratio']; //需求量
-                    if ($stock_num < $real_num) {
-                        //库存不足
-                        $this->msgReturn(false, '库存不足');
+                    $data['real_qty'] = $value['ratio'] * $real_qty; //出库数量
+                    $data['wh_id'] = $process['wh_id']; //仓库ID
+                    $data['refer_code'] = $post['out_code']; //关联单号＝＝出库单号
+                    $data['pro_code'] = $value['c_pro_code']; //出库子sku编号
+                    $suc = $stock_out->process_out_stock($data);
+                    if ($suc['status'] == false) {
+                        $this->msg(false, $suc['msg']);
                         return;
                     }
+                    $param[] = array('qty' => $data['real_qty'], 'pro_code' => $value['c_pro_code']);
                 }
+                unset($data);
+                unset($param);
+                /**
+                 * 更新出库单 实际出库数量
+                 */
+                $stock_out_code = M('stock_bill_out');
+                $map['code'] = $post['out_code'];
+                $id_out = $stock_out_code->field('id')->where($map)->find();
+                $update_out = $stock_out->update_out_stock_detail($id_out['id'], $param);
+                if (!$update_out) {
+                    $this->msgReturn(false, '更新出库单失败');  
+                }
+                unset($map);
+                
+                //入库操作
+                $in = $stock_out->process_in_stock($process['p_pro_code'], $real_qty, $process['wh_id'], $post['in_code']);
+                if ($in['status'] == false) {
+                    $this->msgReturn(false, $in['msg']);
+                }
+                /**
+                * 更新入库单
+                */
+                $stock_out_code = M('stock_bill_out');
+                $map['code'] = $post['in_code'];
+                $id_in = $stock_out_code->field('id')->where($map)->find();
+                $param['qty'] = $real_qty;
+                $param['pro_code'] = $process['p_pro_code'];
+                $update_in = $stock_out->update_in_stock_detail($id_in['id'], $param);
+                if (!$update_in) {
+                    $this->msgReturn(false, '更新入库单失败');
+                }
+                
             } else {
                 /**
-                 * 拆分状态下 查看父SKU库存量是否充足
+                 * 拆分状态下 扣减父SKU库存
                  */
-                if ($real_qty > $process_info['plan_qty']) {
-                    //非法
-                    $this->msgReturn(false, '加工数量不可大于待出库数量');
+                $data['real_qty'] = $real_qty; //出库数量
+                $data['wh_id'] = $process['wh_id']; //仓库ID
+                $data['refer_code'] = $post['out_code']; //关联单号＝＝出库单号
+                $data['pro_code'] = $process['p_pro_code']; //出库子sku编号
+                $suc = $stock_out->process_out_stock($data);
+                if ($suc['status'] == false) {
+                    $this->msg(false, $suc['msg']);
                     return;
                 }
-                $map['wh_id'] = $process_info['wh_id'];
-                $map['pro_code'] = $process_info['p_pro_code'];
-                $map['location_id'] = array('in', $pos);
-                $map['status'] = 'qualified';
-                $stock_info = $stock->where($map)->select();
-                $stock_num = 0; //库存量  
-                foreach ($stock_info as $value) {
-                    $stock_num += $value['stock_qty'];
-                }         
+                /**
+                 * 更新出库单 实际出库数量
+                 */
+                $stock_out_code = M('stock_bill_out');
+                $map['code'] = $post['out_code'];
+                $id_out = $stock_out_code->field('id')->where($map)->find();
+                $param = array();
+                $param[] = array('qty' => $data['real_qty'], 'pro_code' => $process['p_pro_code']);
+                $update_out = $stock_out->update_out_stock_detail($id_out['id'], $param);
+                if (!$update_out) {
+                    $this->msgReturn(false, '更新出库单失败');
+                }
                 
-                if ($stock_num < $real_num) {
-                    //库存不足
-                    $this->msgReturn(false, '库存不足');
-                    return;
+                //入库操作
+                foreach ($process_ratio_info as $value) {
+                    $qty = $real_qty * $value['ratio'];
+                    $in = $stock_out->process_in_stock($value['c_pro_code'], $qty, $process['wh_id'], $post['in_code']);
+                    if ($in['status'] == false) {
+                        $this->msgReturn(false, $in['msg']);
+                    }
+                }
+                
+                /**
+                 * 更新入库单
+                 */
+                unset($param);
+                $stock_out_code = M('stock_bill_out');
+                $map['code'] = $post['in_code'];
+                $id_in = $stock_out_code->field('id')->where($map)->find();
+                foreach ($process_ratio_info as $value) {
+                    $param = array();
+                    $param['qty'] = $real_qty * $value['ratio'];
+                    $param['pro_code'] = $value['c_pro_code'];
+                    $update_in = $stock_out->update_in_stock_detail($id_in['id'], $param);
+                    if (!$update_in) {
+                        $this->msgReturn(false, '更新入库单失败');
+                    } 
                 }
             }
-            
+            $this->msgReturn(true, '已完成', '', U('index'));
         } else {
             $get = I('get.');
             if (empty($get)) {
