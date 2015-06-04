@@ -293,7 +293,7 @@ class CommonController extends AuthController {
 	        if(!empty($res) && is_array($res)){//如果查询成功
                 $this->before($res,'edit');//可以在这里写入编辑前的业务
                 if(ACTION_NAME == 'view') {
-                    $this->filter_list($data);//如果是查看，需要filter
+                    $this->filter_list($res);//如果是查看，需要filter
                 }
 	            $this->data = $res;
 	        }
