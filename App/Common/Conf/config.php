@@ -43,5 +43,5 @@ return array(
     'URL_404_REDIRECT'	=> '',
 
     //正式PMS接口
-	'PMS_API'			=> 's.dachuwang.com',
+	'PMS_API'			=> 'http://s.dachuwang.com',
 );

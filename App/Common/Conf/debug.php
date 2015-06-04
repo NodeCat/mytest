@@ -22,5 +22,5 @@ return array(
 	'DB_PREFIX' 		=> 	'', 		// 数据库表前缀
 
 	//测试PMS接口
-	'PMS_API'			=> 's.test.dachuwang.com',
+	'PMS_API'			=> 'http://s.test.dachuwang.com',
 );
