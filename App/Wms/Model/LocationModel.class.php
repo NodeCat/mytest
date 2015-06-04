@@ -51,9 +51,9 @@ class LocationModel extends Model {
             'default'=>array(
                 'where'=>array('location.is_deleted'=>'0'),
                 'order'=>'location.id DESC',
-                "join"=>array("inner join warehouse on location.wh_id=warehouse.id","inner join location l2 on location.pid = l2.id", "inner join location_detail ld on location.id = ld.location_id","inner join location_type  lt on ld.type_id = lt.id"),
-                "field"=>"location.*,warehouse.code as warehouse_code,l2.name as area_name, ld.is_mixed_pro, ld.is_mixed_batch, ld.picking_line, ld.putaway_line, ld.type_id,lt.name as type_name"
-                ),
+                "join"=>array("inner join warehouse on location.wh_id=warehouse.id","inner join location l2 on location.pid = l2.id", "inner join location_detail ld on location.id = ld.location_id","inner join location_type  lt on ld.type_id = lt.id", "inner join user on location.created_user=user.id ", "inner join user u on location.updated_user=u.id "),
+                "field"=>"location.*,warehouse.code as warehouse_code,l2.name as area_name, ld.is_mixed_pro, ld.is_mixed_batch, ld.picking_line, ld.putaway_line, ld.type_id,lt.name as type_name, user.nickname as created_name, u.nickname as updated_name",
+               ), 
             'latest'=>array(
                 'where'=>array('is_deleted'=>'0'),
                 'order'=>'update_time DESC',

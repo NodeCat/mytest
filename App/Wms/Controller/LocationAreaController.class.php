@@ -2,7 +2,7 @@
 namespace Wms\Controller;
 use Think\Controller;
 class LocationAreaController extends CommonController {
-
+    
     protected function before_delete ($ids) {
         $location = M('location'); 
         $map['pid'] = array('in', $ids);
