@@ -38,6 +38,7 @@ class StockOutApi extends Controller{
         $map['status'] = 1;
         $map['process_type'] = 1;
         $map['refused_type'] = 1;
+        $map['refer_code'] = isset($post['refer_code'])? $post['refer_code'] : '';
         $map['created_time'] = get_time();
         $map['updated_time'] = get_time();       
         $map['created_user'] = $user_id;

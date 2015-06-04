@@ -48,7 +48,7 @@ class StockInController extends CommonController {
 			'value' => 'Company.id,name',   
 		),  
 		
-		'stock_bill_in.wh_id' =>    array (     
+		'warehouse.id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
 			'control_type' => 'getField',     
@@ -427,7 +427,7 @@ class StockInController extends CommonController {
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
 				'33'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
-				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger'),
+				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger')
 			)
 		);
 		$M_bill_in = M('stock_bill_in');

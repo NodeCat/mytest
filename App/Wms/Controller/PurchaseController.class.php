@@ -45,7 +45,7 @@ class PurchaseController extends CommonController {
 			'control_type' => 'text',
 			'value' => '',
 		),
-		'stock_purchase.wh_id' =>    array (     
+		'warehouse.id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
 			'control_type' => 'getField',     
@@ -108,7 +108,7 @@ class PurchaseController extends CommonController {
             'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13")
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
         );
         
         $this->toolbar =array(
@@ -355,6 +355,18 @@ class PurchaseController extends CommonController {
 		$res = $M->where($map)->save($data);
 	
 		$this->msgReturn($res);
+	}
+
+	public function refund() {
+		$M = D(CONTROLLER_NAME);
+		$pk = $M->getPk();
+		$id = I($pk);
+		$map[$M->tableName.'.'.$pk] = $id;
+		$res = $M->where($map)->find();
+		unset($res[$pk]);
+		$res['refer_code'] = $res['code'];
+		$res['code'] = get_sn('out');
+		
 	}
 
 	public function pass(){

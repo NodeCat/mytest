@@ -4,8 +4,6 @@ use Think\Controller;
 class ProductController extends AuthController {
     
     public function index(){
-        
-        layout(!IS_AJAX);
         $count =10;
         $page = I('p',1);
         $product_code = I('product_code');

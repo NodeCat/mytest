@@ -127,7 +127,7 @@ class StockOutController extends CommonController {
         $pill = array(
 			'status'=> array(
 				'1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
-				'2'=>array('value'=>'2','title'=>'已出库','class'=>'primary'),
+				'2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
 			)
 		);
 		$stock_out = M('stock_bill_out');
