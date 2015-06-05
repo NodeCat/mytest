@@ -206,8 +206,8 @@ form.order ul.list-group{
       alert('not in app.');
     }
     else {
-      alert(lat+','+lng);
-      HostApp.navigationToGaodeMap(lat,lng);
+      HostApp.toast(lat+','+lng);
+      HostApp.navigationToMap(lat,lng);
     }
   }
   $(function(){
