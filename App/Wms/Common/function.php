@@ -177,3 +177,17 @@ function get_type_by_bill($bill_code){
 
     return $type;
 }
+
+//根据USER_AGENT判断是否是移动端
+function is_mobile_terminal(){
+    $mobile_ua = array(
+        'iPhone',
+        'Android',
+        );
+    foreach($mobile_ua as $ua){
+        if(strstr($_SERVER['HTTP_USER_AGENT'], $ua)){
+            return true;
+        }
+    }
+    return false;
+}
