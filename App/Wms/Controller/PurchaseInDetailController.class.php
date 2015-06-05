@@ -35,6 +35,15 @@ class PurchaseInDetailController extends CommonController {
 		    'control_type' => 'text',
 		    'value' => '',
 		),
+        'erp_purchase_in_detail.status' => array (
+            'title' => '支付状态',
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
+                'paid'=>'已付款',
+                'nopaid'=>'未付款'
+            ),   
+        ),
 	);
 
     //设置列表页选项
