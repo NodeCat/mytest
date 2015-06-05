@@ -35,6 +35,15 @@ class PurchaseInDetailController extends CommonController {
 		    'control_type' => 'text',
 		    'value' => '',
 		),
+        'erp_purchase_in_detail.status' => array (
+            'title' => '支付状态',
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
+                'paid'=>'已付款',
+                'nopaid'=>'未付款'
+            ),   
+        ),
 	);
 
     //设置列表页选项
@@ -76,6 +85,12 @@ class PurchaseInDetailController extends CommonController {
     //支付
     public function pay(){
     	$ids = I('ids');
+
+        if(empty($ids)){
+            $data['status'] = 0;
+            $data['msg'] = '请选择一个未付款的单据';
+            $this->ajaxReturn($data);
+        }
 
     	//根据ids 查询采购入库单信息
     	$map['id'] = array('in',$ids);
