@@ -35,7 +35,7 @@
 <div class="panel panel-default">
   <div class="list-group-item list-group-item-inf">
     <h4 class="list-group-item-heading">
-      <a data-lat="{$vo.geo.lat}" data-lng="{$vo.geo.lng}" class="navigation-map">{$vo.deliver_addr} {$vo.shop_name}
+      <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">{$vo.deliver_addr} {$vo.shop_name}
       <i class="  glyphicon glyphicon-send"></i></a>
     </h4>
     <hr/>
@@ -212,10 +212,8 @@ form.order ul.list-group{
   }
   $(function(){
     $('.navigation-map').on('click',function(){
-        var lat = new String;
-        lat = $(this).data('lat');
-        var lng = new String;
-        lng = $(this).data('lng');
+        var lat = $(this).data('lat');
+        var lng = $(this).data('lng');
         if(lat == null || lat == '' || lng == null || lng == ''){
           return;
         }
