@@ -203,9 +203,11 @@ form.order ul.list-group{
 
   function goToGaodeMap(lat,lng){
     if(typeof HostApp == "undefined") {
+      alert('not in app.');
     }
     else {
-      HostApp.navigationToGaodeMap(lay,lng);
+      alert(lat+','+lng);
+      HostApp.navigationToGaodeMap(lat,lng);
     }
   }
   $(function(){
