@@ -67,6 +67,7 @@ class IndexController extends Controller {
                         break;
                 };
                 $val['pay_status'] = $s;
+                $val['geo'] = json_decode($val['geo'],TRUE);
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         $val['quantity'] +=$v['actual_quantity'];   
