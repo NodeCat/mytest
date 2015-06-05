@@ -237,32 +237,37 @@ class StockOutController extends CommonController {
     }
 
     protected function before_edit(&$data) {
-       $stock_out = M('stock_bill_out');
-       $stock_detail = M('stock_bill_out_detail');
-       $warehouse = M('warehouse');
+        $stock_out = M('stock_bill_out');
+        $stock_detail = M('stock_bill_out_detail');
+        $warehouse = M('warehouse');
 
-       $map['pid'] = $data['id'];
-       $pros = $stock_detail->where($map)->select();
-       
-       foreach ($pros as $key => $val) {
+        $map['pid'] = $data['id'];
+        $pros = $stock_detail->where($map)->select();
+           
+        foreach ($pros as $key => $val) {
             $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
-	   }
+        }
+            
+        unset($map);
+        $map['id'] = $data['wh_id'];
+        $data['wh_name'] = $warehouse->where($map)->getField('name');
         
-       unset($map);
-       $map['id'] = $data['wh_id'];
-       $data['wh_name'] = $warehouse->where($map)->getField('name');
-       $data['delivery_time'] = date('Y-m-d', $data['op_date']) . $this->filter['op_time'][$data['op_time']];
+        if($data['op_date'] == "0000-00-00 00:00:00") {
+            $data['delivery_time'] = '无';
+        }else {
+            $data['delivery_time'] = date('Y-m-d', strtotime($data['op_date'])) . $this->filter['op_time'][$data['op_time']];
+        }
 
-       $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
+        $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
                        'type' => array('1'=>'普通订单','2'=>'采购退货','3'=>'库内样品出库'),
                        'process_type' => array('1'=>'正常单','2'=>'取消单'),
                 );
-       $this->filter_list($data, 0, $filter);
+        $this->filter_list($data, 0, $filter);
 
-       $filter = array('status'=>array('1'=>'待出库', '2'=>'已出库'));
-       $this->filter_list($pros, 0, $filter);
+        $filter = array('status'=>array('1'=>'待出库', '2'=>'已出库'));
+        $this->filter_list($pros, 0, $filter);
        
-       $this->pros = $pros;
+        $this->pros = $pros;
 
     }
 

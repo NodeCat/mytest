@@ -45,7 +45,7 @@
 <div class="form-group col-lg-4">
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">送货日期</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-<input  autocomplete="off" type="datetime" class="form-control input-sm date form_datetime {required:true,dateISO:true,date:true,}" name="expecting_date" id="expecting_date"  rel="datepicker" data-date="" data-date-format="yyyy-mm-dd hh:ii:ss" placeholder="入库日期">
+<input  autocomplete="off" type="datetime" class="form-control input-sm date form_datetime {required:true,dateISO:true,date:true,}" name="expecting_date" id="expecting_date"  rel="datepicker" data-date="" data-date-format="yyyy-mm-dd hh:ii:ss" placeholder="送货日期">
     </div>
 </div>
 </div>
@@ -64,8 +64,8 @@
 <div class="form-group  col-lg-4">
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">付款方式</label>
     <div class="col-lg-8 col-sm-8 col-xs-8"><select id="invoice_method" name="invoice_method" class="form-control selected input-sm" data-value="{$data.invoice_method}">
-                        <option value ="0">先款后货</option>
-                        <option value ="1">先货后款</option>
+                        <option value ="0">预付款</option>
+                        <option value ="1">货到付款</option>
             </select>
     </div>
 </div>
