@@ -77,6 +77,12 @@ class PurchaseInDetailController extends CommonController {
     public function pay(){
     	$ids = I('ids');
 
+        if(empty($ids)){
+            $data['status'] = 0;
+            $data['msg'] = '请选择一个未付款的单据';
+            $this->ajaxReturn($data);
+        }
+
     	//根据ids 查询采购入库单信息
     	$map['id'] = array('in',$ids);
     	$purchase_in_details = M('erp_purchase_in_detail')->where($map)->select();
