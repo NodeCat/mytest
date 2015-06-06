@@ -87,8 +87,8 @@ class PurchaseController extends CommonController {
 			'query_type'=>'eq',
 			'control_type' => 'select',     
 			 'value' => array(
-			 	'0' => '先款后货',
-				'1' => '先货后款',
+			 	'0' => '预付款',
+				'1' => '货到付款',
 			 ), 
 		),   
 
