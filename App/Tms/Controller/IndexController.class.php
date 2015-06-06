@@ -47,6 +47,7 @@ class IndexController extends Controller {
         if(!empty($id)) {
             $M = M('tms_delivery');
             $res = $M->find($id);
+            /*
             if(empty($res)) {
                 $this->error = '未找到该提货纪录。';
             }
@@ -58,7 +59,9 @@ class IndexController extends Controller {
                 $this->display('tms:orders');
                 exit();
             }
-            $map['dist_id'] = $res['id'];
+            */
+            //$map['dist_id'] = $res['id'];
+            $map['dist_id'] = $id;
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
@@ -119,7 +122,7 @@ class IndexController extends Controller {
         }
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
-        $res = $A->sign($map);
+        $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
 
@@ -131,7 +134,7 @@ class IndexController extends Controller {
 
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
-        $res = $A->sign($map);
+        $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
     public function delivery() {
@@ -188,6 +191,19 @@ class IndexController extends Controller {
                 $data['city_id'] = $citys[$dist['city_id']];
                 
                 $res = $M->add($data);
+                unset($map);
+                $map['dist_id'] = $dist['id'];
+                $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                $orders = $A->order($map);
+                unset($map);
+                $map['status']  = '8';//已装车
+                $map['driver'] = '司机'.session('user.username').session('user.mobile');
+                foreach ($orders as $val) {
+                    $order_ids[] = $val['id'];
+                    $map['order_id'] = $val['id'];dump($map);
+                    $res = $A->set_status($map);
+                }
+                dump($res);exit();
                 unset($map);
                 if($res) {
                     $this->msg = "提货成功。";

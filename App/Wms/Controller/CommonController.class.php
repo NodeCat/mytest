@@ -529,6 +529,7 @@ class CommonController extends AuthController {
         }
         $M  =  D(CONTROLLER_NAME);
         $result = $M->scope('default')->select();
+        $this->filter_list($result);
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;
             foreach ($columns as $key  => $value){
