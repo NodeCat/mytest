@@ -93,6 +93,7 @@ class StockController extends CommonController {
 		//查询所有库位信息
 		$map['type'] = 1;
 		$map['is_deleted'] = 0;
+		$map['wh_id'] = session('user.wh_id');
 		$location_info = M('Location')->where($map)->getField('id,name,code');
 		unset($map);
 		$this->area_info = $location_info;
@@ -101,6 +102,7 @@ class StockController extends CommonController {
 		if($this->in_empty_location){
 			$map['type'] = 2;
 			$map['is_deleted'] = 0;
+			$map['wh_id'] = session('user.wh_id');
 			$location_list = M('Location')->where($map)->select();
 			unset($map);
 			foreach($location_list as $key => $location){
