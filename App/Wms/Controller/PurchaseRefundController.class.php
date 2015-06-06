@@ -108,5 +108,12 @@ class PurchaseRefundController extends CommonController {
 
 	public function refund(){
 		$ids = I('ids');
+
+		$map = array('id' => array('in',$ids));
+
+		M('erp_purchase_refund')->where($map)->data(array('status'=>'refund'))->save();
+		unset($map);
+
+		$this->msgReturn(1);
 	}
 }
