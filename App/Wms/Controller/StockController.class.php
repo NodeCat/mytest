@@ -91,12 +91,18 @@ class StockController extends CommonController {
         $data = A('Pms','Logic')->add_fields($data,'pro_name');
 
 		//查询所有库位信息
-		$location_info = M('Location')->where('type = 1')->getField('id,name,code');
+		$map['type'] = 1;
+		$map['is_deleted'] = 0;
+		$location_info = M('Location')->where($map)->getField('id,name,code');
+		unset($map);
 		$this->area_info = $location_info;
 
 		//如果包含空库位 查询location表
 		if($this->in_empty_location){
-			$location_list = M('Location')->where('type = 2')->select();
+			$map['type'] = 2;
+			$map['is_deleted'] = 0;
+			$location_list = M('Location')->where($map)->select();
+			unset($map);
 			foreach($location_list as $key => $location){
 				$data_empty_location[$key]['location_code'] = $location['code'];
 
