@@ -109,6 +109,12 @@ class PurchaseRefundController extends CommonController {
 	public function refund(){
 		$ids = I('ids');
 
+		if(empty($ids)){
+            $data['status'] = 0;
+            $data['msg'] = '请选择一个冲红单';
+            $this->ajaxReturn($data);
+        }
+
 		$map = array('id' => array('in',$ids));
 
 		M('erp_purchase_refund')->where($map)->data(array('status'=>'refund'))->save();
