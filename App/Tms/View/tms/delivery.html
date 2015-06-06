@@ -35,7 +35,7 @@
 <div class="list-group">
   <a class="list-group-item disabled">已提货配送单(点击可查看详情)</a>
   <volist name="data" id="vo">
-  <a href="{:U('orders','id='.$vo['dist_id'])}" class="list-group-item list-group-item-ino activ">
+  <a href="{:U('orders','id='.$vo['id'])}" class="list-group-item list-group-item-ino activ">
   <span class="badge">待配送 {$vo.order_count} 订单</span>
   <h4 class="list-group-item-heading">{$vo.dist_code}<br/>{$vo.line_name}</h4>
     <hr/>
