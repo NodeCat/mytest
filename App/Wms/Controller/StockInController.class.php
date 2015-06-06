@@ -513,7 +513,7 @@ class StockInController extends CommonController {
     	$data['session_user_name'] = session('user.username');
     	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
 
-    	//$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
     	$data['bill_in_detail_list'] = $bill_in_detail_list;
 
     	layout(false);

@@ -65,6 +65,7 @@ class PurchaseRefundController extends CommonController {
             array('name'=>'print' ,'show' => false,'new'=>'false'),
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
+        $this->search_addon = true;
     }
 
     public function view() {
@@ -103,5 +104,9 @@ class PurchaseRefundController extends CommonController {
 				$data[$k]['refund_total'] = $refund_total;
 			}
 		}
+	}
+
+	public function refund(){
+		$ids = I('ids');
 	}
 }
