@@ -152,7 +152,7 @@ class StockInController extends CommonController {
 					$data['stock_in_code'] = $bill_in_detail_info['code'];
 					$data['purchase_code'] = $bill_in_detail_info['refer_code'];
 					$data['pro_status'] = $status;
-					$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * intval($qty);
+					$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * $qty;
 
 					if($bill_in_detail_info['invoice_method'] == 0){
 						$data['status'] = 'paid';
