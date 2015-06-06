@@ -40,7 +40,7 @@
     </h4>
     <hr/>
     <i class="glyphicon glyphicon-user"></i>{$vo.realname}  &nbsp;&nbsp;
-    <i class="glyphicon glyphicon-phone"></i><a href="tel:{$vo.mobile}">{$vo.mobile} &nbsp; 
+    <i class="glyphicon glyphicon-phone"></i><a href="tel:{$vo.mobile}" class="user-mobile">{$vo.mobile} &nbsp; 
     <i class="glyphicon glyphicon-earphone"></i><small>拨号</small></a> 
   </div>
   <notempty name="vo['remarks']">
@@ -60,7 +60,7 @@
 <default />
 <a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
 </switch>
- {$vo.order_type_cn} {$vo.id}&nbsp;
+ {$vo.order_type_cn} <i class="order-id">{$vo.id}</i>&nbsp;
   <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
     <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
   <br/>
@@ -83,12 +83,12 @@
     <input type="hidden" name="id" value="{$vo.id}" />
     <ul class="list-group" >
     <li class="list-group-item">状态：{$vo.status_cn}</li>
-
-    <!--
-      <li class="list-group-item">线路：{$vo.city_name}{$vo.site_name} {$vo.line}</li>
+<li class="list-group-item">线路：{$vo.city_name}{$vo.site_name} {$vo.line}</li>
       <li class="list-group-item">配送：{$vo.deliver_date} {$vo.deliver_time}</li>
       <li class="list-group-item">销售：AM：{$vo.am.name} {$vo.am.mobile}</li>
 
+    <!--
+      
       <li class="list-group-item">销售：BD：{$vo.bd.name} {$vo.bd.mobile}</li>
           
     
@@ -221,7 +221,15 @@ form.order ul.list-group{
         }
     });
     $('#code').on('input', function(){
-      //待完成，全局搜索;
+      var search = $(this).val();
+      $('.order-id').each(function(){
+        if($(this).text().indexOf(search) == -1) {
+          $(this).parents('.panel').hide();
+        }
+        else {
+          $(this).parents('.panel').show();
+        }
+      })
     });
 
     $('.btn-sign').on('click',function(){
