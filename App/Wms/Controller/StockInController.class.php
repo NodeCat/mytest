@@ -528,7 +528,6 @@ class StockInController extends CommonController {
      */
     protected function before_add(&$M) {
         $pros = I('post.pros');
-        
         if (count($pros) < 2) {
             //没有商品被添加
             $this->msgReturn(0, '没有商品被添加');
@@ -570,7 +569,7 @@ class StockInController extends CommonController {
         $M->created_user = session()['user']['uid']; //创建管理员
         $M->updated_user = session()['user']['uid']; //更新管理员
         $M->status = 21; //状态 21待入库
-        $M->partner_id = 1; //手动添加供货商默认为1    
+        $M->partner_id = 1; //手动添加供货商默认为1 
     }
     
     /**

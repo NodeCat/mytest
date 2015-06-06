@@ -287,10 +287,190 @@ class ProcessLogic {
         return $return;
     }
     
+    /**
+     * 生成加工入库单(erp)
+     * @param $type string 关联类型
+     * @param $data array 数据组
+     * array(
+     *     'process_code' => '加工单号'
+     *     'wh_id' => 仓库id
+     *     'type' => 加工类型
+     *     'remark'=> 备注
+     *     'status' => 状态
+     *     'real_qty' => 实际生产量
+     *     'plan_qty' => 计划生产量
+     * )
+     */
+    public function make_process_in_stock($type = '', $data = array()) {
+        $return = array('status' => false, 'msg' => '');
+        
+        if (empty($data) || empty($type)) {
+            //参数有误
+            $return['msg'] = '参数有误';
+            return $return;
+        }
+        $process_in = D('ProcessIn');
+        $process_in_detail = D('ProcessInDetail');
+        $data['wh_id'] = $data['wh_id']; //所属仓库
+        $data['code'] = get_sn('erp_pro_in'); //加工入库单号
+        $data['refer_code'] = $data['process_code']; //关联加工单号
+        $data['process_type'] = $data['type']; //类型 组合 or 拆分
+        $data['status'] = $data['status']; //状态 待入库
+        $data['remark'] = $data['remark']; //备注
+        
+        //写入加工入库单详情
+        $detail_data['pro_code'] = $data['p_pro_code']; //sku编号
+        $detail_data['batch'] = $data['process_code']; //批次 关联加工单号
+        $detail_data['plan_qty'] = $data['plan_qty']; //计划量
+        $detail_data['real_qty'] = $data['real_qty']; //实际量
+        $detail_data['status'] = $data['status']; //状态
+        $process_in_detail->create($detail_data);
+        //关联操作
+        $data[$type] = $detail_data;
+        
+        $affect = $process_in->relation($type)->add($data);
+        if (!$affect) {
+            $return['msg'] = '写入失败';
+            return $return;
+        }
+        $return['status'] = true;
+        $return['msg'] = '成功';
+        return $return;
+    }
+    
+       
+    /**
+     * 生成加工出库单(erp)
+     * @param $type string 关联类型
+     * @param $data array 数据组
+     * array(
+     *     'process_code' => '加工单号'
+     *     'wh_id' => 仓库id
+     *     'type' => 加工类型
+     *     'remark'=> 备注
+     *     'status' => 状态
+     *     'real_qty' => 实际生产量
+     *     'plan_qty' => 计划生产量
+     * )
+     */
+    public function make_process_out_stock($type = '', $data = array()) {
+        $return = array('status' => false, 'msg' => '');
+        
+        if (empty($data) || empty($type)) {
+            //参数有误
+            $return['msg'] = '参数有误';
+            return $return;
+        }
+        $process_out = D('ProcessOut');
+        
+        $data['wh_id'] = $data['wh_id']; //所属仓库
+        $data['code'] = get_sn('erp_pro_out'); //加工入库单号
+        $data['refer_code'] = $data['process_code']; //关联加工单号
+        $data['process_type'] = $data['type']; //类型 组合 or 拆分
+        $data['status'] = 'prepare'; //状态 待入库
+        $data['remark'] = $data['remark']; //备注
+        
+        //加工出库单详情
+        $detail_data['pro_code'] = $data['p_pro_code']; //sku编号
+        $detail_data['batch'] = $data['process_code']; //批次 关联加工单号
+        $detail_data['plan_qty'] = $data['plan_qty']; //计划量
+        $detail_data['real_qty'] = $data['real_qty']; //实际量
+        $detail_data['status'] = $data['status']; //状态
+        $detail_data['created_user'] = session()['user']['uid']; //创建人
+        $detail_data['updated_user'] = session()['user']['uid']; //修改人
+        $detail_data['created_time'] = get_time(); //创建时间
+        $detail_data['updated_time'] = get_time(); //修改时间
+        //关联操作
+        $data[$type] = $detail_data;
+        
+        $affect = $process_out->relation($type)->add($data);
+        if (!$affect) {
+            $return['msg'] = '写入失败';
+            return $return;
+        }
+        $return['status'] = true;
+        $return['msg'] = '成功';
+        return $return;
+    }
+    
+    /**
+     * 生成加工入库单(wms)
+     * @param $type string 关联类型
+     * @param $data array 数据组
+     * array(
+     *     'id' => 入库类型
+     *     'name' => 入库类型标示
+     *     'process_code' => '加工单号'
+     *     'wh_id' => 仓库id
+     *     'type' => 加工类型
+     *     'remark'=> 备注
+     *     'status' => 状态
+     *     'real_qty' => 实际生产量
+     *     'plan_qty' => 计划生产量
+     *     'company_id' => 所属系统
+     * )
+     */
+    public function make_process_in_stock_wms($type = '', $data = array()) {
+        $return = array('status' => false, 'msg' => '');
+    
+        $data['code'] = get_sn($data['name']); //入库单号
+        $data['wh_id'] = $data['wh_id']; //仓库id
+        $data['type'] = $data['id']; //入库类型ID
+        $data['company_id'] = $data['company_id']; //所属系统
+        $data['refer_code'] = $data['process_code']; //关联采购单号
+        $data['pid'] = 0; //关联采购单号ID
+        $data['batch_code'] = 'batch' . NOW_TIME; //批次号
+        $data['partner_id'] = 0; //供应商
+        $data['remark'] = $data['remark']; //备注
+        $data['status'] = 21; //状态 21待入库
+    
+        //创建wms入库详情单数据
+        $detail_data['wh_id'] = $data['wh_id']; //所属仓库
+        $detail_data['refer_code'] = $data['process_code']; //关联入库单号
+        $detail_data['pro_code'] = $data['p_pro_code']; //SKU编号
+        $detail_data['expected_qty'] = $process['plan_qty']; //预计数量
+        $detail_data['prepare_qty'] = 0; //待上架量
+        $detail_data['done_qty'] = 0; //已上架量
+        $detail_data['pro_uom'] = '件';
+        $detail_data['remark'] = $process['remark'];
+        $detail_data['created_user'] = session()['user']['uid']; //创建人
+        $detail_data['updated_user'] = session()['user']['uid']; //修改人
+        $detail_data['created_time'] = get_time(); //创建时间
+        $detail_data['updated_time'] = get_time(); //修改时间
+    
+        //调用PMS接口根据编号查询SKU名称规格
+        $pms = D('Pms', 'Logic');
+        $sku_info = $pms->get_SKU_field_by_pro_codes($process['p_pro_code']);
+        $detail_data['pro_name'] = $sku_info[$process['p_pro_code']]['name']; //SKU名称
+        $detail_data['pro_attrs'] = $sku_info[$process['p_pro_code']]['pro_attrs_str']; //SKU规格
+    
+        //写入入库单
+        $stock_in = D('StockIn');
+        $data['detail'] = $detail_data;
+        $stock_in->relation('detail')->add($data);
+        unset($data);
+        unset($detail_data);
+    }
     
     
-    
-    
+    /**
+     * 生成加工出库单(wms)
+     * @param $type string 关联类型
+     * @param $data array 数据组
+     * array(
+     *     'process_code' => '加工单号'
+     *     'wh_id' => 仓库id
+     *     'type' => 加工类型
+     *     'remark'=> 备注
+     *     'status' => 状态
+     *     'real_qty' => 实际生产量
+     *     'plan_qty' => 计划生产量
+     * )
+     */
+    public function make_process_out_stock_wms($type = '', $data = array()) {
+        $return = array('status' => false, 'msg' => '');
+        
+    }
     
     
     

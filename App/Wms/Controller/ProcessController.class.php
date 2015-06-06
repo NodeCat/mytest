@@ -4,16 +4,17 @@ use Think\Controller;
 use Wms\Model\Stock_bill_in_detailModel;
 class ProcessController extends CommonController {
 	protected $filter = array(
-		'type' =>  array(
+	/*	'type' =>  array(
 			'unite' => '组合',
 			'split' => '拆分',
 		),
 		'status' => array(
-			'confirm' => '待确认',
+			'confirm' => '待审核',
 			'pass' => '已生效',
 			'reject' => '已驳回',
-			'close' => '已作废', 
-		),
+			'close' => '已作废',
+		    'make' => '已生产', 
+		),*/
 	);
 	protected $columns = array (
 		'id' => '',
@@ -77,77 +78,77 @@ class ProcessController extends CommonController {
 
     //重写add方法
     public function add(){
-    	if(IS_POST){
-    		$wh_id = I('wh_id');
-    		$plan_qty = I('plan_qty');
-    		$type = I('type');
-    		$process_pro_code = I('process_pro_code');
-    		$remark = I('remark');
-    		if(empty($wh_id) || empty($plan_qty) || empty($type) || empty($process_pro_code) ){
-				$this->msgReturn(0,'参数错误，请填写类型，仓库，计划数量，加工SKU');
-    		}
-    		//创建加工单
-    		$data['code'] = get_sn('erp_pro_'.$type);
-    		$data['wh_id'] = $wh_id;
-    		$data['type'] = $type;
-    		$data['plan_qty'] = $plan_qty;
-        $data['real_qty'] = 0;
-    		$data['p_pro_code'] = $process_pro_code;
-    		$data['status'] = 'confirm';
-    		$data['remark'] = $remark;
-    		$process = D('Process');
-    		$data = $process->create($data);
-    		$res = $process->data($data)->add();
-
-    		if($res){
-    			$this->msgReturn(1,'创建成功','','/Process/view/id/'.$res);
-    		}
-
-    		$this->msgReturn(0,'创建失败');
-    	}
-
-    	if(I('get.process_pro_code')){
-    		//获得加工SKU
-    		$process_pro_code = I('process_pro_code');
-
-    		//根据父SKU 查询加工关系
-    		$map['p_pro_code'] = $process_pro_code;
-    		$process_relation = M('erp_process_sku_relation')->where($map)->select();
-    		unset($map);
-
-    		//整理比率
-    		foreach($process_relation as $relation){
-    			$ratio[$relation['c_pro_code']] = $relation['ratio'];
-    		}
-
-    		if(empty($process_relation)){
-    			$this->msgReturn(0,'加工SKU不存在任何加工关系');
-    		}
-
-    		//根据pro_code查询对应pro_name
-    		$pro_codes[] = $process_pro_code;
-    		foreach($process_relation as $relation){
-    			$pro_codes[] = $relation['c_pro_code'];
-    		}
-
-    		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
-
-    		//添加stock_qty字段
-			$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
-
-    		//父SKU信息
-    		$p_sku_info = $sku[$process_pro_code];
-    		//子SKU信息
-    		unset($sku[$process_pro_code]);
-    		$c_sku_info = $sku;
-
-    		$this->p_sku_info = $p_sku_info;
-    		$this->c_sku_info = $c_sku_info;
-    		$this->ratio = $ratio;
-    		$this->process_pro_code = $process_pro_code;
-    	}
-
-    	$this->display();
+        	if(IS_POST){
+        		$wh_id = I('wh_id');
+        		$plan_qty = I('plan_qty');
+        		$type = I('type');
+        		$process_pro_code = I('process_pro_code');
+        		$remark = I('remark');
+        		if(empty($wh_id) || empty($plan_qty) || empty($type) || empty($process_pro_code) ){
+    				$this->msgReturn(0,'参数错误，请填写类型，仓库，计划数量，加工SKU');
+        		}
+        		//创建加工单
+        		$data['code'] = get_sn('erp_pro_'.$type);
+        		$data['wh_id'] = $wh_id;
+        		$data['type'] = $type;
+        		$data['plan_qty'] = $plan_qty;
+            $data['real_qty'] = 0;
+        		$data['p_pro_code'] = $process_pro_code;
+        		$data['status'] = 'confirm';
+        		$data['remark'] = $remark;
+        		$process = D('Process');
+        		$data = $process->create($data);
+        		$res = $process->data($data)->add();
+    
+        		if($res){
+        			$this->msgReturn(1,'创建成功','','/Process/view/id/'.$res);
+        		}
+    
+        		$this->msgReturn(0,'创建失败');
+        	}
+    
+        	if(I('get.process_pro_code')){
+        		//获得加工SKU
+        		$process_pro_code = I('process_pro_code');
+    
+        		//根据父SKU 查询加工关系
+        		$map['p_pro_code'] = $process_pro_code;
+        		$process_relation = M('erp_process_sku_relation')->where($map)->select();
+        		unset($map);
+    
+        		//整理比率
+        		foreach($process_relation as $relation){
+        			$ratio[$relation['c_pro_code']] = $relation['ratio'];
+        		}
+    
+        		if(empty($process_relation)){
+        			$this->msgReturn(0,'加工SKU不存在任何加工关系');
+        		}
+    
+        		//根据pro_code查询对应pro_name
+        		$pro_codes[] = $process_pro_code;
+        		foreach($process_relation as $relation){
+        			$pro_codes[] = $relation['c_pro_code'];
+        		}
+    
+        		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+    
+        		//添加stock_qty字段
+    			$sku = A('Stock','Logic')->add_fields($sku,'stock_qty');
+    
+        		//父SKU信息
+        		$p_sku_info = $sku[$process_pro_code];
+        		//子SKU信息
+        		unset($sku[$process_pro_code]);
+        		$c_sku_info = $sku;
+    
+        		$this->p_sku_info = $p_sku_info;
+        		$this->c_sku_info = $c_sku_info;
+        		$this->ratio = $ratio;
+        		$this->process_pro_code = $process_pro_code;
+        	}
+    
+        	$this->display();
     }
 
     //重写view
@@ -158,7 +159,7 @@ class ProcessController extends CommonController {
 
     //在edit方法执行之前执行该方法
     protected function before_edit(){
-    	$M = D('Process');
+    	    $M = D('Process');
 		$id = I($M->getPk());
 		$map['id'] = $id;
 		$process_info = M('erp_process')->where($map)->find();
@@ -204,9 +205,9 @@ class ProcessController extends CommonController {
     }
 
     protected function after_save($pid){
-    	if(ACTION_NAME == 'edit'){
-    		$this->msgReturn(1,'','',U('view','id='.$pid));
-    	}
+        	if(ACTION_NAME == 'edit'){
+        		$this->msgReturn(1,'','',U('view','id='.$pid));
+        	}
     }
 
     //批准
@@ -286,10 +287,6 @@ class ProcessController extends CommonController {
             $data['process_type'] = $process['type']; //出库类型
             $data['status'] = 'prepare'; //状态
             $data['remark'] = $process['remark']; //备注
-            $data['created_user'] = session()['user']['uid']; //创建人
-            $data['updated_user'] = session()['user']['uid']; //修改人
-            $data['created_time'] = get_time(); //创建时间
-            $data['updated_time'] = get_time(); //修改时间
             
             //写入加工出库单详情 子SKU详情
             $company_id = 1; //所属系统 默认大厨网
@@ -334,10 +331,6 @@ class ProcessController extends CommonController {
             $data['partner_id'] = 0; //供应商
             $data['remark'] = $process['remark']; //备注
             $data['status'] = 21; //状态 21待入库
-            $data['created_user'] = session()['user']['uid']; //创建人
-            $data['updated_user'] = session()['user']['uid']; //修改人
-            $data['created_time'] = get_time(); //创建时间
-            $data['updated_time'] = get_time(); //修改时间
             
             //创建wms入库详情单数据
             $detail_data['wh_id'] = $process['wh_id']; //所属仓库
@@ -541,60 +534,79 @@ class ProcessController extends CommonController {
     
     //驳回
     public function reject(){
-    	$map['id'] = I('id');
-    	$data['status'] = 'reject';
-    	$res = M('erp_process')->where($map)->save($data);
-
-    	$this->msgReturn($res);
+        	$map['id'] = I('id');
+        	$data['status'] = 'reject';
+        	$res = M('erp_process')->where($map)->save($data);
+    
+        	$this->msgReturn($res);
     }
-
-    //作废
+    
+        //作废
     public function close(){
-    	$map['id'] = I('id');
-    	$data['status'] = 'close';
-    	$res = M('erp_process')->where($map)->save($data);
-
-    	$this->msgReturn($res);
+        	$map['id'] = I('id');
+        	$data['status'] = 'close';
+        	$res = M('erp_process')->where($map)->save($data);
+    
+        	$this->msgReturn($res);
     }
     
     /**
      * 出入库单据操作
      */
     public function order() {
-        $post = I('post.');
-        
-        //查询加工单是否存在
-        $process = D('erp_process');
-        $map['code'] = $post['code'];
-        $process_info = $process->where($map)->find();
-        if (empty($process_info)) {
-            $this->msgReturn(false, '加工单不存在');
+        if (IS_POST) {
+            $post = I('post.');
+            if (empty($post['process_code'])) {
+                $this->msgReturn(false, '请输入加工单号');
+                return;
+            }
+            
+            //查询加工单是否存在
+            $process = D('erp_process');
+            $map['code'] = $post['process_code'];
+            $process_info = $process->where($map)->find();
+            if (empty($process_info)) {
+                //不存在
+                $this->msgReturn(false, '加工单不存在', '', U('order'));
+            }
+            if ($process_info['real_qty'] >= $process_info['plan_qty']) {
+                //已经生产完成加工单
+                $this->msgReturn(false, '已加工完成', '', U('order'));
+            } elseif ($process_info['status'] != 'pass') {
+                //未审核加工单
+                $this->msgReturn(false, '请先审核', '', U('order'));
+            }
+            
+            
+            //查询加工入库单是否存在
+            $in = D('StockIn');
+            $map['refer_code'] = $post['process_code'];
+            $info_in = $in->where($map)->find();
+            if (empty($info_in)) {
+                $this->msgReturn(false, '加工入库单不存在', '', U('order'));
+            }
+            unset($map);
+            
+            //查询加工出库单是否存在
+            $out = D('StockOut');
+            $map['refer_code'] = $post['process_code'];
+            $info_out = $out->where($map)->find();
+            if (empty($info_out)) {
+                $this->msgReturn(false, '加工出库单不存在', '', U('order'));
+            }   
+            $url = 'process';
+            $url .= '/in_code/'.$info_in['code']; //入库单号
+            $url .= '/out_code/'.$info_out['code']; //出库单号
+            $url .= '/process_code/'.$post['code']; //加工单号
+            $url .= '/type/'.$process_info['type']; //加工类型
+            $url .= '/p_pro_code/'.$process_info['p_pro_code']; //父sku编号
+            exit('ggggggggggggg');
+            $this->redirect($url);
+        } else {
+            $this->title = '扫描加工单号';
+            $this->msg = '请扫描加工单号';
+            $this->display();
         }
-        
-        //查询加工入库单是否存在
-        $in = D('StockIn');
-        $map['refer_code'] = $post['in_code'];
-        $info_in = $in->where($map)->find();
-        if (empty($info_in)) {
-            $this->msgReturn(false, '加工入库单不存在');
-        }
-        unset($map);
-        
-        //查询加工出库单是否存在
-        $out = D('StockOut');
-        $map['refer_code'] = $post['out_code'];
-        $info_out = $out->where($map)->find();
-        if (empty($info_out)) {
-            $this->msgReturn(false, '加工出库单不存在');
-        }
-        $url = 'process';
-        $url .= '/in_code/'.$info_in['code']; //入库单号
-        $url .= '/out_code/'.$info_out['code']; //出库单号
-        $url .= '/process_code/'.$post['code']; //加工单号
-        $url .= '/type/'.$process_info['type']; //加工类型
-        $url .= '/p_pro_code/'.$process_info['p_pro_code']; //父sku编号
-        
-        $this->redirect($url);
     }
     
     /**
@@ -732,12 +744,23 @@ class ProcessController extends CommonController {
                     } 
                 }
             }
+            /**
+             * 更新加工单状态位已生产
+             */
+            unset($map);
+            unset($data);
+            $map['code'] = $post['process_code'];
+            $data['status'] = 'make'; //已生产
+            $data['real_qty'] = $post['real_qty'];
+            if ($process->create($data)) {
+                $process->where($map)->save();
+            }
             $this->msgReturn(true, '已完成', '', U('index'));
         } else {
             $get = I('get.');
-            if (empty($get)) {
+            /*if (empty($get)) {
                 $this->msgReturn(false, '获取数据失败');
-            }
+            }*/
             
             $data['in_code'] = $get['in_code'];
             $data['out_code'] = $get['out_code'];
@@ -752,7 +775,7 @@ class ProcessController extends CommonController {
             }
             $data['p_pro_code'] = $get['p_pro_code'];
             $this->data = $data;
-            
+                        
             $this->display();
         }
     }

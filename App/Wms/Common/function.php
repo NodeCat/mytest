@@ -140,7 +140,7 @@ function en_to_cn($str){
         'change_status' => '状态调整',
         'noinventory' => '未盘点',
         'inventorying' => '盘点中',
-        'confirm' => '待确认',
+        'confirm' => '待审核',
         'closed' => '已作废',
         'fast' => '快速盘点',
         'again' => '复盘',
@@ -148,6 +148,10 @@ function en_to_cn($str){
         'unite' => '组合',
         'split' => '拆分',
         'draft' => '草稿',
+        'make' => '已生产',
+        'pass' => '已生效',
+        'reject' => '已驳回',
+        'close' => '已作废',
         );
 
     return $filter[$str];
