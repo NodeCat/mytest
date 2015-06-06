@@ -40,7 +40,9 @@
       </eq>
       <eq name="table.toolbar_tr" value="true">
   		<td class="inline">
+        <nobr>
    			<include file="Table:op-btn-tr"/> 
+        </nobr>
       </td>  
       </eq>  
   		
@@ -50,6 +52,16 @@
 </table>
 </div>
 <include file="Index:pager"/>
+
+<style type="text/css">
+  .table-operate-btn{
+    word-wrap:keep-all;
+    white-space: nowrap;
+  }
+.table-operate-btn a {
+  display: inline;
+}
+</style>
 
 <script src="__PUBLIC__/tablesorter/js/jquery.tablesorter.js"></script>
 <script src="__PUBLIC__/tablesorter/js/jquery.tablesorter.widgets.js"></script>
