@@ -75,7 +75,14 @@
 $(function(){
   $("#search_process_sku").on("click",function(){
     var _process_pro_code = $('#process_pro_code').val();
-    window.location.href="/Process/add?process_pro_code="+_process_pro_code;
+    $.ajax({
+    		type: "GET",
+    		url: "/Process/add",
+    		data: "process_pro_code="+_process_pro_code,
+    		success: function(data) {
+    			$('#c_sku_info').html(data);
+    		}
+    });
   });
 })
 </script>

@@ -7,8 +7,8 @@ namespace Wms\Logic;
 class ProcessLogic {
     
     private $mark = 'MN'; //加工区标示
-    private $in_mark = 'MN1001'; //入库库位标示
-    private $out_mark = 'MN1002'; //出库库位标示
+    private $in_mark = 'MN1002'; //入库库位标示
+    private $out_mark = 'MN1001'; //出库库位标示
     /**
      * 根据标示获取加工区库位ID
      * @param $wh_id int 所属仓库
@@ -50,7 +50,7 @@ class ProcessLogic {
             return $return;
         }
         //获取出库库位ID
-        $out_id = $this->get_process_stock_id($this->mark, $this->in_mark, $data['wh_id']);
+        $out_id = $this->get_process_stock_id($this->mark, $this->out_mark, $data['wh_id']);
         if ($out_id <= 0) {
             return $return;
         }
@@ -94,6 +94,13 @@ class ProcessLogic {
         $param['wh_id'] = $data['wh_id'];
         $param['real_qty'] = $data['real_qty'];
         $param['pro_code'] = $data['pro_code'];
+        
+        //获取库位id
+        $out_id = $this->get_process_stock_id($this->mark, $this->out_mark, $data['wh_id']);
+        if ($out_id <= 0) {
+            $return['msg'] = '不存在的库位';
+            return $return;
+        }
         //库存是否充足
         $is_full = $this->process_stock_status($param);
         if (!$is_full) {
@@ -102,13 +109,6 @@ class ProcessLogic {
             return $return;
         }
         unset($param);
-         
-        //获取库位id
-        $out_id = $this->get_process_stock_id($this->mark, $this->in_mark, $data['wh_id']);
-        if ($out_id <= 0) {
-            $return['msg'] = '不存在的库位';
-            return $return;
-        }
          
         //出库
         $surplus = $data['real_qty']; //预扣数量
@@ -221,7 +221,7 @@ class ProcessLogic {
             return $return;
         }
         //获取入库库位
-        $id = $this->get_process_stock_id($this->mark, $this->out_mark, $wh_id);
+        $id = $this->get_process_stock_id($this->mark, $this->in_mark, $wh_id);
         if ($id <= 0) {
             $return['msg'] = '不存在的仓库';
             return $return;

@@ -122,7 +122,7 @@ class ProcessController extends CommonController {
         	if(I('get.process_pro_code')){
         		//获得加工SKU
         		$process_pro_code = I('process_pro_code');
-    
+   
         		//根据父SKU 查询加工关系
         		$map['p_pro_code'] = $process_pro_code;
         		$process_relation = M('erp_process_sku_relation')->where($map)->select();
@@ -142,7 +142,7 @@ class ProcessController extends CommonController {
         		foreach($process_relation as $relation){
         			$pro_codes[] = $relation['c_pro_code'];
         		}
-    
+   
         		$sku = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
     
         		//添加stock_qty字段
@@ -158,6 +158,9 @@ class ProcessController extends CommonController {
         		$this->c_sku_info = $c_sku_info;
         		$this->ratio = $ratio;
         		$this->process_pro_code = $process_pro_code;
+        		//dump($this->c_sku_info);exit;
+        		$this->display('prolist-add');
+        		return;
         	}
     
         	$this->display();
