@@ -20,7 +20,7 @@ class OrderLogic{
 		$res = $this->get($url,$map);
 		return $res['orderlist'];
 	}
-	public function sign($map='') {
+	public function set_status($map='') {
     	$url = '/order/set_status';
 		$res = $this->get($url,$map);
 		return $res;

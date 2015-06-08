@@ -1,0 +1,53 @@
+<div role="tabpanel">
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">产品列表</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+  			<th>产品名称</th><th>预计数量</th><th>入库数量</th><th>采购单价</th><th>冲红数量</th><th>冲红金额</th>
+  		</thead>
+  		<tbody>
+      <volist name="pros" id="vo">
+        
+<tr class="tr-cur">
+      <td style="width:50%;">{$vo.pro_names}</td>
+        <td  style="width:10%;" class="text-left">
+          {$vo.expected_qty}
+        </td>
+        <td style="width:10%;">
+          {$vo.qualified_qty}
+        </td>
+        <td style="width:10%;" class="text-left">
+          {$vo.price_unit}
+        </td>
+        <td style="width:10%;">
+          {$vo['qualified_qty'] - $vo['expected_qty']}
+        </td>
+        <td style="width:10%;">
+          {$vo['qualified_qty'] * $vo['price_unit'] - $vo['expected_qty'] * $vo['price_unit']}
+        </td>
+      </tr>
+        
+      </volist>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+</div>
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

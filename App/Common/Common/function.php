@@ -10,7 +10,7 @@ function get_sn($type = '', $wh_id = '') {
     $sql = "CALL sn('$type','$date')";
     $n = M()->query($sql);
     $numb = $n[0]['sn'];
-    $wh_id =  str_pad($wh_id,2,"0",STR_PAD_LEFT);
+    $wh_id =  str_pad(empty($wh_id)?session('user.wh_id'):$wh_id,2,"0",STR_PAD_LEFT);
     $numb = str_replace(array('%date%','%wh_id%'), array($date,$wh_id), $numb);
 	return $numb;
 }

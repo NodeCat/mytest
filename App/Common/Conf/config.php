@@ -17,7 +17,7 @@ return array(
 	'TMPL_CACHE_ON'   => FALSE,  // 默认开启模板编译缓存 false 的话每次都重新编译模板
 	'ACTION_CACHE_ON' => FALSE,  // 默认关闭Action 缓存
 	'HTML_CACHE_ON'   => FALSE,
-	
+	'DATA_CACHE_TIME' => 1,
 	//URL设置
 	'URL_MODEL'			=> 2,
 	'URL_HTML_SUFFIX'	=> 'htm',
