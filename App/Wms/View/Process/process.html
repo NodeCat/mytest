@@ -11,7 +11,7 @@
 <div class="alert alert-success text-center" role="alert">查询成功</div>
 </notempty>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
-<form class="form-horizontal form-pda form-scan" action="/Process/process" method="POST">
+<form class="form-horizontal form-ajax form-pda form-scan" action="/Process/process" method="post">
   <input type="hidden" name="out_code" value="{$data.out_code}">
   <input type="hidden" name="in_code" value="{$data.in_code}">
   <input type="hidden" name="process_code" value="{$data.process_code}">
@@ -32,7 +32,7 @@
 
   <div class="form-group">
     <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品号</label>
-      <label for="pro_qty" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$data.pro_code}</label>
+      <label for="pro_qty" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$data.p_pro_code}</label>
   </div>
 
   <div class="form-group">
@@ -65,7 +65,8 @@
     $(this).select();
   });
   $('.input-pda').focus();
-  $('.form-pda button[type=submit]').on('click',function(){
+  $('.form-pda button[type=submit]').on('click',function(event){
+	event.preventDefault();
     $(this).prop('disabled', true);
     var addr,params;
     params=$(this).parents('form').serialize();

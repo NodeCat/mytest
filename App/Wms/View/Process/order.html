@@ -14,7 +14,7 @@
 <div class="alert alert-danger text-center" role="alert">{$error_msg}</div>
 </notempty>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
-<form class="form-horizontal form-view" method="POST">
+<form class="form-horizontal form-ajax form-view" method="POST" action="/Process/order">
   <div class="form-group">
     <label for="location" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">加工单号</label>
     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
@@ -37,8 +37,9 @@
 </form>
 
 <script type="text/javascript">
-$(function(){
+/*$(function(){
   $('#submit_search').click(function(){
+	 //alert('ggggggg');
     var _process_code = $('#process_code').val();
     //var _batch = $('#batch').val();
     if(_process_code == ""){
@@ -53,17 +54,17 @@ $(function(){
       dataType:'json',
       data:'process_code='+_process_code,
       success: function(json){
-        /*if(json.status=='1'){
+         if(json.status=='1'){
             $('.form-view').attr('action','/Process/order');
             $('.form-view').submit();
         }
         if(json.status=='0'){
-          alert_error(json.msg);
+          //alert_error(json.msg);
           return false;
-        }*/
+        }
       }
     });
     return false;
   })
-})
+})*/
 </script>

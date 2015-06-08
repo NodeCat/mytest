@@ -90,7 +90,7 @@ class ProcessRatioController extends CommonController {
 	}
 	
 	/**
-	 * 批量添加比例关系（重写父类add方法）
+	 * 添加比例关系（重写父类add方法）
 	 */
 	public function add() {
 	    if (IS_POST) {
@@ -117,7 +117,7 @@ class ProcessRatioController extends CommonController {
         	        }
         	    }
         	    $post['pros'] = $new_pros;
-        	    
+        	    $M = D('ProcessRatio');
         	    //创建物料清单
         	    $info = array();
         	    foreach ($post['pros'] as $key => $value) {
@@ -129,9 +129,19 @@ class ProcessRatioController extends CommonController {
         	            $this->msgReturn(0, '数量不可小于1');
         	            return;
         	        }
+        	        
         	        //子SKU父SKU不可相同
         	        if ($value['pro_code'] == $post['p_pro_code_hidden']) {
         	            $this->msgReturn(0, '创建规则错误');
+        	        }
+        	        $map['p_pro_code'] = $post['p_pro_code_hidden'];
+        	        $map['c_pro_code'] = $value['pro_code'];
+        	        $map['ratio'] = $value['pro_qty'];
+        	        $map['company_id'] = $post['company_id'];
+        	        $affected = $M->where($map)->find();
+        	        if (!empty($affected)) {
+        	            //此比例关系已存在
+        	            continue;
         	        }
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
@@ -143,7 +153,7 @@ class ProcessRatioController extends CommonController {
         	        $info[$key]['updated_time'] = get_time();
         	    }
         	    //批量写入
-        	    $M = D('ProcessRatio');
+        	    
         	    foreach ($info as $val) {
         	        if ($M->create($val)) {
         	            $M->add();
@@ -182,5 +192,55 @@ class ProcessRatioController extends CommonController {
 	            }
 	        }
 	    }
+	}
+	
+	/**
+	 * 编辑处理 （非数据处理 比例关系是否符合编辑条件处理）
+	 */
+	public function before_save($data) {
+	    if (empty($data)) {
+	        return;
+	    }
+	    foreach ($data as $value) {
+	        if (empty($value)) {
+	            //不可为空
+	            $this->msgReturn(false, '请输入正确数据');
+	        }
+	    }
+	    $process_ratio = M('erp_process_ratio');
+        $sql = "select id from erp_process where status in ('pass', 'make')
+                and real_qty < plane_qty
+                and p_pro_code = " . $data['p_pro_code'] . " limit 1";
+        $affected = $process_ratio->query($sql);
+        if (!empty($affected)) {
+            //比例关系正在使用
+            $this->msgReturn(false, '比例关系正在使用中请勿编辑');
+        }
+        return;
+	} 
+	
+	/**
+	 * 删除处理(非数据处理 比例关系是否符合删除条件处理)
+	 */
+	public function before_delete($data) {
+	    if (empty($data)) {
+	        return;
+	    }
+	    $process = M('erp_process');
+	    $process_ratio = M('erp_process_ratio');
+	    foreach ($data as $value) {
+	        $map['id'] = $value;
+	        $p_code = $process_ratio->where($map)->find();
+	        unset($map);
+	        $sql = "select id from erp_process where status in ('pass', 'make') 
+	                and real_qty < plane_qty 
+	                and p_pro_code = " . $p_code['p_pro_code'] . " limit 1";
+	        $affected = $process_ratio->query($sql);
+	        if (!empty($affected)) {
+	            //比例关系正在使用
+	            $this->msgReturn(false, '比例关系正在使用中请勿删除');
+	        }
+	    }
+	    return;
 	}
 }
