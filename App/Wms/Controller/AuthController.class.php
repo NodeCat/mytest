@@ -26,6 +26,7 @@ class AuthController extends Controller {
         $this->auth=$this->getAuth();
 
         if(session('user.uid') == 1){
+            C('SHOW_PAGE_TRACE',TRUE);
             return true;
         }
         /*

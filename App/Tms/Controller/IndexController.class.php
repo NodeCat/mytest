@@ -34,7 +34,6 @@ class IndexController extends Controller {
                 session('user',$user);
                 $this->redirect('delivery');    
             }
-            
         }
     }
     public function logout() {
@@ -46,6 +45,22 @@ class IndexController extends Controller {
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
+            $M = M('tms_delivery');
+            $res = $M->find($id);
+            /*
+            if(empty($res)) {
+                $this->error = '未找到该提货纪录。';
+            }
+            elseif($res['mobile'] != session('user.mobile')) {
+                $this->error ='不能查看该配送单，您的手机号码与提货人不符合。';
+            }
+            if(!empty($this->error)) {
+                $this->title = "客户签收";
+                $this->display('tms:orders');
+                exit();
+            }
+            */
+            //$map['dist_id'] = $res['id'];
             $map['dist_id'] = $id;
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Tms/Order','Logic');
@@ -67,6 +82,7 @@ class IndexController extends Controller {
                         break;
                 };
                 $val['pay_status'] = $s;
+                $val['geo'] = json_decode($val['geo'],TRUE);
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         $val['quantity'] +=$v['actual_quantity'];   
@@ -85,6 +101,8 @@ class IndexController extends Controller {
         $this->title = "客户签收";
         $this->display('tms:orders');
     }
+
+    //司机签收
     public function sign() {
         $map['order_id'] = I('post.id/d',0);
         $map['status'] = '6';
@@ -104,9 +122,11 @@ class IndexController extends Controller {
         }
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
-        $res = $A->sign($map);
+        $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
+
+    //客户退货
     public function reject() {
         $map['order_id'] = I('post.id/d',0);
         $map['status'] = '7';
@@ -114,57 +134,87 @@ class IndexController extends Controller {
 
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
         $A = A('Tms/Order','Logic');
-        $res = $A->sign($map);
+        $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
     public function delivery() {
         $id = I('post.code');
         if(IS_POST && !empty($id)) {
             $map['dist_code'] = $id;
-            $map['mobile'] = session('user.mobile');
+            //$map['mobile'] = session('user.mobile');
+            $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
-            $dist = M('tms_delivery')->field('id')->where($map)->select();
+            //$map['created_time'] = array('between',$start_date.','.$end_date);
+            $M = M('tms_delivery');
+            $dist = $M->field('id,mobile')->where($map)->find();
             unset($map);
-            if(!empty($dist)) {
-                $this->error = '该单据您已提货';
+            if(!empty($dist)) {//若该配送单已被认领
+                if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
+                    $this->error = '该单据您已提货';
+                }
+                else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
+                    $map['id'] = $dist['id'];
+                    $data['status'] = '0';
+                    $M->where($map)->save($data);
+                }
+                unset($map);
             }
-            else {
-                $map['dist_number'] = substr($id, 2);
-                $A = A('Tms/Order','Logic');
-                $dist = $A->distInfo($map);
-                if($id != $dist['dist_number']) {
-                    $this->error = '未找到该单据';
+
+            //查询该配送单的信息
+            $map['dist_number'] = substr($id, 2);
+            $A = A('Tms/Order','Logic');
+            $dist = $A->distInfo($map);
+            if($id != $dist['dist_number']) {
+                $this->error = '未找到该单据';
+            }
+
+            if($dist['status'] == '2') {//已发运的单据不能被认领
+                $this->error = '该单据已发运';
+            }
+            if(empty($this->error)){
+                
+                $data['dist_id'] = $dist['id'];
+                $data['mobile'] = session('user.mobile');
+                $data['order_count'] = $dist['order_count'];
+                $data['sku_count'] = $dist['sku_count'];
+                $data['line_count'] = $dist['line_count'];
+                $data['total_price'] = $dist['total_price'];
+                $data['site_src'] = $dist['site_src'];
+                $data['dist_code'] = $dist['dist_number'];
+                $data['created_time'] = get_time();
+                $data['updated_time'] = get_time();
+                $data['status'] = '1';
+                $lines = $A->line(array('line_ids'=>array($dist['line_id'])));
+                $data['line_name'] = $lines[0]['name'];//dump($lines);dump($dist);exit();
+                $citys = $A->city();
+                $data['city_id'] = $citys[$dist['city_id']];
+                
+                $res = $M->add($data);
+                unset($map);
+                $map['dist_id'] = $dist['id'];
+                $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                $orders = $A->order($map);
+                unset($map);
+                $map['status']  = '8';//已装车
+                $map['driver'] = '司机'.session('user.username').session('user.mobile');
+                foreach ($orders as $val) {
+                    $order_ids[] = $val['id'];
+                    $map['order_id'] = $val['id'];dump($map);
+                    $res = $A->set_status($map);
+                }
+                dump($res);exit();
+                unset($map);
+                if($res) {
+                    $this->msg = "提货成功。";
                 }
                 else {
-                    $data['dist_id'] = $dist['id'];
-                    $data['mobile'] = session('user.mobile');
-                    $data['order_count'] = $dist['order_count'];
-                    $data['sku_count'] = $dist['sku_count'];
-                    $data['line_count'] = $dist['line_count'];
-                    $data['total_price'] = $dist['total_price'];
-                    $data['site_src'] = $dist['site_src'];
-                    $data['created_time'] = get_time();
-                    $data['dist_code'] = $dist['dist_number'];
-
-                    $lines = $A->line(array('line_ids'=>array($dist['line_id'])));
-                    $data['line_name'] = $lines[0]['name'];//dump($lines);dump($dist);exit();
-                    $citys = $A->city();
-                    $data['city_id'] = $citys[$dist['city_id']];
-                    
-                    $M = M('tms_delivery');
-                    $res = $M->add($data);
-                    unset($map);
-                    if($res) {
-                        $this->msg = "提货成功。";
-                    }
-                    else {
-                        $this->error = "提货失败";
-                    }
+                    $this->error = "提货失败";
                 }
             }
-        } 
+        }
+
+        //只显示当天的记录
         $map['mobile'] = session('user.mobile');
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));

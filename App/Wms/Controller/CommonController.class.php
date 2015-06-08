@@ -206,19 +206,22 @@ class CommonController extends AuthController {
             'Stock',
             'StockMoveDetail',
             'Adjustment',
-            'Purchase',
+            //'Purchase',
             'LocationArea',
             'Location'
         );
-        
+
+        $controllers_muilt = array(
+            'Purchase'
+        );
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('eq',session('user.wh_id'));
         }
-        /*
-        if(in_array(CONTROLLER_NAME, $controllers) && empty($map[$table.'.wh_id'])) {
-            $map[$table.'.wh_id'] = array('in',WHID);
+        
+        if(in_array(CONTROLLER_NAME, $controllers_muilt) && empty($map['warehouse.id'])) {
+            $map['warehouse.id'] = array('in',session('user.rule'));
         }
-        */
+        
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }
@@ -526,6 +529,7 @@ class CommonController extends AuthController {
         }
         $M  =  D(CONTROLLER_NAME);
         $result = $M->scope('default')->select();
+        $this->filter_list($result);
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;
             foreach ($columns as $key  => $value){

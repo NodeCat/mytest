@@ -35,13 +35,13 @@
 <div class="panel panel-default">
   <div class="list-group-item list-group-item-inf">
     <h4 class="list-group-item-heading">
-      {$vo.deliver_addr} {$vo.shop_name}
-      <i class="  glyphicon glyphicon-sen"></i>
+      <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">{$vo.deliver_addr} {$vo.shop_name} 
+      <i class="glyphicon glyphicon-map-marker"></i><small>定位</small></a>
     </h4>
     <hr/>
-    <i class="glyphicon glyphicon-user"></i> {$vo.realname}  &nbsp;&nbsp;
-    <i class="glyphicon glyphicon-phone"></i> <a href="tel:{$vo.mobile}">{$vo.mobile} <i class="glyphicon glyphicon-earphone"></i></a> 
-    {$vo.pay_status} 
+    <i class="glyphicon glyphicon-user"></i>{$vo.realname}  &nbsp;&nbsp;
+    <i class="glyphicon glyphicon-phone"></i><a href="tel:{$vo.mobile}" class="user-mobile">{$vo.mobile} &nbsp; 
+    <i class="glyphicon glyphicon-earphone"></i><small>拨号</small></a> 
   </div>
   <notempty name="vo['remarks']">
   <div class="panel-footer"><i class="glyphicon glyphicon-comment"></i> {$vo.remarks}</div>
@@ -60,12 +60,11 @@
 <default />
 <a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
 </switch>
-订单 {$vo.id} &nbsp;
+ {$vo.order_type_cn} <i class="order-id">{$vo.id}</i>&nbsp;
   <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
     <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
-    <i class="glyphicon glyphicon-yen"></i> {$vo.final_price} 元 
-
-点击展开
+  <br/>
+    <i class="glyphicon glyphicon-yen"></i>{$vo.final_price} 元  &nbsp;&nbsp;{$vo.pay_status} &nbsp;&nbsp;
 <switch name="vo['status_cn']" >
 <case value="已签收" break="0"></case>
 <case value="已完成" break="0"></case>
@@ -77,18 +76,19 @@
 </case>
 <default />
 </switch>
+ &nbsp;&nbsp;<small>查看详情</small>
 </a>
   <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
   <form class="order">
     <input type="hidden" name="id" value="{$vo.id}" />
     <ul class="list-group" >
     <li class="list-group-item">状态：{$vo.status_cn}</li>
-
-    <!--
-      <li class="list-group-item">线路：{$vo.city_name}{$vo.site_name} {$vo.line}</li>
+<li class="list-group-item">线路：{$vo.city_name}{$vo.site_name} {$vo.line}</li>
       <li class="list-group-item">配送：{$vo.deliver_date} {$vo.deliver_time}</li>
       <li class="list-group-item">销售：AM：{$vo.am.name} {$vo.am.mobile}</li>
 
+    <!--
+      
       <li class="list-group-item">销售：BD：{$vo.bd.name} {$vo.bd.mobile}</li>
           
     
@@ -200,10 +200,36 @@ form.order ul.list-group{
 </style>
 
 <script type="text/javascript">
-  $(function(){
 
+  function goToGaodeMap(lat,lng){
+    if(typeof HostApp == "undefined") {
+      alert('浏览器中暂不支持地图导航.');
+    }
+    else {
+      HostApp.navigationToMap(lat,lng);
+    }
+  }
+  $(function(){
+    $('.navigation-map').on('click',function(){
+        var lat = $(this).data('lat');
+        var lng = $(this).data('lng');
+        if(lat == null || lat == '' || lng == null || lng == ''){
+          return;
+        }
+        else {
+          goToGaodeMap(lat,lng);
+        }
+    });
     $('#code').on('input', function(){
-      //待完成，全局搜索;
+      var search = $(this).val();
+      $('.order-id').each(function(){
+        if($(this).text().indexOf(search) == -1) {
+          $(this).parents('.panel').hide();
+        }
+        else {
+          $(this).parents('.panel').show();
+        }
+      })
     });
 
     $('.btn-sign').on('click',function(){

@@ -4,8 +4,8 @@ use Think\Controller;
 class PurchaseController extends CommonController {
 	protected $filter = array(
 		'invoice_method' =>  array(
-			'0' => '先款后货',
-			'1' => '先货后款',
+			'0' => '预付款',
+			'1' => '货到付款',
 		),
 		'invoice_status' => array(
 			'0' => '未付款', 
@@ -27,8 +27,9 @@ class PurchaseController extends CommonController {
 		'id' => '',   
 		'code' => '采购单号',   
 		'in_code' =>'采购到货单号',
-		'warehouse_code' =>'仓库',
+		'warehouse_name' =>'仓库',
 		'partner_name' => '供应商',
+		'invoice_method' =>'付款方式',
 		'company_name' => '所属系统',  
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
@@ -62,7 +63,7 @@ class PurchaseController extends CommonController {
 			 'query_type' => 'eq',     
 			 'control_type' => 'refer',     
 			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
-		),   
+		),
 		'stock_purchase_detail.pro_code' =>    array (     
 			'title' => '货品编号',    
 			 'query_type' => 'eq',     
@@ -81,6 +82,16 @@ class PurchaseController extends CommonController {
 			'control_type' => 'datetime',     
 			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
 		),
+		'stock_purchase.invoice_method' => array(
+			'title'=> '付款方式',
+			'query_type'=>'eq',
+			'control_type' => 'select',     
+			 'value' => array(
+			 	'0' => '预付款',
+				'1' => '货到付款',
+			 ), 
+		),   
+
 	);
 	public function match_code() {
         $code=I('q');
@@ -106,9 +117,10 @@ class PurchaseController extends CommonController {
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
             'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['audit']),'new'=>'true','domain'=>"0,11"),
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
+            'refund'=>array('name'=>'refund' ,'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
         );
         
         $this->toolbar =array(
@@ -221,8 +233,6 @@ class PurchaseController extends CommonController {
 			$data['paid_amount'] = $purchase_info['price_total'];
 			M('stock_purchase')->where($map)->save($data);
 		}
-
-
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
 	protected function before_edit() {
@@ -264,7 +274,7 @@ class PurchaseController extends CommonController {
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
-				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning'),
+				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning')
 			)
 		);
 		$M = M('stock_purchase');
@@ -284,7 +294,6 @@ class PurchaseController extends CommonController {
 				$pill['status'][$k]['count'] = 0;
 			}
 		}
-		
 		$this->pill = $pill;
 		
 	}
@@ -359,17 +368,55 @@ class PurchaseController extends CommonController {
 
 	public function refund() {
 		//通过采购id获取采购单，复制一份改变编号后存到红冲单
-		//通过
-		$M = D(CONTROLLER_NAME);
-		$pk = $M->getPk();
 		$id = I($pk);
-		$map[$M->tableName.'.'.$pk] = $id;
-		$res = $M->where($map)->find();
-		unset($res[$pk]);
-		$res['refer_code'] = $res['code'];
-		$res['code'] = get_sn('out');
+		$map['id'] = $id['id'];
+		$purchase_info = M('stock_purchase')->where($map)->find();
+		unset($map);
+
+		//根据采购单号查询是否已经建立了冲红采购单
+		$map['refer_code'] = $purchase_info['code'];
+		$purchase_refund_info = M('erp_purchase_refund')->where($map)->find();
+		unset($map);
+		if(!empty($purchase_refund_info)){
+			$this->msgReturn(0,'已经建立了冲红单，不能重复建立，请到冲红单列表查看','',U('view','id='.$id['id']));
+		}
+
+		//通过采购单号获取到货单id 生成红冲采购单
+		$refund_purchase_data = $purchase_info;
+		$refund_purchase_data['refer_code'] = $purchase_info['code'];
+		$refund_purchase_data['code'] = get_sn('rpo');
+		$refund_purchase_data['status'] = 'norefund';
+		unset($refund_purchase_data['id']);
+
+		$M_rep_purchase_refund = D('PurchaseRefund');
+		$refund_purchase_data = $M_rep_purchase_refund->create($refund_purchase_data);
+
+		//根据到货单id获取到货详情
+		$map['refer_code'] = $refund_purchase_data['refer_code'];
+		$map['type'] = 1;//采购入库单类型id
+		$map['is_deleted'] = 0;
+		$stock_bill_in = M('stock_bill_in')->field('id')->where($map)->select();
+		$pid = $stock_bill_in[0]['id'];
+		unset($map);
+
+		//把到货详情拷贝到红冲单详情
+		$map['pid'] = $pid;
+		$stock_bill_in_detail = M('stock_bill_in_detail')->where($map)->select();
+		unset($map);
+		$sum = 0;
+		foreach ($stock_bill_in_detail as $key => $val) {
+			$v = $val;
+			unset($v['id']);
+			unset($v['pid']);
+			$v = D('PurchaseRefundDetail')->create($v);
+			$refund_purchase_data['detail'][] = $v;
+			$sum +=  $val['price_unit'] * $val['qualified_qty'];
+		}
+		$refund_purchase_data['for_paid_amount'] = $refund_purchase_data['price_total'] - $sum;
+
+		$res = $M_rep_purchase_refund->relation(true)->add($refund_purchase_data);
 		
-		
+		$this->msgReturn(1,'','',U('view','id='.$id['id']));
 	}
 
 	public function pass(){

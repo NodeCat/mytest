@@ -2,53 +2,16 @@
 <div class="panel panel-default">
   <div class="panel-heading" style="padding:0px 15px;">
     <h3 class="panel-title">
-    <div class="col-lg-6 col-sm-6 col-md-6 col-xs-12">
-   <a href="{:U('add')}" data-title="添加" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-plus"></i> 添加</a>
-  <in name="data['state']" value="$toolbar_tr['edit']['domain']">
-  <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="修改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-edit"></i> 修改</a>
-  </in>
-
-  <in name="data['state']" value="$toolbar_tr['pass']['domain']">
-  <a href="{:U('pass',array($pk => $data[$pk]))}" data-title="审核通过" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-ok"></i> 批准</a>
-  </in>
-
-  <in name="data['state']" value="$toolbar_tr['reject']['domain']">
-  <a href="{:U('reject',array($pk => $data[$pk]))}" data-title="审核不通过" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-remove"></i> 驳回</a>
-  </in>
-
-  <in name="data['state']" value="$toolbar_tr['close']['domain']">
-  <a href="{:U('close',array($pk => $data[$pk]))}" data-title="作废单据" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-ban-circle"></i> 作废</a>
-  </in>
-
-  <in name="data['state']" value="$toolbar_tr['refund']['domain']">
-    <eq name='data.invoice_method_code' value='0'>
-  <a href="{:U('refund',array($pk => $data[$pk]))}" data-title="生成冲红单" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-repeat"></i> 生成冲红单</a>
-    </eq>
-  </in>
-
-
-  </div>
+    
       <include file="status-bar" />
       <div class="clearfix"></div>
     </h3>
   </div>
   <div class="panel-body">
   	<div class="row">
-		<div class="col-lg-6"><h3>采购单 {$data.code}</h3></div>
+		<div class="col-lg-6"><h3>采购冲红单 {$data.code} </h3></div>
 		<div class="col-lg-6">
 <div class="btn-group pull-right" role="group" aria-label="...">
-		  <a href="#" class="list-group-item">
-		  	<div class="media-left">
-		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
-		        	<span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
-		        </div>
-		    </div>
-		    <div class="media-body">
-			  	<h4 class="list-group-item-heading">{$data.qty_total}</h4>
-			    <p class="list-group-item-text">总数量</p>
-			</div>
-		  </a>
-
 		  <a href="#" class="list-group-item">
 		  	<div class="media-left">
 		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
@@ -56,7 +19,7 @@
 		        </div>
 		    </div>
 		    <div class="media-body">
-			  	<h4 class="list-group-item-heading">{$data.price_total}</h4>
+			  	<h4 class="list-group-item-heading">{$refund_total}</h4>
 			    <p class="list-group-item-text">总金额</p>
 			</div>
 		  </a>

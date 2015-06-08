@@ -13,7 +13,7 @@ class StockInController extends CommonController {
 		'type' => array(
 			'purchase' => '采购入库'
 		),
-		'state' => array(
+		'status' => array(
 			'0'	=> '草稿',
 			'21'=>'待收货',
 			'31'=>'待上架',
@@ -32,7 +32,7 @@ class StockInController extends CommonController {
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '创建人',
   		'sp_created_time' => '创建时间',
-		'state' => '状态', 
+		'status' => '状态', 
 	);
 	protected $query = array (   
 		 'stock_bill_in.code' =>    array (     
@@ -152,7 +152,7 @@ class StockInController extends CommonController {
 					$data['stock_in_code'] = $bill_in_detail_info['code'];
 					$data['purchase_code'] = $bill_in_detail_info['refer_code'];
 					$data['pro_status'] = $status;
-					$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * intval($qty);
+					$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * $qty;
 
 					if($bill_in_detail_info['invoice_method'] == 0){
 						$data['status'] = 'paid';
@@ -513,7 +513,7 @@ class StockInController extends CommonController {
     	$data['session_user_name'] = session('user.username');
     	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
 
-    	//$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
     	$data['bill_in_detail_list'] = $bill_in_detail_list;
 
     	layout(false);
