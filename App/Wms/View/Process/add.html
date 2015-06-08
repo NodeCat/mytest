@@ -54,7 +54,7 @@
 <div class="form-group  col-lg-4">
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="process_pro_code">加工SKU</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-    <input  autocomplete="off" type="text" class="form-control input-sm " name="process_pro_code" id="process_pro_code"  placeholder="0" value="{$process_pro_code}">
+    <input  autocomplete="off" type="text" class="form-control typeahead input-sm " name="process_pro_code" id="process_pro_code"  placeholder="0" value="{$process_pro_code}">
     </div>
 </div>
 
@@ -73,16 +73,41 @@
 
 <script type="text/javascript">
 $(function(){
-  $("#search_process_sku").on("click",function(){
-    var _process_pro_code = $('#process_pro_code').val();
-    $.ajax({
-    		type: "GET",
-    		url: "/Process/add",
-    		data: "process_pro_code="+_process_pro_code,
-    		success: function(data) {
-    			$('#c_sku_info').html(data);
-    		}
+    $("#search_process_sku").on("click",function(){
+    		var _process_pro_code = $('#process_pro_code').val();
+    		$.ajax({
+	    		type: "GET",
+	    		url: "/Process/add",
+	    		data: "process_pro_code="+_process_pro_code,
+	    		success: function(data) {
+	    			$('#c_sku_info').html(data);
+	    		}
+    		});
     });
-  });
+	$('#process_pro_code').typeahead({
+	    display: 'name',
+	    val: 'val',
+	    items:10,
+	    ajax: {
+	      url:"{:U('Purchase/match_code')}",
+	      triggerLength: 1,
+	      method: 'post',
+	      preDispatch: function(data) {
+	          return { 'q': data };
+	      },
+	      preProcess: function(data) {
+	        var n =$.parseJSON(data);
+	        $.each(n,function(a,b){
+	          n[a]['val'] = JSON.stringify(b['val']);
+	        }); 
+	        return n;
+	      }
+	    },
+	    itemSelected:function(item,val,text) {
+	        val = $.parseJSON(val);
+	        $('#process_pro_code').val(val['code']);
+	    }
+	});
+
 })
 </script>

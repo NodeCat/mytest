@@ -172,6 +172,8 @@ class ProcessRatioController extends CommonController {
 	        return;
 	    }
 	    
+	    $company = M('company');
+	    $company_info = $company->select();
 	    $pms = D('Pms', 'Logic');
 	    $code = array();
 	    //获取所有sku编号
@@ -191,26 +193,34 @@ class ProcessRatioController extends CommonController {
 	                $val['c_pro_norms'] = $v['pro_attrs_str'];
 	            }
 	        }
+	        foreach ($company_info as $v) {
+	            if ($val['company_id'] == $v['id']) {
+	                $val['company_id'] = $v['name'];
+	            }
+	        }
 	    }
 	}
 	
 	/**
 	 * 编辑处理 （非数据处理 比例关系是否符合编辑条件处理）
 	 */
-	public function before_save($data) {
-	    if (empty($data)) {
-	        return;
+	public function before_save($M) {
+	    if (empty($M->p_pro_code)) {
+	        $this->msgReturn(false, '请输入父SKU编号');
 	    }
-	    foreach ($data as $value) {
-	        if (empty($value)) {
-	            //不可为空
-	            $this->msgReturn(false, '请输入正确数据');
-	        }
+	    if (empty($M->c_pro_code)) {
+	        $this->msgReturn(false, '请输入子SKU编号');
 	    }
-	    $process_ratio = M('erp_process_ratio');
+	    if (empty($M->company_id)) {
+	        $this->msgReturn(false, '请选择所属系统');
+	    }
+	    if (empty($M->ratio)) {
+	        $this->msgReturn(false, '请输入比例关系');
+	    }
+	    $process_ratio = M('erp_process');
         $sql = "select id from erp_process where status in ('pass', 'make')
-                and real_qty < plane_qty
-                and p_pro_code = " . $data['p_pro_code'] . " limit 1";
+                and real_qty < plan_qty
+                and p_pro_code = " . $M->p_pro_code . " limit 1";
         $affected = $process_ratio->query($sql);
         if (!empty($affected)) {
             //比例关系正在使用
@@ -227,15 +237,15 @@ class ProcessRatioController extends CommonController {
 	        return;
 	    }
 	    $process = M('erp_process');
-	    $process_ratio = M('erp_process_ratio');
+	    $process_ratio = M('erp_process_sku_relation');
 	    foreach ($data as $value) {
 	        $map['id'] = $value;
 	        $p_code = $process_ratio->where($map)->find();
 	        unset($map);
 	        $sql = "select id from erp_process where status in ('pass', 'make') 
-	                and real_qty < plane_qty 
+	                and real_qty < plan_qty 
 	                and p_pro_code = " . $p_code['p_pro_code'] . " limit 1";
-	        $affected = $process_ratio->query($sql);
+	        $affected = $process->query($sql);
 	        if (!empty($affected)) {
 	            //比例关系正在使用
 	            $this->msgReturn(false, '比例关系正在使用中请勿删除');

@@ -6,9 +6,9 @@ namespace Wms\Logic;
 
 class ProcessLogic {
     
-    private $mark = 'MN'; //加工区标示
-    private $in_mark = 'MN1002'; //入库库位标示
-    private $out_mark = 'MN1001'; //出库库位标示
+    private $mark = 'WORK'; //加工区标示
+    private $in_mark = 'WORK-02'; //入库库位标示
+    private $out_mark = 'WORK-01'; //出库库位标示
     /**
      * 根据标示获取加工区库位ID
      * @param $wh_id int 所属仓库
@@ -22,7 +22,6 @@ class ProcessLogic {
         $map['code'] = $mark;
         $map['wh_id'] = $wh_id;
         $location = $M->field('id')->where($map)->find();
-         
         unset($map);
         $map['pid'] = $location['id'];
         $map['code'] = $type;
@@ -98,7 +97,7 @@ class ProcessLogic {
         //获取库位id
         $out_id = $this->get_process_stock_id($this->mark, $this->out_mark, $data['wh_id']);
         if ($out_id <= 0) {
-            $return['msg'] = '不存在的库位';
+            $return['msg'] = '还未创建加工区库位';
             return $return;
         }
         //库存是否充足
@@ -223,7 +222,7 @@ class ProcessLogic {
         //获取入库库位
         $id = $this->get_process_stock_id($this->mark, $this->in_mark, $wh_id);
         if ($id <= 0) {
-            $return['msg'] = '不存在的仓库';
+            $return['msg'] = '还未创建加工区库位';
             return $return;
         }
         

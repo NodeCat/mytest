@@ -18,6 +18,7 @@ class ProcessController extends CommonController {
 	);
 	protected $columns = array (
 		'id' => '',
+	    'code' => '加工单号',
 		'type' => '加工类型',
 		'wh_id' => '仓库',
 		'plan_qty' => '计划加工数量',
@@ -81,10 +82,17 @@ class ProcessController extends CommonController {
      * @param unknown $data
      */
     public function after_lists(&$data) {
+        $warehouse = M('warehouse');
+        $warehouse_info = $warehouse->select();
         //格式化状态
         foreach ($data as &$value) {
             $value['status'] = en_to_cn($value['status']);
             $value['type'] = en_to_cn($value['type']);
+            foreach ($warehouse_info as $val) {
+                if ($value['wh_id'] == $val['id']) {
+                    $value['wh_id'] = $val['name'];
+                }
+            }
         }
     }
 
@@ -158,7 +166,6 @@ class ProcessController extends CommonController {
         		$this->c_sku_info = $c_sku_info;
         		$this->ratio = $ratio;
         		$this->process_pro_code = $process_pro_code;
-        		//dump($this->c_sku_info);exit;
         		$this->display('prolist-add');
         		return;
         	}
