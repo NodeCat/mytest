@@ -97,7 +97,13 @@ class ProcessLogic {
         //获取库位id
         $out_id = $this->get_process_stock_id($this->mark, $this->out_mark, $data['wh_id']);
         if ($out_id <= 0) {
-            $return['msg'] = '还未创建加工区库位';
+            $return['msg'] = '还未创建加工区出库库位';
+            return $return;
+        }
+        //获取入库库位
+        $id = $this->get_process_stock_id($this->mark, $this->in_mark, $data['wh_id']);
+        if ($id <= 0) {
+            $return['msg'] = '还未创建加工区入库库位';
             return $return;
         }
         //库存是否充足
@@ -503,6 +509,7 @@ class ProcessLogic {
     
          //创建wms入库详情单数据
         $detail_data['wh_id'] = $data['wh_id']; //所属仓库
+        $detail_data['pid'] = $data['pid']; //父id 
         $detail_data['refer_code'] = $data['code']; //关联入库单号
         $detail_data['pro_code'] = $data['p_pro_code']; //SKU编号
         $detail_data['expected_qty'] = $data['expected_qty']; //预计数量

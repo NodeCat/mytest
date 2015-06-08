@@ -384,7 +384,7 @@ class ProcessController extends CommonController {
             $param['pro_code'] = $process['p_pro_code'];
             $param['code'] = $refer_code;
             $param['expected_qty'] = $process['plan_qty'];
-            $data = $Logic->make_process_in_stock_detail('parpare', $param);
+            $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
             if ($data['status'] == true) {
                 $data = $data['data'];
             }
@@ -403,7 +403,7 @@ class ProcessController extends CommonController {
             $data['biz_type'] = $company_id;//所属系统
             //查询仓库code
             $wh = M('warehouse');
-            $code_arr = $wh->field('code')->where(array('id', $process['wh_id']))->find();
+            $code_arr = $wh->field('code')->where(array('id' => $process['wh_id']))->find();
             $data['picking_type_id'] = $code_arr['code']; //所属仓库
             $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
             $data['return_type'] = true; //定义接口不输出数据
@@ -555,7 +555,7 @@ class ProcessController extends CommonController {
             foreach ($process_relation as $value) {
                 $param['pro_code'] = $value['c_pro_code'];
                 $param['expected_qty'] = $process['plan_qty'] * $value['ratio'];
-                $data = $Logic->make_process_in_stock_detail('parpare', $param);
+                $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
                 if ($data['status'] == true) {
                     $data = $data['data'];
                 }
@@ -575,7 +575,7 @@ class ProcessController extends CommonController {
             $data['biz_type'] = $company_id;//所属系统
             //查询仓库code
             $wh = M('warehouse');
-            $code_arr = $wh->field('code')->where(array('id', $process['wh_id']))->find();
+            $code_arr = $wh->field('code')->where(array('id' => $process['wh_id']))->find();
             $data['picking_type_id'] = $code_arr['code']; //所属仓库
             $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
             $data['return_type'] = true; //定义此接口不输出数据
