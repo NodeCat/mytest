@@ -30,8 +30,8 @@ function set_session($uid){
         $rules = implode($rules, ',');
     }
     if(empty($wh)) {
-        $rules = 0;
-        $wh = 0;
+        $rules = '-1,0';
+        $wh = '0';
     }
     
     /* 记录登录SESSION和COOKIES */
