@@ -1,7 +1,6 @@
 <?php
 namespace Wms\Api;
 class WeightApi extends CommApi{
-    
     public function weight() {
         $A = A('Wms/Order','Logic');
         $res = $A->weight_sku($map);
