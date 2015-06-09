@@ -202,7 +202,7 @@ class ProcessLogic {
         foreach ($data as $value) {
             $map = array();
             $map['pid'] = $pid;
-            $map['wh_id'] = $value['wh_id'];
+            //$map['wh_id'] = $value['wh_id'];
             $map['pro_code'] = $value['pro_code'];
             $data['status'] = 33;
             $M->where($map)->setInc('delivery_qty', $value['qty']);
