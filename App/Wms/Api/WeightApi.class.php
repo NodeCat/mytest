@@ -1,7 +1,6 @@
 <?php
 namespace Wms\Api;
-use Think\Controller;
-class WeightApi extends Controller{
+class WeightApi extends CommApi{
     
     public function weight() {
         $A = A('Wms/Order','Logic');

@@ -1,8 +1,7 @@
 <?php
 namespace Wms\Api;
-use Think\Controller;
 //API接口不涉及模版输出，仅返回JSON或XML格式数据，因此不一定得继承Controller
-class CommApi extends Controller{
+class CommApi{
 	protected function _initialize(){
         //API返回JSON格式数据，因此关闭模版布局
         layout(FALSE);
