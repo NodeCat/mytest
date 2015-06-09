@@ -32,12 +32,12 @@ class OrderLogic{
 	}
 	public function weight_sku($map='') {
 		$url = '/order/weight_sku';
-		$res = $this->get_delegate($url,$map);
+		$res = $this->get($url,$map);
 		return $res;
 	}
 	public function get_details_by_wave_and_sku($map='') {
 		$url = '/order/get_details_by_wave_and_sku';
-		$res = $this->get_delegate($url,$map);
+		$res = $this->get($url,$map);
 		return $res;
 	}
 
