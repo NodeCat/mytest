@@ -39,6 +39,10 @@
     <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品名称</label>
       <label for="pro_qty" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$data.pro_name}</label>
   </div>
+   <div class="form-group">
+    <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">计划数量</label>
+      <label for="pro_qty" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">{$data.plan_qty}</label>
+  </div>
   <div class="form-group">
     <label for="code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">数&nbsp;&nbsp;&nbsp;量</label>
     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
@@ -59,41 +63,3 @@
 
 </form> 
 
-<script type="text/javascript">
-/*$(function(){
-  $('.input-pda').on('focus',function(){
-    $(this).select();
-  });
-  $('.input-pda').focus();
-  $('.form-pda button[type=submit]').on('click',function(event){
-	event.preventDefault();
-    $(this).prop('disabled', true);
-    var addr,params;
-    params=$(this).parents('form').serialize();
-    addr=$(this).parents('form').attr('action');
-    $.ajax({
-      url:addr,
-      type:'post',
-      cache : false,
-      dataType:'json',
-      data:params,
-      success: function(msg){
-        $('.form-pda button[type=submit]').prop('disabled', false);
-        
-        if(msg.status == 0){
-            alert_error(msg.msg);
-            $('.input-pda').focus();
-        }
-        else {
-          alert_success(msg.msg);
-        }
-        if(msg.data != '' && msg.data != null ){
-            $('.content').html(msg.data);
-        }
-      }
-    }); 
-    return false;
-  });
-  
-});*/
-</script>

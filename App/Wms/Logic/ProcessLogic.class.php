@@ -15,7 +15,7 @@ class ProcessLogic {
      * @param $mark string 加工区标示
      * @param $type string 库位标示
      */
-    public function get_process_stock_id($mark = 'MN', $type = 'MN1001', $wh_id = 1) {
+    public function get_process_stock_id($mark = 'WORK', $type = 'WORK-01', $wh_id = 1) {
         $return = 0;
          
         $M = M('location');
@@ -182,15 +182,15 @@ class ProcessLogic {
     }
     
     /**
-     * 更新出库单
-     * @param $code string 出库单号
+     * 更新出库单(wms)
+     * @param $pid int 出库单ID
      * @param $data array 出库详情
      * array(
      *     array('qty' => 出库数量, 'pro_code' => sku编号, 'wh_id' => 仓库ID) 
      *     ..........
      * )
      */
-    public function update_out_stock_detail($pid = '', $data = array()) {
+    public function update_out_stock_detail($pid = 0, $data = array()) {
         $return = false;
         
         if (empty($pid) || empty($data)) {
@@ -204,12 +204,51 @@ class ProcessLogic {
             $map['pid'] = $pid;
             $map['wh_id'] = $value['wh_id'];
             $map['pro_code'] = $value['pro_code'];
+            $data['status'] = 33;
             $M->where($map)->setInc('delivery_qty', $value['qty']);
+            if ($M->create($data)) {
+                $M->where($map)->save();
+            }
         }
         
         $return = true;
         return $return;
     }
+    
+    /**
+     * 更新出库单(erp)
+     * @param $pid int 出库单id
+     * @param $data array 出库详情
+     * array(
+     *     array('qty' => 出库数量, 'pro_code' => sku编号, 'batch' => 批次)
+     *     ..........
+     * )
+     */
+    public function erp_out_stock_detail($pid = 0, $data = array()) {
+        $return = false;
+    
+        if (empty($pid) || empty($data)) {
+            //参数有误
+            return $return;
+        }
+    
+        $M = M('erp_process_out_detail');
+        foreach ($data as $value) {
+            $map = array();
+            $map['pid'] = $pid;
+            $map['batch'] = $value['batch'];
+            $map['pro_code'] = $value['pro_code'];
+            $data['status'] = 'on';
+            $M->where($map)->setInc('real_qty', $value['qty']);
+            if ($M->create($data)) {
+                $M->where($map)->save();
+            }
+        }
+    
+        $return = true;
+        return $return;
+    }
+    
     
     /**
      * 加工区入库操作
@@ -265,7 +304,7 @@ class ProcessLogic {
     }
     
     /**
-     * 更新入库单
+     * 更新入库单(wms)
      * @param $int string 入库单id
      * @param $data array 入库详情
      * array(
@@ -288,7 +327,46 @@ class ProcessLogic {
             $map['pid'] = $pid;
             $map['wh_id'] = $value['wh_id'];
             $map['pro_code'] = $value['pro_code'];
+            $data['status'] = 33;
             $M->where($map)->setInc('done_qty', $value['qty']);
+            if ($M->create($data)) {
+                $M->where($map)->save();
+            }
+        }
+    
+        $return = true;
+        return $return;
+    }
+    
+    /**
+     * 更新入库单(erp)
+     * @param $pid int 入库单id
+     * @param $data array 入库详情
+     * array(
+     *     array('qty' => 入库数量, 'pro_code' => sku编号, 'batch' => 批次)
+     *     ..........
+     * )
+     */
+    public function erp_in_stock_detail($pid = 0, $data = array()) {
+        $return = false;
+    
+        if (empty($pid) || empty($data)) {
+            //参数有误
+            return $return;
+        }
+    
+        $M = M('erp_process_in_detail');
+    
+        foreach ($data as $value) {
+            $map = array();
+            $map['pid'] = $pid;
+            $map['batch'] = $value['batch'];
+            $map['pro_code'] = $value['pro_code'];
+            $data['status'] = 'on';
+            $M->where($map)->setInc('real_qty', $value['qty']);
+            if ($M->create($data)) {
+                $M->where($map)->save();
+            }
         }
     
         $return = true;
@@ -524,10 +602,9 @@ class ProcessLogic {
         
         //调用PMS接口根据编号查询SKU名称规格
         $pms = D('Pms', 'Logic');
-        $sku_info = $pms->get_SKU_field_by_pro_codes($data['pro_code']);
+        $sku_info = $pms->get_SKU_field_by_pro_codes(array($data['p_pro_code']));
         $detail_data['pro_name'] = $sku_info[$data['p_pro_code']]['name']; //SKU名称
         $detail_data['pro_attrs'] = $sku_info[$data['p_pro_code']]['pro_attrs_str']; //SKU规格
-    
         $return['status'] = true;
         $return['msg'] = '成功';
         $return['data'] = $detail_data;

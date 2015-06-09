@@ -21,12 +21,39 @@ class ProcessController extends CommonController {
 	    'code' => '加工单号',
 		'type' => '加工类型',
 		'wh_id' => '仓库',
+	    'p_pro_code' => '父SKU编号',
+	    'p_name' => '父SKU名称',
+	    'p_attrs' => '父SKU规格',
 		'plan_qty' => '计划加工数量',
 		'real_qty' => '实际加工数量',
 		'status' => '状态',
 		'remark' => '备注',
 	);
 	protected $query   = array (
+        'erp_process.code' => array(
+                'title' => '加工单号',
+                'query_type' => 'eq',
+                'control_type' => 'text',
+                'value' => 'code',
+        ),
+	    'erp_process.p_pro_code' => array(
+		       'title' => '父SKU编号',
+	           'query_type' => 'eq',
+	           'control_type' => 'text',
+	           'value' => 'p_pro_code',
+	    ),
+        'erp_process.status' => array(
+                'title' => '状态',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => array(
+        	            'confirm' => '待审核',
+			        'pass' => '已生效',
+			        'reject' => '已驳回',
+			        'close' => '已作废',
+		            'make' => '已生产',
+                ),
+        ),
 	);
 	//设置列表页选项
 	protected function before_index() {
@@ -84,6 +111,13 @@ class ProcessController extends CommonController {
     public function after_lists(&$data) {
         $warehouse = M('warehouse');
         $warehouse_info = $warehouse->select();
+        $code = array();
+        foreach ($data as $val) {
+            $code[] = $val['p_pro_code'];
+        }
+        //调用pms接口
+        $pms = D('Pms', 'Logic');
+        $code_info = $pms->get_SKU_field_by_pro_codes($code);
         //格式化状态
         foreach ($data as &$value) {
             $value['status'] = en_to_cn($value['status']);
@@ -91,6 +125,12 @@ class ProcessController extends CommonController {
             foreach ($warehouse_info as $val) {
                 if ($value['wh_id'] == $val['id']) {
                     $value['wh_id'] = $val['name'];
+                }
+            }
+            foreach ($code_info as $key => $v) {
+                if ($key == $value['p_pro_code']) {
+                    $value['p_name'] = $v['name'];
+                    $value['p_attrs'] = $v['pro_attrs_str'];
                 }
             }
         }
@@ -546,7 +586,6 @@ class ProcessController extends CommonController {
             $refer_code = $data['refer_code'];
             unset($param);
             unset($data);
-            
             //创建wms入库详情单数据
             $stock_in_detail = M('stock_bill_in_detail');
             $param = $process;
@@ -570,7 +609,6 @@ class ProcessController extends CommonController {
             unset($affect);
             unset($data);
             unset($param);
-            
             //wms出库单
             $data['biz_type'] = $company_id;//所属系统
             //查询仓库code
@@ -658,6 +696,7 @@ class ProcessController extends CommonController {
             $this->msgReturn(true, '', '', U('process', $param));
         } else {
             $this->title = '扫描加工单号';
+            C('LAYOUT_NAME','pda');
             $this->display();
         }
     }
@@ -693,7 +732,7 @@ class ProcessController extends CommonController {
                 return;
             }
             
-            $stock_out = D('Process', 'Logic');
+            $Logic = D('Process', 'Logic');
             $param = array(); //创建出库单更新数据
             if ($process_info['type'] == 'unite') {
                 /**
@@ -704,7 +743,7 @@ class ProcessController extends CommonController {
                     $data['wh_id'] = $process_info['wh_id']; //仓库ID
                     $data['refer_code'] = $post['out_code']; //关联单号＝＝出库单号
                     $data['pro_code'] = $value['c_pro_code']; //出库子sku编号
-                    $suc = $stock_out->process_out_stock($data);
+                    $suc = $Logic->process_out_stock($data);
                     if ($suc['status'] == false) {
                         $this->msgreturn(false, $suc['msg']);
                         return;
@@ -713,39 +752,68 @@ class ProcessController extends CommonController {
                             'qty' => $data['real_qty'], 
                             'pro_code' => $value['c_pro_code'],
                             'wh_id' => $process_info['wh_id'],
+                            'batch' => $process_info['code'],
                     );
                 }
                 unset($data);
                 
                 /**
-                 * 更新出库单 实际出库数量
+                 * 更新出库单 实际出库数量(wms)
                  */
                 $stock_out_code = M('stock_bill_out');
                 $map['code'] = $post['out_code'];
                 $id_out = $stock_out_code->field('id')->where($map)->find();
-                $update_out = $stock_out->update_out_stock_detail($id_out['id'], $param);
+                $update_out = $Logic->update_out_stock_detail($id_out['id'], $param);
                 if (!$update_out) {
                     $this->msgReturn(false, '更新出库单失败');  
+                }
+                unset($map);
+                
+                /**
+                 * 更新出库单(erp)
+                 */
+                $erp_stock_out = M('erp_process_out');
+                $map['refer_code'] = $process_info['code'];
+                $erp_out_id = $erp_stock_out->field('id')->where($map)->find();
+                $erp_out = $Logic->erp_out_stock_detail($erp_out_id['id'], $param);
+                if (!$erp_out) {
+                    $this->msgReturn(false, '更新出库单失败');
                 }
                 unset($map);
                 unset($param);
                 
                 //入库操作
-                $in = $stock_out->process_in_stock($process_info['p_pro_code'], $real_qty, $process_info['wh_id'], $post['in_code']);
+                $in = $Logic->process_in_stock($process_info['p_pro_code'], $real_qty, $process_info['wh_id'], $post['in_code']);
                 if ($in['status'] == false) {
                     $this->msgReturn(false, $in['msg']);
                 }
                 /**
-                * 更新入库单
+                * 更新入库单(wms)
                 */
-                $stock_out_code = M('stock_bill_in');
+                $stock_in_code = M('stock_bill_in');
                 $map['code'] = $post['in_code'];
-                $id_in = $stock_out_code->field('id')->where($map)->find();
-                $param['qty'] = $real_qty;
-                $param['pro_code'] = $process_info['p_pro_code'];
-                $param['wh_id'] = $process_info['wh_id'];
-                $update_in = $stock_out->update_in_stock_detail($id_in['id'], $param);
+                $id_in = $stock_in_code->field('id')->where($map)->find();
+                $param = array();
+                $param[] = array(
+                    'qty' => $real_qty,
+                    'pro_code' => $process_info['p_pro_code'],
+                    'wh_id' => $process_info['wh_id'],
+                    'batch' => $process_info['code'],
+                );
+                $update_in = $Logic->update_in_stock_detail($id_in['id'], $param);
                 if (!$update_in) {
+                    $this->msgReturn(false, '更新入库单失败');
+                }
+                
+                /**
+                 * 更新入库单(erp)
+                 */
+                unset($map);
+                $erp_in_code = M('erp_process_in');
+                $map['refer_code'] = $process_info['code'];
+                $erp_id_in = $erp_in_code->field('id')->where($map)->find();
+                $erp_in = $Logic->erp_in_stock_detail($erp_id_in['id'], $param);
+                if (!$erp_in) {
                     $this->msgReturn(false, '更新入库单失败');
                 }
                 
@@ -757,13 +825,13 @@ class ProcessController extends CommonController {
                 $data['wh_id'] = $process_info['wh_id']; //仓库ID
                 $data['refer_code'] = $post['out_code']; //关联单号＝＝出库单号
                 $data['pro_code'] = $process_info['p_pro_code']; //出库子sku编号
-                $suc = $stock_out->process_out_stock($data);
+                $suc = $Logic->process_out_stock($data);
                 if ($suc['status'] == false) {
                     $this->msgReturn(false, $suc['msg']);
                     return;
                 }
                 /**
-                 * 更新出库单 实际出库数量
+                 * 更新出库单 实际出库数量(wms)
                  */
                 $stock_out_code = M('stock_bill_out');
                 $map['code'] = $post['out_code'];
@@ -773,40 +841,65 @@ class ProcessController extends CommonController {
                         'qty' => $data['real_qty'], 
                         'pro_code' => $process_info['p_pro_code'],
                         'wh_id' => $process_info['wh_id'],
+                        'batch' => $process_info['code'],
                 );
-                $update_out = $stock_out->update_out_stock_detail($id_out['id'], $param);
+                $update_out = $Logic->update_out_stock_detail($id_out['id'], $param);
                 if (!$update_out) {
                     $this->msgReturn(false, '更新出库单失败');
                 }
-                
+                unset($map);
+                /**
+                 * 更新出库单 实际出库数量(erp)
+                 */
+                $erp_out_code = M('erp_process_out');
+                $map['refer_code'] = $process_info['code'];
+                $erp_id_out = $erp_out_code->field('id')->where($map)->find();
+                $erp_update_out = $Logic->erp_out_stock_detail($erp_id_out['id'], $param);
+                if (!$erp_update_out) {
+                    $this->msgReturn(false, '更新出库单失败');
+                }
+                unset($map);
                 //入库操作
                 foreach ($process_ratio_info as $value) {
                     $qty = $real_qty * $value['ratio'];
-                    $in = $stock_out->process_in_stock($value['c_pro_code'], $qty, $process_info['wh_id'], $post['in_code']);
+                    $in = $Logic->process_in_stock($value['c_pro_code'], $qty, $process_info['wh_id'], $post['in_code']);
                     if ($in['status'] == false) {
                         $this->msgReturn(false, $in['msg']);
                     }
                 }
                 
                 /**
-                 * 更新入库单
+                 * 更新入库单(wms)
                  */
                 unset($param);
                 $stock_out_code = M('stock_bill_in');
                 $map['code'] = $post['in_code'];
                 $id_in = $stock_out_code->field('id')->where($map)->find();
+                $param = array();
                 foreach ($process_ratio_info as $value) {
-                    $param = array();
                     $param[] = array(
                             'qty' => $real_qty * $value['ratio'],
                             'pro_code' => $process_info['p_pro_code'],
                             'wh_id' => $value['c_pro_code'],
+                            'batch' => $process_info['code'],
                     );
-                    $update_in = $stock_out->update_in_stock_detail($id_in['id'], $param);
-                    if (!$update_in) {
-                        $this->msgReturn(false, '更新入库单失败');
-                    } 
                 }
+                $update_in = $Logic->update_in_stock_detail($id_in['id'], $param);
+                if (!$update_in) {
+                    $this->msgReturn(false, '更新入库单失败');
+                }
+                unset($map);
+                /**
+                 * 更新入库单(erp)
+                 */
+                $erp_in_code = M('erp_process_in');
+                $map['refer_code'] = $process_info['code'];
+                $erp_id_in = $erp_in_code->field('id')->where($map)->find();
+                $erp_update_in = $Logic->erp_out_stock_detail($erp_id_in['id'], $param);
+                if (!$erp_update_in) {
+                    $this->msgReturn(false, '更新出库单失败');
+                }
+                
             }
             /**
              * 更新加工单状态位已生产 加工数量
@@ -821,7 +914,7 @@ class ProcessController extends CommonController {
             if ($process->create($data)) {
                 $process->where($map)->save();
             }
-            $this->msgReturn(true, '已完成', '', U('index'));
+            $this->msgReturn(true, '已完成', '', U('Process/order'));
         } else {
             $get = I('get.');
             if (empty($get)) {
@@ -870,7 +963,9 @@ class ProcessController extends CommonController {
             	        break;
             }
             $data['p_pro_code'] = $process_info['p_pro_code'];
+            $data['plan_qty'] = $process_info['plan_qty'];
             $this->data = $data;
+            C('LAYOUT_NAME','pda');
             $this->display();
         }
     }

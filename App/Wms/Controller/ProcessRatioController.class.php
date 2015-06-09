@@ -73,8 +73,22 @@ class ProcessRatioController extends CommonController {
 	 * 查看详情
 	 */
 	public function before_edit(&$data) {
+	    //获取所有比例关系
+	    $p_code = $data['p_pro_code'];
+	    $M = M('erp_process_sku_relation');
+	    $map['p_pro_code'] = $p_code;
+	    $ratio = $M->where($map)->select();
+	    
+	    unset($map);
+	    $map['id'] = $data['created_user'];
+	    $user = M('user');
+	    $name = $user->where($map)->find();
+	    $data['created_user'] = $name['username'];
+	    $code = array();
 	    $code[] = $data['p_pro_code'];
-	    $code[] = $data['c_pro_code'];
+	    foreach ($ratio as $val) {
+	        $code[] = $val['c_pro_code'];
+	    }
 	    //调用Pms接口查询sku信息
 	    $pms = D('Pms', 'Logic');
 	    $sku_info = $pms->get_SKU_field_by_pro_codes($code);
@@ -82,9 +96,18 @@ class ProcessRatioController extends CommonController {
 	        if ($key == $data['p_pro_code']) {
 	            $data['p_name'] = $value['name'];
 	            $data['p_attrs'] = $value['pro_attrs_str'];
-	        } elseif($key == $data['c_pro_code']) {
-	            $data['c_name'] = $value['name'];
-	            $data['c_attrs'] = $value['pro_attrs_str'];
+	        } else {
+	            //查询所有子sku
+	            foreach ($ratio as $v) {
+	                if ($key == $v['c_pro_code']) {
+	                    $data['c_pros'][] = array(
+	                    	    'c_code' => $v['c_pro_code'],
+	                        'c_name' => $value['name'],
+	                        'c_attrs' => $value['pro_attrs_str'],
+	                        'c_ratio' => $v['ratio'],
+	                    );
+	                }
+	            }
 	        }
 	    }
 	}
