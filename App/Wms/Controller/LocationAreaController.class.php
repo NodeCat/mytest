@@ -29,7 +29,7 @@ class LocationAreaController extends CommonController {
         $data['wh_code'] = '仓库标识';
         $data['code'] = '区域标识';
         $data['name'] = '区域名称';
-        $data['status'] = '库存状态';
+        $data['status'] = '库区状态';
         $this->columns = $data;
     }
      
@@ -88,7 +88,7 @@ class LocationAreaController extends CommonController {
                 'value' => '' 
             );
             $query['location.status'] = array(
-                'title' => '库存状态',
+                'title' => '库区状态',
                 'query_type' => 'eq',
                 'control_type' => 'select',
                 'value' => $status
