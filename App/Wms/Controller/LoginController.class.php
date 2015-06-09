@@ -36,7 +36,7 @@ class LoginController extends Controller {
                 }
                 else {
                     $url = urldecode($url);
-                    if($url == 'Login/index') {
+                    if($url == '/Login/index' || strpos($url, '/Login/wh') !== false) {
                         $url = "/Index/index";
                     }
                     $this->success('登录成功！跳转至登录前界面',$url,3);
@@ -63,8 +63,7 @@ class LoginController extends Controller {
                 }
                 else{
                     $url = urldecode($url);
-
-                    if($url == '/Login/index') {
+                    if($url == '/Login/index' || strpos($url, '/Login/wh') !== false) {
                         $url = "/Index/index";
                     }
                     $this->redirect($url);

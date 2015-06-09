@@ -11,7 +11,7 @@ return array(
 	'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
 	//应用设置
 	'MODULE_ALLOW_LIST' => 'Wms',
-
+	'HOP_API_PATH'=>'http://s.test3.dachuwang.com',
 	//模版设置
 	'LAYOUT_ON'         => TRUE,
 	'TMPL_CACHE_ON'   => FALSE,  // 默认开启模板编译缓存 false 的话每次都重新编译模板
