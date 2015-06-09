@@ -24,6 +24,12 @@ class LoginController extends Controller {
             if(0 < $uid){
                 //TODO:跳转到登录前页面
                 set_session($uid);
+                //如果是移动终端 则跳转到PDA端
+                $is_mobile_terminal = is_mobile_terminal();
+                if($is_mobile_terminal){
+                    $this->success('登录成功！', '/Pda/index',3);
+                }
+
                 $url = I('post.url');
                 if(empty($url)) {
                     $this->success('登录成功！', '/Index/index',3);
@@ -46,6 +52,12 @@ class LoginController extends Controller {
         } else {
             $url = I('get.url');
             if(is_login()){
+                //如果是移动终端 则跳转到PDA端
+                $is_mobile_terminal = is_mobile_terminal();
+                if($is_mobile_terminal){
+                    $this->redirect('/Pda/index');
+                }
+
                 if(empty($url)) {
                     $this->redirect('Index/index');
                 }

@@ -240,6 +240,12 @@ class InventoryController extends CommonController {
 		$this->inventory_pro_codes = $inventory_pro_codes;
 	}
 
+	protected function before_save(&$M){
+		//生成盘点单号
+		$inventory_sn = get_sn('inventory');
+		$M->code = $inventory_sn;
+	}
+
 	//save方法执行之后，执行该方案
 	protected function after_save($id){
 		if(IS_POST){
@@ -256,7 +262,7 @@ class InventoryController extends CommonController {
 				$map['pro_code'] = array('in', $this->inventory_pro_codes);
 				$map['wh_id'] = session('user.wh_id');
 				//$stock_lists = M('Stock')->where($map)->getField('pro_code,stock_qty,location_id',true);
-				$stock_lists = M('Stock')->field('pro_code, location_id, sum(stock_qty) as stock_qty')->group('location_id')->where($map)->select();
+				$stock_lists = M('Stock')->field('pro_code, location_id, sum(stock_qty) as stock_qty')->group('location_id,pro_code')->where($map)->select();
 				unset($map);
 				//插入盘点详情表，stock_inventory_detail
 				foreach($stock_lists as $pro_code => $stock_list){
@@ -280,10 +286,10 @@ class InventoryController extends CommonController {
 	}
 
 	//执行add方法前，执行该方法
-	public function _before_add(){
+	/*public function _before_add(){
 		$inventory_sn = get_sn('inventory');
 		$this->inventory_sn = $inventory_sn;
-	}
+	}*/
 
 	//差异确认 对某个盘点单进行差异确认，确认后，生成库存调整单，调整库存量
 	public function checkIsDiff(){
