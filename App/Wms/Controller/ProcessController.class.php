@@ -739,7 +739,8 @@ class ProcessController extends CommonController {
                 $this->msgReturn(false, '此货品没有可入库数量');
             }
             
-            if (!is_int($real_qty)) {
+            $real_qty = intval($real_qty);
+            if ($real_qty != $post['real_qty']) {
                 //非整型
                 $this->msgReturn(false, '请输入整型数字');
             }
