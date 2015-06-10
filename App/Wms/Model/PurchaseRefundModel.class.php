@@ -45,7 +45,7 @@ class PurchaseRefundModel extends RelationModel {
                 "inner join company on erp_purchase_refund.company_id=company.id ",
                 "left join stock_bill_in sbi on sbi.refer_code = erp_purchase_refund.code AND sbi.is_deleted = 0"
             ),
-"field"=>"erp_purchase_refund.*,erp_purchase_refund.status as state,sbi.code as in_code,sbi.id as in_id,warehouse.code as warehouse_code,warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname,user.mobile as user_mobile,company.name as company_name",
+"field"=>"erp_purchase_refund.*,erp_purchase_refund.status as state,sbi.code as in_code,sbi.id as in_id,warehouse.code as warehouse_code,warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname,user.mobile as user_mobile,company.name as company_name,user.nickname as created_user",
         ),
         'latest'=>array(
             'where'=>array('erp_purchase_refund.is_deleted'=>'0'),

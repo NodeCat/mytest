@@ -374,8 +374,9 @@ class PurchaseController extends CommonController {
 		$purchase_info = M('stock_purchase')->where($map)->find();
 		unset($map);
 
-		//根据采购单号查询是否已经建立了冲红采购单
+		//根据采购单号查询是否已经建立了冲红采购单 冲红单的状态不是已作废
 		$map['refer_code'] = $purchase_info['code'];
+		$map['status'] = array('neq','cancel');
 		$purchase_refund_info = M('erp_purchase_refund')->where($map)->find();
 		unset($map);
 		if(!empty($purchase_refund_info)){
@@ -406,12 +407,19 @@ class PurchaseController extends CommonController {
 		unset($map);
 		$sum = 0;
 		foreach ($stock_bill_in_detail as $key => $val) {
+			//如果sku已经全部收到，则不计入冲红单中
+			if($val['expected_qty'] - $val['done_qty'] == 0){
+				continue;
+			}
 			$v = $val;
 			unset($v['id']);
 			unset($v['pid']);
 			$v = D('PurchaseRefundDetail')->create($v);
 			$refund_purchase_data['detail'][] = $v;
 			$sum +=  $val['price_unit'] * $val['qualified_qty'];
+		}
+		if(empty($refund_purchase_data['detail'])){
+			$this->msgReturn(0,'已经全部收货成功，没有差异，不能生成冲红单');
 		}
 		$refund_purchase_data['for_paid_amount'] = $refund_purchase_data['price_total'] - $sum;
 
