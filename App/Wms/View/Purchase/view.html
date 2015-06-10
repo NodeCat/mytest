@@ -138,8 +138,13 @@
     <label class="control-label label-field">{$data.invoice_method}</label>
     </div>
 </div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购到货单号</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field"><a href="{:U('StockIn/pview','id='.$data['in_id'])}">{$data.in_code}</a></label>
+    </div>
 </div>
-
+</div>
 <include file="prolist-view" />
 </div>
 </div>

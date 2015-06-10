@@ -26,7 +26,7 @@ class PurchaseController extends CommonController {
 	protected $columns = array (   
 		'id' => '',   
 		'code' => '采购单号',   
-		'in_code' =>'采购到货单号',
+		//'in_code' =>'采购到货单号',
 		'warehouse_name' =>'仓库',
 		'partner_name' => '供应商',
 		'invoice_method' =>'付款方式',
@@ -34,8 +34,8 @@ class PurchaseController extends CommonController {
 		'user_nickname' => '采购人',   
 		'created_time' => '采购时间', 
 		'status' => '单据状态',    
-		'cat_total' => 'sku种数',  
-		'qty_total' => '采购总数',   
+		//'cat_total' => 'sku种数',  
+		//'qty_total' => '采购总数',   
 		'price_total' => '采购总金额',
 		'paid_amount' => '已结算金额',  
 	);
@@ -121,6 +121,7 @@ class PurchaseController extends CommonController {
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
             'refund'=>array('name'=>'refund' ,'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
         
         $this->toolbar =array(
@@ -492,4 +493,39 @@ class PurchaseController extends CommonController {
 			}
 		}
 	}
+
+    public function printpage() {
+        $id = I('get.id');
+
+        $purchase = M('stock_purchase');
+        $map['stock_purchase.id'] = $id;
+        $data = $purchase
+        ->join('partner on partner.id = stock_purchase.partner_id' )
+        ->join('warehouse on warehouse.id = stock_purchase.wh_id')
+        ->join('user on user.id = stock_purchase.created_user')
+        ->where($map)
+        ->field('stock_purchase.*, partner.name as partner_name, user.nickname as created_name, warehouse.name as wh_name')
+        ->find(); 
+ 
+        $purchase_detail = M('stock_purchase_detail');
+        unset($map);
+        $map['pid'] = $id;
+        $list = $purchase_detail->where($map)->select();
+       
+        $column['purchase_code'] = $data['code'];
+        $column['purchase_time'] = $data['created_time'];
+        $column['print_time'] = get_time();
+        $column['partner'] = $data['partner_name'];
+        $column['purchase_pay'] = $this->filter['invoice_method'][$data['invoice_method']];
+        $column['purchase_qty'] = $data['cat_total'] . '种' . '/' . $data['qty_total'] . '件';
+        $column['purchase_amount'] = $data['price_total'];
+        $column['purchaser'] = $data['created_name'];
+        $column['warehouse'] = $data['wh_name'];
+        $column['remark'] = $data['remark'];
+        $column['purchase_detail'] = $list;
+        
+    	layout(false);
+    	$this->assign($column);
+    	$this->display('Purchase:print');
+    }
 }
