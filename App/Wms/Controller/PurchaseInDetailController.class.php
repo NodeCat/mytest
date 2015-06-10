@@ -3,7 +3,7 @@ namespace Wms\Controller;
 use Think\Controller;
 class PurchaseInDetailController extends CommonController {
 	protected $filter = array(
-			'status' => array('paid' => '已付款', 'nopaid' => '未付款',),
+			'status' => array('paid' => '已收款', 'nopaid' => '未收款',),
 		);
 	protected $columns = array(
         'id' => '',
@@ -40,8 +40,8 @@ class PurchaseInDetailController extends CommonController {
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                'paid'=>'已付款',
-                'nopaid'=>'未付款'
+                'paid'=>'已收款',
+                'nopaid'=>'未收款'
             ),   
         ),
 	);
@@ -88,7 +88,7 @@ class PurchaseInDetailController extends CommonController {
 
         if(empty($ids)){
             $data['status'] = 0;
-            $data['msg'] = '请选择一个未付款的单据';
+            $data['msg'] = '请选择一个未收款的单据';
             $this->ajaxReturn($data);
         }
 
@@ -101,7 +101,7 @@ class PurchaseInDetailController extends CommonController {
     	foreach($purchase_in_details as $purchase_in_detail){
     		if($purchase_in_detail['status'] == 'paid'){
     			$data['status'] = 0;
-    			$data['msg'] = '所选单据中有已付款状态的单据，请选择未支付的单据';
+    			$data['msg'] = '所选单据中有已收款状态的单据，请选择未支付的单据';
     			$this->ajaxReturn($data);
     		}
     	}

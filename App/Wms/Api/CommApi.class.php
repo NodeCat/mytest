@@ -6,7 +6,7 @@ class CommApi extends Controller{
 	protected function _initialize(){
         //API返回JSON格式数据，因此关闭模版布局
         layout(FALSE);
-        return true;
+        return;
         //仅允许POST方式请求
         IS_POST || $this->error('403:Forbidden');
         //IP地址及访问频率限制，对黑名单中的访问者直接返回FALSE
@@ -24,13 +24,6 @@ class CommApi extends Controller{
         if(FALSE === $this->auth()) {
             $this->error('403:Forbidden');    
         }
-    }
-    public function index() {
-        $this->msg(1,'success');
-    }
-
-    public function _empty($action){
-       $this->error('unknown',U('index'));
     }
 
     protected function auth(){
