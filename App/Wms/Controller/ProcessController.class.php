@@ -170,7 +170,7 @@ class ProcessController extends CommonController {
         	if(I('get.process_pro_code')){
         		//获得加工SKU
         		$process_pro_code = I('process_pro_code');
-   
+            $plan_qty = I('plan_qty');
         		//根据父SKU 查询加工关系
         		$map['p_pro_code'] = $process_pro_code;
         		$process_relation = M('erp_process_sku_relation')->where($map)->select();
@@ -205,6 +205,7 @@ class ProcessController extends CommonController {
         		$this->p_sku_info = $p_sku_info;
         		$this->c_sku_info = $c_sku_info;
         		$this->ratio = $ratio;
+        		$this->plan_qty = $plan_qty;
         		$this->process_pro_code = $process_pro_code;
         		$this->display('prolist-add');
         		return;

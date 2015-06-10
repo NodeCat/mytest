@@ -9,7 +9,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
       <thead>
-        <th>父SKU</th><th>产品名称</th><th>规格</th><th>数量</th>
+        <th style="width:10%;">父SKU</th><th style="width:40%;">产品名称</th><th style="width:40%;">规格</th><th style="width:10%;">数量</th>
       </thead>
       <tbody>
       <tr class="tr-tpl">
@@ -23,9 +23,8 @@
       	{$p_sku_info.pro_attrs_str}
       </td>
       <td style="width:10%;" id="pro_plan_qty">
-      	0
+      	
       </td>
-      </tr>
 
       </tbody>
       </table>
@@ -44,25 +43,22 @@
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
       <thead>
-        <th>子SKU</th><th>产品名称</th><th>规格</th><!--<th>可能库存</th>--><th>组合数量</th>
+        <th style="width:10%;">子SKU</th><th style="width:40%;">产品名称</th><th style="width:40%;">规格</th><th style="width:10%;">数量</th>
       </thead>
       <tbody>
       <volist name="c_sku_info" id="c_sku">
       <tr class="tr-tpl">
-      <td style="width:10%;">
+      <td style="width:10%;back">
       	{$c_sku.pro_code}
       </td>
-      <td  style="width:35%;">
+      <td style="width:40%;">
       	{$c_sku.wms_name}
       </td>
-      <td  style="width:35%;">
+      <td style="width:40%;">
       	{$c_sku.pro_attrs_str}
       </td>
-      <!--<td style="width:10%;">
-        <input type="text" name="c_sku_stock_qty[]" value="{$c_sku.stock_qty}" class="typeahead form-control input-sm" readonly="">
-      </td>-->
       <td style="width:10%;">
-      	{$ratio[$c_sku['pro_code']]}
+      	{$ratio[$c_sku['pro_code']] * $plan_qty}
       </td>
       </tr>
       </volist>
