@@ -215,7 +215,7 @@ form.order ul.list-group{
 
   function goToGaodeMap(lat,lng){
     if(typeof HostApp == "undefined") {
-      alert('使用导航功能请下载大厨网配送app.');
+      alert('使用导航功能请您先下载大厨网配送app.');
     }
     else {
       HostApp.navigationToMap(lat,lng);
@@ -225,7 +225,8 @@ form.order ul.list-group{
     $('.navigation-map').on('click',function(){
         var lat = $(this).data('lat');
         var lng = $(this).data('lng');
-        if(lat == null || lat == '' || lng == null || lng == ''){
+        if(lat == null || lat == "''" || lng == null || lng == "''"){
+          alert('无法导航，销售偷懒没有录入该客户地址的坐标。');
           return;
         }
         else {
