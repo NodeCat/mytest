@@ -347,7 +347,7 @@ class ProcessController extends CommonController {
             $param['pid'] = $pid;
             $param['pro_code'] = $process['p_pro_code'];
             $data = $Logic->make_process_in_stock_detail('parpare', $param);
-            if ($data['status'] == true) {
+            if ($data['status'] == false) {
                 $this->msgReturn(false, '创建数据失败'); 
             }
             $data = $data['data'];
@@ -869,7 +869,7 @@ class ProcessController extends CommonController {
                 $id_out = $stock_out_code->field('id')->where($map)->find();
                 $param = array();
                 $param[] = array(
-                        'qty' => $data['real_qty'], 
+                        'qty' => $real_qty, 
                         'pro_code' => $process_info['p_pro_code'],
                         'wh_id' => $process_info['wh_id'],
                         'batch' => $process_info['code'],
@@ -910,8 +910,8 @@ class ProcessController extends CommonController {
                 foreach ($process_ratio_info as $value) {
                     $param[] = array(
                             'qty' => $real_qty * $value['ratio'],
-                            'pro_code' => $process_info['p_pro_code'],
-                            'wh_id' => $value['c_pro_code'],
+                            'pro_code' => $value['c_pro_code'],
+                            'wh_id' => $process_info['wh_id'],
                             'batch' => $process_info['code'],
                     );
                 }
@@ -926,7 +926,7 @@ class ProcessController extends CommonController {
                 $erp_in_code = M('erp_process_in');
                 $map['refer_code'] = $process_info['code'];
                 $erp_id_in = $erp_in_code->field('id')->where($map)->find();
-                $erp_update_in = $Logic->erp_out_stock_detail($erp_id_in['id'], $param);
+                $erp_update_in = $Logic->erp_in_stock_detail($erp_id_in['id'], $param);
                 if (!$erp_update_in) {
                     $this->msgReturn(false, '更新出库单失败');
                 }

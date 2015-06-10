@@ -193,33 +193,31 @@ class ProcessLogic {
     public function update_out_stock_detail($pid = 0, $data = array()) {
         $return = false;
         
-        if (empty($pid) || empty($data)) {
+        if (empty($pid) || empty($data)) {exit('ggggggg');
             //参数有误
             return $return;
         }
         
         $M = M('stock_bill_out_detail');
+        $D = M('stock_bill_out');
+        //$where['id'] = $pid;
+        //$wh_id = $D->field('wh_id')->where($where)->find();
         foreach ($data as $value) {
             $map = array();
             $map['pid'] = $pid;
-            //$map['wh_id'] = $value['wh_id'];
+            //$map['wh_id'] = $wh_id['wh_id'];
             $map['pro_code'] = $value['pro_code'];
-            $data['status'] = 33;
+            $data['status'] = 2;
             $M->where($map)->setInc('delivery_qty', $value['qty']);
             if ($M->create($data)) {
                 $M->where($map)->save();
             }
         }
-        
+        unset($map);
         //更新出库单
-        $D = M('stock_bill_out');
         $map['id'] = $pid;
         $update['status'] = 2;
-        $bool = $D->where($map)->save($update);
-        if (!$bool) {
-            return $return;
-        }
-        
+        $D->where($map)->save($update);
         
         $return = true;
         return $return;
@@ -252,21 +250,14 @@ class ProcessLogic {
             $M->where($map)->setInc('real_qty', $value['qty']);
             if ($M->create($data)) {
                 $affect = $M->where($map)->save();
-                if (!$affect) {
-                    return $return;
-                }
             }
         }
-        
+        unset($map);
         //更新出库单
         $D = M('erp_process_out');
         $map['id'] = $pid;
         $update['status'] = 'on';
-        $bool = $D->where($map)->save($update);
-        if (!$bool) {
-            return $return;
-        }
-        
+        $D->where($map)->save($update);
     
         $return = true;
         return $return;
@@ -354,21 +345,14 @@ class ProcessLogic {
             $M->where($map)->setInc('done_qty', $value['qty']);
             if ($M->create($data)) {
                 $affect = $M->where($map)->save();
-                if (!$affect) {
-                    return $return;
-                }
             }
         }
-        
+        unset($map);
         //更新入库单
         $D = M('stock_bill_in');
         $map['id'] = $pid;
         $update['status'] = 33;
-        $bool = $D->where($map)->save($update);
-        if (!$bool) {
-            return $return;
-        }
-        
+        $D->where($map)->save($update);
     
         $return = true;
         return $return;
@@ -402,9 +386,6 @@ class ProcessLogic {
             $M->where($map)->setInc('real_qty', $value['qty']);
             if ($M->create($data)) {
                 $affect = $M->where($map)->save();
-                if ($affect) {
-                    return $return;
-                }
             }
         }
         
@@ -413,10 +394,7 @@ class ProcessLogic {
         $D = M('erp_process_in');
         $map['id'] = $pid;
         $update['status'] = 'on';
-        $bool = $D->where($map)->save($update);
-        if (!$bool) {
-            return $return;
-        }
+        $D->where($map)->save($update);
     
         $return = true;
         return $return;
