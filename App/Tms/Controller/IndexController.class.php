@@ -47,7 +47,7 @@ class IndexController extends Controller {
         if(!empty($id)) {
             $M = M('tms_delivery');
             $res = $M->find($id);
-            /*
+            
             if(empty($res)) {
                 $this->error = '未找到该提货纪录。';
             }
@@ -59,9 +59,8 @@ class IndexController extends Controller {
                 $this->display('tms:orders');
                 exit();
             }
-            */
+            
             $map['dist_id'] = $res['dist_id'];
-            //$map['dist_id'] = $id;
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
