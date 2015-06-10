@@ -63,6 +63,7 @@ class ProcessLogic {
         if (empty($number)) {
             return $return;
         }
+        $num = 0;
         foreach ($number as $value) {
             $num += $value['stock_qty'];
         }
@@ -616,7 +617,7 @@ class ProcessLogic {
         $detail_data['wh_id'] = $data['wh_id']; //所属仓库
         $detail_data['pid'] = $data['pid']; //父id 
         $detail_data['refer_code'] = $data['code']; //关联入库单号
-        $detail_data['pro_code'] = $data['p_pro_code']; //SKU编号
+        $detail_data['pro_code'] = $data['pro_code']; //SKU编号
         $detail_data['expected_qty'] = $data['expected_qty']; //预计数量
         $detail_data['prepare_qty'] = 0; //待上架量
         $detail_data['done_qty'] = 0; //已上架量
@@ -630,9 +631,9 @@ class ProcessLogic {
         
         //调用PMS接口根据编号查询SKU名称规格
         $pms = D('Pms', 'Logic');
-        $sku_info = $pms->get_SKU_field_by_pro_codes(array($data['p_pro_code']));
-        $detail_data['pro_name'] = $sku_info[$data['p_pro_code']]['name']; //SKU名称
-        $detail_data['pro_attrs'] = $sku_info[$data['p_pro_code']]['pro_attrs_str']; //SKU规格
+        $sku_info = $pms->get_SKU_field_by_pro_codes(array($data['pro_code']));
+        $detail_data['pro_name'] = $sku_info[$data['pro_code']]['name']; //SKU名称
+        $detail_data['pro_attrs'] = $sku_info[$data['pro_code']]['pro_attrs_str']; //SKU规格
         $return['status'] = true;
         $return['msg'] = '成功';
         $return['data'] = $detail_data;

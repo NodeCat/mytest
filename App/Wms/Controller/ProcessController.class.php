@@ -618,7 +618,7 @@ class ProcessController extends CommonController {
             foreach ($process_relation as $value) {
                 $param['pro_code'] = $value['c_pro_code'];
                 $param['expected_qty'] = $process['plan_qty'] * $value['ratio'];
-                $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
+                $data = $Logic->make_process_in_stock_wms_detail(21, $param);
                 if ($data['status'] == false) {
                     $this->msgReturn(false, '数据创建失败');
                 }
