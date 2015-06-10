@@ -170,7 +170,7 @@ class IndexController extends Controller {
             }
 
             if($dist['status'] == '2') {//已发运的单据不能被认领
-                $this->error = '该单据已发运';
+                //$this->error = '该单据已发运';
             }
             if(empty($this->error)){
                 
@@ -186,7 +186,7 @@ class IndexController extends Controller {
                 $data['updated_time'] = get_time();
                 $data['status'] = '1';
                 $lines = $A->line(array('line_ids'=>array($dist['line_id'])));
-                $data['line_name'] = $lines[0]['name'];//dump($lines);dump($dist);exit();
+                $data['line_name'] = $lines[0]['name'];
                 $citys = $A->city();
                 $data['city_id'] = $citys[$dist['city_id']];
                 
@@ -200,10 +200,10 @@ class IndexController extends Controller {
                 $map['driver'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['id'];
-                    $map['order_id'] = $val['id'];dump($map);
+                    $map['order_id'] = $val['id'];
                     $res = $A->set_status($map);
                 }
-                dump($res);exit();
+                
                 unset($map);
                 if($res) {
                     $this->msg = "提货成功。";
