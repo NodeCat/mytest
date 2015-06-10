@@ -439,7 +439,7 @@ class PurchaseController extends CommonController {
 		$bill['code'] = get_sn('in');
 		$bill['type'] = '1';
 		$bill['status'] = '21';
-		$bill['batch_code'] = 'batch'.NOW_TIME;
+		$bill['batch_code'] = get_batch($bill['code']);
 
 		foreach ($res['detail'] as $key => $val) {
 			$v['pro_code'] = $val['pro_code'];
