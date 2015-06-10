@@ -24,7 +24,7 @@ class ProcessController extends CommonController {
 	    'p_pro_code' => '父SKU编号',
 	    'p_name' => '父SKU名称',
 	    'p_attrs' => '父SKU规格',
-		'plan_qty' => '计划加工数量',
+		'plan_qty' => '父SKU数量',
 		'real_qty' => '实际加工数量',
 		'status' => '状态',
 		'remark' => '备注',
@@ -91,7 +91,7 @@ class ProcessController extends CommonController {
         );
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"draft,confirm"), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"draft,confirm,reject"), 
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"draft,confirm"),
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"draft,confirm"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"draft,confirm,pass,reject")
@@ -263,11 +263,22 @@ class ProcessController extends CommonController {
 		$this->c_sku_info = $c_sku_info;
 		$this->ratio = $ratio;
 		$this->process_pro_code = $process_pro_code;
-
     }
 
     protected function after_save($pid){
         	if(ACTION_NAME == 'edit'){
+        	    //更新状态
+        	    $M = M('erp_process');
+        	    $map['id'] = $pid;
+        	    $result = $M->where($map)->find();
+        	    if (!empty($result)) {
+        	        if ($result['status'] != 'confirm') {
+        	            $data['status'] = 'confirm';
+        	            if ($M->create($data)) {
+        	                $M->where($map)->save();
+        	            }
+        	        }
+        	    }
         		$this->msgReturn(1,'','',U('view','id='.$pid));
         	}
     }
@@ -286,7 +297,6 @@ class ProcessController extends CommonController {
         }
         
         unset($map);
-        unset($data);
         
         //获得物料清单
         $map['p_pro_code'] = $process['p_pro_code'];
@@ -317,9 +327,10 @@ class ProcessController extends CommonController {
             $process_in = D('ProcessIn');
             
             $data = $Logic->make_process_in_stock('parpare', $process);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
             }
+            $data = $data['data'];
             if ($process_in->create($data)) {
                 $pid = $process_in->add();
             }
@@ -337,8 +348,9 @@ class ProcessController extends CommonController {
             $param['pro_code'] = $process['p_pro_code'];
             $data = $Logic->make_process_in_stock_detail('parpare', $param);
             if ($data['status'] == true) {
-                $data = $data['data'];
+                $this->msgReturn(false, '创建数据失败'); 
             }
+            $data = $data['data'];
             if ($process_in_detail->create($data)) {
                 $affect = $process_in_detail->add();
             }
@@ -353,9 +365,10 @@ class ProcessController extends CommonController {
             //写入加工出库单 子SKU
             $process_out = D('ProcessOut');
             $data = $Logic->make_process_out_stock('parpare', $process);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
             }
+            $data = $data['data'];
             if ($process_out->create($data)) {
                 $pid = $process_out->add();
             }
@@ -373,9 +386,10 @@ class ProcessController extends CommonController {
                 $param['pro_code'] = $val['c_pro_code'];
                 $param['plan_qty'] = $process['plan_qty'] * $val['ratio'];
                 $data = $Logic->make_process_out_stock_detail('prepare', $param);
-                if ($data['status'] == true) {
-                    $data = $data['data'];
+                if ($data['status'] == false) {
+                    $this->msgReturn(false, '数据创建失败');
                 }
+                $data = $data['data'];
                 if ($process_out_detail->create($data)) {
                     $process_out_detail->add();
                 }
@@ -404,9 +418,10 @@ class ProcessController extends CommonController {
             $param['name'] = $name;
             $param['company_id'] = $company_id;
             $data = $Logic->make_process_in_stock_wms(21, $param);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
             }
+            $data = $data['data'];
             if ($stock_in->create($data)) {
                 $pid = $stock_in->add();
             }
@@ -425,9 +440,10 @@ class ProcessController extends CommonController {
             $param['code'] = $refer_code;
             $param['expected_qty'] = $process['plan_qty'];
             $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '数据创建失败');
             }
+            $data = $data['data'];
             if ($stock_in_detail->create($data)) {
                 $affect = $stock_in_detail->add();
             }
@@ -461,7 +477,10 @@ class ProcessController extends CommonController {
             $_POST = array();
             $_POST = $data;
             //调用stockout方法自动生成出库单
-            $API->stockout();
+            $back = $API->stockout();
+            if ($back == false) {
+                $this->msgReturn(false, '出库单写入失败');
+            }
             //-----------wms end-------------
             
             
@@ -487,9 +506,10 @@ class ProcessController extends CommonController {
             //写入加工出库单 父SKU
             $process_out = D('ProcessOut');
             $data = $Logic->make_process_out_stock('parpare', $process);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
             }
+            $data = $data['data'];
             if ($process_out->create($data)) {
                 $pid = $process_out->add();
             }
@@ -503,9 +523,10 @@ class ProcessController extends CommonController {
             $param['pid'] = $pid;
             $param['pro_code'] = $process['p_pro_code'];
             $data = $Logic->make_process_out_stock_detail('prepare', $param);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
             }
+            $data = $data['data'];
             if ($process_out_detail->create($data)) {
                 $process_out_detail->add();
             }
@@ -518,9 +539,10 @@ class ProcessController extends CommonController {
             $process_in = D('ProcessIn');
             $Logic = D('Process', 'Logic');
             $data = $Logic->make_process_in_stock('parpare', $process);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
             }
+            $data = $data['data'];
             if ($process_in->create($data)) {
                 $pid = $process_in->add();
             }
@@ -538,9 +560,10 @@ class ProcessController extends CommonController {
                 $param['pro_code'] = $val['c_pro_code'];
                 $param['plan_qty'] = $process['plan_qty'] * $val['ratio'];
                 $data = $Logic->make_process_in_stock_detail('parpare', $param);
-                if ($data['status'] == true) {
-                    $data = $data['data'];
+                if ($data['status'] == false) {
+                    $this->msgReturn(false, '数据创建失败');
                 }
+                $data = $data['data'];
                 if ($process_in_detail->create($data)) {
                     $affect = $process_in_detail->add();
                 }
@@ -573,9 +596,10 @@ class ProcessController extends CommonController {
             $param['name'] = $name;
             $param['company_id'] = $company_id;
             $data = $Logic->make_process_in_stock_wms(21, $param);
-            if ($data['status'] == true) {
-                $data = $data['data'];
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '数据创建失败');
             }
+            $data = $data['data'];
             if ($stock_in->create($data)) {
                 $pid = $stock_in->add($data);
             }
@@ -595,9 +619,10 @@ class ProcessController extends CommonController {
                 $param['pro_code'] = $value['c_pro_code'];
                 $param['expected_qty'] = $process['plan_qty'] * $value['ratio'];
                 $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
-                if ($data['status'] == true) {
-                    $data = $data['data'];
+                if ($data['status'] == false) {
+                    $this->msgReturn(false, '数据创建失败');
                 }
+                $data = $data['data'];
                 if ($stock_in_detail->create($data)) {
                     $affect = $stock_in_detail->add();
                 }
@@ -712,6 +737,11 @@ class ProcessController extends CommonController {
             if ($real_qty <= 0) {
                 //非法
                 $this->msgReturn(false, '此货品没有可入库数量');
+            }
+            
+            if (!is_int($real_qty)) {
+                //非整型
+                $this->msgReturn(false, '请输入整型数字');
             }
             
             //查询加工单
@@ -964,6 +994,7 @@ class ProcessController extends CommonController {
             }
             $data['p_pro_code'] = $process_info['p_pro_code'];
             $data['plan_qty'] = $process_info['plan_qty'];
+            $data['real_qty'] = $process_info['real_qty'];
             $this->data = $data;
             C('LAYOUT_NAME','pda');
             $this->display();

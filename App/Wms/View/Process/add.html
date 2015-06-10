@@ -45,7 +45,7 @@
 <div class="form-group col-lg-4">
     <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="plan_qty">计划数量</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-<input  autocomplete="off" type="text" class="form-control input-sm " name="plan_qty" id="plan_qty"  placeholder="0">
+		<input  autocomplete="off" type="text" class="form-control input-sm " name="plan_qty" id="plan_qty"  placeholder="0">
     </div>
 </div>
 </div>
@@ -75,12 +75,14 @@
 $(function(){
     $("#search_process_sku").on("click",function(){
     		var _process_pro_code = $('#process_pro_code').val();
+		var _plan_qty = $('#plan_qty').val();
     		$.ajax({
 	    		type: "GET",
 	    		url: "/Process/add",
 	    		data: "process_pro_code="+_process_pro_code,
 	    		success: function(data) {
 	    			$('#c_sku_info').html(data);
+	    			$('#pro_plan_qty').html(_plan_qty);
 	    		}
     		});
     });

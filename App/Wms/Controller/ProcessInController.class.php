@@ -8,9 +8,9 @@ class ProcessInController extends CommonController {
 	      'wh_id' => '所属仓库',
 	      'code' => '入库单号',
 	      'refer_code' => '加工单号',
-          'p_pro_code' => '父SKU',
-	      'p_pro_name' => '父产品名称',
-	      'p_pro_norms' => '父产品规格',
+          //'p_pro_code' => '父SKU',
+	      //'p_pro_name' => '父产品名称',
+	      //'p_pro_norms' => '父产品规格',
           'status' => '状态',
 	      'created_time' => '创建时间',
     );
@@ -28,12 +28,12 @@ class ProcessInController extends CommonController {
 	                'control_type' => 'text',
 	                'value' => 'refer_code',
 	        ),
-	        'erp_process_in_detail.p_pro_code' => array(
+	        /*'erp_process_in_detail.p_pro_code' => array(
 	                'title' => '父SKU编号',
 	                'query_type' => 'eq',
 	                'control_type' => 'text',
 	                'value' => '',
-	        ),
+	        ),*/
 	        'erp_process_in.wh_id' => array(
 	                'title' => '所属仓库',
 	                'query_type' => 'eq',
@@ -85,14 +85,14 @@ class ProcessInController extends CommonController {
 	    $in_detail = D('ProcessIn');
 	    $code = array();
 	    foreach ($data as &$value) {
-	        $sql = "select *,company.name from erp_process_in e
+	        $sql = "select *,company.name,d.p_pro_code from erp_process_in e
 	                inner join erp_process d on d.code=e.refer_code
 	                inner join erp_process_sku_relation r on d.p_pro_code=r.p_pro_code
 	                inner join company on r.company_id=company.id
 	                where e.code=" . "'".$value['code'] . "' limit 1";
 	        $result = $in_detail->query($sql);
 	        $value['company_id'] = $result[0]['name'];
-	        $value['p_pro_code'] = $result[0]['p_pro_code'];
+	        //$value['p_pro_code'] = $result[0]['p_pro_code'];
 	        
 	        //格式化仓库
 	        $warehouse = M('warehouse');
@@ -113,7 +113,7 @@ class ProcessInController extends CommonController {
 	    }
 	    $code = array_unique($code);
 	    //调用pms接口
-	    $pms = D('Pms', 'Logic');
+	    /*$pms = D('Pms', 'Logic');
 	    $p_info = $pms->get_SKU_field_by_pro_codes($code);
 	    if (!empty($p_info)) {
 	        foreach ($data as &$val) {
@@ -125,7 +125,7 @@ class ProcessInController extends CommonController {
 	                }
 	            }
 	        }
-	    }
+	    }*/
 	}
 	
 	/**
@@ -133,7 +133,7 @@ class ProcessInController extends CommonController {
 	 * @param unknown $map
 	 */
 	public function after_search(&$map) {
-	   if (array_key_exists('erp_process_in_detail.p_pro_code', $map)) {
+	   /*if (array_key_exists('erp_process_in_detail.p_pro_code', $map)) {
 	       //根据父sku编号查询父id
 	       $M = M('erp_process_in_detail');
 	       $where['pro_code'] = $map['erp_process_in_detail.p_pro_code'][1];
@@ -145,7 +145,7 @@ class ProcessInController extends CommonController {
 	       $map['erp_process_in.id'] = array('in', $pid_arr);
 	       unset($where);
 	       unset($map['erp_process_in_detail.p_pro_code']);
-	   }
+	   }*/
 	   if (array_key_exists('erp_process_sku_relation.company_id', $map)) {
 	       //查询系统
 	       $relation = M('erp_process_sku_relation');
@@ -177,7 +177,7 @@ class ProcessInController extends CommonController {
 	       
 	   }
 	}
-public function before_edit(&$data) {
+    public function before_edit(&$data) {
         if (empty($data)) {
             return;
         }

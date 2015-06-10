@@ -66,7 +66,7 @@ class ProcessLogic {
         foreach ($number as $value) {
             $num += $value['stock_qty'];
         }
-        if ($num > $data['real_qty']) {
+        if ($num >= $data['real_qty']) {
             $return = true;
         }
          
@@ -211,6 +211,16 @@ class ProcessLogic {
             }
         }
         
+        //更新出库单
+        $D = M('stock_bill_out');
+        $map['id'] = $pid;
+        $update['status'] = 2;
+        $bool = $D->where($map)->save($update);
+        if (!$bool) {
+            return $return;
+        }
+        
+        
         $return = true;
         return $return;
     }
@@ -241,9 +251,22 @@ class ProcessLogic {
             $data['status'] = 'on';
             $M->where($map)->setInc('real_qty', $value['qty']);
             if ($M->create($data)) {
-                $M->where($map)->save();
+                $affect = $M->where($map)->save();
+                if (!$affect) {
+                    return $return;
+                }
             }
         }
+        
+        //更新出库单
+        $D = M('erp_process_out');
+        $map['id'] = $pid;
+        $update['status'] = 'on';
+        $bool = $D->where($map)->save($update);
+        if (!$bool) {
+            return $return;
+        }
+        
     
         $return = true;
         return $return;
@@ -330,9 +353,22 @@ class ProcessLogic {
             $data['status'] = 33;
             $M->where($map)->setInc('done_qty', $value['qty']);
             if ($M->create($data)) {
-                $M->where($map)->save();
+                $affect = $M->where($map)->save();
+                if (!$affect) {
+                    return $return;
+                }
             }
         }
+        
+        //更新入库单
+        $D = M('stock_bill_in');
+        $map['id'] = $pid;
+        $update['status'] = 33;
+        $bool = $D->where($map)->save($update);
+        if (!$bool) {
+            return $return;
+        }
+        
     
         $return = true;
         return $return;
@@ -365,8 +401,21 @@ class ProcessLogic {
             $data['status'] = 'on';
             $M->where($map)->setInc('real_qty', $value['qty']);
             if ($M->create($data)) {
-                $M->where($map)->save();
+                $affect = $M->where($map)->save();
+                if ($affect) {
+                    return $return;
+                }
             }
+        }
+        
+        unset($map);
+        //更新入库单
+        $D = M('erp_process_in');
+        $map['id'] = $pid;
+        $update['status'] = 'on';
+        $bool = $D->where($map)->save($update);
+        if (!$bool) {
+            return $return;
         }
     
         $return = true;
@@ -429,7 +478,7 @@ class ProcessLogic {
         
         //写入加工入库单详情
         $detail_data['pro_code'] = $data['pro_code']; //sku编号
-        $detail_data['batch'] = $data['code']; //批次 关联加工单号
+        $detail_data['batch'] = get_batch($data['code']);; //批次 关联加工单号
         $detail_data['plan_qty'] = $data['plan_qty']; //计划量
         $detail_data['real_qty'] = $data['real_qty']; //实际量
         $detail_data['status'] = $status; //状态
@@ -548,9 +597,9 @@ class ProcessLogic {
         $param['wh_id'] = $data['wh_id']; //仓库id
         $param['type'] = $data['id']; //入库类型ID
         $param['company_id'] = $data['company_id']; //所属系统
-        $param['refer_code'] = $data['code']; //关联采购单号
+        $param['refer_code'] = $data['code']; //关联加工单号
         $param['pid'] = 0; //关联采购单号ID
-        $param['batch_code'] = 'batch' . NOW_TIME; //批次号
+        $param['batch_code'] = get_batch($data['code']);; //批次号
         $param['partner_id'] = 0; //供应商
         $param['remark'] = $data['remark']; //备注
         $param['status'] = $status; //状态 
