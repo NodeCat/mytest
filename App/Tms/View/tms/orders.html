@@ -10,7 +10,7 @@
       <span class="input-group-addon">
       <i class="glyphicon glyphicon-pencil"></i>
     	</span>
-      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入订单号或手机后4位">
+      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入订单id">
     </div>
   </div>
  </div>
@@ -60,7 +60,7 @@
 <default />
 <a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
 </switch>
- {$vo.order_type_cn} <i class="order-id">{$vo.id}</i>&nbsp;
+ {$vo.order_type_cn} <span class="order-id">{$vo.id}</span>&nbsp;
   <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
     <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
   <br/>
@@ -131,13 +131,13 @@
 </ul>
     <div class="panel-footer summary">
       <div class="input-group row">
-          <span class="input-group-addon">订单 ¥<span class="p_final">{$vo.total_price}</span>元</span>
+          <span class="input-group-addon">订单 ¥<span class="p_total">{$vo.total_price}</span>元</span>
           <!--
           <input type="hidden" class="form-control" placeholder="{$vo.total_price}" value="{$vo.total_price}" readonly>
           -->
-          <span class="input-group-addon">优惠 ¥<span class="p_final">{$vo.minus_amount}</span>元</span>
+          <span class="input-group-addon">优惠 ¥<span class="p_minus">{$vo.minus_amount}</span>元</span>
 
-          <span class="input-group-addon">运费 ¥<span class="p_final">{$vo.minus_amount}</span>元</span>
+          <span class="input-group-addon">运费 ¥<span class="p_drive">{$vo.minus_amount}</span>元</span>
           
 <input type="text" style="" class="form-control p_minus" placeholder="退款" value="" readonly>
           
@@ -215,7 +215,7 @@ form.order ul.list-group{
 
   function goToGaodeMap(lat,lng){
     if(typeof HostApp == "undefined") {
-      alert('使用导航功能请下载大厨网配送app.');
+      alert('使用导航功能请您先下载大厨网配送app.');
     }
     else {
       HostApp.navigationToMap(lat,lng);
@@ -225,7 +225,8 @@ form.order ul.list-group{
     $('.navigation-map').on('click',function(){
         var lat = $(this).data('lat');
         var lng = $(this).data('lng');
-        if(lat == null || lat == '' || lng == null || lng == ''){
+        if(lat == null || lat == "''" || lng == null || lng == "''"){
+          alert('无法导航，销售偷懒没有录入该客户地址的坐标。');
           return;
         }
         else {
@@ -257,23 +258,23 @@ form.order ul.list-group{
           final_price = accAdd(final_price, accMul(line_qty,$(item).val()));
         });
         //减去优惠金额
-        var minus = $(this).parents('.order').find('.p_minus').val();
+        var minus = $(this).parents('.order').find('.p_minus').text();
         var sum = accSub(final_price, minus);
-        $(this).parents('.order').find('.p_final').val(sum);
+        $(this).parents('.order').find('.p_final').text(sum);
         //计算实收金额，累加所有的小计，并减去优惠金额
         var deal_sum = 0;
         $(this).parents('.order').find('.p_sum').each(function(index,item){
-          deal_sum = accAdd(deal_sum, $(item).val());
+          deal_sum = accAdd(deal_sum, $(item).text());
         });
         deal_sum = accSub(deal_sum, minus);
         $(this).parents('.order').find('.p_deal').val(deal_sum);
     });
     $('.p_sum').on('input',function(){
-        var minus = $(this).parents('.order').find('.p_minus').val();
+        var minus = $(this).parents('.order').find('.p_minus').text();
         //计算实收金额，累加所有的小计，并减去优惠金额
         var deal_sum = 0;
         $(this).parents('.order').find('.p_sum').each(function(index,item){
-          deal_sum = accAdd(deal_sum, $(item).val());
+          deal_sum = accAdd(deal_sum, $(item).text());
         });
         deal_sum = accSub(deal_sum, minus);
         $(this).parents('.order').find('.p_deal').val(deal_sum);

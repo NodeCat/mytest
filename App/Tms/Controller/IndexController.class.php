@@ -12,6 +12,7 @@ class IndexController extends Controller {
     public function index(){
         $this->redirect('delivery');
     }
+    //登录
     public function login() {
         if(IS_GET) {
             if(session('?user')) {
@@ -41,13 +42,14 @@ class IndexController extends Controller {
         session('[destroy]');
         $this->redirect('login');
     }
+    //配送单详情
     public function orders(){
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
             $M = M('tms_delivery');
             $res = $M->find($id);
-            /*
+            
             if(empty($res)) {
                 $this->error = '未找到该提货纪录。';
             }
@@ -59,9 +61,8 @@ class IndexController extends Controller {
                 $this->display('tms:orders');
                 exit();
             }
-            */
-            //$map['dist_id'] = $res['id'];
-            $map['dist_id'] = $id;
+            
+            $map['dist_id'] = $res['dist_id'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
@@ -137,10 +138,11 @@ class IndexController extends Controller {
         $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
+    //司机提货
     public function delivery() {
-        $id = I('post.code');
+        $id = I('post.code/d',0);
         if(IS_POST && !empty($id)) {
-            $map['dist_code'] = $id;
+            $map['dist_id'] = $id;
             //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
@@ -151,7 +153,7 @@ class IndexController extends Controller {
             unset($map);
             if(!empty($dist)) {//若该配送单已被认领
                 if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
-                    $this->error = '该单据您已提货';
+                    $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
                     $map['id'] = $dist['id'];
@@ -162,31 +164,39 @@ class IndexController extends Controller {
             }
 
             //查询该配送单的信息
-            $map['dist_number'] = substr($id, 2);
+            //$map['dist_number'] = substr($id, 2);
+            $map['id'] = $id;
             $A = A('Tms/Order','Logic');
             $dist = $A->distInfo($map);
-            if($id != $dist['dist_number']) {
-                $this->error = '未找到该单据';
+            
+            //if($id != $dist['dist_number']) {
+            if(empty($dist)) {
+                $this->error = '提货失败，未找到该单据';
             }
 
             if($dist['status'] == '2') {//已发运的单据不能被认领
-                $this->error = '该单据已发运';
+                //$this->error = '提货失败，该单据已发运';
             }
+            $ctime = strtotime($dist['created_time']);
+            if($ctime < strtotime($start_date) || $ctime > strtotime($end_date)) {
+                $this->error = '提货失败，该配送单已过期';
+            }
+
+
             if(empty($this->error)){
-                
                 $data['dist_id'] = $dist['id'];
+                $data['dist_code'] = $dist['dist_number'];
                 $data['mobile'] = session('user.mobile');
                 $data['order_count'] = $dist['order_count'];
                 $data['sku_count'] = $dist['sku_count'];
                 $data['line_count'] = $dist['line_count'];
                 $data['total_price'] = $dist['total_price'];
                 $data['site_src'] = $dist['site_src'];
-                $data['dist_code'] = $dist['dist_number'];
                 $data['created_time'] = get_time();
                 $data['updated_time'] = get_time();
                 $data['status'] = '1';
                 $lines = $A->line(array('line_ids'=>array($dist['line_id'])));
-                $data['line_name'] = $lines[0]['name'];//dump($lines);dump($dist);exit();
+                $data['line_name'] = $lines[0]['name'];
                 $citys = $A->city();
                 $data['city_id'] = $citys[$dist['city_id']];
                 
@@ -200,13 +210,13 @@ class IndexController extends Controller {
                 $map['driver'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['id'];
-                    $map['order_id'] = $val['id'];dump($map);
+                    $map['order_id'] = $val['id'];
                     $res = $A->set_status($map);
                 }
-                dump($res);exit();
+                
                 unset($map);
                 if($res) {
-                    $this->msg = "提货成功。";
+                    $this->msg = "提货成功";
                 }
                 else {
                     $this->error = "提货失败";
