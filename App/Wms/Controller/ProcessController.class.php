@@ -601,7 +601,7 @@ class ProcessController extends CommonController {
             }
             $data = $data['data'];
             if ($stock_in->create($data)) {
-                $pid = $stock_in->add($data);
+                $pid = $stock_in->add();
             }
             
             if (!$pid) {

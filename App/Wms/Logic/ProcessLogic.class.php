@@ -550,7 +550,7 @@ class ProcessLogic {
     
     /**
      * 生成加工入库单(wms)
-     * @param $status string 状态
+     * @param $status int 状态
      * @param $data array 数据组
      * array(
      *     'id' => 入库类型
@@ -562,7 +562,7 @@ class ProcessLogic {
      *     'company_id' => 所属系统
      * )
      */
-    public function make_process_in_stock_wms($status = '', $data = array()) {
+    public function make_process_in_stock_wms($status = 0, $data = array()) {
         $return = array('status' => false, 'msg' => '');
     
         if (empty($data)) {
@@ -591,7 +591,7 @@ class ProcessLogic {
     
     /**
      * 生成加工入库单详情(wms)
-     * @param $status string 状态
+     * @param $status int 状态
      * @param $data array 数据组
      * array(
      *     'expected_qty' => 预计数量
@@ -603,7 +603,7 @@ class ProcessLogic {
      * )
      */
     
-    public function make_process_in_stock_wms_detail($status = '', $data = array()) {
+    public function make_process_in_stock_wms_detail($status = 0, $data = array()) {
         $return = array('status' => false, 'msg' => '');
     
         if (empty($data) || empty($status)) {
@@ -622,6 +622,7 @@ class ProcessLogic {
         $detail_data['done_qty'] = 0; //已上架量
         $detail_data['pro_uom'] = '件';
         $detail_data['remark'] = $data['remark'];
+        $detail_data['status'] = $status;
         $detail_data['created_user'] = session()['user']['uid']; //创建人
         $detail_data['updated_user'] = session()['user']['uid']; //修改人
         $detail_data['created_time'] = get_time(); //创建时间
