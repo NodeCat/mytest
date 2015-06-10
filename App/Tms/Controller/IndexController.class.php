@@ -60,8 +60,8 @@ class IndexController extends Controller {
                 exit();
             }
             */
-            //$map['dist_id'] = $res['id'];
-            $map['dist_id'] = $id;
+            $map['dist_id'] = $res['dist_id'];
+            //$map['dist_id'] = $id;
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
@@ -165,6 +165,7 @@ class IndexController extends Controller {
             $map['dist_number'] = substr($id, 2);
             $A = A('Tms/Order','Logic');
             $dist = $A->distInfo($map);
+
             if($id != $dist['dist_number']) {
                 $this->error = '未找到该单据';
             }
@@ -173,7 +174,6 @@ class IndexController extends Controller {
                 //$this->error = '该单据已发运';
             }
             if(empty($this->error)){
-                
                 $data['dist_id'] = $dist['id'];
                 $data['mobile'] = session('user.mobile');
                 $data['order_count'] = $dist['order_count'];
