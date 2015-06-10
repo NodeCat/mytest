@@ -12,6 +12,7 @@ class IndexController extends Controller {
     public function index(){
         $this->redirect('delivery');
     }
+    //登录
     public function login() {
         if(IS_GET) {
             if(session('?user')) {
@@ -41,6 +42,7 @@ class IndexController extends Controller {
         session('[destroy]');
         $this->redirect('login');
     }
+    //配送单详情
     public function orders(){
         //layout(false);
         $id = I('get.id',0);
@@ -136,6 +138,7 @@ class IndexController extends Controller {
         $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
+    //司机提货
     public function delivery() {
         $id = I('post.code/d',0);
         if(IS_POST && !empty($id)) {
