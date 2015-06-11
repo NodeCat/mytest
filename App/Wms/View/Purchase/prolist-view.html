@@ -7,23 +7,25 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-  			<th>产品名称</th><th>采购数量</th><th>计量单位</th><th>采购单价</th><th>操作</th>
+  			<th>产品名称</th><th>采购数量</th><th>计量单位</th><th>采购单价</th><th>小计</th><th>操作</th>
   		</thead>
   		<tbody>
       <volist name="pros" id="vo">
         
 <tr class="tr-cur">
       <td style="width:50%;">{$vo.pro_names}</td>
-        <td  style="width:10%;" class="text-left">
+        <td  style="width:10%;" class="text-left p_qty">
           {$vo.pro_qty}
         </td>
         <td style="width:10%;">
           {$vo.pro_uom}
         </td>
-        <td style="width:10%;" class="text-left">
+        <td style="width:10%;" class="text-left p_price">
           {$vo.price_unit}
         </td>
-        
+        <td style="width:10%;" class="text-left p_res">
+          {$vo.price_subtotal}
+        </td>
         <td style="width:10%;">
           
         </td>
