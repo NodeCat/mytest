@@ -65,7 +65,14 @@
   <tbody>
   	<volist name="bill_in_detail_list" id="bill_in_detail">
 	  	<tr>
-	  		<td>{$bill_in_detail.pro_code}</td><td>{$bill_in_detail.barcode}</td><td>{$bill_in_detail.pro_name}</td><td>{$bill_in_detail.expected_qty}</td><td>{$bill_in_detail.receipt_qty}</td><td></td>
+	  		<td style="width:5%;">{$bill_in_detail.pro_code}</td>
+            <td style="width:30%;">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$bill_in_detail.barcode}" style="height:30px;width:240px" class="img-responsive center-block" alt="Responsive image">
+            </td>
+            <td style="width:30%;">{$bill_in_detail.pro_name}</td>
+            <td style="width:5%;">{$bill_in_detail.expected_qty}</td>
+            <td style="width:5%;">{$bill_in_detail.receipt_qty}</td>
+            <td style="width:5%;"></td>
 	  	</tr>
   	</volist>
   </tbody>
