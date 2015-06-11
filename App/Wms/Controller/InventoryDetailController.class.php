@@ -21,9 +21,9 @@ class InventoryDetailController extends CommonController {
         ->find();
 
         //如果不是已关闭的盘点单 可以修改实盘量
-        $toolbar_tr_is_edit = false;    
+        $this->toolbar_tr_is_edit = 0;    
         if(isset($this->auth['edit']) && $inventory_info['status'] != 'closed'){
-            $toolbar_tr_is_edit = true;
+            $this->toolbar_tr_is_edit = 1;
         }
 
         $this->table = array(
@@ -35,7 +35,7 @@ class InventoryDetailController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => false,'new'=>'true'), 
-            array('name'=>'edit', 'show' => $toolbar_tr_is_edit,'new'=>'false'), 
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
         $this->toolbar =array(
@@ -100,10 +100,20 @@ class InventoryDetailController extends CommonController {
 
     }
 
-    //save方法执行后，执行该方法
-    protected function after_save($id){
+    //更新盘点单详情
+    public function upd_detail(){
+        $id = I('post.id');
+        if(empty($id)){
+            $this->ajaxReturn(array('status'=>0,'msg'=>'id is empty'));
+        }
+
+        $pro_qty = I('post.pro_qty');
+        $theoretical_qty = I('post.theoretical_qty');
+
         //变更盘点详情状态
         $map['id'] = $id;
+        $data['pro_qty'] = $pro_qty;
+        $data['theoretical_qty'] = $theoretical_qty;
         $data['status'] = 'done';
         M('stock_inventory_detail')->where($map)->save($data);
         unset($data);
@@ -138,5 +148,6 @@ class InventoryDetailController extends CommonController {
             unset($data);
         }
 
+        $this->ajaxReturn(array('status'=>1));
     }
 }
