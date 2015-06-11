@@ -93,7 +93,12 @@ class StockOutApi extends Controller{
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['product_code'];
             $detail['order_qty'] = $val['qty'];
-            $detail['delivery_qty'] = $val['qty'];
+            //如果是加工出库单，则默认的实际发货量为0，其余类型出库单默认发货量等于订单量
+            if($stock_out_type == 'MNO') {
+                $detail['delivery_qty'] = 0;
+            }else {
+                $detail['delivery_qty'] = $val['qty'];
+            }
             $detail['pro_name'] = $pms[$val['product_code']]['name'];  
             //拼接货品的规格
             unset($detail['pro_attrs']);
