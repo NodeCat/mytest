@@ -116,11 +116,16 @@ class PurchaseController extends CommonController {
         );
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
-            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            //'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            //'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            //'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
+            //'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
+            //'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            'edit'=>array('name'=>'edit', 'show' => false,'new'=>'true'), 
+            'pass'=>array('name'=>'pass' ,'show' => false,'new'=>'true'),
+            'reject'=>array('name'=>'reject' ,'show' => false,'new'=>'true'),
+            'close'=>array('name'=>'close' ,'show' => false,'new'=>'true'),
+            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => false,'new'=>'true'),
             'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
         
@@ -245,6 +250,16 @@ class PurchaseController extends CommonController {
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
+
+		//view上方按钮显示权限
+		$this->toolbar_tr =array(
+			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
+            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+		);
 	}
 	protected function before_lists(){
 		$pill = array(
