@@ -481,7 +481,7 @@ class PurchaseController extends CommonController {
 			$bill['detail'][] = $v;
 		}
 
-		$res = $Min->relation(true)->add($bill);
+		$res = $Min->relation('detail')->add($bill);
 		if($res == true){
 			$purchase['status'] = '13';
 			$M->where($map)->save($purchase);
