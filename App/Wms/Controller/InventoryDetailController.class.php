@@ -7,7 +7,7 @@ class InventoryDetailController extends CommonController {
             'pro_code' => '货品标识',
             'pro_name' => '货品名称',
             'theoretical_qty' => '原数量',
-            'pro_qty' => '实盘量',
+            'pro_qty' => '实盘量（点击修改）',
             'diff_qty' => '差异量',
             );
 	//设置列表页选项
