@@ -384,11 +384,16 @@ class StockLogic{
 	public function incDestStockDecSrcStock($src_stock,$dest_stock_info,$param){
 		//如果没有记录，则新加一条记录
 		if(empty($dest_stock_info)){
+			//查询目标库位的默认status
+			$map['id'] = $param['dest_location_id'];
+			$dest_location_info = M('Location')->where($map)->find();
+			unset($map);
+			
 			$add_info['wh_id'] = $param['wh_id'];
 			$add_info['location_id'] = $param['dest_location_id'];
 			$add_info['pro_code'] = $param['pro_code'];
 			$add_info['batch'] = $src_stock['batch'];
-			$add_info['status'] = $src_stock['status'];
+			$add_info['status'] = $dest_location_info['status'];
 			$add_info['stock_qty'] = $param['variable_qty'];
 			$add_info['assign_qty'] = 0;
 			$add_info['prepare_qty'] = 0;
@@ -410,7 +415,7 @@ class StockLogic{
 					'old_qty' => 0,
 					'new_qty' => $param['variable_qty'],
 					'batch' => $src_stock['batch'],
-					'status' => $src_stock['status'],
+					'status' => $dest_location_info['status'],
 					);
 				$stock_move = D('StockMoveDetail');
 				$stock_move_data = $stock_move->create($stock_move_data);
@@ -547,13 +552,18 @@ class StockLogic{
 		$src_stock_info = M('Stock')->where($map)->find();
 		unset($map);
 
+		//查询目标库位的默认status
+		$map['id'] = $param['dest_location_id'];
+		$dest_location_info = M('Location')->where($map)->find();
+		unset($map);
+
 		//如果没有记录，则新加一条记录
 		if(empty($dest_stock_info)){
 			$add_info['wh_id'] = $param['wh_id'];
 			$add_info['location_id'] = $param['dest_location_id'];
 			$add_info['pro_code'] = $param['pro_code'];
 			$add_info['batch'] = $param['batch'];
-			$add_info['status'] = $param['status'];
+			$add_info['status'] = $dest_location_info['status'];
 			$add_info['stock_qty'] = $param['variable_qty'];
 			$add_info['assign_qty'] = 0;
 			$add_info['prepare_qty'] = 0;
@@ -574,7 +584,7 @@ class StockLogic{
 					'move_qty' => $param['variable_qty'],
 					'old_qty' => 0,
 					'new_qty' => $param['variable_qty'],
-					'batch' => $param['batch'],
+					'batch' => $dest_location_info['batch'],
 					'status' => $param['status'],
 					);
 				$stock_move = D('StockMoveDetail');

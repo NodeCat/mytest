@@ -62,10 +62,4 @@ class OrderLogic{
 		$res = json_decode($res,true);
 		return $res;
 	}
-	public function get_delegate($url,$map='') {
-		$url = $this->server . $url;
-		$res = $this->request->post($url,$map);
-		$res = json_decode($res,true);
-		return $res;
-	}
 }

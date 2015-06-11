@@ -1,7 +1,5 @@
 <?php
 return array(
-	'API_PATH'=>'http://s.dachuwang.net',
-
 	'SESSION_OPTIONS'	=> array('expire'=>'43200'),
 	'SITE_TITLE' =>'大厨网物流配送系统',
 	'LAYOUT_ON'         => TRUE,
