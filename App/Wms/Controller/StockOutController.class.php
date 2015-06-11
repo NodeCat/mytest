@@ -154,7 +154,7 @@ class StockOutController extends CommonController {
    
     protected function after_lists(&$data) {
         foreach($data as &$val) {
-            if($val['op_date'] == "0000-00-00 00:00:00") {
+            if($val['op_date'] == "0000-00-00 00:00:00" || $val['op_date'] == "1970-01-01 00:00:00") {
                 $val['delivery_time'] = '无';
             }else {
                 $val['delivery_time'] = date('Y-m-d', strtotime($val['op_date'])) . $this->filter['op_time'][$val['op_time']];
