@@ -76,13 +76,11 @@ class CommonController extends AuthController {
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
                     case 'between'://区间匹配
-                        if(strpos($key, 'created_time')){
-                            if(!empty($condition[$key])){
-                                $condition[$key] = $condition[$key].' 00:00:01';
-                            }
-                            if(!empty($condition[$key.'_1'])){
-                                $condition[$key.'_1'] = $condition[$key.'_1'].' 23:59:59';
-                            }
+                        //边界值+1
+                        if(check_data_is_valid($condition[$key]) || check_data_is_valid($condition[$key.'_1'])){
+                            $condition[$key.'_1'] = date('Y-m-d',strtotime($condition[$key.'_1']) + 86400);
+                        }elseif(is_numeric($condition[$key.'_1'])){
+                            $condition[$key.'_1'] = $condition[$key.'_1'] + 1;
                         }
                         if(empty($condition[$key]) && !empty($condition[$key.'_1'])) {
                             $map[$key]=array('lt',$condition[$key.'_1']);
