@@ -5,7 +5,7 @@ class OrderLogic{
 	protected $server = '';
 	protected $request ;
     public function __construct(){
-    	$this->server = C('API_PATH');
+    	$this->server = C('HOP_API_PATH');
 		import("Common.Lib.HttpCurl");
 		$this->request = new \HttpCurl();
     }

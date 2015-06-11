@@ -503,8 +503,8 @@ class StockInController extends CommonController {
     	$bill_in_detail_list = M('stock_bill_in_detail')
     	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
     	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
-
-    	$data['refer_code'] = $bill_in['code'];
+        
+        $data['refer_code'] = $bill_in['code'];
     	$data['remark'] = $bill_in['remark'];
     	$data['print_time'] = get_time();
     	$data['partner_name'] = $bill_in['partner_name'];
@@ -514,6 +514,13 @@ class StockInController extends CommonController {
     	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
 
     	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+        //如果没有对应的条码号则使用内部货号作为条码号
+        foreach($bill_in_detail_list as &$val) {
+            if(empty($val['barcode'])) {
+               $val['barcode'] = $val['pro_code']; 
+            }
+        }
+       
     	$data['bill_in_detail_list'] = $bill_in_detail_list;
 
     	layout(false);

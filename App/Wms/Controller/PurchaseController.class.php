@@ -120,7 +120,7 @@ class PurchaseController extends CommonController {
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
-            'refund'=>array('name'=>'refund' ,'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
             'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
         
@@ -440,7 +440,7 @@ class PurchaseController extends CommonController {
 		$bill['code'] = get_sn('in');
 		$bill['type'] = '1';
 		$bill['status'] = '21';
-		$bill['batch_code'] = 'batch'.NOW_TIME;
+		$bill['batch_code'] = get_batch($bill['code']);
 
 		foreach ($res['detail'] as $key => $val) {
 			$v['pro_code'] = $val['pro_code'];
