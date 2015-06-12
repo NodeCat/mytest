@@ -272,3 +272,14 @@ function auth_module_black_list($module){
 
     return false;
 }
+
+/**
+* 校验是否是日期
+*/
+function check_data_is_valid($str){
+    $unixTime = strtotime($str);
+    if (!$unixTime) {
+        return false;
+    }
+    return true;
+}

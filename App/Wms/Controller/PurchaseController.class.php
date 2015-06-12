@@ -116,11 +116,16 @@ class PurchaseController extends CommonController {
         );
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
-            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
-            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
-            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
-            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            //'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            //'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            //'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
+            //'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
+            //'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            'edit'=>array('name'=>'edit', 'show' => false,'new'=>'true'), 
+            'pass'=>array('name'=>'pass' ,'show' => false,'new'=>'true'),
+            'reject'=>array('name'=>'reject' ,'show' => false,'new'=>'true'),
+            'close'=>array('name'=>'close' ,'show' => false,'new'=>'true'),
+            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => false,'new'=>'true'),
             'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
         
@@ -245,6 +250,16 @@ class PurchaseController extends CommonController {
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		}
 		$this->pros = $pros;
+
+		//view上方按钮显示权限
+		$this->toolbar_tr =array(
+			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
+            'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+		);
 	}
 	protected function before_lists(){
 		$pill = array(
@@ -374,8 +389,9 @@ class PurchaseController extends CommonController {
 		$purchase_info = M('stock_purchase')->where($map)->find();
 		unset($map);
 
-		//根据采购单号查询是否已经建立了冲红采购单
+		//根据采购单号查询是否已经建立了冲红采购单 冲红单的状态不是已作废
 		$map['refer_code'] = $purchase_info['code'];
+		$map['status'] = array('neq','cancel');
 		$purchase_refund_info = M('erp_purchase_refund')->where($map)->find();
 		unset($map);
 		if(!empty($purchase_refund_info)){
@@ -406,12 +422,19 @@ class PurchaseController extends CommonController {
 		unset($map);
 		$sum = 0;
 		foreach ($stock_bill_in_detail as $key => $val) {
+			//如果sku已经全部收到，则不计入冲红单中
+			if($val['expected_qty'] - $val['done_qty'] == 0){
+				continue;
+			}
 			$v = $val;
 			unset($v['id']);
 			unset($v['pid']);
 			$v = D('PurchaseRefundDetail')->create($v);
 			$refund_purchase_data['detail'][] = $v;
 			$sum +=  $val['price_unit'] * $val['qualified_qty'];
+		}
+		if(empty($refund_purchase_data['detail'])){
+			$this->msgReturn(0,'已经全部收货成功，没有差异，不能生成冲红单');
 		}
 		$refund_purchase_data['for_paid_amount'] = $refund_purchase_data['price_total'] - $sum;
 
