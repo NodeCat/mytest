@@ -69,7 +69,7 @@
     <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
   <br/>
   -->
-    <i class="glyphicon glyphicon-yen"></i>{$vo.final_price} 元  &nbsp;&nbsp;{$vo.pay_status} &nbsp;&nbsp;
+    <i class="glyphicon glyphicon-yen"></i>{$vo.final_price} 元  &nbsp;&nbsp;{$vo.pay_status} &nbsp;
 <switch name="vo['status_cn']" >
 <case value="已签收" break="0"></case>
 <case value="已完成" break="0"></case>
@@ -81,7 +81,7 @@
 </case>
 <default />
 </switch>
- &nbsp;<span style="color:red;">点击展开</span>
+ <span style="color:red;">点击展开</span>
 </a>
   <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
   <form class="order">
@@ -143,7 +143,7 @@
           <span class="input-group-addon">优惠 ¥<span class="p_minus">{$vo.minus_amount}</span>元</span>
 
           <span class="input-group-addon">运费 ¥<span class="p_drive">{$vo.deliver_fee}</span>元</span>
-          <span class="input-group-addon">其它<span class="p_drive">0</span></span>
+          <span class="input-group-addon"></span>
           
 <input type="text" style="padding:0px;margin:0px;width:0px;" class="form-control" placeholder="" value="" readonly>
           
