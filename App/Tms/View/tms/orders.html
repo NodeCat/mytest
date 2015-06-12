@@ -81,7 +81,7 @@
 </case>
 <default />
 </switch>
- &nbsp;&nbsp;<span style="color:red;">点击展开</span>
+ &nbsp;<span style="color:red;">点击展开</span>
 </a>
   <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
   <form class="order">
@@ -195,6 +195,9 @@
 <div class="panel-footer">
       <div class="input-group row">
         <span class="input-group-addon">备注</span>
+        <eq name="vo['sign_msg']" value="0">
+          {~$vo['sign_msg']='';}
+        </eq>
       <input class="form-control" type="text" name="sign_msg" value="{$vo.sign_msg}" placeholder="签收或退货备注">
       </div>
     </div>
