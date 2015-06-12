@@ -61,7 +61,7 @@ class CommonController extends AuthController {
         !empty($condition) && $this->filter_list($condition, '1');//反向转义，反向转filter
         if(!empty($condition)){
             foreach ($query as $key => $v) {//query是查询条件生成的数组，从query中取出当前提交的查询条件。因此，如果提交了query定义之外的查询条件，是会被过滤掉的
-                if(!array_key_exists($key, $condition)) {
+                if(!array_key_exists($key, $condition) && !array_key_exists($key.'_1', $condition)) {
                     continue;
                 }
                 //查询匹配方式
@@ -76,6 +76,12 @@ class CommonController extends AuthController {
                         $map[$key]=array($v['query_type'],'%'.$condition[$key].'%');
                         break;
                     case 'between'://区间匹配
+                        //边界值+1
+                        if(check_data_is_valid($condition[$key]) || check_data_is_valid($condition[$key.'_1'])){
+                            $condition[$key.'_1'] = date('Y-m-d',strtotime($condition[$key.'_1']) + 86400);
+                        }elseif(is_numeric($condition[$key.'_1'])){
+                            $condition[$key.'_1'] = $condition[$key.'_1'] + 1;
+                        }
                         if(empty($condition[$key]) && !empty($condition[$key.'_1'])) {
                             $map[$key]=array('lt',$condition[$key.'_1']);
                         }

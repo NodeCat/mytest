@@ -208,6 +208,8 @@ class InventoryController extends CommonController {
 			if(empty($stock_pro_codes)){
 				$this->msgReturn(0,'该区域id:'.$data['location_id'].'中，没有任何sku');
 			}
+
+			$this->inventory_location_ids = $location_ids;
 		}
 		
 		//获得页面传递过来的pro_codes，如果不为空，则需要匹配，pro_codes是否在提交过来的location_id范围内
@@ -261,6 +263,7 @@ class InventoryController extends CommonController {
 				//根据inventory_pro_codes 查询对应的库存量stock_qty
 				$map['pro_code'] = array('in', $this->inventory_pro_codes);
 				$map['wh_id'] = session('user.wh_id');
+				$map['location_id'] = array('in', $this->inventory_location_ids);
 				//$stock_lists = M('Stock')->where($map)->getField('pro_code,stock_qty,location_id',true);
 				$stock_lists = M('Stock')->field('pro_code, location_id, sum(stock_qty) as stock_qty')->group('location_id,pro_code')->where($map)->select();
 				unset($map);

@@ -15,7 +15,7 @@ class ProcessInDetailModel extends Model {
 
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
-                array('created_user',UID,1,'string'),
+        array('created_user',UID,1,'string'),
         array('created_time','get_time',1,'function'),
         array('updated_user',UID,3,'string'),
         array('updated_time','get_time',3,'function'),
