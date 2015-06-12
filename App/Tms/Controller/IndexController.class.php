@@ -19,7 +19,7 @@ class IndexController extends Controller {
                 $this->redirect('delivery');
             }
             else {
-                $this->title = '请先登录';
+                $this->title = '请您签到';
                 $this->display('Index:login');    
             }   
         }
@@ -71,10 +71,10 @@ class IndexController extends Controller {
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
                 switch ($val['pay_status']) {
                     case -1:
-                        $s = '未付款';
+                        $s = '货到付款';
                         break;
                     case 0:
-                        $s = '未付款';
+                        $s = '货到付款';
                         break;
                     case 1:
                         $s = '已付款';
