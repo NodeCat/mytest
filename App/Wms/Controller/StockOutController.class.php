@@ -4,13 +4,15 @@ use Think\Controller;
 class StockOutController extends CommonController {
     
     protected $filter = array(
-                    'line_name'=>array(
-                        '1'=>'海淀黄庄北',
-                        '2'=>'知春路锦秋国际'
+                    'line_id'=>array(
                         ),
                     'status'=>array(
                         '1'=>'待生产',
-                        '2'=>'已出库'
+                        '2'=>'已出库',
+                        '3'=>'波次中',
+                        '4'=>'待拣货',
+                        '5'=>'待复核',
+                        '6'=>'己复核'  
                         ),
                    'process_type'=>array(
                         '1'=>'正常单',
@@ -33,27 +35,29 @@ class StockOutController extends CommonController {
         'wave_code' => '波次号',
         'packing_code' => '装车号',
         'total_qty' => '总件数',
-        'line_name' => '线路片区',
+        'line_id' => '线路片区',
         'status' => '出库单状态',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_time' => '送货时间',
         'created_time' => '下单时间'
 	);
-	protected $query = array (   
+	protected $query = array ( 
+
 		 'stock_bill_out.code' =>    array (     
 			'title' => '出库单号',     
 			'query_type' => 'like',     
 			'control_type' => 'text',     
 			'value' => 'code',   
 		),
-         'stock_bill_out.id' =>    array (     
-			'title' => '货品号',     
-			'query_type' => 'in',     
+
+         'stock_bill_out.wave_id' =>    array (     
+			'title' => '波次号',     
+			'query_type' => 'eq',     
 			'control_type' => 'text',     
-			'value' => '',   
+			'value' => 'wave_id',   
 		),  
-		
+
 		'stock_bill_out.type' =>    array (     
 			'title' => '出库单类型',     
 			'query_type' => 'eq',     
@@ -71,11 +75,11 @@ class StockOutController extends CommonController {
                         ),   
 		),   
 		
-		'stock_bill_out.line_name' => array (     
+		'stock_bill_out.line_id' => array (     
 			'title' => '路线片区',     
-			'query_type' => 'like',     
-			'control_type' => 'text',     
-			'value' => 'StockOut.line_name,line_name ln' 
+			'query_type' => 'eq',     
+			'control_type' => 'select',     
+			'value' => '' 
 			),
 		'stock_bill_out.process_type' => array (     
 			'title' => '处理类型',     
@@ -86,6 +90,13 @@ class StockOutController extends CommonController {
                         '2'=>'取消单'
                         ),   
 		),
+
+        'stock_bill_out.created_time' =>    array (    
+            'title' => '下单时间',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => '',   
+        ), 
         
 	);
 
@@ -102,6 +113,13 @@ class StockOutController extends CommonController {
             }
             $this->stock_out_type = $data; 
         }
+
+        //修改线路value值
+        $lines = $this->line();
+
+        $this->query['stock_bill_out.line_id']['value'] = $lines;
+
+        $this->filter['line_id'] = $lines;
     }
 
     protected function before_index() {
@@ -121,19 +139,41 @@ class StockOutController extends CommonController {
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
             );
+
         $this->search_addon = true;
     }
 
+    //根据仓库ID获取线路列表
+    public function line(){
+        //$map['wh_id'] = session('user.wh_id');
+        $map['status'] = '1';
+        $map['page_size'] = 100;
+        $A = A('Order','Logic');
+        $lines = $A->line($map);
+        $lines_arr = array();
+        foreach ($lines as $key => $value) {
+
+            $lines_arr[$value['id']] = $value['name'];
+        }
+        return $lines_arr;
+    }
+
     protected function before_lists(){
-        
+
         $pill = array(
 			'status'=> array(
 				'1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
-				'2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
+                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary'),
+                '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
+                '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
+                '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
+                '6'=>array('value'=>'6','title'=>'己复核','class'=>'warning')
+				
 			)
 		);
 		$stock_out = M('stock_bill_out');
 		$map['is_deleted'] = 0;
+        $map['wh_id'] = session('user.wh_id');
 		$res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $val) {
             if(array_key_exists($val['status'], $pill['status'])) {
@@ -372,12 +412,24 @@ class StockOutController extends CommonController {
     }
 
     protected function after_search(&$map) {
+
         if(! empty($map['stock_bill_out.id'])) {
             $condition['pro_code'] = $map['stock_bill_out.id'][1];
             $ids = M('stock_bill_out_detail')->field('pid')->where($condition)->select();
             $arr = array_column($ids, 'pid');
             $str = implode(",", $arr);
             $map['stock_bill_out.id'][1] = $str;
+        }
+
+        //过滤波次NOT IS_NUMERIC
+        if(array_key_exists('stock_bill_out.wave_id', $map)){
+
+            if(!is_numeric($map['stock_bill_out.wave_id']['1'])){
+
+                $map['stock_bill_out.wave_id']['1'] = null;
+
+            }
+
         }
     }
 
@@ -396,6 +448,80 @@ class StockOutController extends CommonController {
             }
         }
     
+    }
+
+    /**
+     * Ajax 创建波次
+     * @param String ids 出库单id列表
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-13
+     */
+    public function createWave(){
+
+        $ids       = I('ids');
+
+        $site_url  = I('site_url')?I('site_url'):1;
+
+        $waveLogic = A('Wave','Logic');
+
+        $insertArr = array();
+
+        $insertArr = $waveLogic->getWaveDate($ids, $site_url);
+
+        if($insertArr === FALSE) echojson('0','','波次创建失败23！');
+
+        $insertArr = array_merge($insertArr,$this->getDefaultInsert());
+
+        $m = M('stock_wave');
+
+        $wave_id = $m->data($insertArr)->add();
+
+        if(!$wave_id) echojson('0','','波次创建失败2！');
+
+        $re = $waveLogic->addWaveDetail($ids,$wave_id);
+        
+        if($re === FALSE){
+
+            M('stock_wave')->where(array('id'=>$wave_id))->save(array('is_delete'=>1));
+
+            echojson('0','','波次创建失败q！');
+
+        }else{
+
+            if($waveLogic->updateBillOutStatus($ids) === FALSE){
+
+                M('stock_wave')->where(array('id'=>$wave_id))->save(array('is_deleted'=>1));
+
+                M('stock_wave_detail')->where(array('pid'=>$wave_id))->delete();
+
+                echojson('0','','波次创建失败33！');
+
+            }
+
+            echojson('1','','波次创建成功！');
+
+        }
+
+    }
+
+    public function getDefaultInsert(){
+
+        $insertArr = array();
+
+        $insertArr['type'] = 200;
+
+        $insertArr['created_user'] = session('user.username');
+
+        $insertArr['created_time'] = get_time();
+
+        $insertArr['updated_time'] = session('user.uid');
+
+        $insertArr['updated_user'] = session('user.username');
+
+        $insertArr['start_time'] = get_time();
+
+        return $insertArr;
+
     }
 
     //按照pro_code模糊匹配sku

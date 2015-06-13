@@ -1,12 +1,12 @@
 <?php
 namespace Wms\Model;
 use Think\Model;
-class WaveModel extends Model {
+class WaveDetailModel extends Model {
 
-    protected $insertFields = array('id','type','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time','status');
-    protected $updateFields = array('type','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time','status');
+    protected $insertFields = array('id','pid','bill_out_id','created_time','updated_time','created_user','updated_user','status','is_deleted');
+    protected $updateFields = array('pid','bill_out_id','created_time','updated_time','created_user','updated_user','status','is_deleted');
     protected $readonlyField = array('id');
-    public $tableName = 'stock_wave';
+    public $tableName = 'stock_wave_detail';
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
@@ -16,9 +16,11 @@ class WaveModel extends Model {
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
                 array('created_user',UID,1,'string'),
+        array('type','200',1,'string'),
         array('created_time','get_time',1,'function'),
         array('updated_user',UID,3,'string'),
         array('updated_time','get_time',3,'function'),
+        array('start_time','get_time',1,'function'),
         array('is_deleted','0',1,'string'),
 
     );
@@ -30,12 +32,12 @@ class WaveModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('stock_wave.is_deleted'=>'0'),
-            'order'=>'stock_wave.id DESC',
+            'where'=>array('stock_wave_detail.is_deleted'=>'0'),
+            'order'=>'stock_wave_detail.id DESC',
             
         ),
         'latest'=>array(
-            'where'=>array('stock_wave.is_deleted'=>'0'),
+            'where'=>array('stock_wave_detail.is_deleted'=>'0'),
             'order'=>'update_time DESC',
         ),
 

@@ -1,6 +1,12 @@
 <notempty name="auth['stockOut']">
-<div class="form-group  col-lg-3">
+
+<div class="form-group  col-lg-1">
 <a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
+</div>
+
+<php>echo I('status');</php>
+<div class="form-group  col-lg-1">
+<a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
 </div>
 <script type="text/javascript">
 $(function(){
@@ -25,6 +31,31 @@ $(function(){
 		});
 		return true;
 	})
+
+	$(document).on('click','#create_wave',function(res){
+
+		var ids = getChecked();
+		$.ajax({
+			url:'/StockOut/createWave',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:'ids='+ids,
+			success: function(json){
+				if(json.status=='1'){
+					alert(json.msg);
+                    refresh_list();
+                    //window.href.location.reload();
+				}
+				if(json.status=='0'){
+					alert(json.msg);
+                    refresh_list();
+				}
+			}
+		});
+
+	});
+
 	
 })
 </script>
