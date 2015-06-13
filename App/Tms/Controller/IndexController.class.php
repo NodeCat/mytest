@@ -118,10 +118,11 @@ class IndexController extends Controller {
             $row['id']= $val;
             $row['actual_price'] = $price_unit[$key];
             $row['actual_quantity'] = $quantity[$key];
-            $row['actual_sum_price'] = $price_sum[$key];
+            $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
             $map['order_details'][] = $row;
         }
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
+        
         $A = A('Tms/Order','Logic');
         $res = $A->set_status($map);
         $this->ajaxReturn($res);
