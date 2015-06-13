@@ -51,7 +51,7 @@ class ProcessController extends CommonController {
 			        'pass' => '已生效',
 			        'reject' => '已驳回',
 			        'close' => '已作废',
-		            'make' => '已生产',
+		            'make' => '已完成',
                 ),
         ),
 	);
@@ -119,7 +119,8 @@ class ProcessController extends CommonController {
         $pms = D('Pms', 'Logic');
         $code_info = $pms->get_SKU_field_by_pro_codes($code);
         //格式化状态
-        foreach ($data as &$value) {
+        $new_data = array();
+        foreach ($data as $key => &$value) {
             $value['status'] = en_to_cn($value['status']);
             $value['type'] = en_to_cn($value['type']);
             foreach ($warehouse_info as $val) {
