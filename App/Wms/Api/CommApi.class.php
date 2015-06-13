@@ -6,6 +6,9 @@ class CommApi extends Controller{
 	protected function _initialize(){
         //API返回JSON格式数据，因此关闭模版布局
         layout(FALSE);
+        if(!defined('UID')) {
+            define('UID',2);
+        }
         return;
         //仅允许POST方式请求
         IS_POST || $this->error('403:Forbidden');
