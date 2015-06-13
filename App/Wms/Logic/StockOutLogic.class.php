@@ -1,53 +1,37 @@
 <?php
-namespace Wms\Api;
-use Think\Controller;
-class StockOutApi extends Controller{
-    
-    /**
-	* post方式创建出库单接口
+namespace Wms\Logic;
+
+class StockOutLogic{
+	/**
+	* 创建出库单
 	*  
 	* $params = array(
-	* 	'picking_type_id'=>'',      //仓库code
-    *   'stock_out_type'=>'',       //出库单类型code(具体查看配置中的出库单类型设置,默认是SO)
+	* 	'wh_id'=>'',      //仓库id
+    *   'type'=>'',       //出库单类型(具体查看配置中的出库单类型设置,默认是SO)
 	*	'line_id'=>'',            //线路名称(目前存的就是线路的字符串)
-	*	'delivery_time'=>'',        //发货具体时间(0:全天,1:上午,2:下午)
-	*	'delivery_date'=>'',        //发货日期('20150601')
     *   'refer_code'=>'',           //关联单据号
-    *   'return_type'=>'',          //返回类型(如果未设置，则ajax返回)
-    *   'product_list'=>array(array('product_code'=>'','qty'=>''),
-    *                         array('product_code'=>'','qty'=>''),
+    *   'detail'=>array(array('pro_code'=>'','order_qty'=>''),
+    *                         array('pro_code'=>'','order_qty'=>''),
     *                        ....
     *                           ),
 	* )
 	*
 	*/
-   public function stockout() {
-        if($_SERVER['HTTP_CONTENT_TYPE'] == 'application/json'){
-            $post = json_decode(file_get_contents("php://input"),true);
-        }
-        else{
-            $post = I('post.');
-        }
-        
+   public function addStockOut($params = array()) {
+   		if(empty($params['wh_id'])){
+   			return false;
+   		}
         $stock_out = M('stock_bill_out');
         $stock_detail = M('stock_bill_out_detail');
-        $warehouse = M('warehouse');
         $stock_type = M('stock_bill_out_type');
         $user = M('user');
         //查找出库单类型
-        $stock_out_type = isset($post['stock_out_type'])? $post['stock_out_type'] : 'SO';
+        $stock_out_type = isset($params['type'])? $params['type'] : 'SO';
         $map['type'] = $stock_out_type;
         $type = $stock_type->where($map)->getField('id');
         //查找仓库名
         unset($map);
-        $map['code'] = $post['picking_type_id'];
-        $wh_id = $warehouse->where($map)->getField('id');
-        //查找用户id（默认用户名是api）
-        unset($map);
-        $map['username'] = 'api';
-        $user_id = $user->where($map)->getField('id');
 
-        unset($map);
         $map['code'] = get_sn($stock_out_type, $post['wh_id']);
         $map['wh_id'] = $wh_id;
         $map['line_id'] = isset($post['line_id'])? $post['line_id']:'';
@@ -134,34 +118,4 @@ class StockOutApi extends Controller{
             exit;
         }
     } 
-
-
-    /**
-    *   根据sku号查看所有仓库的库存
-    *
-    *   $params = array('1000010', '1002289', ...);
-    *
-    */
-    public function stockqty() {
-        if($_SERVER['HTTP_CONTENT_TYPE'] == 'application/json'){
-            $post = json_decode(file_get_contents("php://input"),true);
-        }
-        else{
-            $post = I('post.');
-        }
-
-        $stock = M('stock'); 
-        foreach($post as $key=>$val) {
-            $map['stock.status'] = 'qualified';
-            $map['stock.is_deleted'] = 0;
-            $map['pro_code'] = $val;
-            $res = $stock->field('warehouse.code as wh_name,sum(stock_qty) as total_qty')->join('warehouse on warehouse.id=wh_id')->where($map)->group('wh_name, pro_code')->select();
-            foreach($res as $v) {
-                $result[$val][$v['wh_name']] = $v['total_qty'];
-            }
-        }
-        
-        $return = array('error_code' => '0', 'error_message' => 'success', 'data' => $result );
-        $this->ajaxReturn($return);
-    }
 }
