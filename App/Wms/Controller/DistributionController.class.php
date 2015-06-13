@@ -2,6 +2,13 @@
 namespace Wms\Controller;
 use Think\Controller;
 class DistributionController extends CommonController {
+    
+    protected $filter = array(
+    	    'status' => array(
+    	        '1' => '未发运',
+    	        '2' => '已发运',
+        )
+    );
     protected $columns = array (
             //'id' => '',
             'dist_code' => '配送单号',
@@ -27,31 +34,34 @@ class DistributionController extends CommonController {
             //'city_id' => '城市ID',
     );
     protected $query   = array (
-            'order_distribution.company_id' => array(
+            'stock_wave_distribution.company_id' => array(
                     'title' => '所属系统',
                     'query_type' => 'eq',
-                    'control_type' => 'select',
-                    'value' => 'warehouse.id,name',
+                    'control_type' => 'getField',
+                    'value' => 'Company.id,name',
             ),
-            'order_distribution.city_id' => array(
-                    'title' => '所属城市',
+            'stock_wave_distribution.status' => array(
+                    'title' => '状态',
                     'query_type' => 'eq',
                     'control_type' => 'select',
-                    'value' => 'city_id',
+                    'value' => array(
+                        '1' => '未发运',
+                        '2' => '已发运',
+                    ),
             ),
-            'order_distribution.order_id' => array(
+            'stock_wave_distribution.order_id' => array(
                     'title' => '订单ID',
                     'query_type' => 'eq',
                     'control_type' => 'text',
                     'value' => '',
             ),
-            'order_distribution.rmarks' => array(
-                    'title' => '关键词',
-                    'query_type' => 'like',
-                    'control_type' => 'text',
-                    'value' => 'rmarks',
+            'stock_wave_distribution.wh_id' => array(
+                    'title' => '所属仓库',
+                    'query_type' => 'eq',
+                    'control_type' => 'getField',
+                    'value' => 'warehouse.id,name',
             ),
-            'order_distribution.created_time' => array(
+            'stock_wave_distribution.created_time' => array(
                     'title' => '创建时间',
                     'query_type' => 'between',
                     'control_type' => 'datetime',
@@ -59,7 +69,7 @@ class DistributionController extends CommonController {
             ),
     );
     
-    public function _before_index() {
+    public function before_index() {
         $this->table = array(
                 'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
                 'searchbar' => true, //是否显示搜索栏
@@ -69,11 +79,8 @@ class DistributionController extends CommonController {
                 'statusbar' => true
         );
         $this->toolbar_tr =array(
-                'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
-                'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"draft,confirm,reject"),
-                'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"draft,confirm"),
-                'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"draft,confirm"),
-                'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"draft,confirm,pass,reject")
+                'view'=>array('name'=>'view', 'show' => true/*isset($this->auth['view'])*/,'new'=>'true'), //查看按钮
+                'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true'), //编辑按钮
         );
         $this->status =array(
                 array(
@@ -81,10 +88,16 @@ class DistributionController extends CommonController {
                         array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
                 ),
         );
-        /*$this->toolbar = array(
-        	        array(''),
-        );*/
+        $this->toolbar = array(
+        	         array('name'=>'add', 'show' => true/*isset($auth['view'])*/,'new'=>'true'),
+        );
     }
     
-    
+    public function _before_add() {
+        $company = array(
+        	    '1' => '大厨网',
+            '2' => '大果网',
+        );
+        $this->assign('company', $company);
+    }
 }

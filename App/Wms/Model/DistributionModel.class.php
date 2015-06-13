@@ -6,7 +6,7 @@ class DistributionModel extends Model {
     protected $insertFields = array('id','dist_code','remarks','total_price','deal_price','company_id','line_id','deliver_time','order_count','line_count','sku_count','total_distance','begin_time','end_time','created_user','updated_user','created_time','updated_time','is_deleted','status','is_printed','city_id');
     protected $updateFields = array('dist_code','remarks','total_price','deal_price','company_id','line_id','deliver_time','order_count','line_count','sku_count','total_distance','begin_time','end_time','created_user','updated_user','created_time','updated_time','is_deleted','status','is_printed','city_id');
     protected $readonlyField = array('id');
-    public $tableName = 'order_distribution';
+    public $tableName = 'stock_wave_distribution';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
 
@@ -29,12 +29,12 @@ class DistributionModel extends Model {
 
     protected $_scope = array(
             'default'=>array(
-                    'where'=>array('order_distribution.is_deleted'=>'0'),
-                    'order'=>'order_distribution.id DESC',
+                    'where'=>array('stock_wave_distribution.is_deleted'=>'0'),
+                    'order'=>'stock_wave_distribution.id DESC',
 
             ),
             'latest'=>array(
-                    'where'=>array('order_distribution.is_deleted'=>'0'),
+                    'where'=>array('stock_wave_distribution.is_deleted'=>'0'),
                     'order'=>'update_time DESC',
             ),
 

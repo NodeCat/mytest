@@ -571,7 +571,7 @@ class StockInController extends CommonController {
             }
         }
         $M->code = get_sn($name['name']); //入库单号
-        $M->batch_code = 'batch' . NOW_TIME; //批次
+        $M->batch_code = get_batch(); //批次
         $M->updated_time = date('Y-m-d H:i:s', time()); //更新时间
         $M->created_user = session()['user']['uid']; //创建管理员
         $M->updated_user = session()['user']['uid']; //更新管理员

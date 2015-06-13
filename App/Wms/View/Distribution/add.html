@@ -1,0 +1,119 @@
+
+<div>
+	<form action="" method="" name="">
+	<div class="panel panel-default">
+ 	    <div class="panel-heading" style="padding:0px 15px;">
+
+   			<h3 class="panel-title"></h3>
+       		<div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
+ 				<button type="submit" data-title="保存" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" data-id=""><i class="glyphicon glyphicon-pencil"></i> 保存</button>
+ 				<a href="{:U('index')}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
+ 			</div>
+ 			{~$data['status']= "0";}
+ 			<include file="status-bar" />
+ 			<div class="clearfix"></div>
+ 		
+	</div>
+    <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>配送单 新建</h3></div>
+		<div class="col-lg-6"></div>
+	</div>
+  	<hr/>
+  	<div class="col-lg-8 col-sm-8 col-xs-8">
+	  	<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">所属系统</label>
+		    <div class="col-sm-9">
+		        <select class="form-control">
+		    			<volist name="company" id="com" key="k1">
+		    				<option value="{$k1}">{$com}</option>
+		    			</volist>
+	    			</select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">所属仓库</label>
+		    <div class="col-sm-9">
+				<select class="form-control">
+				    <volist name="warehouse" id="wh" key="k2">
+				    		<option value="$k2">{$wh}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">订单类型</label>
+		    <div class="col-sm-9">
+				<select class="form-control">
+				    <volist name="order_type" id="order" key="k3">
+				    		<option value="{$k3}">{$order}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">线路</label>
+		    <div class="col-sm-9">
+				<select class="form-control">
+				    <volist name="line" id="li" key="k4">
+				    		<option value="{$k4}">{$li}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">日期</label>
+		    <div class="col-sm-9">
+		    		<input type="date" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">时段</label>
+		    <div class="col-sm-9">
+				<select class="form-control">
+				    <volist name="time" id="tm" key="k6">
+				    		<option value="{$k6}">{$tm}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">订单编号</label>
+		    <div class="col-sm-9">
+		    		<input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
+		    </div>
+  		</div>
+		<div class="form-group has-feedback">
+		    <label class="control-label col-sm-3" for="inputSuccess3">分拣单号</label>
+		    <div class="col-sm-9">
+		    		<input type="text" class="form-control" id="inputSuccess3" aria-describedby="inputSuccess3Status">
+		    </div>
+  		</div>
+		
+		<button style="margin-left:120px" type="submit" class="btn btn-primary">搜索订单</button>
+       </div>
+       </form>
+       <div style="width:30%;float:left; overflow:hidden;">
+       <from action="" method="" name="">
+       	  
+		  <div id="order">
+			  <include file="order" />
+		  </div>
+	  </from>
+	  <form action="" method="" name="">
+		  <div id="distribution_content">
+		      <include file="distribution-content" />
+		  </div>
+	  </form>
+	  </div>
+</div>
+<div>
+	<include file="order-list" />
+</div>
+
+<style text="css">
+select,input{
+	margin-bottom:10px;
+}
+	
+</style>

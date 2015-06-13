@@ -83,7 +83,7 @@ class ProcessRatioController extends CommonController {
 	    $map['id'] = $data['created_user'];
 	    $user = M('user');
 	    $name = $user->where($map)->find();
-	    $data['created_user'] = $name['username'];
+	    $data['created_user'] = $name['nickname'];
 	    $code = array();
 	    $code[] = $data['p_pro_code'];
 	    foreach ($ratio as $val) {

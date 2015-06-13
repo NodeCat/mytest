@@ -222,7 +222,7 @@ class ProcessController extends CommonController {
     }
 
     //在edit方法执行之前执行该方法
-    protected function before_edit(){
+    protected function before_edit(&$data){
     	    $M = D('Process');
 		$id = I($M->getPk());
 		$map['id'] = $id;
@@ -260,6 +260,12 @@ class ProcessController extends CommonController {
 		//子SKU信息
 		unset($sku[$process_pro_code]);
 		$c_sku_info = $sku;
+		
+		$user = M('user');
+		$map['id'] = $data['created_user'];
+		$name = $user->where($map)->find();
+		$data['created_user'] = $name['nickname'];
+		
 
 		$this->p_sku_info = $p_sku_info;
 		$this->c_sku_info = $c_sku_info;
