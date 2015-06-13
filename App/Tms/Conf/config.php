@@ -4,7 +4,7 @@ return array(
 	'SITE_TITLE' =>'大厨网物流配送系统',
 	'LAYOUT_ON'         => TRUE,
 	'URL_MODEL'			=> 2,
-
+	'SHOW_PAGE_TRACE' => FALSE,
 	//Database
 	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型
 	'DB_HOST'   		=> 	'123.59.54.246',// 服务器地址
