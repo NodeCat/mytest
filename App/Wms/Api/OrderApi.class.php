@@ -31,7 +31,7 @@ class OrderApi extends CommApi{
 			$params['wh_id'] = $order_info['info']['warehouse_id'];
 			$params['type'] = 'SO';
 			$params['line_id'] = $order_info['info']['line_id'];
-			$params['refer_code'] = $order_info['info']['order_number'];
+			$params['refer_code'] = $order_info['info']['id'];
 			foreach($order_info['info']['detail'] as $order_detail){
 				$detail[] = array(
 					'pro_code' => $order_detail['sku_number'],
