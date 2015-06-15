@@ -8,8 +8,8 @@ class PurchaseRefundController extends CommonController {
 			'1' => '货到付款',
 		),
 		'status' => array(
-			'norefund' => '未退款',
-			'refund' => '已退款',
+			'norefund' => '未收款',
+			'refund' => '已收款',
 			'cancel' => '已作废',
 		),
 	);
@@ -41,7 +41,7 @@ class PurchaseRefundController extends CommonController {
 			'title' => '状态',
 			'query_type' => 'eq',
 			'control_type' => 'select',
-		    'value' => array('norefund'=>'未退款','refund'=>'已退款','cancel'=>'已作废'),
+		    'value' => array('norefund'=>'未收款','refund'=>'已收款','cancel'=>'已作废'),
 		),
 	);
 
@@ -79,6 +79,12 @@ class PurchaseRefundController extends CommonController {
     protected function before_edit() {
 		$M = D('PurchaseRefund');
 		$id = I($M->getPk());
+
+		$map['id'] = $id;
+		$purchase_refund_info = $M->where($map)->find();
+		unset($map);
+		$this->purchase_code = $purchase_refund_info['refer_code'];
+
 		$map['pid'] = $id;
 		$pros = M('erp_purchase_refund_detail')->where($map)->order('id desc')->select();
 		$refund_total = 0;
@@ -144,7 +150,7 @@ class PurchaseRefundController extends CommonController {
         foreach($purchase_refund_list as $purchase_refund){
         	if($purchase_refund['status'] == 'refund'){
         		$data['status'] = 0;
-            	$data['msg'] = '只能作废状态为未退款的冲红单';
+            	$data['msg'] = '只能作废状态为未收款的冲红单';
             	$this->ajaxReturn($data);
         	}
         }
