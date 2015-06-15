@@ -2,6 +2,7 @@
 return array(
 	//'配置项'=>'配置值'
     'LOAD_EXT_CONFIG' => 'warehouse,location,columns,locationarea,productbarcode', 
+    'SITE_TITLE' =>'大厨网WMS系统 2.0',
 
 	//Database
 	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型

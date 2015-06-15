@@ -8,6 +8,7 @@ return array(
 	'API_TIME_DEVIATION'   => 300, //API请求时间戳与服务器时间戳的允许误差范围，单位秒，
 	'USER_ALLOW_REGISTER'  => 'TRUE',
 
+
 	'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
 	//应用设置
 	'MODULE_ALLOW_LIST' => 'Wms',
