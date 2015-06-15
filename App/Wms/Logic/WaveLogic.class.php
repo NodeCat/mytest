@@ -8,6 +8,7 @@ class WaveLogic{
 	 *  
 	 * @param String $ids 出库单id
 	 * @param Int $site_url 来自哪里：1大厨2大果
+	 * @author liuguangping@dachuwang.com
 	 * @return Array $data;
 	 * 
 	 */
@@ -38,6 +39,14 @@ class WaveLogic{
 
 	}
 
+	/**
+	 * 根据出库单格式化出库单数据 (预计出库量,SKU总数)
+	 *  
+	 * @param String $ids 出库单id
+	 * @author liuguangping@dachuwang.com
+	 * @return Array $data;
+	 * 
+	 */
 	public function sumStockBillOut($idsArr){
 
 		$m = M('stock_bill_out_detail');
@@ -143,13 +152,15 @@ class WaveLogic{
 
 		$map['in'] =  array('type', array('201','900'));
 
-		$map['in'] array('id', $idsArr);
+		$map['in'] = array('id', $idsArr);
 
 		$m = M('stock_wave');
 
 		$result = $m->where($map)->select();
 
 		if($result) return FALSE;
+
+		return TRUE;
 
 
     }

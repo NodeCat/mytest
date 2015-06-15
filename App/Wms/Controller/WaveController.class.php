@@ -109,7 +109,12 @@ class WaveController extends CommonController {
     	$m = M('stock_wave');
 
     	$waveLogic = A('Wave','Logic');
+
+    	$hasIsAuth = $waveLogic->hasIsAuth($ids);
+
+    	//if($hasIsAuth === FALSE) echojson('');
     	
-    	$insertArr = $waveLogic->hasIsAuth($ids);
+
+
     }
 }
