@@ -94,10 +94,63 @@ class DistributionController extends CommonController {
     }
     
     public function _before_add() {
-        $company = array(
-        	    '1' => '大厨网',
-            '2' => '大果网',
+        if (IS_POST) {
+            return;
+        }
+        $company = array(); //所属系统
+        $warehouse = array(); //所属仓库
+        $order_type = array(); //订单类型
+        $line = array(); //线路
+        $time = array(); //时段
+        
+        //获取系统
+        $M = M('company');
+        $result = $M->select();
+        foreach ($result as $value) {
+            $company[$value['id']] = $value['name'];
+        }
+        unset($M);
+        unset($value);
+        unset($result);
+        //获取仓库
+        $M = M('warehouse');
+        $result = $M->select();
+        foreach ($result as $value) {
+            $warehouse[$value['id']] = $value['name'];
+        }
+        unset($M);
+        unset($value);
+        unset($result);
+        //获取订单类别
+        $order_type = array(
+        	    '1' => '普通订单',
+            '2' => '冻品订单',
+            '3' => '爆款订单',
+        );
+        unset($M);
+        unset($value);
+        unset($result);
+        
+        //线路
+        //$lines = D('Wave', 'Logic');
+        //$result = $lines->line();
+        foreach ($result as $value) {
+            foreach ($value as $key=>$val) {
+                $line[$key] = $val;
+            } 
+        }
+        unset($value);
+        unset($result);
+        //时段
+        $time = array(
+        	    '1' => '全天',
+            '2' => '上午',
+            '3' => '下午',
         );
         $this->assign('company', $company);
+        $this->assign('warehouse ', $warehouse);
+        $this->assign('order_type', $order_type);
+        $this->assign('line', $line);
+        $this->assign('time', $time);
     }
 }

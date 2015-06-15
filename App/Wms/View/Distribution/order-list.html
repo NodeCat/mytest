@@ -1,21 +1,23 @@
-djfksdjggggggggsjljslfjasdnf<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	djfksdjggggggggsjljslfjasdnffjsdnfksndf<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	djfksdjggggggggsjljslfjasdnffjsdnfksndfjnsdkjnsdnfsdnfnsdjnfisuhfisdnvabginksadnnsdifhienfjsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
-	jsadnfwenfiwdnvskdisdngihnksd ipnir<br>
+<table class="table table-bordered">
+    <th>
+    		<td>订单id</td>
+    		<td>订单线路</td>
+    		<td>送货地址</td>
+    		<td>送货时间</td>
+    		<td>货品名称</td>
+    		<td>规格</td>
+    		<td>数量</td>
+    </th>
+    <volist name="order_list" id="list">
+	    <tr>
+	    		<td><input type="checkbox" /></td>
+	    		<td>{$list.order_id}</td>
+	    		<td>{$list.line_id}</td>
+	    		<td>{$list.address}</td>
+	    		<td>{$list.time}</td>
+	    		<td>{$list.name}</td>
+	    		<td>{$list.attrs}</td>
+	    		<td>{$list.qty}</td>
+	    </tr>
+    </volist>
+</table>
