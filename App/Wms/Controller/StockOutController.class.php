@@ -32,7 +32,7 @@ class StockOutController extends CommonController {
     protected $columns = array (  
         'code' => '出库单号',
         'type_name' => '出库单类型',
-        'wave_code' => '波次号',
+        'wave_id' => '波次号',
         'packing_code' => '装车号',
         'total_qty' => '总件数',
         'line_id' => '线路片区',
@@ -122,6 +122,10 @@ class StockOutController extends CommonController {
         $this->filter['line_id'] = $lines;
     }
 
+    protected function before_search(){
+
+    }
+
     protected function before_index() {
         $this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
@@ -159,6 +163,7 @@ class StockOutController extends CommonController {
 		$stock_out = M('stock_bill_out');
 		$map['is_deleted'] = 0;
         $map['wh_id'] = session('user.wh_id');
+
 		$res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $val) {
             if(array_key_exists($val['status'], $pill['status'])) {
@@ -443,11 +448,21 @@ class StockOutController extends CommonController {
      */
     public function createWave(){
 
-        $ids       = I('ids');
+        $ids          = I('ids');
 
-        $site_url  = I('site_url')?I('site_url'):1;
+        $site_url     = I('site_url')?I('site_url'):1;
 
-        $waveLogic = A('Wave','Logic');
+        $waveLogic    = A('Wave','Logic');
+
+        $idArr = $waveLogic->getEmptyIds();
+
+        $idsStr = implode(',', $idArr);
+
+        $ids = $ids?$ids:$idsStr;
+
+        $hasProductionAuth = $waveLogic->hasProductionAuth($ids);
+
+        if($hasProductionAuth === FALSE) echojson('1','','你所选的出库单中包其他状态出库单的，请选择待生产的出库单创建！');
 
         $insertArr = array();
 
@@ -456,6 +471,8 @@ class StockOutController extends CommonController {
         if($insertArr === FALSE) echojson('0','','波次创建失败！');
 
         $insertArr = array_merge($insertArr,$this->getDefaultInsert());
+
+        $insertArr['wh_id'] = session('user.wh_id');
 
         $m = M('stock_wave');
 
@@ -473,7 +490,7 @@ class StockOutController extends CommonController {
 
         }else{
 
-            if($waveLogic->updateBillOutStatus($ids) === FALSE){
+            if($waveLogic->updateBillOutStatus($ids, $wave_id) === FALSE){
 
                 M('stock_wave')->where(array('id'=>$wave_id))->save(array('is_deleted'=>1));
 
@@ -489,6 +506,11 @@ class StockOutController extends CommonController {
 
     }
 
+    /**
+     * 取出默认值
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-13
+     */
     public function getDefaultInsert(){
 
         $insertArr = array();

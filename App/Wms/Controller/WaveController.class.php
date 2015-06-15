@@ -1,4 +1,13 @@
 <?php
+// +----------------------------------------------------------------------
+// | DaChuWang [ Let people eat at ease ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 20015 http://dachuwang.com All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liuguangping <liuguangpingtest@163.com>
+// +----------------------------------------------------------------------
 namespace Wms\Controller;
 use Think\Controller;
 class WaveController extends CommonController {
@@ -62,7 +71,7 @@ class WaveController extends CommonController {
 
 			'stock_wave.type'   =>    array ( 
 
-			 	'title'        	=> '波次号', 
+			 	'title'        	=> '波次状态', 
 
 			 	'query_type'   	=> 'eq', 
 
@@ -102,7 +111,13 @@ class WaveController extends CommonController {
         $this->search_addon = true;
     }
 
-    protected function packing(){
+    /**
+     * 开始分拣
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-15
+     */
+    public function packing(){
 
     	$ids = I('ids');
 
@@ -112,9 +127,74 @@ class WaveController extends CommonController {
 
     	$hasIsAuth = $waveLogic->hasIsAuth($ids);
 
-    	//if($hasIsAuth === FALSE) echojson('');
-    	
+    	if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
 
+    	$controllerStatus = $waveLogic->execPack($ids);
+
+    	if($controllerStatus === FALSE){
+
+    		echojson('1','','分拣失败！');
+
+    	}else{
+
+    		echojson('0','','操作成功，分拣中！');
+
+    	}
+    	
+    }
+
+    /**
+     * 删除波次
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-15
+     */
+    public function delAll(){
+
+    	$ids = I('ids');
+
+    	$m = M('stock_wave');
+
+    	$waveLogic = A('Wave','Logic');
+
+    	$hasIsAuth = $waveLogic->hasIsAuth($ids);
+
+    	if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+
+    	$controllerStatus = $waveLogic->delWave($ids);
+
+    	if($controllerStatus === FALSE){
+
+    		echojson('1','','删除失败！');
+
+    	}else{
+
+    		echojson('0','','删除成功！');
+
+    	}
+
+    }
+
+    public function after_search(&$map){
+
+    	$map['wh_id'] = session('user.wh_id');
+
+    }
+
+    /**
+     * 分拣任务Hook
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-15
+     */
+    public function packTask(){
+
+    	//@todo这里加个钩子调用李昂的分拣接口
+
+    	//echojson('0','','删除成功！');
 
     }
 }
+
+/* End of file WaveController.class.php */
+/* Location: ./Application/Controller/WaveController.class.php */

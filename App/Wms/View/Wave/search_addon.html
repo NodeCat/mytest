@@ -10,7 +10,20 @@
 <script type="text/javascript">
 $(function(){
 	$('#packing').on('click',function(){
+
 		var ids = getChecked();
+
+		var urls = '/Wave/packTask';
+
+		var ids = getChecked();
+
+		var param = {};
+
+		param.ids = ids;
+
+		//请求分拣任务
+		$.post(urls,param,function(json){},'json');
+
 		$.ajax({
 			url:'/Wave/packing',
 			type:'post',
@@ -32,11 +45,14 @@ $(function(){
 		return true;
 	})
 
-	$(document).on('click','#create_wave',function(res){
+	$(document).on('click','#delAll',function(res){
 
 		var ids = getChecked();
+
+		//alert(ids);return false;
+		
 		$.ajax({
-			url:'/StockOut/createWave',
+			url:'/Wave/delAll',
 			type:'post',
 			cache : false,
 			dataType:'json',

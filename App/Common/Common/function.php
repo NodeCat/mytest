@@ -303,3 +303,36 @@ function echojson($status, $data, $msg){
     echo json_encode($return); exit;
 
 }
+
+/**
+ * getSubByKey 将两个二维数组根据指定的字段来连接起来
+ * @param Array $pArray 二维数组
+ * @param String $pKey 指定的键
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getSubByKey($pArray, $pKey = "") {
+
+    $result = array();
+
+    if(is_array($pArray)){
+
+        foreach($pArray as $key=>$value){
+
+            foreach ($value as $keys => $values) {
+
+                if($keys == $pKey){
+
+                    array_push($result, $values);
+
+                }
+
+            }
+
+        }
+
+    }
+
+    return $result;
+    
+}

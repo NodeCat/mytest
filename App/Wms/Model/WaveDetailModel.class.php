@@ -1,4 +1,13 @@
 <?php
+// +----------------------------------------------------------------------
+// | DaChuWang [ Let people eat at ease ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 20015 http://dachuwang.com All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liuguangping <liuguangpingtest@163.com>
+// +----------------------------------------------------------------------
 namespace Wms\Model;
 use Think\Model;
 class WaveDetailModel extends Model {
@@ -44,3 +53,5 @@ class WaveDetailModel extends Model {
 
     );
 }
+/* End of file WaveDetailModel.class.php */
+/* Location: ./Application/Model/WaveDetailModel.class.php */

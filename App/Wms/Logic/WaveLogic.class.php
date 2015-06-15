@@ -1,4 +1,13 @@
 <?php
+// +----------------------------------------------------------------------
+// | DaChuWang [ Let people eat at ease ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 20015 http://dachuwang.com All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liuguangping <liuguangpingtest@163.com>
+// +----------------------------------------------------------------------
 namespace Wms\Logic;
 
 class WaveLogic{
@@ -67,6 +76,15 @@ class WaveLogic{
 
 	}
 
+	/**
+	 * 根据出库单列表和波次id加入波次详细表
+	 *  
+	 * @param String $ids 出库单id
+	 * @param Int $wave_id 波次id
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
 	public function addWaveDetail($ids, $wave_id){
 
 		if(!$ids) return FALSE;
@@ -99,7 +117,105 @@ class WaveLogic{
 
 	}
 
-	public function updateBillOutStatus($ids){
+	/**
+	 * 如果没有选择出库单，则根据条件搜索到的出库单ids做相应的操作
+	 * 
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
+	public function getEmptyIds(){
+
+		$map 				= array();
+
+		$map['is_deleted'] 	= 0;
+
+		$map['status'] 		= 1;
+
+		$result 			= array();
+
+		$code 				= I('code');
+
+		$wave_id 			= I('wave_id');
+
+		$type 				= I('type');
+
+		$refused_type 		= I('refused_type');
+
+		$line_id 			= I('line_id');
+
+		$process_type 		= I('process_type');
+
+		$created_time 		= I('created_time');
+
+		$created_time_1 	= I('created_time_1');
+
+		if($code) $map['code'] = $code;
+
+		if($wave_id) $map['wave_id'] = $wave_id;
+
+		if($type) $map['type'] = $type;
+
+		if($refused_type) $map['refused_type'] = $refused_type;
+
+		if($line_id) $map['line_id'] = $line_id;
+
+		if($process_type) $map['process_type'] = $process_type;
+
+		if($created_time && $created_time_1){
+
+			if($created_time >= $created_time_1){
+
+				$map['created_time'] = array('gt', $created_time);
+
+			}else{
+
+				$map['created_time'] = array('between', array($created_time, $created_time_1));
+
+			}
+
+		}elseif($created_time && !$created_time_1){
+
+			$map['created_time'] = array('gt', $created_time);
+
+		}elseif(!$created_time && $created_time_1){
+
+			$map['created_time'] = array('lt', $created_time_1);
+
+		}
+
+		if(!empty($map)){
+
+			$m = M('stock_bill_out');
+
+			$map['wh_id'] = session('user.wh_id');
+
+			$result = $m->field('id')->where($map)->select();
+
+			//echo $m->getLastSql();die;
+
+			$result = getSubByKey($result, 'id');
+
+			return $result;
+
+		}else{
+
+			return $result;
+		}
+
+		
+	}
+
+	/**
+	 * 根据出库单列表修改出库单状态
+	 *  
+	 * @param String $ids 出库单id
+	 * @param Int $wave_id 波次id
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
+	public function updateBillOutStatus($ids, $wave_id){
 
 		if(!$ids) return FALSE;
 
@@ -113,13 +229,21 @@ class WaveLogic{
 
 		$data['status'] = '3';
 
+		$data['wave_id'] = $wave_id;
+
 		$result      = $Model->data($data)->where($map)->save()?TRUE:FALSE;
 
 		return $result;
 
 	}
 
-	//根据仓库ID获取线路列表
+	/**
+	 * 根据仓库ID获取线路列表
+	 *  
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
     public function line(){
 
         //$map['wh_id'] = session('user.wh_id');
@@ -142,17 +266,23 @@ class WaveLogic{
         return $lines_arr;
     }
 
+    /**
+	 * 根据仓库Id判断波次是否可以删除和拣货
+	 * 
+	 * @param String $ids 出库单id 
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
     public function hasIsAuth($ids = ''){
 
     	if(!$ids) return FALSE;
 
-		$idsArr = explode(',', $ids);
-
 		$map = array();
 
-		$map['in'] =  array('type', array('201','900'));
+		$map['type'] =  array('in', '201,900');
 
-		$map['in'] = array('id', $idsArr);
+		$map['id'] = array('in', $ids);
 
 		$m = M('stock_wave');
 
@@ -162,6 +292,152 @@ class WaveLogic{
 
 		return TRUE;
 
+    }
+
+    /**
+	 * 根据出库单Id判断出库单是否可以创建波次
+	 * 
+	 * @param String $ids 出库单id 
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
+    public function hasProductionAuth($ids = ''){
+
+    	if(!$ids) return FALSE;
+
+		$map = array();
+
+		$map['status'] =  array('neq', '1');
+
+		$map['id'] = array('in', $ids);
+
+		$m = M('stock_bill_out');
+
+		$result = $m->where($map)->select();
+
+		if($result) return FALSE;
+
+		return TRUE;
 
     }
+
+    /**
+	 * 根据仓库Id判断波次开始拣货把状态至为分拣中
+	 * 
+	 * @param String $ids 出库单id 
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
+    public function execPack($ids = ''){
+
+    	if(!$ids) return FALSE;
+
+		$map = array();
+
+		$map['id'] = array('in', $ids);
+
+		$status = array();
+
+		$status['type'] = 201;
+
+		if($this->updateStatus($map, $status)){
+
+			return TRUE;
+
+		}else{
+
+			return FALSE;
+		}
+
+    }
+
+    /**
+	 * 根据仓库Id判断波次开始拣货把状态至为分拣中
+	 * 
+	 * @param String $ids 出库单id 
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean $result;
+	 * 
+	 */
+    public function delWave($ids = ''){
+
+    	if(!$ids) return FALSE;
+
+		$map = array();
+
+		$map['id'] = array('in',$ids);
+
+		$status = array();
+
+		$status['is_deleted'] = 1;
+
+		if($this->updateStatus($map, $status)){
+
+			//删除波次详细数据
+
+			$del = array();
+
+			$data = array();
+
+			$M = M('stock_wave_detail');
+
+			$del['pid'] = array('in',$ids);
+
+			$data['is_deleted'] = 1;
+
+			if($M->where($del)->save($data)){
+
+				return TRUE;
+
+			}else{
+
+				$this->updateStatus($map, array('is_deleted'=>0));
+
+				return FALSE;
+
+			}
+
+			return TRUE;
+
+		}else{
+
+			return FALSE;
+		}
+
+    }
+
+    /**
+	 * 根据条件修改拣货表
+	 * 
+	 * @param Array $map 条件
+	 * @param Int $status 状态 
+	 * @author liuguangping@dachuwang.com
+	 * @return Boolean;
+	 * 
+	 */
+    public function updateStatus($map = array(), $data = array(), $tableName = 'stock_wave'){
+
+    	if(empty($data)) return FALSE;
+
+		if(empty($map)) return FALSE;
+
+		$m = M($tableName);
+
+		if($m->where($map)->save($data)){
+
+			return TRUE;
+
+		}else{
+
+			return FALSE;
+		}
+
+    }
+
+
 }
+
+/* End of file WaveLogic.class.php */
+/* Location: ./Application/Logic/WaveLogic.class.php */
