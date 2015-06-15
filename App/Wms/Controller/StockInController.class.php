@@ -23,11 +23,11 @@ class StockInController extends CommonController {
 	);
 	protected $columns = array (   
 		'code' => '到货单号',   
-		'refer_code' => '关联单号', 
-	    'type' => '入库类型',
-		'company_name' => '所属系统',  
+		//'refer_code' => '关联单号', 
+	    //'type' => '入库类型',
+		//'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
-		//'partner_name' => '供货商',
+		'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '创建人',
@@ -67,12 +67,12 @@ class StockInController extends CommonController {
 	        'value' => 'stock_bill_in_type.id,name',
 		),
 		
-	   /*'stock_bill_in.partner_id' =>    array (     
+	   'stock_bill_in.partner_id' =>    array (     
 			'title' => '供货商',     
 			'query_type' => 'eq',     
 			'control_type' => 'refer',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-			),*/
+			),
 		/*'stock_purchase.created_user' =>    array (     
 			'title' => '创建人',     
 			'query_type' => 'eq',     
@@ -424,6 +424,19 @@ class StockInController extends CommonController {
             array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['pview']),'new'=>'true'), 
         	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
+        $this->columns = array (   
+			'code' => '到货单号',   
+			'refer_code' => '关联单号', 
+		    //'type' => '入库类型',
+			'company_name' => '所属系统',  
+			'warehouse_name' => '目的仓库', 
+			'partner_name' => '供货商',
+			'qty_total' =>'预计到货件数',
+			'cat_total' =>'SKU种数',
+			'sp_created_user_name' => '创建人',
+	  		'sp_created_time' => '创建时间',
+			'status' => '状态', 
+		);
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
     }

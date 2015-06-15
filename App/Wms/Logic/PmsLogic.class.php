@@ -116,13 +116,37 @@ class PmsLogic{
 				$pro_codes[] = $value['pro_code'];
 			}
 
-			//根据pro_code 接口查询SKU
-			$SKUs = $this->get_SKU_field_by_pro_codes($pro_codes);
+			//一次最大数量
+			$max = 100;
+			$buffer = array();
+			foreach($pro_codes as $pro_code){
+				$buffer_codes[] = $pro_code;
 
-			foreach($prepare_data as $key => $value){
-				//如果$SKUs['pro_code']结果存在
-				if(isset($SKUs[$value['pro_code']])){
-					$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
+				if($max == count($buffer_codes)){
+					//根据pro_code 接口查询SKU
+					$SKUs = $this->get_SKU_field_by_pro_codes($buffer_codes);
+
+					foreach($prepare_data as $key => $value){
+						//如果$SKUs['pro_code']结果存在
+						if(isset($SKUs[$value['pro_code']])){
+							$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
+						}
+					}
+
+					unset($buffer_codes);
+					unset($SKUs);
+				}
+			}
+
+			if(!empty($buffer_codes)){
+				//根据pro_code 接口查询SKU
+				$SKUs = $this->get_SKU_field_by_pro_codes($buffer_codes);
+
+				foreach($prepare_data as $key => $value){
+					//如果$SKUs['pro_code']结果存在
+					if(isset($SKUs[$value['pro_code']])){
+						$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
+					}
 				}
 			}
 
