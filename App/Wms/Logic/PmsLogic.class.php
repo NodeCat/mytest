@@ -136,16 +136,16 @@ class PmsLogic{
 					unset($buffer_codes);
 					unset($SKUs);
 				}
+			}
 
-				if(!empty($buffer_codes)){
-					//根据pro_code 接口查询SKU
-					$SKUs = $this->get_SKU_field_by_pro_codes($buffer_codes);
+			if(!empty($buffer_codes)){
+				//根据pro_code 接口查询SKU
+				$SKUs = $this->get_SKU_field_by_pro_codes($buffer_codes);
 
-					foreach($prepare_data as $key => $value){
-						//如果$SKUs['pro_code']结果存在
-						if(isset($SKUs[$value['pro_code']])){
-							$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
-						}
+				foreach($prepare_data as $key => $value){
+					//如果$SKUs['pro_code']结果存在
+					if(isset($SKUs[$value['pro_code']])){
+						$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
 					}
 				}
 			}
