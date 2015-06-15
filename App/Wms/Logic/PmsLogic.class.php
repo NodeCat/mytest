@@ -41,7 +41,7 @@ class PmsLogic{
 		$request = new \HttpCurl();
 		$data = array(
 			'currentPage' => 1,
-			'itemsPerPage' => 15,
+			'itemsPerPage' => C('PAGE_SIZE'),
 			'where' => array('in'=>array('category_id'=>$category_ids)),
 			);
 		$url = C('PMS_API').'/sku/manage';
@@ -59,7 +59,7 @@ class PmsLogic{
 		$request = new \HttpCurl();
 		$data = array(
 			'currentPage' => 1,
-			'itemsPerPage' => 15,
+			'itemsPerPage' => C('PAGE_SIZE'),
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
 		$url = C('PMS_API').'/sku/manage';
@@ -92,7 +92,7 @@ class PmsLogic{
 		$request = new \HttpCurl();
 		$data = array(
 			'currentPage' => 1,
-			'itemsPerPage' => 15,
+			'itemsPerPage' => C('PAGE_SIZE'),
 			'where' => array('like'=>array('name'=>$pro_name)),
 			);
 		$url = C('PMS_API').'/sku/manage';
@@ -141,7 +141,7 @@ class PmsLogic{
 		$request = new \HttpCurl();
 		$data = array(
 			'currentPage' => 1,
-			'itemsPerPage' => 15,
+			'itemsPerPage' => C('PAGE_SIZE'),
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
 		$url = C('PMS_API').'/sku/manage';
