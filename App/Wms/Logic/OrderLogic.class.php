@@ -62,4 +62,15 @@ class OrderLogic{
 		$res = json_decode($res,true);
 		return $res;
 	}
+	//根据order_id 或者 order_number 查询订单信息
+	public function getOrderInfoByOrderId($orderId){
+		if(empty($orderId)){
+			return false;
+		}
+		$url = $this->server . '/order/info';
+		$map = json_encode(array('order_id'=>$orderId));
+		$res = $this->request->post($url,$map);
+		$res = json_decode($res,true);
+		return $res;
+	}
 }

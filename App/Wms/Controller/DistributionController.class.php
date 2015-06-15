@@ -93,6 +93,9 @@ class DistributionController extends CommonController {
         );
     }
     
+    /**
+     * 分配模板数据
+     */
     public function _before_add() {
         if (IS_POST) {
             return;
@@ -132,25 +135,55 @@ class DistributionController extends CommonController {
         unset($result);
         
         //线路
-        //$lines = D('Wave', 'Logic');
-        //$result = $lines->line();
-        foreach ($result as $value) {
-            foreach ($value as $key=>$val) {
-                $line[$key] = $val;
-            } 
+        $lines = D('Wave', 'Logic');
+        $result = $lines->line();
+        foreach ($result as $key => $value) {
+            $line[$key] = $value;
         }
         unset($value);
         unset($result);
         //时段
         $time = array(
-        	    '1' => '全天',
-            '2' => '上午',
-            '3' => '下午',
+        	    '3' => '全天',
+            '1' => '上午',
+            '2' => '下午',
         );
         $this->assign('company', $company);
-        $this->assign('warehouse ', $warehouse);
+        $this->assign('warehouse', $warehouse);
         $this->assign('order_type', $order_type);
         $this->assign('line', $line);
         $this->assign('time', $time);
+    }
+    
+    /**
+     * 订单搜索
+     * @see \Wms\Controller\CommonController::search()
+     */
+    public function search() {
+        if (IS_POST) {
+            $post = I('post.');
+            if (empty($post['company'])) {
+                $this->msgReturn(false, '请选择系统');
+            }
+            if (empty($post['warehouse'])) {
+                $this->msgReturn(false, '请选择仓库');
+            }
+            if (empty($post['order_type'])) {
+                $this->msgReturn(false, '请选择订单类型');
+            }
+            if (empty($post['line'])) {
+                $this->msgReturn(false, '请选择线路');
+            }
+            if (empty($post['time'])) {
+                $this->msgReturn(false, '请选择时段');
+            }
+            if (empty($post['date'])) {
+                $this->msgReturn(false, '请选择日期');
+            }
+            //时段是否区分
+            if ($post['time'] == 3) {
+                unset($post['time']);
+            }
+        }
     }
 }

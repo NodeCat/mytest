@@ -129,7 +129,6 @@ class WaveLogic{
 
             $lines_arr[$value['id']] = $value['name'];
         }
-
         return $lines_arr;
     }
 
@@ -143,7 +142,7 @@ class WaveLogic{
 
 		$map['in'] =  array('type', array('201','900'));
 
-		$map['in'] array('id', $idsArr);
+		$map['in'] = array('id', $idsArr);
 
 		$m = M('stock_wave');
 

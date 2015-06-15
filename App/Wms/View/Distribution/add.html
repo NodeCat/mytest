@@ -1,6 +1,6 @@
 
 <div>
-	<form action="" method="" name="" class="form-inline">
+	<form action="search" method="post" name="order-form" class="form-inline form-ajax" id="order_form">
 	<div class="panel panel-default">
  	    <div class="panel-heading" style="padding:0px 15px;">
 
@@ -22,8 +22,8 @@
   	<hr/>
    	<div class="col-lg-8 col-sm-8 col-xs-8">
 	  	<div class="form-group has-feedback">
-		        <select class="form-control">
-		        		<option>请选择系统</option>
+		        <select name="company" class="form-control">
+		        		<option value="0">请选择系统</option>
 		    			<volist name="company" id="com" key="k1">
 		    				<option value="{$k1}">{$com}</option>
 		    			</volist>
@@ -31,8 +31,8 @@
   		</div>
   		<div class="form-group has-feedback">
 		    <div class="col-sm-9">
-				<select class="form-control">
-					<option>请选择仓库</option>
+				<select name="warehouse" class="form-control">
+					<option value="0">请选择仓库</option>
 				    <volist name="warehouse" id="wh" key="k2">
 				    		<option value="{$k2}">{$wh}</option>
 				    </volist>
@@ -41,8 +41,8 @@
   		</div>
   		<div class="form-group has-feedback">
 		    <div class="col-sm-9">
-				<select class="form-control">
-					<option>请选择订单类型</option>
+				<select name="order_type" class="form-control">
+					<option value="0">请选择订单类型</option>
 				    <volist name="order_type" id="order" key="k3">
 				    		<option value="{$k3}">{$order}</option>
 				    </volist>
@@ -51,8 +51,8 @@
   		</div>
   		<div class="form-group has-feedback">
 		    <div class="col-sm-9">
-				<select class="form-control">
-					<option>请选择线路</option>
+				<select name="line" class="form-control">
+					<option value="0">请选择线路</option>
 				    <volist name="line" id="li" key="k4">
 				    		<option value="{$k4}">{$li}</option>
 				    </volist>
@@ -61,8 +61,8 @@
   		</div>
   		<div class="form-group has-feedback">
 		    <div class="col-sm-9">
-				<select class="form-control">
-					<option>请选择时段</option>
+				<select name="time" class="form-control">
+					<option value="0">请选择时段</option>
 				    <volist name="time" id="tm" key="k6">
 				    		<option value="{$k6}">{$tm}</option>
 				    </volist>
@@ -71,18 +71,18 @@
   		</div>
   		<div class="input-group">
 		    <span class="input-group-addon" id="basic-addon1">日期</span>
-		    <input type="date" class="form-control" placeholder="Username" aria-describedby="basic-addon1">
+		    <input type="date" name="date" class="form-control" placeholder="" aria-describedby="basic-addon1">
 		</div>
-		<div class="input-group">
+		<!--<div class="input-group">
 		    <span class="input-group-addon" id="basic-addon1">订单编号</span>
-		    <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1">
+		    <input type="text" name="order_code" class="form-control" placeholder="订单编号" aria-describedby="basic-addon1">
 		</div>
 		<div class="input-group">
 		    <span class="input-group-addon" id="basic-addon1">分拣单号</span>
-		    <input type="text" class="form-control" placeholder="Username" aria-describedby="basic-addon1">
-		</div>
+		    <input type="text" name="sort" class="form-control" placeholder="分拣单号" aria-describedby="basic-addon1">
+		</div>-->
 		
-		<button type="submit" class="btn btn-primary">搜索订单</button>
+		<button type="submit" id="search_order" class="btn btn-primary">搜索订单</button>
        </div>
        </form>
        <div style="width: 30%;float:left; overflow:hidden;">
@@ -110,5 +110,41 @@ select,input{
 .input-group {
 	margin-bottom:10px;
 }
-	
+
+<script>alert('jjjjjjjjj');
+	$(functin() {
+		alert('hhhhhhhhhh')
+		$("#search_order").on("click",function(){
+		alert('ggggggg')
+    		/*var data = $('#order-form').submit(function(){
+			console.log($(this).serialize());*/
+    		})
+    		/*$.ajax({
+	    		type: "GET",
+	    		url: "/Process/add",
+	    		data: "process_pro_code="+_process_pro_code+"&plan_qty="+_plan_qty,
+	    		success: function(data) {
+	    			$('#c_sku_info').html(data);
+	    			$('#pro_plan_qty').html(_plan_qty);
+	    		}
+    		});*/
+    });
+	});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </style>
