@@ -66,6 +66,7 @@ $('#table-pro').delegate('.p_qty,.p_price','input',function(){
     var price = $(this).parents('tr').find('.p_price').val();
     $(this).parents('tr').find('.p_res').text(qty*price); 
 });
+
 typehead();
 $('.add-pro').on('click',function(){
     var val = $('.tr-cur .pro_code').val();
@@ -81,19 +82,27 @@ $('.add-pro').on('click',function(){
     tr.removeClass('hidden');
     $('#table-pro tr:eq(2)').after(tr);
     typehead();
-    $('#table-pro tr.tr-cur .pro_name').focus();
+    $('#table-pro tr.tr-cur .pro_names').focus();
     
+});
+
+$('#table-pro').delegate('.pro_names','focus',function(){
+  $('.tr-active').removeClass('tr-active');
+  $(this).parents('tr').addClass('tr-active');
+});
+/*
+$('#table-pro').delegate('input','focus',function(){
+  $(this).select();
+});
+*/
+//删除操作
+$('.tab-content').delegate( '.btn-delete', 'click', function(){
+  $(this).closest('tr').remove();
 });
 
 });
 
 function typehead() {
-$('#table-pro .pro_names').on('focus',function(){
-  $(this).parent().addClass('tr-active');
-});
-$('.tr-cur input').on('focus',function(){
-  $(this).select();
-});
 $('.tr-cur .pro_names').typeahead({ 
     display: 'name',
     val: 'val',
@@ -122,10 +131,6 @@ $('.tr-cur .pro_names').typeahead({
     }
   });
 }
-//删除操作
-$('.tab-content').delegate( '.btn-delete', 'click', function(){
-  $(this).closest('tr').remove();
-});
 
     
 </script>
