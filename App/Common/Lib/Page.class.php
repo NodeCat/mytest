@@ -162,7 +162,7 @@ class Page{
                     cache: false,
                     async:true,
                     success: function(html){
-                        $("#{$this->target}").html(html);
+                        $("{$this->target}").html(html);
                         refresh_page();
                     }
                 });
