@@ -109,4 +109,48 @@ class WaveLogic{
 		return $result;
 
 	}
+
+	//根据仓库ID获取线路列表
+    public function line(){
+
+        //$map['wh_id'] = session('user.wh_id');
+
+        $map['status'] = '1';
+
+        $map['page_size'] = 100;
+
+        $A = A('Order','Logic');
+
+        $lines = $A->line($map);
+
+        $lines_arr = array();
+
+        foreach ($lines as $key => $value) {
+
+            $lines_arr[$value['id']] = $value['name'];
+        }
+
+        return $lines_arr;
+    }
+
+    public function hasIsAuth($ids = ''){
+
+    	if(!$ids) return FALSE;
+
+		$idsArr = explode(',', $ids);
+
+		$map = array();
+
+		$map['in'] =  array('type', array('201','900'));
+
+		$map['in'] array('id', $idsArr);
+
+		$m = M('stock_wave');
+
+		$result = $m->where($map)->select();
+
+		if($result) return FALSE;
+
+
+    }
 }

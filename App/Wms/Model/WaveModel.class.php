@@ -30,6 +30,7 @@ class WaveModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
+            'field'=>'stock_wave.id as wave_id,stock_wave.*',
             'where'=>array('stock_wave.is_deleted'=>'0'),
             'order'=>'stock_wave.id DESC',
             

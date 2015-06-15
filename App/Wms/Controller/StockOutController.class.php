@@ -115,7 +115,7 @@ class StockOutController extends CommonController {
         }
 
         //修改线路value值
-        $lines = $this->line();
+        $lines = A('Wave','Logic')->line();
 
         $this->query['stock_bill_out.line_id']['value'] = $lines;
 
@@ -141,21 +141,6 @@ class StockOutController extends CommonController {
             );
 
         $this->search_addon = true;
-    }
-
-    //根据仓库ID获取线路列表
-    public function line(){
-        //$map['wh_id'] = session('user.wh_id');
-        $map['status'] = '1';
-        $map['page_size'] = 100;
-        $A = A('Order','Logic');
-        $lines = $A->line($map);
-        $lines_arr = array();
-        foreach ($lines as $key => $value) {
-
-            $lines_arr[$value['id']] = $value['name'];
-        }
-        return $lines_arr;
     }
 
     protected function before_lists(){
@@ -468,7 +453,7 @@ class StockOutController extends CommonController {
 
         $insertArr = $waveLogic->getWaveDate($ids, $site_url);
 
-        if($insertArr === FALSE) echojson('0','','波次创建失败23！');
+        if($insertArr === FALSE) echojson('0','','波次创建失败！');
 
         $insertArr = array_merge($insertArr,$this->getDefaultInsert());
 
@@ -476,7 +461,7 @@ class StockOutController extends CommonController {
 
         $wave_id = $m->data($insertArr)->add();
 
-        if(!$wave_id) echojson('0','','波次创建失败2！');
+        if(!$wave_id) echojson('0','','波次创建失败！');
 
         $re = $waveLogic->addWaveDetail($ids,$wave_id);
         
@@ -484,7 +469,7 @@ class StockOutController extends CommonController {
 
             M('stock_wave')->where(array('id'=>$wave_id))->save(array('is_delete'=>1));
 
-            echojson('0','','波次创建失败q！');
+            echojson('0','','波次创建失败！');
 
         }else{
 
@@ -494,7 +479,7 @@ class StockOutController extends CommonController {
 
                 M('stock_wave_detail')->where(array('pid'=>$wave_id))->delete();
 
-                echojson('0','','波次创建失败33！');
+                echojson('0','','波次创建失败！');
 
             }
 
@@ -518,7 +503,7 @@ class StockOutController extends CommonController {
 
         $insertArr['updated_user'] = session('user.username');
 
-        $insertArr['start_time'] = get_time();
+        $insertArr['start_time']   = get_time();
 
         return $insertArr;
 
