@@ -50,7 +50,7 @@ class StockInModel extends RelationModel {
             'order'=>'stock_bill_in.id DESC',
             "join"=>array("inner join warehouse on stock_bill_in.wh_id=warehouse.id",
                 "inner join company on stock_bill_in.company_id=company.id ",
-                "inner join partner on stock_bill_in.partner_id=partner.id ",
+                "left join partner on stock_bill_in.partner_id=partner.id ",
                 "inner join user u on stock_bill_in.created_user = u.id",
                 "inner join stock_bill_in_type t on stock_bill_in.type=t.id",
                 "left join stock_purchase sp on stock_bill_in.refer_code = sp.code",

@@ -17,4 +17,12 @@ class PartnerController extends CommonController {
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
         );
     }
+
+    public function before_lists(&$M){
+        $this->columns = array('id' => '',
+            'name' => '名称',
+            'contact' => '联系人',
+            'mobile' => '电话',
+            );
+    }
 }
