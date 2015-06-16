@@ -3,10 +3,10 @@ namespace Wms\Controller;
 use Think\Controller;
 class DistDetailController extends CommonController {
 	protected $columns = array (
-            'id' => '订单ID',
+            'order_id' => '订单ID',
             'line' => '订单线路',
             'address' => '送货地址',
-            'date' => '送货时间',
+            'time' => '送货时间',
             'name' => '货品名称',
             'attrs' => '规格',
             'qty' => '数量',
@@ -123,6 +123,7 @@ class DistDetailController extends CommonController {
        	$Dis = D('Distribution', 'Logic');
         //获取搜索结果
         $search_info = $Dis->search_test($post);
+        //dump($search_info);exit;
         //dump($search_info['list']);exit();
         $this->assign('data', $search_info['list']);        
         $maps = $this->condition;

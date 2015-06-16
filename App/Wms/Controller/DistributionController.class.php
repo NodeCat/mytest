@@ -192,7 +192,7 @@ class DistributionController extends CommonController {
         }
         $Dis = D('Distribution', 'Logic');
         //获取搜索结果
-        $seach_info = $Dis->search_test($post);
+        $seach_info = $Dis->search($post);
         if ($seach_info['status'] == false) {
             //搜索失败
             $this->msgReturn(false, $seach_info['msg']);
@@ -210,4 +210,50 @@ class DistributionController extends CommonController {
         }
         
     }
+    
+    /**
+     * 配送单详情
+     */
+    public function view() {
+        if (!IS_GET) {
+            $this->msgReturn(false, '未知错误');
+        }
+        $get = I('get.dis_id');
+        if (empty($get)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
