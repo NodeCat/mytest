@@ -134,6 +134,7 @@ class StockOutController extends CommonController {
 		);
 		$stock_out = M('stock_bill_out');
 		$map['is_deleted'] = 0;
+        $map['wh_id'] = session('user.wh_id');
 		$res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $val) {
             if(array_key_exists($val['status'], $pill['status'])) {
