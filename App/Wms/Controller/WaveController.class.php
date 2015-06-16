@@ -8,7 +8,7 @@ class WaveController extends CommonController {
 
 	//开发测试用
 	public function test(){
-		$wave_ids = array(27);
+		$wave_ids = array(7);
 		A('WavePicking','Logic')->waveExec($wave_ids);
 	}
 }
