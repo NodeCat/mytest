@@ -1,0 +1,132 @@
+
+<div>
+	<form action="order_list" method="post" name="order-form" class="form-inline form-ajax" id="order_form">
+	<div class="panel panel-default">
+ 	    <div class="panel-heading" style="padding:0px 15px;">
+
+   			<h3 class="panel-title"></h3>
+       		<div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
+ 				<button type="submit" data-title="保存" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" data-id=""><i class="glyphicon glyphicon-pencil"></i> 保存</button>
+ 				<a href="{:U('index')}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
+ 			</div>
+ 			{~$data['status']= "0";}
+ 			<include file="status-bar" />
+ 			<div class="clearfix"></div>
+ 		
+	</div>
+    <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>配送单 新建</h3></div>
+		<div class="col-lg-6"></div>
+	</div>
+  	<hr/>
+   	<div class="col-lg-8 col-sm-8 col-xs-8">
+	  	<div class="form-group has-feedback">
+		        <select name="company" class="form-control">
+		        		<option value="0">请选择系统</option>
+		    			<volist name="company" id="com" key="k1">
+		    				<option value="{$k1}">{$com}</option>
+		    			</volist>
+	    			</select>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <div class="col-sm-9">
+				<select name="warehouse" class="form-control">
+					<option value="0">请选择仓库</option>
+				    <volist name="warehouse" id="wh" key="k2">
+				    		<option value="{$k2}">{$wh}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <div class="col-sm-9">
+				<select name="order_type" class="form-control">
+					<option value="0">请选择订单类型</option>
+				    <volist name="order_type" id="order" key="k3">
+				    		<option value="{$k3}">{$order}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <div class="col-sm-9">
+				<select name="line" class="form-control">
+					<option value="0">请选择线路</option>
+				    <volist name="line" id="li" key="k4">
+				    		<option value="{$k4}">{$li}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="form-group has-feedback">
+		    <div class="col-sm-9">
+				<select name="time" class="form-control">
+					<option value="0">请选择时段</option>
+				    <volist name="time" id="tm" key="k6">
+				    		<option value="{$k6}">{$tm}</option>
+				    </volist>
+			    </select>
+		    </div>
+  		</div>
+  		<div class="input-group">
+		    <span class="input-group-addon" id="basic-addon1">日期</span>
+		    <input type="date" name="date" class="form-control" placeholder="" aria-describedby="basic-addon1">
+		</div>
+		<!--<div class="input-group">
+		    <span class="input-group-addon" id="basic-addon1">订单编号</span>
+		    <input type="text" name="order_code" class="form-control" placeholder="订单编号" aria-describedby="basic-addon1">
+		</div>
+		<div class="input-group">
+		    <span class="input-group-addon" id="basic-addon1">分拣单号</span>
+		    <input type="text" name="sort" class="form-control" placeholder="分拣单号" aria-describedby="basic-addon1">
+		</div>-->
+		
+		<button type="submit" id="search_order" class="btn btn-primary">搜索订单</button>
+       </div>
+       </form>
+       <div style="width: 30%;float:left; overflow:hidden;">
+	       <from action="" method="" name="">
+	       	  
+			  <div id="order">
+				  <include file="order" />
+			  </div>
+		  </from>
+		  <form action="" method="" name="">
+			  <div id="distribution_content">
+			      <include file="distribution-content" />
+			  </div>
+		  </form>
+	  </div>
+</div>
+<div>
+	<include file="order-list" />
+</div>
+
+<style text="css">
+select,input{
+	margin-bottom:10px;
+}
+.input-group {
+	margin-bottom:10px;
+}
+
+<script>
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</style>

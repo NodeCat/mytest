@@ -1,23 +1,24 @@
-<notempty name="auth['stockOut']">
+<notempty name="auth['packing']">
 
 <div class="form-group  col-lg-1">
-<a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
+<a href="#" id='packing' class="btn btn-sm btn-default btn-tool">开始拣货</a>
 </div>
 
 <div class="form-group  col-lg-1">
-<a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
+<a href="#" id='delAll' class="btn btn-sm btn-default btn-tool">删除</a>
 </div>
 <script type="text/javascript">
 $(function(){
-	$('#stock_out').on('click',function(){
+	$('#packing').on('click',function(){
 		var ids = getChecked();
 		$.ajax({
-			url:'/StockOut/stockOut',
+			url:'/Wave/packing',
 			type:'post',
 			cache : false,
 			dataType:'json',
 			data:'ids='+ids,
 			success: function(json){
+
 				if(json.status=='1'){
 					alert(json.msg);
                     refresh_list();

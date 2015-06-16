@@ -283,3 +283,23 @@ function check_data_is_valid($str){
     }
     return true;
 }
+
+/**
+ * Ajax json 返回结果
+ * @param Int ids 状态
+ * @param Array $data 数据
+ * @param String $meg 提示信息
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function echojson($status, $data, $msg){
+
+    $return['status'] = $status;
+
+    $return['msg']    = $msg;
+
+    $return['data']   = $data;
+
+    echo json_encode($return); exit;
+
+}

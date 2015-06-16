@@ -148,7 +148,7 @@ function en_to_cn($str){
         'unite' => '组合',
         'split' => '拆分',
         'draft' => '草稿',
-        'make' => '已生产',
+        'make' => '已完成',
         'pass' => '已生效',
         'reject' => '已驳回',
         'close' => '已作废',
