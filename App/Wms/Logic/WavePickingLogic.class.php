@@ -2,6 +2,7 @@
 namespace Wms\Logic;
 
 class WavePickingLogic{
+    protected $order_max = 10; //每个线路每次处理最多订单数
     /**波次运行
     * $wave_ids 波次id 数据
     */
@@ -83,10 +84,13 @@ class WavePickingLogic{
                     $result_arr[$bill_out_info['line_id']]['pro_type_sum'] = count($pro_type_sum);
                     //统计SKU总数
                     $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] = $pro_qty_sum;
+
+                    //处理分拣单 每个分拣单最多处理$order_max个订单
+                    $this->exec_order($result_arr);
                 }        		
         	}
-
-            //开始创建分拣单 按照线路
+            
+            //处理剩余的线路数据
             foreach($result_arr as $line => $result){
                 $data['wave_id'] = $wave_id;
                 $data['type'] = 'picking';
@@ -111,13 +115,55 @@ class WavePickingLogic{
                 }
 
                 //创建分拣单
-                $res = $wave_picking->relation('detail')->add($data);
+                $wave_picking->relation('detail')->add($data);
+
+                //创建完毕后 把该线路的数据释放掉
+                unset($result_arr[$line]);
             }
-            
-            
         }
 
         return array('status'=>1);
+    }
+
+    /**
+    * 处理分拣单 每个分拣单最多处理$order_max个订单
+    * @param
+    * $result_arr
+    */
+    protected function exec_order(&$result_arr){
+        //开始创建分拣单 按照线路
+        foreach($result_arr as $line => $result){
+            //如果某个线路上的订单处理了10个 开始创建一个分拣单
+            if($result['order_sum'] >= $this->order_max){
+                $data['wave_id'] = $wave_id;
+                $data['type'] = 'picking';
+                $data['order_sum'] = $result['order_sum'];
+                $data['pro_type_sum'] = $result['pro_type_sum'];
+                $data['pro_qty_sum'] = $result['pro_qty_sum'];
+                $data['line_id'] = $line;
+                $data['wh_id'] = session('user.wh_id');
+                $data['status'] = 'draft';
+
+
+                $wave_picking = D('WavePicking');
+                $data = $wave_picking->create($data);
+
+                foreach($result['detail'] as $val){
+                    $v['pro_code'] = $val['pro_code'];
+                    $v['pro_qty'] = $val['pro_qty'];
+                    $v['batch'] = $val['batch'];
+                    $v['src_location_id'] = $val['src_location_id'];
+                    $v['dest_location_id'] = 0;
+                    $data['detail'][] = $v;
+                }
+
+                //创建分拣单
+                $wave_picking->relation('detail')->add($data);
+
+                //创建完毕后 把该线路的数据释放掉
+                unset($result_arr[$line]);
+            }
+        }
     }
 }
 
