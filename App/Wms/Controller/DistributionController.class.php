@@ -196,4 +196,14 @@ class DistributionController extends CommonController {
         $this->assign('order_list', $seach_info);
         $this->display();
     }
+    
+    /**
+     * 生成配送单
+     */
+    public function distribution() {
+        if (!IS_POST) {
+            $this->msgReturn(false, '未知错误');
+        }
+        
+    }
 }
