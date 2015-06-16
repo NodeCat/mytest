@@ -223,37 +223,93 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '参数有误');
         }
         
+        //获取配送单信息
+        $M = M('stock_wave_distribution');
+        $map['id'] = $get;
+        $dis = $M->where($map)->find();
+        unset($map);
+        
+        //获取订单id
+        $D = D('Distribution', 'Logic');
+        $order_ids = $D->get_order_ids_by_dis_id($get);
+        
+        //拉取订单
+        $Order = D('Order', 'Logic');
+        $result = $Order->getOrderInfoByOrderIdArr($order_ids);
+        if ($result['status'] == false) {
+            $this->msgReturn(false, $result['msg']);
+        }
+        
+        $data = array();
+        $data['dist_code'] = $dis['dist_code']; //编号
+        $data['is_printed'] = $dis['is_printed']; //是否打印
+        //创建者
+        $user = M('user');
+        $map['id'] = $dis['created_user'];
+        $user_info = $user->field('nickname')->where($map)->find();
+        $data['creator'] = $user_info['nickname'];
+        $data['created_time'] = $dis['created_time']; //创建时间
+        $data['order_count'] = $dis['order_count']; //总单数
+        $data['sku_count'] = $dis['sku_count']; //sku总数
+        $data['total_price'] = $dis['total_price']; //总价格
+        $data['line_count'] = $dis['line_count']; //总行数
+        
+        $orderList = $result['orderlist'];
+        $this->assign('data', $data);
+        $this->assign('orderList', $orderList);
+        $this->display();
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    /**
+     * 配送单打印
+     */
+    public function printpage() {
+        if (!IS_GET) {
+            $this->msgReturn(false, '未知错误');
+        }
+        $get = I('get.dis_id');
+        if (empty($get)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        
+        //获取配送单信息
+        $M = M('stock_wave_distribution');
+        $map['id'] = $get;
+        $dis = $M->where($map)->find();
+        unset($map);
+        
+        //获取订单id
+        $D = D('Distribution', 'Logic');
+        $order_ids = $D->get_order_ids_by_dis_id($get);
+        
+        //拉取订单
+        $Order = D('Order', 'Logic');
+        $result = $Order->getOrderInfoByOrderIdArr($order_ids);
+        if ($result['status'] == false) {
+            $this->msgReturn(false, $result['msg']);
+        }
+        
+        $items = array();
+        $items['dist_code'] = $dis['dist_code'];
+        $items['line_name'] = $D->format_line($dis['line_id']);
+        
+        $user_ids = array();
+        foreach ($result['orderlist'] as $value) {
+            $user_id[$value['user_id']] = null;
+        }
+        $items['user_count'] = count($user_ids); //总客户数量
+        $items['orders_length'] = $dis['order_count'];  //总订单数
+        $items['sku_count'] = $dis['sku_count']; //sku总数
+        //获取仓库名称
+        $ware = M('warehouse');
+        $map['id'] = $dis['wh_id'];
+        $ware_info = $ware->field('name')->where($map)->find();
+        $items['warehouse_name'] = $ware_info['name'];
+        $items['deliver_date'] = $dis['deliver_date']; //发车时间
+        $items['deliver_time'] = $dis['deliver_time']; //时段
+        $items['orders'] = $result['orderlist']; //订单列表
+        
+        $this->assign('items', $items);
+        $this->display();
+    }
 }

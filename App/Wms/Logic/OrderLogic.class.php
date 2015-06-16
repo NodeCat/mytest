@@ -105,8 +105,37 @@ class OrderLogic{
 	        $return['status'] = true;
 	        $return['msg'] = '成功';
 	        $return['list'] = $res;
+	    } else {
+	        $return['msg'] = '没有符合条件的订单';
 	    }
-	    $return['msg'] = '没有符合条件的订单';
+	    
+	    return $return;
+	}
+	
+	/**
+	 * 根据订单ID批量获取订单
+	 * @param array ids 订单id数组
+	 * @param unknown $ids
+	 */
+	public function getOrderInfoByOrderIdArr($ids = array()) {
+	    $return = array('status' => false, 'msg' => '');
+	    
+	    if (empty($ids)) {
+	        $return['msg'] = '参数有误';
+	    }
+	    
+	    $url = $this->server . '/order/lists';
+	    $map = json_encode(array('orderIds' => $ids, 'itemsPerPage' => count($ids)));
+	    $res = $this->request->post($url, $map);
+	    $res = json_decode($res);
+	    if ($res['status']) {
+	        $return['status'] = true;
+	        $return['msg'] = '成功';
+	        $return['list'] = $res;
+	    } else {
+	        $return['msg'] = '没有符合条件的订单';
+	    }
+	    
 	    return $return;
 	}
 }

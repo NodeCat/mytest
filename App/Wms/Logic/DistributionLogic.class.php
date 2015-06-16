@@ -125,7 +125,15 @@ class DistributionLogic {
         }
         $M = M('stock_wave_distribution_detail');
         $map['pid'] = $dis_id;
-       // $result = $M
+        $result = $M->field('bill_out_id')->where($map)->select();
+        if (empty($result)) {
+            return $return;
+        }
+        foreach ($result as $value) {
+            $return[] = $value['bill_out_id'];
+        }
+        
+        return $return;
     }
     
     /**
