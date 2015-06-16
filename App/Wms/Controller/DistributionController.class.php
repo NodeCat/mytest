@@ -93,6 +93,10 @@ class DistributionController extends CommonController {
         );
     }
     
+    public function add() {
+        $this->lists();
+    }
+
     /**
      * 分配模板数据
      */
@@ -188,13 +192,13 @@ class DistributionController extends CommonController {
         }
         $Dis = D('Distribution', 'Logic');
         //获取搜索结果
-        $seach_info = $Dis->search($post);
+        $seach_info = $Dis->search_test($post);
         if ($seach_info['status'] == false) {
             //搜索失败
             $this->msgReturn(false, $seach_info['msg']);
         }
         $this->assign('order_list', $seach_info);
-        $this->display();
+        $this->display('order-list');
     }
     
     /**

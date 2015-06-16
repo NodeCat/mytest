@@ -71,7 +71,6 @@ class StockOutApi extends Controller{
             }else {
                 $return = array('error_code' => '501', 'error_message' => 'pms infomation error', 'data' => '' );
                 $this->ajaxReturn($return);
-                exit;
             }
         }
         //添加出库单
@@ -82,7 +81,6 @@ class StockOutApi extends Controller{
             }else {
                 $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
                 $this->ajaxReturn($return);
-                exit;
             }
         }
 
@@ -116,7 +114,6 @@ class StockOutApi extends Controller{
                 }else {
                     $return = array('error_code' => '501', 'error_message' => 'created detail error', 'data' => '' );
                     $this->ajaxReturn($return);
-                    exit;
                 }
             }
         }
@@ -131,7 +128,6 @@ class StockOutApi extends Controller{
         }else {
             $return = array('error_code' => '0', 'error_message' => 'success', 'data' => '' );
             $this->ajaxReturn($return);
-            exit;
         }
     } 
 

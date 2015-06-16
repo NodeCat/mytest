@@ -1,0 +1,84 @@
+
+<div class="col-md-8 col-lg-8">
+<block name ="searchbar">
+<eq name="table.searchbar" value="true">
+  <include file="Table:searchbar"/>
+</eq>
+</block>
+
+<block name ="list">
+<div class="table-content" id="table-content">
+  <include file="list"/>
+</div>
+</block>
+
+</div>
+<div class="col-md-4 col-lg-4">
+<button class="btn btn-primary" id="add-order">加入订单</button>
+<table class="table table-bordered" id="table-orders">
+	<caption style="font-size:26px;font-weight700;color:#000">已选订单</caption>
+    <th>
+    		<td>已选{$order_num}<span>0</span>单</td>
+    		<td>{$sku_classify}<span>0</span>行</td>
+    		<td>{$sku_num}<span>0</span>件</td>
+    		<td>{$obj_num}<span>0</span>个客户</td>
+    </th>
+</table>
+
+<table class="table table-bordered">
+	<caption style="font-size:26px;font-weight700;color:#000"></caption>
+    <th>
+    		<td>已选{$order_num}<span>0</span>单</td>
+    		<td>{$sku_classify}<span>0</span>行</td>
+    		<td>{$sku_num}<span>0</span>件</td>
+    		<td>{$obj_num}<span>0</span>个客户</td>
+    </th>
+</table>
+
+</div>
+
+<script type="text/javascript">
+	$('#table-content').delegate('input[type=checkbox]','change',function(){
+		if($(this).prop('checked') == true) {
+			var tr = $(this).parents('tr');
+			var row = new Array();
+			row['id'] = tr.find('.order-id').val();
+			row['user_id'] = tr.find('.order-user_id').val();
+			row['order_number'] = tr.find('.order-number').val();
+			row['line'] = tr.find('.order-line').val();
+			addRow(row);
+		}
+		else {
+			var id = $(this).parents('tr').find('.order-id').val();
+			removeRow(id);
+		}
+		
+	});
+
+	function removeRow(id) {
+		$('#table-orders #r-'+id).remove();
+	}
+	function addRow(e) {
+		//list.forEach(function(e){
+			var tr = $('#table-orders #r-'+e.id);
+			if( tr.length == 0) {
+				tr = '<tr id="r-'+e.id+'"><td>'+e.id+'</td><td>'+e.user_id+'</td><td>'+e.order_number+'</td><td>'+e.line+'</td></tr>';
+				$('#table-orders tr:last').after(tr);
+			}
+		//})
+	}
+
+	function getRow(){
+		var rows = new Array();
+		var list=$("#data-table input:checked").each(function(index,element) {
+			var tr = $(this).parents('tr');
+			var row = new Array();
+			row['id'] = tr.find('.order-id').val();
+			row['user_id'] = tr.find('.order-user_id').val();
+			row['order_number'] = tr.find('.order-number').val();
+			row['line'] = tr.find('.order-line').val();
+			rows.push(row);
+		});
+		return rows;
+	}
+</script>
