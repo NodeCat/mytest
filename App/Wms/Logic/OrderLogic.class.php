@@ -73,4 +73,40 @@ class OrderLogic{
 		$res = json_decode($res,true);
 		return $res;
 	}
+	
+	/**
+	 * 根据订单id,配送时间,时段,订单类型,批量获取订单(配送用)
+	 * @param array $orderIds 订单id数组
+	 * array(
+	 *     order_ids => '订单id组'
+	 *     deliver_date => 配送日期
+	 *     deliver_time => 配送时段
+	 *     order_type => 订单类型
+	 * )
+	 * @return multitype:boolean string |multitype:boolean string mixed
+	 */
+	public function getOrderInfoByOrderIds($data = array('orderIds' => array(), 'deliver_date' => 0, 'deliver_time' => 0, 'order_type' => 0)) {
+	    $return = array('status' => false, 'msg' => '');
+	    if (empty($data)) {
+	        $return['msg'] = '参数有误';
+	        return $return;
+	    }
+	    foreach ($data as $value) {
+	        if (empty($value)) {
+	            $return['msg'] = '参数有误';
+	            return $return;
+	        }
+	    }
+	    $url = $this->server . '/order/lists';
+	    $map = json_encode($data);
+	    $res = $this->request->post($url, $map);
+	    $res = json_decode($res);
+	    if ($res['status']) {
+	        $return['status'] = true;
+	        $return['msg'] = '成功';
+	        $return['list'] = $res;
+	    }
+	    $return['msg'] = '没有符合条件的订单';
+	    return $return;
+	}
 }

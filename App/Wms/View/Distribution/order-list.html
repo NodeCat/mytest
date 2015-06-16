@@ -9,15 +9,17 @@
     		<td>数量</td>
     </th>
     <volist name="order_list" id="list">
-	    <tr>
+    		<tr>
 	    		<td><input type="checkbox" /></td>
-	    		<td>{$list.order_id}</td>
-	    		<td>{$list.line_id}</td>
-	    		<td>{$list.address}</td>
-	    		<td>{$list.time}</td>
-	    		<td>{$list.name}</td>
-	    		<td>{$list.attrs}</td>
-	    		<td>{$list.qty}</td>
-	    </tr>
+			<td colspan="{$list.colspan}">{$list.id}</td>
+	    		<td colspan="{$list.colspan}">{$list.line}</td>
+	    		<td colspan="{$list.colspan}">{$list.address}</td>
+	    		<td colspan="{$list.colspan}">{$list.time}</td>
+    			<foreach name="list['sku']" item="sku">
+		    		<td>{$sku.name}</td>
+		    		<td>{$sku.attrs}</td>
+		    		<td>{$sku.qty}</td>
+		    </foreach>
+		</tr>
     </volist>
 </table>

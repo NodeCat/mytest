@@ -135,8 +135,8 @@ class DistributionController extends CommonController {
         unset($result);
         
         //线路
-        $lines = D('Wave', 'Logic');
-        $result = $lines->line();
+        $lines = D('Distribution', 'Logic');
+        $result = $lines->format_line();
         foreach ($result as $key => $value) {
             $line[$key] = $value;
         }
@@ -159,31 +159,41 @@ class DistributionController extends CommonController {
      * 订单搜索
      * @see \Wms\Controller\CommonController::search()
      */
-    public function search() {
-        if (IS_POST) {
-            $post = I('post.');
-            if (empty($post['company'])) {
-                $this->msgReturn(false, '请选择系统');
-            }
-            if (empty($post['warehouse'])) {
-                $this->msgReturn(false, '请选择仓库');
-            }
-            if (empty($post['order_type'])) {
-                $this->msgReturn(false, '请选择订单类型');
-            }
-            if (empty($post['line'])) {
-                $this->msgReturn(false, '请选择线路');
-            }
-            if (empty($post['time'])) {
-                $this->msgReturn(false, '请选择时段');
-            }
-            if (empty($post['date'])) {
-                $this->msgReturn(false, '请选择日期');
-            }
-            //时段是否区分
-            if ($post['time'] == 3) {
-                unset($post['time']);
-            }
+    public function order_list() {
+        if (!IS_POST) {
+            $this->msgReturn(false, '未知错误');
         }
+        $post = I('post.');
+        if (empty($post['company'])) {
+            $this->msgReturn(false, '请选择系统');
+        }
+        if (empty($post['warehouse'])) {
+            $this->msgReturn(false, '请选择仓库');
+        }
+        if (empty($post['order_type'])) {
+            $this->msgReturn(false, '请选择订单类型');
+        }
+        if (empty($post['line'])) {
+            $this->msgReturn(false, '请选择线路');
+        }
+        if (empty($post['time'])) {
+            $this->msgReturn(false, '请选择时段');
+        }
+        if (empty($post['date'])) {
+            $this->msgReturn(false, '请选择日期');
+        }
+        //时段是否区分
+        if ($post['time'] == 3) {
+            unset($post['time']);
+        }
+        $Dis = D('Distribution', 'Logic');
+        //获取搜索结果
+        $seach_info = $Dis->search($post);
+        if ($seach_info['status'] == false) {
+            //搜索失败
+            $this->msgReturn(false, $seach_info['msg']);
+        }
+        $this->assign('order_list', $seach_info);
+        $this->display();
     }
 }
