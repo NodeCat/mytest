@@ -517,13 +517,13 @@ class StockOutController extends CommonController {
 
         $insertArr['type'] = 200;
 
-        $insertArr['created_user'] = session('user.username');
+        $insertArr['created_user'] = session('user.uid');
 
         $insertArr['created_time'] = get_time();
 
-        $insertArr['updated_time'] = session('user.uid');
+        $insertArr['updated_time'] = get_time();
 
-        $insertArr['updated_user'] = session('user.username');
+        $insertArr['updated_user'] = session('user.uid');
 
         $insertArr['start_time']   = get_time();
 

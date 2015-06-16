@@ -103,9 +103,9 @@ class WaveLogic{
 
 			$WaveDetailArr[$key]['created_time'] = get_time();
 
-			$WaveDetailArr[$key]['created_user'] = session('user.username');
+			$WaveDetailArr[$key]['created_user'] = session('user.uid');
 
-			$WaveDetailArr[$key]['updated_user'] = session('user.username');
+			$WaveDetailArr[$key]['updated_user'] = session('user.uid');
 
 			$WaveDetailArr[$key]['updated_time'] = get_time();
 
@@ -433,6 +433,23 @@ class WaveLogic{
 
 			return FALSE;
 		}
+
+    }
+
+    public function getStatusCn($id){
+
+    	$array = array(
+
+            '1'=>'待生产',
+            '2'=>'已出库',
+            '3'=>'波次中',
+            '4'=>'待拣货',
+            '5'=>'待复核',
+            '6'=>'己复核' 
+
+           );
+
+    	return $array[$id];
 
     }
 

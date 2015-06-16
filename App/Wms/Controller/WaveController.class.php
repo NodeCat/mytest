@@ -103,9 +103,15 @@ class WaveController extends CommonController {
 
             'status'    => false, 
 
-            'toolbar_tr'=> false,
+            'toolbar_tr'=> true,
 
             'statusbar' => true
+        );
+
+        $this->toolbar_tr =array(
+
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+
         );
 
         $this->search_addon = true;
@@ -180,6 +186,65 @@ class WaveController extends CommonController {
     	$map['wh_id'] = session('user.wh_id');
 
     }
+
+    public function view(){
+
+        $pid = I('id');
+
+        $m = M('stock_wave_detail');
+
+        $map['pid'] = $pid;
+
+        $result = array();
+
+        $result = $m->where($map)->select();
+
+        if($result){
+
+            foreach ($result as $key => $value) {
+
+                $bill_out = M('stock_bill_out')->where(array('id'=>$value['bill_out_id']))->find();
+
+                $type_cn = M('stock_bill_out_type')->where(array('id'=>$bill_out['type']))->getField('name');;
+
+                //根据pro_code 查询对应的pro_name
+                /*$pro_codes = array($data['pro_code']);
+                $SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+                $data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];*/
+
+                //区域标识
+                $location_info = A('Location','Logic')->getParentById($bill_out['line_id']);
+
+                $result[$key]['area_name'] = $location_info['name'];
+
+                $result[$key]['type_cn'] = $type_cn;
+
+                $status_cn = A('Wave', 'Logic')->getStatusCn($bill_out['status']);
+
+                $result[$key]['status_cn'] = $status_cn;
+
+                $refused_type_cn = '';
+
+                if($bill_out['refused_type'] == 1) $refused_type_cn = '空';
+
+                if($bill_out['refused_type'] == 1) $refused_type_cn = '缺货';
+
+                $result[$key]['refused_type_cn'] = $refused_type_cn;
+
+                $result[$key]['delivery_time'] = $bill_out['delivery_time'];
+
+                $result[$key]['bill_out'] = $bill_out;
+                
+            }
+        }
+
+        $this->assign('waveDetail',$result);
+
+        //dump($result);
+
+        parent::view();
+
+  }
 
     /**
      * 分拣任务Hook
