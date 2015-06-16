@@ -42,6 +42,12 @@ class WavePickingLogic{
                     $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id']);
                     //如果不够 处理下一个订单
                     if(!$is_enough){
+                        //把订单状态置为待生产
+                        $data['status'] = 1;
+                        $map['id'] = $bill_out_info['id'];
+                        M('stock_bill_out')->where($map)->save($data);
+                        unset($map);
+                        unset($data);
                         continue;
                     }
 
