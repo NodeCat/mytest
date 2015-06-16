@@ -25,7 +25,7 @@
     		<th><span class="s-qty">0</span>件</th>
     		
     </tr>
-  </table>
+</table>
 <table class="table table-condensed table-bordered" id="table-orders">
     <tr>
     		<th></th>
@@ -39,6 +39,7 @@
 <br>
 <table class="table table-dist table-bordered">
 <tr>
+			<th></th>
     		<th>线路</th>
     		<th>客户数</th>
     		<th>订单数</th>
@@ -54,6 +55,7 @@
 
 <script type="text/javascript">
 
+//加入配送单按钮
 $('#add-order').on('click',function(){
 		var duser = $('.table-summary .s-user').text();
 		var dorder = $('.table-summary .s-order').text();
@@ -61,29 +63,80 @@ $('#add-order').on('click',function(){
 		var dqty = $('.table-summary .s-qty').text();
 		var dline = $('#table-orders tr:eq(2)').find('.so-line').text();
 		var list=$("#table-orders tr").map(function() {
-			if($(this).find('.so-id').length == 0)return;
+			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
 			return $(this).find('.so-id').text();
 		}).get().join(',');
-		var tr = '<tr><td><input class="order_ids" type="hidden" value="'+list+'">'+dline+'</td><td>'+duser+'</td><td>'+dorder+'</td><td>'+dcat+'</td><td>'+dqty+'</td></tr>'
+		var tr = '<tr><td><a class="dist-remove"><i class="glyphicon glyphicon-remove"></i></a></td><td><input class="order_ids" type="hidden" value="'+list+'">'+dline+'</td><td>'+duser+'</td><td>'+dorder+'</td><td>'+dcat+'</td><td>'+dqty+'</td></tr>'
 		$('.table-dist tr:last').after(tr);
 		$('#table-orders tr').each(function(){
-			if($(this).find('.so-id').length == 0)return;
-			var id =$(this).parents('tr').attr('id');
-			$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',false);
-			$(this).remove();
+			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
+			var id =$(this).attr('id');
+			$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',true);
+			$(this).addClass('hidden');
 		});
 		calc();
 });
 
-
+$('#add-dist').on('click',function(){
+	$('#add-dist').prop('disabled', true);
+	var order_ids = new Array();
+	$('.table-dist tr').each(function(){
+		if($(this).find('.order_ids').length == 0  )return ;
+		var ids =$(this).find('.order_ids').val();
+		order_ids.push(ids);
+		if($(this).find('.dist-remove').length > 0){
+			$(this).find('.dist-remove').click();
+		}
+	});
+	$.ajax({
+      url:"{:U('Distribution/add')}",
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:{ids:order_ids},
+      success: function(msg){
+        $('#add-dist').prop('disabled', false);
+        
+          alert(msg.msg);
+        
+        
+        if(msg.data != '' && msg.data != null ){
+           $('.alert').hide();
+            //$('.content').html(msg.data);
+        }
+        if(msg.url != '' && msg.url != null ){
+          //setTimeout(function() {document.location=msg.url}, 0);
+        }
+      }
+    }); 
+});
+	
 	$('.content').delegate('.order-remove','click',function(){
 		var id =$(this).parents('tr').attr('id');
+		$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',false);
 		$('#data-table #'+id).find('input[type=checkbox]').prop('checked',false);
+
 		$(this).parents('tr').remove();
 		calc();
-	})
+	});
+
+	$('.content').delegate('.dist-remove','click',function(){
+		var ids =$(this).parents('tr').find('.order_ids').val();
+		var row_ids = ids.split(',');
+
+		row_ids.forEach(function(id){
+			
+			$('#data-table #r-'+id).find('input[type=checkbox]').prop('disabled',false);
+			$('#data-table #r-'+id).find('input[type=checkbox]').prop('checked',false);
+			$('#table-orders #r-'+id).remove();
+		});
+		$(this).parents('tr').remove();
+	});
 
 	$('#table-content').delegate('input[type=checkbox]','change',function(){
+		if($(this).hasClass('select-all')) {
+			return;	
+		};
 		if($(this).prop('checked') == true) {
 			var tr = $(this).parents('tr');
 			var row = new Array();
@@ -101,6 +154,10 @@ $('#add-order').on('click',function(){
 		}
 		calc();
 	});
+
+
+
+
 	function syncRow(id) {
 		 var id =$(this).parents('tr').attr('id');
 		 
@@ -111,7 +168,7 @@ $('#add-order').on('click',function(){
 		var cat = 0;
 		var qty = 0;
 		$('#table-orders tr').each(function(){
-			if($(this).find('.so-id').length == 0)return;
+			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
 			var row = new Array();
 			row['id'] = $(this).find('.so-id').text();
 			row['user_id'] = $(this).find('.so-user_id').text();
@@ -159,4 +216,5 @@ $('#add-order').on('click',function(){
 		});
 		return rows;
 	}
+
 </script>
