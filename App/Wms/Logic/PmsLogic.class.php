@@ -117,7 +117,7 @@ class PmsLogic{
 			}
 
 			//一次最大数量
-			$max = 100;
+			$max = C('PAGE_SIZE');
 			$buffer = array();
 			foreach($pro_codes as $pro_code){
 				$buffer_codes[] = $pro_code;
