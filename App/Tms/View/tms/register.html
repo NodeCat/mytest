@@ -1,0 +1,102 @@
+<include file="Index:nav-cur" />
+<br/>
+<div class="col-xs-12">
+<form class="form-horizontal form-pda form-scan" action="{:U('register')}" method="POST">
+  <!--<input type="hidden" name="t" value="login" />-->
+  <div class="row-fluid">
+  <div class="col-xs-12">
+  <div class="form-group">
+
+  <!--***********************信息登记的表单start*********************-->
+  <div class="input-group">
+      <span class="input-group-addon">手机</span>
+      <input autocomplete="off" value="{$user.mobile}" type="text" class="form-control input-lg input-pda" id="moblie" name="mobile" placeholder="请输入你的手机号码">
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">姓名</span>
+    <input autocomplete="off" value="{$user.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名">
+
+  </div>
+  <br />
+
+  <div class="input-group">
+    <span class="input-group-addon">车牌</span>
+    <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号">
+
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">车型</span>
+    <select autocomplete="off"  class="form-control input-lg input-pda" id="car_type" name="car_type" placeholder="请输入车型">                                   
+        <volist name='car.car_type' id='cars'> 
+        <option>{$cars}</option>
+        </volist>
+      </select>
+
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">平台</span>
+    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台">
+      <volist name='car.car_from' id='cars'> 
+        <option>{$cars}</option>
+      </volist>
+    </select>
+  </div>
+
+  <br />
+
+  <div class="input-group">
+    <span class="input-group-addon">仓库</span>
+    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="sign_storge" name="sign_storge" placeholder="仓库">
+      <volist name='sign_storge' id='storge'> 
+        <option>{$storge.name}</option>
+      </volist>
+    </select>
+  </div>
+
+  </div>
+ </div>
+ <div class="clearfix"></div>
+ </div>
+
+ <br/>
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+    <button type="submit" class="btn btn-primary btn-lg btn-block">提交信息</button>
+  </div>
+</div>
+<br>
+
+</form>
+</div>
+
+<br/>
+<div class="col-xs-12">
+
+<div class="list-group">
+  <a class="list-group-item disabled">已提货配送单(点击可查看详情)</a>
+  <volist name="data" id="vo">
+  <a href="{:U('orders','id='.$vo['id'])}" class="list-group-item list-group-item-ino activ">
+  <span class="badge">共 {$vo.order_count} 订单</span>
+  <h4 class="list-group-item-heading">{$vo.dist_code}<br/>{$vo.line_name}</h4>
+    <hr/>
+    <p class="list-group-item-text"> &nbsp;&nbsp;
+  	<i class="glyphicon glyphicon-user"></i> {$vo.sku_count} 种 &nbsp;&nbsp;
+  	<i class="glyphicon glyphicon-list-alt"></i> {$vo.order_count} 订单&nbsp;&nbsp;
+	<i class="glyphicon glyphicon-th-large"></i> {$vo.line_count} 件 &nbsp;&nbsp;
+    </p>
+  </a>
+  </volist>
+</div>
+</div>
+
+
+<style type="text/css">
+	hr{
+margin-top: 10px;
+  margin-bottom: 10px;
+  	}
+
+</style>
