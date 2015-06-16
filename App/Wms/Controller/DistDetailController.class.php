@@ -123,8 +123,8 @@ class DistDetailController extends CommonController {
        	$Dis = D('Distribution', 'Logic');
         //获取搜索结果
         $search_info = $Dis->search_test($post);
-        //dump($search_info['list']);exit();
-        $this->assign('data', $search_info['list']);        
+        //dump($search_info);exit();
+        $this->assign('data', $search_info);        
         $maps = $this->condition;
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);
