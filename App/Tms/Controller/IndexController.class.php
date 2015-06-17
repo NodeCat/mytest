@@ -221,7 +221,7 @@ class IndexController extends Controller {
     }
 
     //司机签收
-    public function sign() {11
+    public function sign() {
         $map['order_id'] = I('post.id/d',0);
         $map['status']   = '6';
         $map['deal_price'] = I('post.deal_price/d',0);
