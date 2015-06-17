@@ -515,7 +515,7 @@ class StockOutController extends CommonController {
 
         $insertArr = array();
 
-        $insertArr['type'] = 200;
+        $insertArr['status'] = 200;
 
         $insertArr['created_user'] = session('user.uid');
 
