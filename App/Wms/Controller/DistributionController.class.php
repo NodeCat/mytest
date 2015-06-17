@@ -88,19 +88,19 @@ class DistributionController extends CommonController {
                         array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
                 ),
         );
-        $this->toolbar = array(
-        	         array('name'=>'add', 'show' => true/*isset($auth['view'])*/,'new'=>'true'),
-        );
+        /*$this->toolbar = array(
+        	         array('name'=>'add', 'show' => trueisset($auth['view']),'new'=>'true', 'link' => 'DistDetail/index'),
+        );*/
     }
     
-    public function add() {
-        $this->lists();
+    public function index() {
+        $this->lists('index');
     }
 
     /**
      * 分配模板数据
      */
-    public function _before_add() {
+    /*public function _before_add() {
         if (IS_POST) {
             return;
         }
@@ -157,7 +157,7 @@ class DistributionController extends CommonController {
         $this->assign('order_type', $order_type);
         $this->assign('line', $line);
         $this->assign('time', $time);
-    }
+    }*/
     
     /**
      * 订单搜索
@@ -208,9 +208,26 @@ class DistributionController extends CommonController {
         if (!IS_POST) {
             $this->msgReturn(false, '未知错误');
         }
+        $post = I('post.');
+        if (empty($post)) {
+            $this->msgReturn(false, '参数错误');
+        }
         
+        $D = D('Distribution', 'Logic');
+        $result = $D->add_distributioin($post);
+        if ($result['status'] == false) {
+            $this->msgReturn(false, $result['msg']);
+        }
+        
+        $this->msgReturn(true, '已创建配送单', '', '', U('index'));
     }
     
+    /**
+     * 配送单导出
+     */
+    public function exportdis() {
+        
+    }
     /**
      * 配送单详情
      */
@@ -239,6 +256,7 @@ class DistributionController extends CommonController {
         if ($result['status'] == false) {
             $this->msgReturn(false, $result['msg']);
         }
+        $result = $result['list'];
         
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
@@ -288,7 +306,7 @@ class DistributionController extends CommonController {
         if ($result['status'] == false) {
             $this->msgReturn(false, $result['msg']);
         }
-        
+        $result = $result['list'];
         $items = array();
         $items['dist_code'] = $dis['dist_code'];
         $items['line_name'] = $D->format_line($dis['line_id']);
@@ -308,7 +326,15 @@ class DistributionController extends CommonController {
         $items['deliver_date'] = $dis['deliver_date']; //发车时间
         $items['deliver_time'] = $dis['deliver_time']; //时段
         $items['orders'] = $result['orderlist']; //订单列表
-        
+        unset($map);
+        //更新打印状态
+        if ($dis['is_printed'] <= 0) {
+            $data['is_printed'] = 1;
+            $map['id'] = $get;
+            if ($M->create($data)) {
+                $M->where($map)->save();
+            }
+        }
         $this->assign('items', $items);
         $this->display();
     }

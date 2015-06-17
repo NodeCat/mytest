@@ -41,7 +41,7 @@ class DistDetailController extends CommonController {
             ),
             'date' => array(
                     'title' => '日期',
-                    'query_type' => 'between',
+                    'query_type' => 'eq',
                     'control_type' => 'datetime',
                     'value' => 'created_time',
             ),
@@ -49,9 +49,14 @@ class DistDetailController extends CommonController {
             	       'title' => '时段',
                    'query_type' => 'eq',
                    'control_type' => 'select',
-                   'value' => 'time',
+                   'value' => array(
+            	           '3' => '全天',
+                       '1' => '上午',
+                       '2' => '下午',
+                   ),
             )
-    );	public function before_index() {
+    );	
+    public function before_index() {
         $this->table = array(
                 'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
                 'searchbar' => true, //是否显示搜索栏
@@ -60,6 +65,11 @@ class DistDetailController extends CommonController {
                 'toolbar_tr'=> false,
                 'statusbar' => false
         );
+        
+        //分配线路
+        $D = D('Distribution', 'Logic');
+        $line = $D->format_line();
+        $this->query['line']['value'] = $line;
     }
     //显示数据列表
     protected function lists($template='') {
@@ -122,7 +132,7 @@ class DistDetailController extends CommonController {
         $this->filter_list($data);//对结果集进行过滤转换
        	$Dis = D('Distribution', 'Logic');
         //获取搜索结果
-        $search_info = $Dis->search_test($post);
+        $search_info = $Dis->search_test();
         //dump($search_info['list']);exit();
         $this->assign('data', $search_info['list']);        
         $maps = $this->condition;
