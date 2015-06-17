@@ -130,9 +130,15 @@ class DistDetailController extends CommonController {
         //$count  = $M2->page()->limit()->count();//获取查询总数
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换
+        $Dis = D('Distribution', 'Logic');
+        if (IS_POST) {
+            $search_info = $Dis->order_lists(I('post.query'));
+        } else {
+            $search_info['list'] = array();
+        }
        	$Dis = D('Distribution', 'Logic');
         //获取搜索结果
-        $search_info = $Dis->search_test();
+        //$search_info = $Dis->search();
         //dump($search_info['list']);exit();
         $this->assign('data', $search_info['list']);        
         $maps = $this->condition;
