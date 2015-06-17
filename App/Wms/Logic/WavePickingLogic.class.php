@@ -13,6 +13,7 @@ class WavePickingLogic{
         foreach($wave_ids as $wave_id){
         	//根据波次id查询 出库单id
         	$map['pid'] = $wave_id;
+            $map['is_deleted'] = 0;
         	$bill_out_ids = M('stock_wave_detail')->where($map)->field('bill_out_id')->select();
         	unset($map);
 
@@ -60,6 +61,7 @@ class WavePickingLogic{
         			$map['pid'] = $bill_out_info['id'];
         			$bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
         			unset($map);
+
 
         			//遍历出库单详情
                     foreach($bill_out_detail_infos as $bill_out_detail_info){

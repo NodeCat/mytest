@@ -112,6 +112,11 @@ class StockLogic{
 
 					break;
 				}
+
+			}else{
+
+				break;
+				
 			}
 		}
 

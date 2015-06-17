@@ -10,12 +10,12 @@
 // +----------------------------------------------------------------------
 namespace Wms\Model;
 use Think\Model;
-class WaveModel extends Model {
+class PickModel extends Model {
 
-    protected $insertFields = array('id','type','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time','status');
-    protected $updateFields = array('type','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time','status');
+    protected $insertFields = array('id','wave_id','type','order_sum','pro_type_sum','pro_qty_sum','wh_id','line_id','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('wave_id','type','order_sum','pro_type_sum','pro_qty_sum','wh_id','line_id','status','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
-    public $tableName = 'stock_wave';
+    public $tableName = 'stock_wave_picking';
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
@@ -39,14 +39,14 @@ class WaveModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'field'=>'stock_wave.id as wave_id,stock_wave.*',
-            'where'=>array('stock_wave.is_deleted'=>'0'),
-            'order'=>'stock_wave.id DESC',
+            'field'=>'stock_wave_picking.id as pick_id,stock_wave_picking.*',
+            'where'=>array('stock_wave_picking.is_deleted'=>'0'),
+            'order'=>'stock_wave_picking.id DESC',
             
         ),
         'latest'=>array(
-            'where'=>array('stock_wave.is_deleted'=>'0'),
-            'order'=>'update_time DESC',
+            'where'=>array('stock_wave_picking.is_deleted'=>'0'),
+            'order'=>'updated_time DESC',
         ),
 
 

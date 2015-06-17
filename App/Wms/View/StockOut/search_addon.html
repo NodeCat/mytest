@@ -1,6 +1,11 @@
 <notempty name="auth['stockOut']">
-<div class="form-group  col-lg-3">
+
+<div class="form-group  col-lg-1">
 <a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
+</div>
+
+<div class="form-group  col-lg-1">
+<a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
 </div>
 <script type="text/javascript">
 $(function(){
@@ -25,6 +30,53 @@ $(function(){
 		});
 		return true;
 	})
+
+	$(document).on('click','#create_wave',function(res){
+
+		var ids = getChecked();
+
+		var param = {};
+
+		param.ids = ids;
+
+		param.code = $("[name = 'query[stock_bill_out.code]']").val();
+
+		param.wave_id = $("[name = 'query[stock_bill_out.wave_id]']").val();
+
+		param.type = $("[name = 'query[stock_bill_out.type]']").val();
+
+		param.refused_type = $("[name = 'query[stock_bill_out.refused_type]']").val();
+
+		param.line_id = $("[name = 'query[stock_bill_out.line_id]']").val();
+
+		param.process_type = $("[name = 'query[stock_bill_out.process_type]']").val();
+
+		param.created_time = $("[name = 'query[stock_bill_out.created_time]']").val();
+
+		param.created_time_1 = $("[name = 'query[stock_bill_out.created_time_1]']").val();
+		
+		
+		$.ajax({
+			url:'/StockOut/createWave',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:param,
+			success: function(json){
+				if(json.status=='1'){
+					alert(json.msg);
+                    refresh_list();
+                    //window.href.location.reload();
+				}
+				if(json.status=='0'){
+					alert(json.msg);
+                    refresh_list();
+				}
+			}
+		});
+
+	});
+
 	
 })
 </script>
