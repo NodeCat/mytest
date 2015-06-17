@@ -24,7 +24,7 @@ class StockInController extends CommonController {
 	protected $columns = array (   
 		'code' => '到货单号',   
 		//'refer_code' => '关联单号', 
-	    //'type' => '入库类型',
+	    'type' => '入库类型',
 		//'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
 		'partner_name' => '供货商',
@@ -453,6 +453,10 @@ class StockInController extends CommonController {
 		$M_bill_in = M('stock_bill_in');
 		$map['is_deleted'] = 0;
 		$map['wh_id'] = session('user.wh_id');
+		if(ACTION_NAME == 'pindex'){
+			//如果是采购到货单，只显示采购相关的到货单据
+			$map['stock_bill_in.type'] = 1;
+		}
 		$res = $M_bill_in->field('status,count(status) as qty')->where($map)->group('status')->select();
 
 		foreach ($res as $key => $val) {

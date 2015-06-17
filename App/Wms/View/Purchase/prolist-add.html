@@ -90,11 +90,11 @@ $('#table-pro').delegate('.pro_names','focus',function(){
   $('.tr-active').removeClass('tr-active');
   $(this).parents('tr').addClass('tr-active');
 });
-/*
-$('#table-pro').delegate('input','focus',function(){
+
+$('#table-pro').delegate('input','click',function(){
   $(this).select();
 });
-*/
+
 //删除操作
 $('.tab-content').delegate( '.btn-delete', 'click', function(){
   $(this).closest('tr').remove();

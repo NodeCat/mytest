@@ -85,7 +85,7 @@ $('.add-pro').on('click',function(){
     tr.removeClass('hidden');
     $('#table-pro tr:eq(2)').after(tr);
     typehead();
-    $('#table-pro tr.tr-cur .pro_name').focus();
+    $('#table-pro tr.tr-cur .pro_names').focus();
     $('#table-pro tr:eq(3)').find('input:not(#typeahead)').each(function() {
     		var old_name = $(this).attr('name');
     		var new_name = old_name.replace('0', i);
@@ -94,15 +94,20 @@ $('.add-pro').on('click',function(){
     $('#table-pro tr:eq(3)').find('select').attr('name', 'pros[' + i + '][pro_uom]');
 });
 
+
+$('#table-pro').delegate('.pro_names','focus',function(){
+  $('.tr-active').removeClass('tr-active');
+  $(this).parents('tr').addClass('tr-active');
 });
 
-function typehead() {
-$('#table-pro .pro_names').on('focus',function(){
-  $(this).parent().addClass('tr-active');
-});
-$('.tr-cur input').on('focus',function(){
+$('#table-pro').delegate('input','click',function(){
   $(this).select();
 });
+
+});
+
+
+function typehead() {
 $('.tr-cur .pro_names').typeahead({ 
     display: 'name',
     val: 'val',

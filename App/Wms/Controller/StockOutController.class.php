@@ -90,14 +90,12 @@ class StockOutController extends CommonController {
                         '2'=>'取消单'
                         ),   
 		),
-
         'stock_bill_out.created_time' =>    array (    
             'title' => '下单时间',     
             'query_type' => 'between',     
             'control_type' => 'datetime',     
-            'value' => '',   
+            'value' => ''   
         ), 
-        
 	);
 
     public function __construct(){
