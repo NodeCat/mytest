@@ -38,7 +38,7 @@
             <td>{$k.car_num}</td>
             <td>{$k.car_type}</td>
             <td>{$k.car_from}</td>
-            <td>{$k.sign_storge}</td>
+            <td>{$k.warehouse}</td>
             <td>{$k.created_time}</td>
             <td></td>
             <td></td>
@@ -53,7 +53,7 @@
 function select(){ 
     x=document.getElementById('f');
 
-    x.action="{:U('Index/lists')}";
+    x.action="{:U('list/index')}";
     x.submit();
     //x.sign_storge.value;    
       
@@ -90,7 +90,7 @@ function exp(){
 
 
     x=document.getElementById('f');
-    x.action="{:U('Index/export')}";
+    x.action="{:U('list/export')}";
     x.submit();
 
 }

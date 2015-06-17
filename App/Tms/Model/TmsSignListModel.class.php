@@ -7,8 +7,8 @@ class TmsSignListModel extends RelationModel{
 		'TmsUser'=>array(
 		'mapping_type'=>self::BELONGS_TO,
 		'foreign_key'=>'userid',
-		'mapping_fields'=>'username,mobile,car_num,car_type,car_from,sign_storge',
-		'as_fields'=>'username,mobile,car_num,car_type,car_from,sign_storge',
+		'mapping_fields'=>'username,mobile,car_num,car_type,car_from,warehouse',
+		'as_fields'=>'username,mobile,car_num,car_type,car_from,warehouse',
 		
 		),
 
