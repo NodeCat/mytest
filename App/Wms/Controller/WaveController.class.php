@@ -206,7 +206,7 @@ class WaveController extends CommonController {
 
                 $bill_out = M('stock_bill_out')->where(array('id'=>$value['bill_out_id']))->find();
 
-                $type_cn = M('stock_bill_out_type')->where(array('id'=>$bill_out['type']))->getField('name');;
+                $type_cn = M('stock_bill_out_type')->where(array('id'=>$bill_out['type']))->getField('name');
 
                 //根据pro_code 查询对应的pro_name
                 /*$pro_codes = array($data['pro_code']);
@@ -224,15 +224,23 @@ class WaveController extends CommonController {
 
                 $result[$key]['status_cn'] = $status_cn;
 
-                $refused_type_cn = '';
+                $process_type_cn = '';
 
-                if($bill_out['refused_type'] == 1) $refused_type_cn = '空';
+                $order_count = 0;
 
-                if($bill_out['refused_type'] == 1) $refused_type_cn = '缺货';
+                $count = A('Wave','Logic')->sumStockBillOut($value['bill_out_id']);
 
-                $result[$key]['refused_type_cn'] = $refused_type_cn;
+                if(isset($count['totalCount'])) $order_count = $count['totalCount'];
+
+                if($bill_out['process_type'] == 1) $process_type_cn = '正常单';
+
+                if($bill_out['process_type'] == 2) $process_type_cn = '取消单';
+
+                $result[$key]['process_type_cn'] = $process_type_cn;
 
                 $result[$key]['delivery_time'] = $bill_out['delivery_time'];
+
+                $result[$key]['order_qty_count'] = $order_count;
 
                 $result[$key]['bill_out'] = $bill_out;
                 
@@ -258,6 +266,12 @@ class WaveController extends CommonController {
       	//@todo这里加个钩子调用李昂的分拣接口
 
         $ids = I('ids');
+
+        $waveLogic = A('Wave','Logic');
+
+        $hasIsAuth = $waveLogic->hasIsAuth($ids);
+
+        if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
 
         $wave_ids = explode(',', $ids);
 
