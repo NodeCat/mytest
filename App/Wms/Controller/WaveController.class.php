@@ -12,6 +12,7 @@ namespace Wms\Controller;
 use Think\Controller;
 class WaveController extends CommonController {
 
+
 	protected $filter = array(
 
               'company_id'=>array(
@@ -254,9 +255,13 @@ class WaveController extends CommonController {
      */
     public function packTask(){
 
-    	//@todo这里加个钩子调用李昂的分拣接口
+      	//@todo这里加个钩子调用李昂的分拣接口
 
-    	//echojson('0','','删除成功！');
+        $ids = I('ids');
+
+        $wave_ids = explode(',', $ids);
+
+      	A('WavePicking','Logic')->waveExec($wave_ids);
 
     }
 }

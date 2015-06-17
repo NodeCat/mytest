@@ -3,6 +3,42 @@ namespace Wms\Logic;
 
 class StockLogic{
 	/**
+	* 波次生产，检查出库单中所有sku是否满足数量需求
+	* @param
+	* $order_id
+	**/
+	public function checkStockIsEnoughByOrderId($order_id){
+		if(empty($order_id)){
+			return false;
+		}
+
+		//根据pid查询bill_out_detail
+		$map['pid'] = $order_id;
+		$bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+
+		//判断每条sku是否够用
+		$is_enough = true;
+
+		foreach($bill_out_detail_infos as $bill_out_detail_info){
+			$data['wh_id'] = session('user.wh_id');
+			$data['pro_code'] = $bill_out_detail_info['pro_code'];
+			$data['pro_qty'] = $bill_out_detail_info['order_qty'];
+			$check_re = $this->outStockBySkuFIFOCheck($data);
+			if($check_re['status'] != 1){
+				$is_enough = false;
+			}
+			unset($data);
+
+			//如果不够 直接返回
+			if(!$is_enough){
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	* 波次生产，返回应该从哪个库位出货，按照先进先出原则
 	* @param
 	* $wh_id
@@ -25,7 +61,7 @@ class StockLogic{
 		unset($map);
 
 		//检查所有的 库存量 是否满足 出库量
-		foreach($stock_list as $stock){
+		/*foreach($stock_list as $stock){
 			$stock_total += $stock['stock_qty'] - $stock['assign_qty'];
 		}
 
@@ -36,6 +72,7 @@ class StockLogic{
 		}
 
 		$return['is_enough'] = $is_enough;
+		*/
 
 		$diff_qty = intval($diff_qty);
 
