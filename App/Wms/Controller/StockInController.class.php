@@ -24,7 +24,7 @@ class StockInController extends CommonController {
 	protected $columns = array (   
 		'code' => '到货单号',   
 		//'refer_code' => '关联单号', 
-	    //'type' => '入库类型',
+	    'type' => '入库类型',
 		//'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
 		'partner_name' => '供货商',
