@@ -2,15 +2,22 @@
 namespace Tms\Controller;
 use Think\Controller;
 class IndexController extends Controller {
+    protected $car=array(
+        'car_type'=>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货'),
+        'car_from'=>array('速派得','云鸟','58')
+);
+
     protected function _initialize(){
         if(!session('?user')) {
-            if(ACTION_NAME != 'login' && ACTION_NAME != 'logout') {
+            if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
             }
+            
         }
     }
+
     public function index(){
-        $this->redirect('delivery');
+        $this->redirect('delivery'); 
     }
     //登录
     public function login() {
@@ -32,11 +39,122 @@ class IndexController extends Controller {
             }
             else {
                 $user = array('mobile'=> $code,'username' => $name);
-                session('user',$user);
-                $this->redirect('delivery');    
+                $M1=M('TmsUser');
+                $data=$M1->where($user)->find();                 
+                if($data){
+                    $date = date('Y-m-d H:i:s',NOW_TIME);
+                    $userid['userid']=$data['id'];
+                    $userid['updated_time']=$date;
+                    $userid['created_time']=$date;
+                    $start_date = date('Y-m-d',NOW_TIME);
+
+                    $end_date = date('Y-m-d',strtotime('+1 Days'));
+                    unset($map);
+                    $map['created_time'] = array('between',$start_date.','.$end_date);
+                    $map['userid']=$data['id'];
+                    unset($M);
+                    $M=M('TmsSignList');
+                    $id=$M->field('id')->where($map)->find();
+                    //如果已经签到过了那就改成最新的签到时间
+                    if($id){
+                        $userid['id']=$id['id'];
+                        $M->save($userid);
+                        session('user',$user);
+                        $this->redirect('delivery');
+                    }else{
+                        $M->add($userid);//否则就签到
+
+                    }
+                }
+                else{
+                    $this->user=$user;
+                    $this->title='信息登记';
+                    //仓库里列表
+                    $storge=A('List','Logic');
+                    $storge=$storge->storge();
+                    $this->assign('sign_storge',$storge);
+                    $this->assign('car',$this->car);
+                    //$this->display('tms:register');
+                    $this->register();
+                }
+                    
             }
         }
     }
+
+    //司机第一次信息登记
+    public function register(){
+
+        if(IS_GET){
+            if(session('?user')) {
+                 $this->redirect('delivery');
+            }
+            else{
+            $this->title = '请填写完整的签到信息';
+            //仓库列表
+            $storge=A('List','Logic');
+            $storge=$storge->storge();
+            $this->assign('sign_storge',$storge);
+            $this->assign('car',$this->car);
+            $this->display('tms:register'); 
+            }   
+        }
+        if(IS_POST){
+            $code = I('post.mobile/d',0);
+            $name = I('post.username');
+            $num  = I('post.car_num');
+            $storge=I('post.warehouse');
+            if(empty($code) || empty($name) || empty($num)|| empty($storge)){
+                $this->title ='请填写完整的签到信息';
+                $this->error ='请补全你的签到信息';
+                //仓库列表
+                $storge=A('List','Logic');
+                $storge=$storge->storge();                   
+                $this->assign('sign_storge',$storge);
+                $this->assign('car',$this->car);
+                $this->display('tms:register');
+                exit();
+            }
+            $date = date('Y-m-d H:i:s',NOW_TIME);
+            $data = I('post.');
+            $data['created_time'] = $date;
+            $data['updated_time'] = $date;
+            unset($M);
+            $M = M('TmsUser');
+            $data = $M->create($data);
+            if($M->add($data)){
+
+                $user['username'] = $data['username'];
+                $user['mobile']   =$data['mobile'];
+                session('user',$user);
+                $userid = $M->field('id')->where($user)->find();
+                $data['userid'] = $userid['id'];
+                unset($M);
+                $M=M('TmsSignList');
+                $M->data($data)->add();
+                $this->redirect('delivery');
+
+            }else{
+
+                session(null);
+                session('[destroy]');
+                $this->title='请填写正确的信息！';
+                //$car_type = array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货');
+                $this->assign('car',$this->car);
+                //仓库列表
+                $storge=A('List','Logic');
+                $storge=$storge->storge();
+                $this->assign('sign_storge',$storge);
+
+                $this->display('tms:register');
+
+            }
+
+
+        }  
+    }
+    
+
     public function logout() {
         session(null);
         session('[destroy]');
@@ -96,7 +214,6 @@ class IndexController extends Controller {
                 }
                 
             }
-            //dump($orders);
             $this->data = $orders;
         }
         $this->title = "客户签收";
@@ -106,7 +223,7 @@ class IndexController extends Controller {
     //司机签收
     public function sign() {
         $map['order_id'] = I('post.id/d',0);
-        $map['status'] = '6';
+        $map['status']   = '6';
         $map['deal_price'] = I('post.deal_price/d',0);
         $map['sign_msg'] = I('post.sign_msg');
 
@@ -214,7 +331,6 @@ class IndexController extends Controller {
                     $map['order_id'] = $val['id'];
                     $res = $A->set_status($map);
                 }
-                
                 unset($map);
                 if($res) {
                     $this->msg = "提货成功";
@@ -231,9 +347,10 @@ class IndexController extends Controller {
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $this->data = M('tms_delivery')->where($map)->select();
-        
         $this->title = '提货扫码';
         $this->display('tms:delivery');  
+
     }
+
 
 }

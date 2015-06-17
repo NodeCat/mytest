@@ -1,0 +1,80 @@
+
+<div class="table-responsive" >
+    <form id="f" name="f" action="" method="post">
+    <div class="input-group">
+        <span class="input-group-addon">选择仓库</span>
+        <select autocomplete="off" value="" type="text" style="width:300px;" class="form-control input-pda"  id="sign_storge" name="sign_storge" placeholder="仓库">
+        <volist name='sign_storge' id='storge'> 
+            <option>{$storge.name}</option>
+        </volist>
+        </select>
+        <button class='btn btn-primary' onclick="select()" >查询</button>
+        <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
+
+    </div> 
+  </form>      
+    <table class="table table-bordered" style="text-align:center">
+        <!--<thead align="center">-->
+          <tr style="text-align:center;">
+            <th>ID</th>
+            <th>司机姓名</th>
+            <th>联系电话</th>
+            <th>车牌号</th>
+            <th>车型</th>
+            <th>派车平台</th>
+            <th>签到仓库</th>
+            <th>最后一次签到日期</th>
+            <th>线路</th>
+            <th>备注</th>
+
+          </tr>
+        <!--</thead>-->
+        <tbody>
+          <volist name='list' id="k">
+          <tr>
+            <th scope="row">{$k.userid}</th>
+            <td>{$k.username}</td>
+            <td>{$k.mobile}</td>
+            <td>{$k.car_num}</td>
+            <td>{$k.car_type}</td>
+            <td>{$k.car_from}</td>
+            <td>{$k.warehouse}</td>
+            <td>{$k.created_time}</td>
+            <td></td>
+            <td></td>
+
+          </tr>
+        </volist>
+        </tbody>
+      </table>
+    </div>
+
+<script type="text/javascript">
+function select(){ 
+    x=document.getElementById('f');
+
+    x.action="{:U('Dispatch/index')}";
+    x.submit();
+}
+
+(function(){
+    x=document.getElementById('f');
+        switch("{$option}"){
+            <volist name='sign_storge' id='storge' key="k"> 
+                case "{$storge.name}": val="{$k}"-1;break;
+            </volist>
+            default:val=0; 
+        }
+    x.sign_storge.options[val].selected=true;  
+
+
+})();
+
+function exp(){ 
+    x=document.getElementById('f');
+    x.action="{:U('Dispatch/export')}";
+    x.submit();
+
+}
+</script>
+
