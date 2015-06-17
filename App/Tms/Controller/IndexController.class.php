@@ -81,15 +81,22 @@ class IndexController extends Controller {
             }
         }
     }
+    
+    //司机当日收货统计
+    public function report() {
+
+    }
 
     //司机第一次信息登记
     public function register(){
 
         if(IS_GET){
+            /*
             if(session('?user')) {
                  $this->redirect('delivery');
             }
             else{
+            */
             $this->title = '请填写完整的签到信息';
             //仓库列表
             $storge=A('List','Logic');
@@ -97,7 +104,8 @@ class IndexController extends Controller {
             $this->assign('sign_storge',$storge);
             $this->assign('car',$this->car);
             $this->display('tms:register'); 
-            }   
+            exit();
+            //}   
         }
         if(IS_POST){
             $code = I('post.mobile/d',0);
