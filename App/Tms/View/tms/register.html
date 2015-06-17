@@ -10,12 +10,12 @@
   <!--***********************信息登记的表单start*********************-->
   <div class="input-group">
       <span class="input-group-addon">手机</span>
-      <input autocomplete="off" value="{$user.mobile}" type="text" class="form-control input-lg input-pda" id="moblie" name="mobile" placeholder="请输入你的手机号码">
+      <input autocomplete="off" value="{$user.mobile}" type="text" class="form-control input-lg input-pda" id="moblie" name="mobile" placeholder="请输入你的手机号码" readonly />
   </div>
   <br />
   <div class="input-group">
     <span class="input-group-addon">姓名</span>
-    <input autocomplete="off" value="{$user.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名">
+    <input autocomplete="off" value="{$user.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名" readonly />
 
   </div>
   <br />
@@ -81,3 +81,6 @@ margin-top: 10px;
   	}
 
 </style>
+<script type="text/javascript">
+car_num.focus();
+</script>
