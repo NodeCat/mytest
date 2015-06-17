@@ -280,7 +280,7 @@ class WaveLogic{
 
 		$map = array();
 
-		$map['type'] =  array('in', '201,900');
+		$map['status'] =  array('in', '201,900');
 
 		$map['id'] = array('in', $ids);
 
@@ -340,7 +340,7 @@ class WaveLogic{
 
 		$status = array();
 
-		$status['type'] = 201;
+		$status['status'] = 201;
 
 		if($this->updateStatus($map, $status)){
 

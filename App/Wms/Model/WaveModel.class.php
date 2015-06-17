@@ -12,8 +12,8 @@ namespace Wms\Model;
 use Think\Model;
 class WaveModel extends Model {
 
-    protected $insertFields = array('id','type','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time','status');
-    protected $updateFields = array('type','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time','status');
+    protected $insertFields = array('id','status','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time');
+    protected $updateFields = array('status','created_user','created_time','updated_time','updated_user','is_deleted','end_time','wave_type','order_count','line_count','total_count','site_src','start_time');
     protected $readonlyField = array('id');
     public $tableName = 'stock_wave';
 
