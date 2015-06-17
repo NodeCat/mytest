@@ -63,15 +63,6 @@ function select(){
             <volist name='sign_storge' id='storge' key="k"> 
                 case "{$storge.name}": val="{$k}"-1;break;
             </volist>
-    /*case '成都1号仓': val=0;break;
-    case '北京北仓' : val=1;break;
-    case '北京1号仓' : val=2;break;
-    case '北京2号仓（北仓）': val=3;break;
-    case '天津1号仓' : val=4;break;
-    case '上海1号仓' : val=5;break;
-    case '武汉1号仓' : val=6;break;
-    case '广州1号仓' : val=7;break;
-    case '长沙1号仓' : val=8;break;*/
             default:val=0; 
         }
     x.sign_storge.options[val].selected=true;  

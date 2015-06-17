@@ -71,7 +71,7 @@ class IndexController extends Controller {
                     $this->user=$user;
                     $this->title='信息登记';
                     //仓库里列表
-                    $storge=D('List','Logic');
+                    $storge=A('List','Logic');
                     $storge=$storge->storge();
                     $this->assign('sign_storge',$storge);
                     $this->assign('car',$this->car);
@@ -93,7 +93,7 @@ class IndexController extends Controller {
             else{
             $this->title = '请填写完整的签到信息';
             //仓库列表
-            $storge=D('List','Logic');
+            $storge=A('List','Logic');
             $storge=$storge->storge();
             $this->assign('sign_storge',$storge);
             $this->assign('car',$this->car);
@@ -109,7 +109,7 @@ class IndexController extends Controller {
                 $this->title ='请填写完整的签到信息';
                 $this->error ='请补全你的签到信息';
                 //仓库列表
-                $storge=D('List','Logic');
+                $storge=A('List','Logic');
                 $storge=$storge->storge();                   
                 $this->assign('sign_storge',$storge);
                 $this->assign('car',$this->car);
@@ -143,7 +143,7 @@ class IndexController extends Controller {
                 //$car_type = array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货');
                 $this->assign('car',$this->car);
                 //仓库列表
-                $storge=D('List','Logic');
+                $storge=A('List','Logic');
                 $storge=$storge->storge();
                 $this->assign('sign_storge',$storge);
 
