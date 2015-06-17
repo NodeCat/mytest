@@ -91,6 +91,13 @@ class WavePickingLogic{
                     //统计SKU总数
                     $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] = $pro_qty_sum;
 
+                    //把订单状态置为待拣货
+                    $data['status'] = 4;
+                    $map['id'] = $bill_out_info['id'];
+                    M('stock_bill_out')->where($map)->save($data);
+                    unset($map);
+                    unset($data);
+
                     //处理分拣单 每个分拣单最多处理$order_max个订单
                     $this->exec_order($result_arr);
                 }        		
