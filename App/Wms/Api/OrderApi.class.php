@@ -32,6 +32,12 @@ class OrderApi extends CommApi{
 			$params['type'] = 'SO';
 			$params['line_id'] = $order_info['info']['line_id'];
 			$params['refer_code'] = $order_info['info']['id'];
+			$params['delivery_date'] = str_replace('/', '-', $order_info['info']['deliver_date']);
+			$params['delivery_time'] = $order_info['info']['deliver_time'];
+			$params['delivery_ampm'] = 'am';
+			$params['customer_realname'] = $order_info['info']['realname'];
+			$params['delivery_address'] = $order_info['info']['deliver_addr'];
+
 			foreach($order_info['info']['detail'] as $order_detail){
 				$detail[] = array(
 					'pro_code' => $order_detail['sku_number'],
