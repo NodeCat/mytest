@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class ListController extends Controller{
+class DispatchController extends Controller{
 
 	protected $columns = array (   
         'username'     => '姓名',   

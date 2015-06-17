@@ -323,7 +323,6 @@ class IndexController extends Controller {
                     $map['order_id'] = $val['id'];
                     $res = $A->set_status($map);
                 }
-                exit();
                 unset($map);
                 if($res) {
                     $this->msg = "提货成功。";

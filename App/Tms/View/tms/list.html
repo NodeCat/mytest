@@ -53,16 +53,12 @@
 function select(){ 
     x=document.getElementById('f');
 
-    x.action="{:U('list/index')}";
+    x.action="{:U('Dispatch/index')}";
     x.submit();
-    //x.sign_storge.value;    
-      
 }
 
 (function(){
     x=document.getElementById('f');
-
-     // alert('{$option}');
         switch("{$option}"){
             <volist name='sign_storge' id='storge' key="k"> 
                 case "{$storge.name}": val="{$k}"-1;break;
@@ -78,23 +74,16 @@ function select(){
     case '长沙1号仓' : val=8;break;*/
             default:val=0; 
         }
-
     x.sign_storge.options[val].selected=true;  
 
 
 })();
 
-
-
 function exp(){ 
-
-
     x=document.getElementById('f');
-    x.action="{:U('list/export')}";
+    x.action="{:U('Dispatch/export')}";
     x.submit();
 
 }
-
-
 </script>
 
