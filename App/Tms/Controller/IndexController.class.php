@@ -65,9 +65,6 @@ class IndexController extends Controller {
             }else{
             $map['userid']=NULL;
             }
-
-
-
         }
 
 
@@ -111,8 +108,7 @@ class IndexController extends Controller {
         ->setKeywords("Dachuwang")
         ->setCategory("Dachuwang");
         $Excel->setActiveSheetIndex(0);
-        $Sheet  =  $Excel->getActiveSheet();  
-                
+        $Sheet  =  $Excel->getActiveSheet();          
         $Sheet->getDefaultColumnDimension()->setAutoSize(true);
         $Sheet->getDefaultStyle()->getFont()->setName('Arial');
         $Sheet->getDefaultStyle()->getFont()->setSize(13);
@@ -170,9 +166,7 @@ protected function filter_list(&$data,$type = '0',$filter = '') {
     public function lists(){
         $D=D("TmsSignList");
         $start_date = date('Y-m-d',NOW_TIME);
-
         $end_date = date('Y-m-d',strtotime('+1 Days'));
-        
         $map['created_time'] = array('between',$start_date.','.$end_date);
 
         //选择仓库
@@ -281,7 +275,7 @@ protected function filter_list(&$data,$type = '0',$filter = '') {
             //仓库列表
             $storge=D('List','Logic');
             $storge=$storge->storge();
-            $this->assign('sign_storge',$storge);dump($storge);
+            $this->assign('sign_storge',$storge);
             $this->assign('car',$this->car);
             $this->display('tms:register'); 
             }   
@@ -297,7 +291,7 @@ protected function filter_list(&$data,$type = '0',$filter = '') {
                 //仓库列表
                 $storge=D('List','Logic');
                 $storge=$storge->storge();                   
-                $this->assign('sign_storge',$storge);dump('你好！！！');
+                $this->assign('sign_storge',$storge);
                 $this->assign('car',$this->car);
                 $this->display('tms:register');
                 exit();
@@ -331,7 +325,7 @@ protected function filter_list(&$data,$type = '0',$filter = '') {
                 //仓库列表
                 $storge=D('List','Logic');
                 $storge=$storge->storge();
-                $this->assign('sign_storge',$storge);dump($storge);
+                $this->assign('sign_storge',$storge);
 
                 $this->display('tms:register');
 
@@ -346,7 +340,6 @@ protected function filter_list(&$data,$type = '0',$filter = '') {
         session(null);
         session('[destroy]');
         $this->redirect('login');
-
     }
     public function orders(){
         //layout(false);
@@ -402,7 +395,7 @@ protected function filter_list(&$data,$type = '0',$filter = '') {
                 }
                 
             }
-            dump($orders);
+            //dump($orders);
             $this->data = $orders;
         }
         $this->title = "客户签收";

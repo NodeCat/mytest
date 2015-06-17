@@ -7,7 +7,7 @@ class ListController extends Controller{
         
         $D=D("TmsSignList");
         $list=$D->relation('TmsUser')->Select();
-        dump($list);
+        //dump($list);
     }
 
 }
