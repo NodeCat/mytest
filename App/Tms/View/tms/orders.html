@@ -112,7 +112,7 @@
     <ul class="list-group" >  -->
   <volist name="vo['detail']" id="v">
   <li class="list-group-item">
-    {$v.sku_number} {$v.name} <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach>
+    {$v.sku_number} {$v.name} <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach> <label class="label label-info">请在下面录入实际收货数量：</label>
   </li>
   <li class="list-group-item">
     <div class="input-group row">
