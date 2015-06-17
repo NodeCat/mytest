@@ -205,7 +205,7 @@ class DistributionController extends CommonController {
     /**
      * 生成配送单
      */
-    public function distribution() {
+    public function add() {
         if (!IS_POST) {
             $this->msgReturn(false, '未知错误');
         }

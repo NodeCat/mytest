@@ -132,11 +132,11 @@ class DistDetailController extends CommonController {
         $this->filter_list($data);//对结果集进行过滤转换
         $Dis = D('Distribution', 'Logic');
         if (IS_POST) {
-            $search_info = $Dis->order_lists(I('post.query'));
+            $search_info = $Dis->search_test(I('post.query'));
+            //$search_info = $Dis->order_lists(I('post.query'));
         } else {
             $search_info['list'] = array();
         }
-       	$Dis = D('Distribution', 'Logic');
         //获取搜索结果
         //$search_info = $Dis->search();
         //dump($search_info['list']);exit();

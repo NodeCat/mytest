@@ -100,8 +100,8 @@ class OrderLogic{
 	    $url = $this->server . '/order/lists';
 	    $map = json_encode($data);
 	    $res = $this->request->post($url, $map);
-	    $res = json_decode($res);
-	    if ($res['status']) {
+	    $res = json_decode($res, true);
+	    if ($res['status'] == 0) {
 	        $return['status'] = true;
 	        $return['msg'] = '成功';
 	        $return['list'] = $res;
@@ -127,8 +127,8 @@ class OrderLogic{
 	    $url = $this->server . '/order/lists';
 	    $map = json_encode(array('orderIds' => $ids, 'itemsPerPage' => count($ids)));
 	    $res = $this->request->post($url, $map);
-	    $res = json_decode($res);
-	    if ($res['status']) {
+	    $res = json_decode($res, true);
+	    if ($res['status'] == 0) {
 	        $return['status'] = true;
 	        $return['msg'] = '成功';
 	        $return['list'] = $res;
