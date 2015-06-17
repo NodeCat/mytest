@@ -43,8 +43,9 @@ class WavePickingLogic{
                     $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id']);
                     //如果不够 处理下一个订单
                     if(!$is_enough){
-                        //把订单状态置为待生产
+                        //把订单状态置为待生产 拒绝标识改为2 缺货
                         $data['status'] = 1;
+                        $data['refused_type'] = 2;
                         $map['id'] = $bill_out_info['id'];
                         M('stock_bill_out')->where($map)->save($data);
                         unset($map);
@@ -93,6 +94,13 @@ class WavePickingLogic{
                     //统计SKU总数
                     $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] = $pro_qty_sum;
 
+                    //把订单状态置为待拣货
+                    $data['status'] = 4;
+                    $map['id'] = $bill_out_info['id'];
+                    M('stock_bill_out')->where($map)->save($data);
+                    unset($map);
+                    unset($data);
+
                     //处理分拣单 每个分拣单最多处理$order_max个订单
                     $this->exec_order($result_arr);
                 }        		
@@ -128,6 +136,13 @@ class WavePickingLogic{
                 //创建完毕后 把该线路的数据释放掉
                 unset($result_arr[$line]);
             }
+
+            //更新波次的状态
+            $data['status'] = 900;
+            $map['id'] = $wave_id;
+            M('stock_wave')->where($map)->save($data);
+            unset($data);
+            unset($map);
         }
 
         return array('status'=>1);

@@ -36,6 +36,11 @@ class StockOutLogic{
         $data['process_type'] = 1;//出库单处理类型默认是正常单
         $data['refused_type'] = 1;//出库单拒绝类型默认是空
         $data['refer_code'] = isset($params['refer_code'])? $params['refer_code'] : '';
+        $data['delivery_date'] = $params['delivery_date'];
+        $data['delivery_time'] = $params['delivery_time'];
+        $data['delivery_ampm'] = $params['delivery_ampm'];
+        $data['customer_realname'] = $params['customer_realname'];
+        $data['delivery_address'] = $params['delivery_address'];
         $data['created_time'] = date('Y-m-d H:i:s');
         $data['created_user'] = UID;
         $data['updated_time'] = date('Y-m-d H:i:s');
