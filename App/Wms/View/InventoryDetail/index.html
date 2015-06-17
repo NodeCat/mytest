@@ -23,9 +23,58 @@
 <div class="col-md-4">盘点结束时间:{$inventory_info.end_time}</div>
 </br>
 </br>
+
 </div>
 </form>
 
 <div class="table-content" id="table-content">
   <include file="Table:list"/>
 </div>
+
+<script type="text/javascript">
+$(function(){
+	$('#data-table tbody tr td').click(function(){
+		if(!$(this).is('.input') && $(this)[0].cellIndex == 5){
+			var _toolbar_tr_is_edit = {$toolbar_tr_is_edit};
+			if(!_toolbar_tr_is_edit){
+				alert('权限不足，或者盘点单已经关闭');
+				return false
+			}
+			$(this).addClass('input').html('<input type="text" style="width:67px">').find('input').focus().blur(function(){
+				//盘点详情id
+				var _inventory_detail_id = $(this).parent().prev().prev().prev().prev().prev().find('input').attr('id');
+				//计算差异量
+				//当前填写实盘量的值
+				var _pro_qty = $(this).val();
+				//原数量
+				var _theoretical_qty = $(this).parent().prev().text();
+				//差异量
+				var _diff_qty = _pro_qty - _theoretical_qty;
+				//更变差异量
+				$(this).parent().next().text(_diff_qty);
+
+				$(this).parent().removeClass('input').html($(this).val() || 0);
+
+				//变更对应的盘点详情
+				$.ajax({
+					url:'/InventoryDetail/upd_detail',
+					type:'post',
+					cache : false,
+					dataType:'json',
+					data:'id='+_inventory_detail_id+'&pro_qty='+_pro_qty+'&theoretical_qty='+_theoretical_qty,
+					success: function(json){
+						if(json.status=='1'){
+							alert('操作成功');
+							//refresh_list();
+						}
+						if(json.status=='0'){
+							alert(json.msg);
+						}
+					}
+				});
+			});
+		}
+	})
+
+});
+</script>

@@ -8,8 +8,9 @@ class PurchaseRefundController extends CommonController {
 			'1' => '货到付款',
 		),
 		'status' => array(
-			'norefund' => '未退款',
-			'refund' => '已退款',
+			'norefund' => '未收款',
+			'refund' => '已收款',
+			'cancel' => '已作废',
 		),
 	);
 	
@@ -19,6 +20,8 @@ class PurchaseRefundController extends CommonController {
 		 'price_total' => '采购金额',
 		 'refund_total' => '冲红金额',
 		 'status' => '状态',
+		 'created_user' => '创建人',
+		 'created_time' => '创建时间',
 	);
 
 	protected $query = array (
@@ -38,7 +41,7 @@ class PurchaseRefundController extends CommonController {
 			'title' => '状态',
 			'query_type' => 'eq',
 			'control_type' => 'select',
-		    'value' => array('norefund'=>'未退款','refund'=>'已退款'),
+		    'value' => array('norefund'=>'未收款','refund'=>'已收款','cancel'=>'已作废'),
 		),
 	);
 
@@ -76,6 +79,12 @@ class PurchaseRefundController extends CommonController {
     protected function before_edit() {
 		$M = D('PurchaseRefund');
 		$id = I($M->getPk());
+
+		$map['id'] = $id;
+		$purchase_refund_info = $M->where($map)->find();
+		unset($map);
+		$this->purchase_code = $purchase_refund_info['refer_code'];
+
 		$map['pid'] = $id;
 		$pros = M('erp_purchase_refund_detail')->where($map)->order('id desc')->select();
 		$refund_total = 0;
@@ -106,6 +115,7 @@ class PurchaseRefundController extends CommonController {
 		}
 	}
 
+	//退款
 	public function refund(){
 		$ids = I('ids');
 
@@ -118,6 +128,35 @@ class PurchaseRefundController extends CommonController {
 		$map = array('id' => array('in',$ids));
 
 		M('erp_purchase_refund')->where($map)->data(array('status'=>'refund'))->save();
+		unset($map);
+
+		$this->msgReturn(1);
+	}
+
+	//作废
+	public function cancel(){
+		$ids = I('ids');
+
+		if(empty($ids)){
+            $data['status'] = 0;
+            $data['msg'] = '请选择一个冲红单';
+            $this->ajaxReturn($data);
+        }
+
+        $map = array('id' => array('in',$ids));
+        $purchase_refund_list = M('erp_purchase_refund')->where($map)->field('status')->select();
+        
+        //检查是否有已退款的冲红单
+        foreach($purchase_refund_list as $purchase_refund){
+        	if($purchase_refund['status'] == 'refund'){
+        		$data['status'] = 0;
+            	$data['msg'] = '只能作废状态为未收款的冲红单';
+            	$this->ajaxReturn($data);
+        	}
+        }
+
+        //将冲红单的状态改为已作废
+        M('erp_purchase_refund')->where($map)->data(array('status'=>'cancel'))->save();
 		unset($map);
 
 		$this->msgReturn(1);

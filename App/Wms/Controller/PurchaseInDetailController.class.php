@@ -3,7 +3,7 @@ namespace Wms\Controller;
 use Think\Controller;
 class PurchaseInDetailController extends CommonController {
 	protected $filter = array(
-			'status' => array('paid' => '已收款', 'nopaid' => '未收款',),
+			'status' => array('paid' => '已支付', 'nopaid' => '待支付',),
 		);
 	protected $columns = array(
         'id' => '',
@@ -14,7 +14,8 @@ class PurchaseInDetailController extends CommonController {
 		'pro_qty' => '入库数量',
 		'price_unit' => '单价',
 		'price_subtotal' => '小计',
-		'status' => '支付状态'
+		'status' => '支付状态',
+        'updated_time' => '付款时间'
     );
     protected $query   = array (
 		'erp_purchase_in_detail.purchase_code' => array (
@@ -40,8 +41,8 @@ class PurchaseInDetailController extends CommonController {
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                'paid'=>'已收款',
-                'nopaid'=>'未收款'
+                'paid'=>'已支付',
+                'nopaid'=>'待支付'
             ),   
         ),
 	);
@@ -101,7 +102,7 @@ class PurchaseInDetailController extends CommonController {
     	foreach($purchase_in_details as $purchase_in_detail){
     		if($purchase_in_detail['status'] == 'paid'){
     			$data['status'] = 0;
-    			$data['msg'] = '所选单据中有已收款状态的单据，请选择未支付的单据';
+    			$data['msg'] = '所选单据中有已支付状态的单据，请选择未支付的单据';
     			$this->ajaxReturn($data);
     		}
     	}

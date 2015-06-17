@@ -10,9 +10,12 @@
       <div class="clearfix"></div>
     </h3>
   </div>
-<div class="panel-body">
+  <div class="panel-body">
   	<div class="row">
-	<div class="col-lg-6"><h3>物料清单详情</h3></div>
+		<div class="col-lg-6"><h3>加工入库单 {$data.code}</h3></div>
+		<div class="col-lg-6">
+
+</div>
 
 <!--
 				<ul class="nav nav-pills" role="tablist">
@@ -37,56 +40,57 @@
 
   	<hr/>
   	
-<div class="row">  
-<div class="form-group  col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
+
+<div class="row">
+
+<div class="form-group col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="wh_id">目的仓库</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-        <label class="control-label label-field">{$data.name}</label>
+    <label class="control-label label-field">{$data.wh_id}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">入库单号</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.code}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">入库单状态</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.status}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">入库总数</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.cat_total} 种 / {$data.total_qty} 件</label>
     </div>
 </div>
 
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="wh_id">创建人</label>
+</div>
+
+<div class="row" style="margin-bottom: 15px;">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">创建人</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
     <label class="control-label label-field">{$data.created_user}</label>
     </div>
 </div>
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">创建时间</label>
+
+<div class="form-group  col-lg-3">
+
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">创建时间</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
     <label class="control-label label-field">{$data.created_time}</label>
     </div>
 </div>
 
-</div>
-
-<div class="row">
-
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="wh_id">父SKU编号</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-    <label class="control-label label-field">{$data.p_pro_code}</label>
-    </div>
-</div>
-<div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">父SKU名称</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-    <label class="control-label label-field">{$data.p_name}</label>
-    </div>
-</div>
-<div class="form-group  col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">父SKU规格</label>
-    <div class="col-lg-8 col-sm-8 col-xs-8">
-    <label class="control-label label-field">{$data.p_attrs}</label>
-    </div>
-</div>
 
 </div>
+
 <include file="prolist-view" />
 </div>
-
-</div>
-
 </div>
 </form>
 

@@ -86,7 +86,12 @@ class StockOutController extends CommonController {
                         '2'=>'取消单'
                         ),   
 		),
-        
+        'stock_bill_out.created_time' =>    array (    
+            'title' => '下单时间',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => '',   
+        ),
 	);
 
     public function __construct(){
@@ -134,6 +139,7 @@ class StockOutController extends CommonController {
 		);
 		$stock_out = M('stock_bill_out');
 		$map['is_deleted'] = 0;
+        $map['wh_id'] = session('user.wh_id');
 		$res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
 		foreach ($res as $val) {
             if(array_key_exists($val['status'], $pill['status'])) {
@@ -154,7 +160,7 @@ class StockOutController extends CommonController {
    
     protected function after_lists(&$data) {
         foreach($data as &$val) {
-            if($val['op_date'] == "0000-00-00 00:00:00") {
+            if($val['op_date'] == "0000-00-00 00:00:00" || $val['op_date'] == "1970-01-01 00:00:00") {
                 $val['delivery_time'] = '无';
             }else {
                 $val['delivery_time'] = date('Y-m-d', strtotime($val['op_date'])) . $this->filter['op_time'][$val['op_time']];

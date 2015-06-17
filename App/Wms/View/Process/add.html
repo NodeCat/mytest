@@ -15,8 +15,9 @@
   	<div class="row">
 		<div class="col-lg-6"><h3>加工单 新建</h3></div>
 		<div class="col-lg-6">
-</div>
-</div>
+	    </div>
+   </div>
+  </div>
   	<hr/>
   	
   	
@@ -43,39 +44,74 @@
     </div>
 </div>
 <div class="form-group col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="plan_qty">计划数量</label>
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="plan_qty">父SKU数量</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-<input  autocomplete="off" type="text" class="form-control input-sm " name="plan_qty" id="plan_qty"  placeholder="0">
+		<input  autocomplete="off" type="text" class="form-control input-sm " name="plan_qty" id="plan_qty"  placeholder="0">
     </div>
 </div>
 </div>
 
 <div class="row">
 <div class="form-group  col-lg-4">
-    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="process_pro_code">加工SKU</label>
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="process_pro_code">父SKU</label>
     <div class="col-lg-8 col-sm-8 col-xs-8">
-    <input  autocomplete="off" type="text" class="form-control input-sm " name="process_pro_code" id="process_pro_code"  placeholder="0" value="{$process_pro_code}">
+    <input  autocomplete="off" type="text" class="form-control typeahead input-sm " name="process_pro_code" id="process_pro_code"  placeholder="请输入货号" value="{$process_pro_code}">
     </div>
 </div>
 
 <div class="form-group  col-lg-4">
-   <a href="javascript:void(0);" id="search_process_sku" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</a>
+   <a href="javascript:void(0);" id="search_process_sku" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 计算数量</a>
 </div>
 </div>
 
 <include file="prolist-add" />
 
-<div class="row">
+
+</div>
+<div class="row" style="margin-top:20px;">
   <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
 </div>
-
 </form>
 
 <script type="text/javascript">
 $(function(){
-  $("#search_process_sku").on("click",function(){
-    var _process_pro_code = $('#process_pro_code').val();
-    window.location.href="/Process/add?process_pro_code="+_process_pro_code;
-  });
+    $("#search_process_sku").on("click",function(){
+    		var _process_pro_code = $('#process_pro_code').val();
+		var _plan_qty = $('#plan_qty').val();
+    		$.ajax({
+	    		type: "GET",
+	    		url: "/Process/add",
+	    		data: "process_pro_code="+_process_pro_code+"&plan_qty="+_plan_qty,
+	    		success: function(data) {
+	    			$('#c_sku_info').html(data);
+	    			$('#pro_plan_qty').html(_plan_qty);
+	    		}
+    		});
+    });
+	$('#process_pro_code').typeahead({
+	    display: 'name',
+	    val: 'val',
+	    items:10,
+	    ajax: {
+	      url:"{:U('Purchase/match_code')}",
+	      triggerLength: 1,
+	      method: 'post',
+	      preDispatch: function(data) {
+	          return { 'q': data };
+	      },
+	      preProcess: function(data) {
+	        var n =$.parseJSON(data);
+	        $.each(n,function(a,b){
+	          n[a]['val'] = JSON.stringify(b['val']);
+	        }); 
+	        return n;
+	      }
+	    },
+	    itemSelected:function(item,val,text) {
+	        val = $.parseJSON(val);
+	        $('#process_pro_code').val(val['code']);
+	    }
+	});
+
 })
 </script>

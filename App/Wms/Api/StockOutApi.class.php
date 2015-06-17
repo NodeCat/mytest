@@ -62,17 +62,7 @@ class StockOutApi extends Controller{
         $map['updated_time'] = get_time();       
         $map['created_user'] = $user_id;
         $map['updated_user'] = $user_id;
-
-        $stock_out_id = $stock_out->add($map);
-
-        if(empty($stock_out_id)) {
-            if(isset($post['return_type'])) {
-                return false;
-            }else {
-                $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
-                $this->ajaxReturn($return);
-            }
-        }
+        //请求pms数据
         $pro_codes = array_column($post['product_list'],'product_code');
         $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
         if(empty($pms)) {
@@ -80,6 +70,16 @@ class StockOutApi extends Controller{
                 return false;
             }else {
                 $return = array('error_code' => '501', 'error_message' => 'pms infomation error', 'data' => '' );
+                $this->ajaxReturn($return);
+            }
+        }
+        //添加出库单
+        $stock_out_id = $stock_out->add($map);
+        if(empty($stock_out_id)) {
+            if(isset($post['return_type'])) {
+                return false;
+            }else {
+                $return = array('error_code' => '401', 'error_message' => 'created stockout bill error', 'data' => '' );
                 $this->ajaxReturn($return);
             }
         }
@@ -91,9 +91,19 @@ class StockOutApi extends Controller{
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['product_code'];
             $detail['order_qty'] = $val['qty'];
-            $detail['delivery_qty'] = $val['qty'];
+            //如果是加工出库单，则默认的实际发货量为0，其余类型出库单默认发货量等于订单量
+            if($stock_out_type == 'MNO') {
+                $detail['delivery_qty'] = 0;
+            }else {
+                $detail['delivery_qty'] = $val['qty'];
+            }
             $detail['pro_name'] = $pms[$val['product_code']]['name'];  
-            $detail['pro_attrs'] = $pms[$val['product_code']]['pro_attrs'][0]['name'] . ":" . $pms[$val['product_code']]['pro_attrs'][0]['val'] . "," . $pms[$val['product_code']]['pro_attrs'][1]['name'] . ":" . $pms[$val['product_code']]['pro_attrs'][1]['val'];
+            //拼接货品的规格
+            unset($detail['pro_attrs']);
+            foreach($pms[$val['product_code']]['pro_attrs'] as $k=>$v) {
+                $detail['pro_attrs'] .= $v['name'] . ":" . $v['val'] . ",";
+            }
+            $detail['pro_attrs'] = substr($detail['pro_attrs'], 0, strlen($detail['pro_attrs'])-1);
             $detail['status'] = 1;
 
             $total += $val['qty'];

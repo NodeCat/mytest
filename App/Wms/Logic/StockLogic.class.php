@@ -584,7 +584,7 @@ class StockLogic{
 					'move_qty' => $param['variable_qty'],
 					'old_qty' => 0,
 					'new_qty' => $param['variable_qty'],
-					'batch' => $dest_location_info['batch'],
+					'batch' => $src_stock_info['batch'],
 					'status' => $param['status'],
 					);
 				$stock_move = D('StockMoveDetail');

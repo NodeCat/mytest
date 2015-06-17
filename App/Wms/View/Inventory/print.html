@@ -1,0 +1,87 @@
+<include file="Index:header"/>
+<body>
+<div class="container">
+
+<div class="row">
+<div class="text-center"><h3>盘点单</h3></div>
+</div>
+</br>
+</br>
+
+<div class="row">
+	<div class="text-center">
+		<div><h3>盘点单号:{$inventory_code}</h3></div>
+	</div>
+</div>
+
+<div class="row">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$inventory_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
+</div>
+
+<br/>
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>仓库</td><td>{$wh_name}</td>
+    </tr>
+  	<tr>
+  		<td>盘点时间</td><td>{$inventory_time}</td>
+  	</tr>
+  	<tr>
+  		<td>打印时间</td><td>{$print_time}</td>
+  	</tr>
+  	<tr>
+  		<td>盘点单状态</td><td>{$status}</td>
+  	</tr>
+  	<tr>
+  		<td>创建人</td><td>{$created_name}</td>
+  	</tr>
+    <tr>
+  		<td>盘点人</td><td></td>
+  	</tr>
+  	<tr>
+  		<td>盘点开始时间</td><td></td>
+  	</tr>
+  	<tr>
+  		<td>盘点结束时间</td><td></td>
+  	</tr>
+  </tbody>
+</table>
+</div>
+
+<div class="row">
+<div><h3>盘点明细</h3></div>
+</div>
+
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  	<tr>
+  		<td>库位</td><td>货品标识</td><td>货品名称</td><td>原数量</td><td>实盘量单位</td><td>差异量</td>
+  	</tr>
+  </thead>
+
+  <tbody>
+  	<volist name="inventory_detail" id="inventory_detail">
+	  	<tr>
+	  		<td>{$inventory_detail.location_code}</td>
+            <td>{$inventory_detail.pro_code}</td>
+            <td>{$inventory_detail.pro_name}</td>
+            <td>{$inventory_detail.theoretical_qty}</td>
+            <td></td>
+            <td></td>
+	  	</tr>
+  	</volist>
+  </tbody>
+</table>
+</div>
+</br>
+</br>
+
+</div>
+</body>
+</html>

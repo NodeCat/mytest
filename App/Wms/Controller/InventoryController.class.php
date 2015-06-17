@@ -104,7 +104,8 @@ class InventoryController extends CommonController {
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
-            array('name'=>'delete' ,'show' => false,'new'=>'false')
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
+            array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
@@ -208,6 +209,8 @@ class InventoryController extends CommonController {
 			if(empty($stock_pro_codes)){
 				$this->msgReturn(0,'该区域id:'.$data['location_id'].'中，没有任何sku');
 			}
+
+			$this->inventory_location_ids = $location_ids;
 		}
 		
 		//获得页面传递过来的pro_codes，如果不为空，则需要匹配，pro_codes是否在提交过来的location_id范围内
@@ -261,6 +264,7 @@ class InventoryController extends CommonController {
 				//根据inventory_pro_codes 查询对应的库存量stock_qty
 				$map['pro_code'] = array('in', $this->inventory_pro_codes);
 				$map['wh_id'] = session('user.wh_id');
+				$map['location_id'] = array('in', $this->inventory_location_ids);
 				//$stock_lists = M('Stock')->where($map)->getField('pro_code,stock_qty,location_id',true);
 				$stock_lists = M('Stock')->field('pro_code, location_id, sum(stock_qty) as stock_qty')->group('location_id,pro_code')->where($map)->select();
 				unset($map);
@@ -672,6 +676,40 @@ class InventoryController extends CommonController {
 			}
 			$this->msgReturn(1);
 		}
+	}
+
+	public function printpage(){
+		$id = I('id');
+		$map['stock_inventory.id'] = $id;
+		$inventory_info = M('stock_inventory')
+		->join('warehouse on warehouse.id = stock_inventory.wh_id')
+		->join('user on user.id = stock_inventory.created_user')
+		->where($map)
+		->field('stock_inventory.*, user.nickname as created_name, warehouse.name as wh_name')
+		->find();
+		unset($map);
+
+		//根据inventory_code查询inventory_detail
+		$map['inventory_code'] = $inventory_info['code'];
+		$inventory_detail = M('stock_inventory_detail')
+		->join('location on location.id = stock_inventory_detail.location_id')
+		->where($map)
+		->field('stock_inventory_detail.*,location.code as location_code')
+		->select();
+
+		$inventory_detail = A('Pms','Logic')->add_fields($inventory_detail,'pro_name');
+
+		$data['wh_name'] = $inventory_info['wh_name'];
+		$data['inventory_code'] = $inventory_info['code'];
+		$data['inventory_time'] = $inventory_info['created_time'];
+		$data['print_time'] = date('Y-m-d H:i:s');
+		$data['status'] = $this->filter['status'][$inventory_info['status']];
+		$data['created_name'] = $inventory_info['created_name'];
+		$data['inventory_detail'] = $inventory_detail;
+
+		layout(false);
+    	$this->assign($data);
+    	$this->display('Inventory:print');
 	}
 
 	//手持设备扫描盘点 根据inventory_code返回对应详情
