@@ -150,6 +150,14 @@ class WaveLogic{
 
 		$created_time_1 	= I('created_time_1');
 
+		$customer_realname 	= I('customer_realname');
+
+		$delivery_address 	= I('delivery_address');
+
+		$delivery_date 		= I('delivery_date');
+
+		$delivery_ampm 		= I('delivery_ampm');
+
 		if($code) $map['code'] = $code;
 
 		if($wave_id) $map['wave_id'] = $wave_id;
@@ -161,6 +169,14 @@ class WaveLogic{
 		if($line_id) $map['line_id'] = $line_id;
 
 		if($process_type) $map['process_type'] = $process_type;
+
+		if($customer_realname) $map['customer_realname'] = array('like','%'.$customer_realname.'%');
+
+		if($delivery_address) $map['delivery_address'] =array('like','%'.$delivery_address.'%');
+
+		if($delivery_date) $map['delivery_date'] = $delivery_date;
+
+		if($delivery_ampm) $map['delivery_ampm'] = $delivery_ampm;
 
 		if($created_time && $created_time_1){
 
@@ -202,7 +218,6 @@ class WaveLogic{
 
 			return $result;
 		}
-
 		
 	}
 

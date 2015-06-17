@@ -39,7 +39,7 @@ class StockOutController extends CommonController {
         'status' => '出库单状态',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
-        'delivery_time' => '送货时间',
+        'delivery_date' => '送货时间',
         'created_time' => '下单时间'
 	);
 	protected $query = array ( 
@@ -90,6 +90,37 @@ class StockOutController extends CommonController {
                         '2'=>'取消单'
                         ),   
 		),
+
+        'stock_bill_out.customer_realname' => array (     
+            'title' => '客户名称',     
+            'query_type' => 'like',     
+            'control_type' => 'text',     
+            'value' => 'customer_realname',   
+        ),
+
+        'stock_bill_out.delivery_address' => array (     
+            'title' => '发货地址',     
+            'query_type' => 'like',     
+            'control_type' => 'text',     
+            'value' => 'delivery_address',   
+        ),
+
+        'stock_bill_out.delivery_date' =>    array (    
+            'title' => '送货日期',     
+            'query_type' => 'eq',     
+            'control_type' => 'datetime',     
+            'value' => 'delivery_date',   
+        ),
+
+        'stock_bill_out.delivery_ampm' =>    array (    
+            'title' => '送货时间',     
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
+                        'am'=>'上午',
+                        'pm'=>'下午'
+                        ),  
+        ), 
 
         'stock_bill_out.created_time' =>    array (    
             'title' => '下单时间',     
@@ -184,13 +215,23 @@ class StockOutController extends CommonController {
    
     protected function after_lists(&$data) {
         foreach($data as &$val) {
-            if($val['op_date'] == "0000-00-00 00:00:00" || $val['op_date'] == "1970-01-01 00:00:00") {
-                $val['delivery_time'] = '无';
+
+            if(!isset($val['total_qty'])){
+
+                $total = A('Wave','Logic')->sumStockBillOut($val['id']);
+
+                $val['total_qty'] = $total['totalCount'];
+
+            }
+            if($val['delivery_date'] == "0000-00-00 00:00:00" || $val['delivery_date'] == "1970-01-01 00:00:00") {
+                $val['delivery_date'] = '无';
             }else {
-                $val['delivery_time'] = date('Y-m-d', strtotime($val['op_date'])) . $this->filter['op_time'][$val['op_time']];
+                $val['delivery_date'] = date('Y-m-d',strtotime($val['delivery_date'])) .'<br>'. $val['delivery_time'];
             }
             
         }
+
+        //dump($data);die;
     }
 
     protected function before_add(&$M) {

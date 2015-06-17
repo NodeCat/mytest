@@ -12,138 +12,138 @@ namespace Wms\Controller;
 use Think\Controller;
 class PickController extends CommonController {
 
-	protected $filter = array(
+  protected $filter = array(
 
-              'type'=>array(
+    'type'=>array(
 
-                  'picking' =>'拣货'
+        'picking' =>'拣货'
 
-                 ),
+       ),
 
-               'status'=>array(
+     'status'=>array(
 
-	               'draft'=>'未运行',
+       'draft'=>'未开始',
 
-	               'picking'=>'执行中',
+       'picking'=>'执行中',
 
-	               'done'=>'已完成'
+       'done'=>'已完成'
 
-                )
-              );
+      )
+  );
 
 	protected $columns = array (
 
-      				'id'                => '',
+		'id'                => '',
 
-              'pick_id'           => '分拣号',
+    'pick_id'           => '分拣号',
 
-              'type'              => '类型',
+    'type'              => '类型',
 
-              'wave_id'           => '波次号',
+    'wave_id'           => '波次号',
 
-      			  'status'			      => '状态',
+	  'status'			      => '状态',
 
-      				'order_sum'         => '订单数',
+		'order_sum'         => '订单数',
 
-      				'pro_type_sum'      => '总行数',
+		'pro_type_sum'      => '总行数',
 
-      				'pro_qty_sum'       => '总件数',
+		'pro_qty_sum'       => '总件数',
 
-      				'created_time'      => '开始时间',
+		'created_time'      => '开始时间',
 
-      				'updated_time'      => '结束时间',
+		'updated_time'      => '结束时间',
 
-			);
+  );
 
 	protected $query   = array (
 
-      'stock_wave_picking.id'   =>    array ( 
+    'stock_wave_picking.id'   =>    array ( 
 
-        'title'     => '分拣号', 
+      'title'         => '分拣号', 
 
-        'query_type'  => 'eq', 
+      'query_type'    => 'eq', 
 
-        'control_type'  => 'text', 
+      'control_type'  => 'text', 
 
-        'value'     => 'id',
+      'value'         => 'id',
+
+    ),
+
+    'stock_wave_picking.type'   =>    array ( 
+
+              'title'           => '类型', 
+
+              'query_type'      => 'eq', 
+
+              'control_type'    => 'select', 
+
+              'value'           => array(
+
+                  'pick'        => '拣货'
+
+                  ),
+      ),
+
+
+    'stock_wave_picking.wave_id'      =>    array ( 
+
+              'title'                 => '波次号', 
+
+              'query_type'            => 'eq', 
+
+              'control_type'          => 'text', 
+
+              'value'                 => 'wave_id',
 
       ),
 
-      'stock_wave_picking.type'   =>    array ( 
+    'stock_wave_picking.status'       =>    array ( 
 
-                'title'         => '类型', 
+              'title'                 => '状态', 
 
-                'query_type'    => 'eq', 
+              'query_type'            => 'eq', 
 
-                'control_type'  => 'select', 
+              'control_type'          => 'select', 
 
-                'value' => array(
+              'value'                 => array(
 
-                    'pick'       => '拣货'
+                  'draft'             => '未运行',
 
-                    ),
-                ),
+                  'picking'           => '执行中',
 
+                  'done'              => '已完成',
 
-      'stock_wave_picking.wave_id'     =>    array ( 
+                  )
 
-                'title'         => '波次号', 
-
-                'query_type'    => 'eq', 
-
-                'control_type'  => 'text', 
-
-                'value'         => 'wave_id',
-
-            ),
-
-      'stock_wave_picking.status'   =>    array ( 
-
-                'title'         => '状态', 
-
-                'query_type'    => 'eq', 
-
-                'control_type'  => 'select', 
-
-                'value' => array(
-
-                    'draft'       => '未运行',
-
-                    'picking'        => '执行中',
-
-                    'done'      => '已完成',
-
-                    )
-
-            ),
+      ),
 
   );
 
 	protected function before_index() {
 
-        $this->table = array(
+    $this->table = array(
 
-            'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
+        'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
 
-            'searchbar' => true, //是否显示搜索栏
+        'searchbar' => true, //是否显示搜索栏
 
-            'checkbox'  => true, //是否显示表格中的浮选款
+        'checkbox'  => true, //是否显示表格中的浮选款
 
-            'status'    => false, 
+        'status'    => false, 
 
-            'toolbar_tr'=> true,
+        'toolbar_tr'=> true,
 
-            'statusbar' => false
-        );
+        'statusbar' => false
+    );
 
-        $this->toolbar_tr =array(
+    $this->toolbar_tr =array(
 
-            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+        'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
 
-        );
-        
+    );
+    
 
-        $this->search_addon = false;
+    $this->search_addon = false;
 
    }
 
@@ -165,8 +165,10 @@ class PickController extends CommonController {
 
   }
 
+  public function pickPrint(){
 
-
+    $this->display('Pick::pickPrint');  
+  }
   
 }
 
