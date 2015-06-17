@@ -183,7 +183,7 @@ class IndexController extends Controller {
             //$map['dist_id'] = $res['id'];
             $map['dist_id'] = $id;
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-            $A = D('Tms/Order','Logic');
+            $A = A('Tms/Order','Logic');
             $orders = $A->order($map);
             foreach ($orders as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
