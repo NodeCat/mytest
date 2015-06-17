@@ -2,8 +2,9 @@
 <form class="form-horizontal ajax table-search" action="__SELF__" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
 <div class="row">
 <include file="search" />
+{~$a=1;}
 <volist name="query" id="vo" key="k">
-<eq name="k%5" value="0"></div><div class="row"></eq>
+<eq name="a%5" value="0"></div><div class="row">{~$a=1;}</eq>
 <div class="form-group  col-lg-3">
 <neq name="vo['control_type']" value="checkbox">
 <label class="control-label col-lg-4 col-sm-4 col-xs-4">{$vo.title}</label>

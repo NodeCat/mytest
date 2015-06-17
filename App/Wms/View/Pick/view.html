@@ -3,7 +3,7 @@
   
   <div class="panel-body">
 
-    <div class="row" style="margin-bottom: 15px;">
+    <!-- <div class="row" style="margin-bottom: 15px;">
 
         <div class="form-group  col-lg-4">
             <label class="control-label col-lg-4 col-sm-4 col-xs-4">任务号</label>
@@ -31,7 +31,7 @@
              </select>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- <div class="row" style="margin-bottom: 15px;">
 
@@ -101,15 +101,15 @@
 
         <td style="width:10%;">{$vo.pro_code}</td>
         
-        <td style="width:15%;">{$vo.pro_name}</td>
+        <td style="width:15%;">{$vo.pro_code|getPronameByCode='name',###}</td>
         
         <td style="width:30%;">{$vo.pro_qty}</td>
         
         <td style="width:10%;">{$vo.batch}</td>
 
-        <td style="width:10%;">{$vo.src_location_id}</td>
+        <td style="width:10%;">{$vo.src_location_id|getLocationNameById='name',###}</td>
 
-        <td style="width:10%;">{$vo.dest_location_id}</td>
+        <td style="width:10%;">{$vo.dest_location_id|getLocationNameById='name',###}</td>
          
     </tr>
 

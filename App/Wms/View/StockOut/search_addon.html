@@ -1,5 +1,4 @@
 <notempty name="auth['stockOut']">
-
 <div class="form-group  col-lg-1">
 <a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
 </div>
@@ -54,7 +53,16 @@ $(function(){
 		param.created_time = $("[name = 'query[stock_bill_out.created_time]']").val();
 
 		param.created_time_1 = $("[name = 'query[stock_bill_out.created_time_1]']").val();
-		
+
+
+		param.customer_realname = $("[name = 'query[stock_bill_out.customer_realname]']").val();
+
+		param.delivery_address = $("[name = 'query[stock_bill_out.delivery_address]']").val();
+
+		param.delivery_date = $("[name = 'query[stock_bill_out.delivery_date]']").val();
+
+		param.delivery_ampm = $("[name = 'query[stock_bill_out.delivery_ampm]']").val();
+
 		
 		$.ajax({
 			url:'/StockOut/createWave',

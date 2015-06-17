@@ -336,3 +336,56 @@ function getSubByKey($pArray, $pKey = "") {
     return $result;
     
 }
+
+/**
+ * getProname 根据suk code 获取sku 名称
+ * @param Int $Prcode sku code
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getPronameByCode($name,$prcode) {
+
+    $result = '';
+
+    if($prcode){
+
+        $infos = A('Pms','Logic')->get_SKU_by_pro_codes($prcode);
+
+        if($infos['status'] == 0){
+
+            if($infos['list']){
+
+                $result = $infos['list']['0'][$name];
+            }
+
+        }
+
+    }
+
+    return $result;
+    
+}
+
+/**
+ * getProname 根据suk code 获取sku 名称
+ * @param Int $Prcode sku code
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getLocationNameById($name,$location_id) {
+
+    $result = '';
+
+    if($location_id){
+
+        $infos = M('location')->where('id='.$location_id)->getField($name);
+
+        $result = $infos;
+
+    }
+
+    return $result;
+    
+}
