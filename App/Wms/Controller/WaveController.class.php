@@ -23,7 +23,7 @@ class WaveController extends CommonController {
 
                  ),
 
-               'status'=>array(
+               'type'=>array(
 
 	               '200'=>'待运行',
 
@@ -48,7 +48,7 @@ class WaveController extends CommonController {
 
   				'total_count'       => '总件数',
 
-  				'status' 				=> '波次状态',
+  				'type' 				=> '波次状态',
 
   				'start_time'        => '开始时间',
 
@@ -70,7 +70,7 @@ class WaveController extends CommonController {
 
 			),
 
-			'stock_wave.status'   =>    array ( 
+			'stock_wave.type'   =>    array ( 
 
 			 	'title'        	=> '波次状态', 
 

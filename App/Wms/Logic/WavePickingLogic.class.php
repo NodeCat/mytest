@@ -135,6 +135,13 @@ class WavePickingLogic{
                 //创建完毕后 把该线路的数据释放掉
                 unset($result_arr[$line]);
             }
+
+            //更新波次的状态
+            $data['status'] = 900;
+            $map['id'] = $wave_id;
+            M('stock_wave')->where($map)->save($data);
+            unset($data);
+            unset($map);
         }
 
         return array('status'=>1);
