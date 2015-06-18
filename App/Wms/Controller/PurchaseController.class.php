@@ -595,7 +595,7 @@ class PurchaseController extends CommonController {
 			    </td>
 			       
 			    <td style="width:10%;">
-			        <label type="text" value="" class="text-left p_res"></label>
+			        <label type="text" class="text-left p_res">'.$purchase_infos[$pro_code]['price_unit'] * $purchase_infos[$pro_code]['pro_qty'].'</label>
 			    </td>
 
 			    <td style="width:10%;" class="text-center">
