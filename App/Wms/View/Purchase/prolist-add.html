@@ -80,7 +80,8 @@ $('.add-pro').on('click',function(){
     tr.removeClass('tr-tpl');
     tr.addClass('tr-cur');
     tr.removeClass('hidden');
-    $('#table-pro tr:eq(2)').after(tr);
+    //$('#table-pro tr:eq(2)').after(tr);
+    $('#table-pro tbody').append(tr);
     typehead();
     $('#table-pro tr.tr-cur .pro_names').focus();
     

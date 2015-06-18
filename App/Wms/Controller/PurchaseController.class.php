@@ -575,11 +575,11 @@ class PurchaseController extends CommonController {
     	$sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
 
     	//拼接模板
-    	foreach($sku_list as $pro_code => $sku){
+    	foreach($pro_codes as $pro_code){
     		$result .= '<tr class="tr-cur">
 			    <td style="width:50%;">
-			    	<input type="hidden" value="'.$pro_code.'" name="pros[pro_code][]" class="pro_code form-control input-sm"><input type="hidden" value="'.$sku['name'].'" name="pros[pro_name][]" class="pro_name form-control input-sm"><input type="hidden" value="'.$sku['pro_attrs_str'].'" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm">
-			    	<input type="text" value="'.'['.$pro_code.'] '.$sku['wms_name'].'" class="pro_names typeahead form-control input-sm" autocomplete="off">
+			    	<input type="hidden" value="'.$pro_code.'" name="pros[pro_code][]" class="pro_code form-control input-sm"><input type="hidden" value="'.$sku_list[$pro_code]['name'].'" name="pros[pro_name][]" class="pro_name form-control input-sm"><input type="hidden" value="'.$sku_list[$pro_code]['pro_attrs_str'].'" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm">
+			    	<input type="text" value="'.'['.$pro_code.'] '.$sku_list[$pro_code]['wms_name'].'" class="pro_names typeahead form-control input-sm" autocomplete="off">
 			    </td>
 			    <td style="width:10%;">
 			        <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量" value="'.$purchase_infos[$pro_code]['pro_qty'].'" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off">
@@ -591,7 +591,7 @@ class PurchaseController extends CommonController {
 			        </select>
 			    </td>
 			    <td style="width:10%;">
-			        <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价" value="'.$purchase_infos[$pro_code]['pro_qty'].'" class="form-control input-sm text-left p_price">
+			        <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价" value="'.$purchase_infos[$pro_code]['price_unit'].'" class="form-control input-sm text-left p_price">
 			    </td>
 			       
 			    <td style="width:10%;">
