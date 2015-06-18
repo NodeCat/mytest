@@ -104,7 +104,8 @@ class InventoryController extends CommonController {
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true','link'=>'InventoryDetail/index'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
-            array('name'=>'delete' ,'show' => false,'new'=>'false')
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
+            array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'false'), 
@@ -675,6 +676,40 @@ class InventoryController extends CommonController {
 			}
 			$this->msgReturn(1);
 		}
+	}
+
+	public function printpage(){
+		$id = I('id');
+		$map['stock_inventory.id'] = $id;
+		$inventory_info = M('stock_inventory')
+		->join('warehouse on warehouse.id = stock_inventory.wh_id')
+		->join('user on user.id = stock_inventory.created_user')
+		->where($map)
+		->field('stock_inventory.*, user.nickname as created_name, warehouse.name as wh_name')
+		->find();
+		unset($map);
+
+		//根据inventory_code查询inventory_detail
+		$map['inventory_code'] = $inventory_info['code'];
+		$inventory_detail = M('stock_inventory_detail')
+		->join('location on location.id = stock_inventory_detail.location_id')
+		->where($map)
+		->field('stock_inventory_detail.*,location.code as location_code')
+		->select();
+
+		$inventory_detail = A('Pms','Logic')->add_fields($inventory_detail,'pro_name');
+
+		$data['wh_name'] = $inventory_info['wh_name'];
+		$data['inventory_code'] = $inventory_info['code'];
+		$data['inventory_time'] = $inventory_info['created_time'];
+		$data['print_time'] = date('Y-m-d H:i:s');
+		$data['status'] = $this->filter['status'][$inventory_info['status']];
+		$data['created_name'] = $inventory_info['created_name'];
+		$data['inventory_detail'] = $inventory_detail;
+
+		layout(false);
+    	$this->assign($data);
+    	$this->display('Inventory:print');
 	}
 
 	//手持设备扫描盘点 根据inventory_code返回对应详情

@@ -1,12 +1,18 @@
 <notempty name="auth['packing']">
 
-<div class="form-group  col-lg-1">
-<a href="#" id='packing' class="btn btn-sm btn-default btn-tool">开始拣货</a>
-</div>
+	<div class="form-group  col-lg-1">
+	<a href="#" id='packing' class="btn btn-sm btn-default btn-tool">开始拣货</a>
+	</div>
 
-<div class="form-group  col-lg-1">
-<a href="#" id='delAll' class="btn btn-sm btn-default btn-tool">删除</a>
-</div>
+</notempty>
+
+<notempty name="auth['deleted']">
+	
+	<div class="form-group  col-lg-1">
+	<a href="#" id='delAll' class="btn btn-sm btn-default btn-tool">删除</a>
+	</div>
+
+</notempty>
 <script type="text/javascript">
 $(function(){
 	$('#packing').on('click',function(){
@@ -75,4 +81,3 @@ $(function(){
 	
 })
 </script>
-</notempty>

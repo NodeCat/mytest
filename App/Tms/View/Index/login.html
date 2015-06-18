@@ -46,7 +46,7 @@ $(function(){
   $('.input-pda').on('focus',function(){
     $(this).select();
   });
-  $('.input-pda').focus();
+  $('#code').focus();
   $('.form-pda button[type=submit]').on('click',function(){
     $(this).prop('disabled', true);
     var addr,params;
@@ -70,6 +70,7 @@ $(function(){
         }
         if(msg.data != '' && msg.data != null ){
             $('.content').html(msg.data);
+
         }
       }
     }); 

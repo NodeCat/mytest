@@ -7,7 +7,9 @@ class CommApi extends Controller{
         //API返回JSON格式数据，因此关闭模版布局
         layout(FALSE);
         if(!defined('UID')) {
+
             define('UID',2);
+            
         }
         return;
         //仅允许POST方式请求

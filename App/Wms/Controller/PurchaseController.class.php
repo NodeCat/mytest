@@ -231,14 +231,6 @@ class PurchaseController extends CommonController {
 		$M->where($where)->save($data);
 		unset($data);
 
-		//如果是先款后货 更新结算金额为采购总金额
-		$map['id'] = $pid;
-		$purchase_info = M('stock_purchase')->where($map)->find();
-
-		if($purchase_info['invoice_method'] == 0){
-			$data['paid_amount'] = $purchase_info['price_total'];
-			M('stock_purchase')->where($map)->save($data);
-		}
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
 	protected function before_edit() {
@@ -449,6 +441,7 @@ class PurchaseController extends CommonController {
 		$id = I($pk);
 		$map[$M->tableName.'.'.$pk] = $id;
 		$res = $M->relation(true)->where($map)->find();
+		unset($map);
 		if($res['status']!='11') {
 			$this->msgReturn(0);
 		}
@@ -482,6 +475,16 @@ class PurchaseController extends CommonController {
 		}
 
 		$res = $Min->relation('detail')->add($bill);
+
+		//如果是预付款 更新结算金额为采购总金额
+		$map['id'] = $id;
+		$purchase_info = M('stock_purchase')->where($map)->find();
+
+		if($purchase_info['invoice_method'] == 0){
+			$data['paid_amount'] = $purchase_info['price_total'];
+			M('stock_purchase')->where($map)->save($data);
+		}
+
 		if($res == true){
 			$purchase['status'] = '13';
 			$M->where($map)->save($purchase);

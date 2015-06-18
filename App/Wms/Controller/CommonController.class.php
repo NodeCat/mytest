@@ -639,7 +639,18 @@ class CommonController extends AuthController {
     protected function page($count, $map='',$template=''){
         $p              = I("p", 1);
         $page_size      = C('PAGE_SIZE');
-        $target = "table-content";
+        if(IS_AJAX) {
+            if(ACTION_NAME == 'refer') {
+                $target = "#modal-refer .modal-body";
+            }
+            else {
+                $target = "#table-content";
+            }
+        }
+        else {
+            $target = "#table-content";
+        }
+        //$target = $target;
         $pagesId = 'page';
         import("Common.Lib.Page");
         $Page = new \Common\Lib\Page($count, $page_size, $map,$target, $pagesId);

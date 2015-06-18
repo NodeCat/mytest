@@ -23,11 +23,11 @@ class StockInController extends CommonController {
 	);
 	protected $columns = array (   
 		'code' => '到货单号',   
-		'refer_code' => '关联单号', 
+		//'refer_code' => '关联单号', 
 	    'type' => '入库类型',
-		'company_name' => '所属系统',  
+		//'company_name' => '所属系统',  
 		'warehouse_name' => '目的仓库', 
-		//'partner_name' => '供货商',
+		'partner_name' => '供货商',
 		'qty_total' =>'预计到货件数',
 		'cat_total' =>'SKU种数',
 		'sp_created_user_name' => '创建人',
@@ -67,12 +67,12 @@ class StockInController extends CommonController {
 	        'value' => 'stock_bill_in_type.id,name',
 		),
 		
-	   /*'stock_bill_in.partner_id' =>    array (     
+	   'stock_bill_in.partner_id' =>    array (     
 			'title' => '供货商',     
 			'query_type' => 'eq',     
 			'control_type' => 'refer',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-			),*/
+			),
 		/*'stock_purchase.created_user' =>    array (     
 			'title' => '创建人',     
 			'query_type' => 'eq',     
@@ -134,35 +134,42 @@ class StockInController extends CommonController {
 				//上架逻辑
 				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
 				if($res['res'] == true) {
-					//写入采购入库单 erp_in_detail
-					//根据stock_bill_in id 查询相关数据
-					$map['stock_bill_in_detail.pid'] = $id;
-					$map['stock_bill_in_detail.pro_code'] = $code;
-					$bill_in_detail_info = M('stock_bill_in_detail')
-					->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
-					->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-					->where($map)
-					->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
-					->find();
+					//判断是否是采购入库
+					$map['id'] = $id;
+					$bill_in_info = M('stock_bill_in')->where($map)->find();
 					unset($map);
+					//如果是采购入库 更新采购入库单详情 erp_purchase_in_detail
+					if($bill_in_info['type'] == 1){
+						//写入采购入库单 erp_in_detail
+						//根据stock_bill_in id 查询相关数据
+						$map['stock_bill_in_detail.pid'] = $id;
+						$map['stock_bill_in_detail.pro_code'] = $code;
+						$bill_in_detail_info = M('stock_bill_in_detail')
+						->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
+						->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+						->where($map)
+						->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
+						->find();
+						unset($map);
 
-					$data['price_unit'] = $bill_in_detail_info['price_unit'];
-					$data['pro_code'] = $code;
-					$data['pro_qty'] = $qty;
-					$data['stock_in_code'] = $bill_in_detail_info['code'];
-					$data['purchase_code'] = $bill_in_detail_info['refer_code'];
-					$data['pro_status'] = $status;
-					$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * $qty;
+						$data['price_unit'] = $bill_in_detail_info['price_unit'];
+						$data['pro_code'] = $code;
+						$data['pro_qty'] = $qty;
+						$data['stock_in_code'] = $bill_in_detail_info['code'];
+						$data['purchase_code'] = $bill_in_detail_info['refer_code'];
+						$data['pro_status'] = $status;
+						$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * $qty;
 
-					if($bill_in_detail_info['invoice_method'] == 0){
-						$data['status'] = 'paid';
-					}else{
-						$data['status'] = 'nopaid';
+						if($bill_in_detail_info['invoice_method'] == 0){
+							$data['status'] = 'paid';
+						}else{
+							$data['status'] = 'nopaid';
+						}
+
+						$purchase_in_detail = D('PurchaseInDetail');
+						$data = $purchase_in_detail->create($data);
+						$purchase_in_detail->data($data)->add();
 					}
-
-					$purchase_in_detail = D('PurchaseInDetail');
-					$data = $purchase_in_detail->create($data);
-					$purchase_in_detail->data($data)->add();
 
 					//有一件商品上架 更新到货单状态为 已上架
 					$upd_map['id'] = $id;
@@ -417,6 +424,19 @@ class StockInController extends CommonController {
             array('name'=>'pview','link'=>'pview','icon'=>'zoom-in','title'=>'查看', 'show' => isset($this->auth['pview']),'new'=>'true'), 
         	array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
+        $this->columns = array (   
+			'code' => '到货单号',   
+			'refer_code' => '关联单号', 
+		    //'type' => '入库类型',
+			'company_name' => '所属系统',  
+			'warehouse_name' => '目的仓库', 
+			'partner_name' => '供货商',
+			'qty_total' =>'预计到货件数',
+			'cat_total' =>'SKU种数',
+			'sp_created_user_name' => '创建人',
+	  		'sp_created_time' => '创建时间',
+			'status' => '状态', 
+		);
     	//$tmpl = IS_AJAX ? 'Table:list':'index';
         $this->lists();
     }
@@ -433,6 +453,10 @@ class StockInController extends CommonController {
 		$M_bill_in = M('stock_bill_in');
 		$map['is_deleted'] = 0;
 		$map['wh_id'] = session('user.wh_id');
+		if(ACTION_NAME == 'pindex'){
+			//如果是采购到货单，只显示采购相关的到货单据
+			$map['stock_bill_in.type'] = 1;
+		}
 		$res = $M_bill_in->field('status,count(status) as qty')->where($map)->group('status')->select();
 
 		foreach ($res as $key => $val) {
@@ -503,8 +527,8 @@ class StockInController extends CommonController {
     	$bill_in_detail_list = M('stock_bill_in_detail')
     	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
     	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
-
-    	$data['refer_code'] = $bill_in['code'];
+        
+        $data['refer_code'] = $bill_in['code'];
     	$data['remark'] = $bill_in['remark'];
     	$data['print_time'] = get_time();
     	$data['partner_name'] = $bill_in['partner_name'];
@@ -514,6 +538,13 @@ class StockInController extends CommonController {
     	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
 
     	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+        //如果没有对应的条码号则使用内部货号作为条码号
+        foreach($bill_in_detail_list as &$val) {
+            if(empty($val['barcode'])) {
+               $val['barcode'] = $val['pro_code']; 
+            }
+        }
+       
     	$data['bill_in_detail_list'] = $bill_in_detail_list;
 
     	layout(false);

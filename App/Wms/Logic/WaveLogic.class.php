@@ -265,7 +265,7 @@ class WaveLogic{
 
         $map['status'] = '1';
 
-        $map['page_size'] = 100;
+        $map['itemsPerPage'] = 1000;
 
         $A = A('Order','Logic');
 
@@ -398,11 +398,55 @@ class WaveLogic{
 
 			$M = M('stock_wave_detail');
 
+			$billOut = M('stock_bill_out');
+
 			$del['pid'] = array('in',$ids);
 
 			$data['is_deleted'] = 1;
 
 			if($M->where($del)->save($data)){
+
+				//还原出库单stock_bill_out 的出库单状态status 为待生产 1 
+
+				$bill_outWhere = array();
+
+				$bill_outWhere['pid'] = $del['pid'];
+
+				$wave_detail_arr = $M->field('bill_out_id')->where($bill_outWhere)->select();
+				
+
+				if($wave_detail_arr){
+
+					$billOutW = array();
+
+					$billSave = array();
+
+					$bill_outArr = getSubByKey($wave_detail_arr, 'bill_out_id');
+
+					if($bill_outArr){
+
+						$idsStr = implode(',', $bill_outArr);
+
+						$billOutW['id'] = array('in',$idsStr);
+
+						$billSave['status'] = 1;
+
+						if(!$billOut->where($billOutW)->save($billSave)){
+
+							$this->updateStatus($del, array('is_deleted'=>0),'stock_wave_detail');
+
+							$this->updateStatus($map, array('is_deleted'=>0));
+
+
+							return FALSE;
+
+						}
+
+					}
+
+					
+
+				}
 
 				return TRUE;
 
