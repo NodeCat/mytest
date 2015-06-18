@@ -1,0 +1,30 @@
+
+<div class="form-group  col-lg-1">
+
+    <a href="#" id='print' class="btn btn-sm btn-default btn-tool">打印</a>
+
+</div>
+
+<script type="text/javascript">
+$(function(){
+
+    $('#print').on('click',function(){
+
+        var ids = getChecked();
+
+        var url = "/Pick/pickPrint?ids="+ids;
+
+        if(ids){
+
+            window.open(url);
+
+        }else{
+
+            alert('请选择出库单！');
+        
+        }
+
+    });
+    
+});
+</script>

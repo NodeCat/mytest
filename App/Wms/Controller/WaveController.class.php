@@ -23,7 +23,7 @@ class WaveController extends CommonController {
 
                  ),
 
-               'type'=>array(
+               'status'=>array(
 
 	               '200'=>'待运行',
 
@@ -38,7 +38,7 @@ class WaveController extends CommonController {
 
   				'id'                => '',
 
-  				'wave_id'				=> '波次号',
+  				'wave_id'				    => '波次号',
 
   				'company_id'        => '波次主表名称',
 
@@ -48,7 +48,7 @@ class WaveController extends CommonController {
 
   				'total_count'       => '总件数',
 
-  				'type' 				=> '波次状态',
+  				'status' 				    => '波次状态',
 
   				'start_time'        => '开始时间',
 
@@ -238,7 +238,17 @@ class WaveController extends CommonController {
 
                 $result[$key]['process_type_cn'] = $process_type_cn;
 
-                $result[$key]['delivery_time'] = $bill_out['delivery_time'];
+                if($bill_out['delivery_date'] == "0000-00-00 00:00:00" || $bill_out['delivery_date'] == "1970-01-01 00:00:00") {
+                  
+                  $bill_out['delivery_date'] = '无';
+
+                }else {
+
+                  $bill_out['delivery_date'] = date('Y-m-d',strtotime($bill_out['delivery_date'])) .'<br>'. $bill_out['delivery_time'];
+                
+                }
+
+                $result[$key]['delivery_date'] = $bill_out['delivery_date'];
 
                 $result[$key]['order_qty_count'] = $order_count;
 

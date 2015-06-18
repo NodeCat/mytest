@@ -3,23 +3,44 @@
     @page{
       size:A4 portrait;
     }
+    .printpage {
+      width: 100%;
+      margin: auto;
+      font-size: 12px;
+      page-break-before: avoid;
+      page-break-inside: avoid;
+      page-break-after: always;
+    }
+
+    .orderinfo, .mapimg {
+      page-break-before: avoid;
+      page-break-inside: avoid;
+      min-height: 500px;
+    }
+
+    .all_count{
+      margin-top: 20px;
+    }
   </style>
-  <div class="printpage direction" ng-repeat="items in list">
+
+ <volist name="list" id="vo" key="row" empty="">
+
+  <div class="printpage direction hidden-print" ng-repeat="items in list">
     <div class="orderinfo">
     <div class="row">
       <div class="col-xs-4">
-        <p>分拣单号:{{items.pick_number}}</p>
-        <p class="">线路（片区）:{{items.line_name}}</p>
-        <p>订单数：{{items.orders.length}}</p>
+        <p>分拣单号:{$vo.items.id}</p>
+        <p class="">线路（片区）:{$vo.items.line_id|getLineNameByid=###}</p>
+        <p>订单数：{$vo.items.order_sum}</p>
       </div>
       <div class="col-xs-4">
           <p> 分拣单</p>
-          <img src="{{items.barcode}}" />
+          <img src="{$vo.items.barcode}" />
       </div>
       <div class="col-xs-4">
-        <p>仓库：{{items.warehouse_name}}</p>
-        <p>波次号：{{items.wave_id}}</p>
-        <p>配送时间：{{items.deliver_date}}</p>
+        <p>仓库：{$vo.items.wh_id|getTableFieldById='warehouse','name',###}</p>
+        <p>波次号：{$vo.items.wave_id}</p>
+        <!-- <p>配送时间：{$vo.items.deliver_date}</p> -->
       </div>
     </div>
     <div class="order_print_table">
@@ -37,32 +58,37 @@
             <td>货品号</td>
             <td>产品名称</td>
             <td>规格</td>
-            <td>结算单价</td>
+            <!-- <td>结算单价</td> -->
             <td>订货数量</td>
             <td>重量</td>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="detail in items.sku_list">
-            <td>{{detail.sku_number}}</td>
-            <td>{{detail.name}}</td>
-            <td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{{spec.name}}：{{spec.val}}<br></small></td>
-            <td>{{detail.single_price}}/{{detail.close_unit}}</td>
-            <td>{{detail.quantity}}{{detail.unit_id}}</td>
-            <td></td>
-          </tr>
+          <volist name="vo.detail" id="vos">
+            <tr ng-repeat="detail in items.sku_list">
+              <td>{$vos.pro_code}</td>
+              <td>{$vos.pro_code|getPronameByCode='name',###}</td>
+              <td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$vos.pro_code|getSkuInfoByCode='pro_attrs_str',###}<br></small></td>
+              <!-- <td>{$vos.name}/{$vos.name}</td> -->
+              <td>{$vos.pro_qty}</td>
+              <td></td>
+            </tr>
+          </volist>
           <tr>
               <td>汇总</td>
-              <td colspan="3"></td>
-              <td>{{items.sku_total_count}}</td>
+              <td colspan="2"></td>
+              <td>{$vo.items.pro_qty_sum}</td>
               <td></td>
           </tr>
         </tbody>
       </table>
     </div>
   <div class="all_count">
-      <a href="javascript:;" onclick="window.print()" class="hidden-print btn-lg btn-success">打印</a>
+      <a href="javascript:;" onclick="$('.printpage').addClass('hidden-print');$(this).parent().parent().parent().removeClass('hidden-print');window.print()" class="hidden-print btn-lg btn-success">打印</a>
     </div>
 </div>
 </div>
+<div class="clearfix"></div>
+</volist>
+
 </div>

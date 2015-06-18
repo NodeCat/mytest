@@ -195,3 +195,134 @@ function is_mobile_terminal(){
     }
     return false;
 }
+
+/**
+ * getProname 根据suk code 获取sku 名称
+ * @param Int $Prcode sku code
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getPronameByCode($name, $prcode) {
+
+    $result = '';
+
+    if($prcode){
+
+        $infos = A('Pms','Logic')->get_SKU_by_pro_codes($prcode);
+
+        if($infos['status'] == 0){
+
+            if($infos['list']){
+
+                $result = $infos['list']['0'][$name];
+            }
+
+        }
+
+    }
+
+    return $result;
+    
+}
+
+/**
+ * getProname 根据suk code 获取处理过的信息
+ * @param Int $Prcode sku code
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getSkuInfoByCode($name, $prcode) {
+
+    $result = '';
+
+    if($prcode){
+
+        $infos = A('Pms','Logic')->get_SKU_field_by_pro_codes($prcode);
+
+        if($infos[$prcode]){
+
+            $result = $infos[$prcode][$name];
+        }
+
+    }
+
+    return $result;
+    
+}
+
+/**
+ * getProname 根据 库位id 获取库位信息
+ * @param Int $location_id 仓库id
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getLocationNameById($name, $location_id) {
+
+    $result = '';
+
+    if($location_id){
+
+        $infos = M('location')->where('id='.$location_id)->getField($name);
+
+        $result = $infos;
+
+    }
+
+    return $result;
+    
+}
+
+/**
+ * getProname 根据表名 和 主键 要 获取的字段
+ * @param String $tablename 表名
+ * @param Int $id 主键
+ * @param String $field 字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getTableFieldById($tablename, $field='', $id){
+
+    $result = '';
+
+    if($tablename && $id && $field){
+
+        $infos = M($tablename)->where('id='.$id)->getField($field);
+
+        $result = $infos;
+
+    }elseif($tablename && $id && !$field){
+
+        $infos = M($tablename)->where('id='.$id)->find();
+
+        $result = $infos;
+
+    }
+
+    return $result;
+    
+}
+
+/**
+ * getLineNameByid 根据线路id得到线路信息
+ * @param Int $id 线路id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getLineNameByid($id){
+
+    $result = '';
+
+    $lines = A('Wave','Logic')->line();
+    //dump($lines);
+    if(isset($lines[$id])){
+
+        $result = $lines[$id];
+    }
+
+    return $result;
+    
+}
+

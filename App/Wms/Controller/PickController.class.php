@@ -143,7 +143,7 @@ class PickController extends CommonController {
     );
     
 
-    $this->search_addon = false;
+    $this->search_addon = true;
 
    }
 
@@ -166,6 +166,65 @@ class PickController extends CommonController {
   }
 
   public function pickPrint(){
+
+    if(!IS_GET) $this->error('请正确操作！');
+
+    $ids = I('ids');
+
+    if(!$ids) $this->error('请选择出库单再操作！');
+
+    $idsArr = explode(',', $ids);
+
+    $map = array();
+
+    $items = array();
+
+    $map['id'] = array('in',$idsArr);
+
+    $map['is_deleted'] = 0;
+
+    $m = M('stock_wave_picking');
+
+    $detail = M('stock_wave_picking_detail');
+
+    $pickArr = $m->where($map)->select();
+
+    unset($map);
+
+    if($pickArr){
+
+        foreach($pickArr as $key => $value){
+
+            $items[$key]['items'] = '';
+
+            $items[$key]['detail'] = '';
+
+            $items[$key]['items'] = $value;
+
+            $items[$key]['items']['barcode'] = "http://api.pda.dachuwang.com/barcode/get?text=".$value['code'];
+
+            $map['pid'] = $value['id'];
+
+            $map['is_deleted'] = 0;
+
+            $child = $detail->where($map)->select();
+
+            if($child){
+
+              $items[$key]['detail'] = $child;
+
+            }
+
+        }
+
+
+    }else{
+
+      $this->error('操作失败！');
+
+    }
+
+    $this->assign('list',$items);
 
     $this->display('Pick::pickPrint');  
   }
