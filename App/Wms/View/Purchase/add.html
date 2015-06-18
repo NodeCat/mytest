@@ -81,7 +81,7 @@
 <div class="row">
   <textarea name="pro_infos" id="pro_infos" class="form-control" rows="5" placeholder="批量添加，请从excel中直接粘贴，数据格式：货品号 采购数量 采购单价 中间请用tab分割，每行请回车"></textarea>
   </br>
-  <a id="preview" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon"></span>批量添加</a>
+  <a id="preview" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon"></span>批量添加预览</a>
 </div>
 
 </form>
@@ -91,7 +91,7 @@ $(function(){
   //预览
   $('#preview').on('click',function(){
     var _pro_infos = $('#pro_infos').val();
-    var _url = '/purchase/preview';
+    var _url = '/Purchase/preview';
     //提交数据到后端处理
     $.ajax({
       url:_url,
