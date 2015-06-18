@@ -2,7 +2,7 @@
 namespace Tms\Model;
 use Think\Model\RelationModel;
 class TmsUserModel extends RelationModel{
-
+		public $tableName = 'tms_user';
 		protected $_link=array(
 
 			'TmsSignList'=>array(
