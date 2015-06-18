@@ -64,7 +64,8 @@ $(function(){
 $('#table-pro').delegate('.p_qty,.p_price','input',function(){
     var qty = $(this).parents('tr').find('.p_qty').val();
     var price = $(this).parents('tr').find('.p_price').val();
-    $(this).parents('tr').find('.p_res').text(qty*price); 
+    var price_total = accMul(qty,price);
+    $(this).parents('tr').find('.p_res').text(price_total); 
 });
 
 typehead();
@@ -80,7 +81,8 @@ $('.add-pro').on('click',function(){
     tr.removeClass('tr-tpl');
     tr.addClass('tr-cur');
     tr.removeClass('hidden');
-    $('#table-pro tr:eq(2)').after(tr);
+    $('#table-pro tr:last').before(tr);
+    //$('#table-pro tbody').append(tr);
     typehead();
     $('#table-pro tr.tr-cur .pro_names').focus();
     
@@ -103,7 +105,7 @@ $('.tab-content').delegate( '.btn-delete', 'click', function(){
 });
 
 function typehead() {
-$('.tr-cur .pro_names').typeahead({ 
+$('#table-pro .pro_names').typeahead({ 
     display: 'name',
     val: 'val',
     items:10,
