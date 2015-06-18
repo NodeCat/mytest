@@ -39,7 +39,7 @@ class IndexController extends Controller {
             }
             else {
                 $user = array('mobile'=> $code,'username' => $name);
-                $M1=M('TmsUser');
+                $M1=M('tms_user');
                 $data=$M1->where($user)->find();                 
                 if($data){
                     $date = date('Y-m-d H:i:s',NOW_TIME);
@@ -53,7 +53,7 @@ class IndexController extends Controller {
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']=$data['id'];
                     unset($M);
-                    $M=M('TmsSignList');
+                    $M=M('tms_sign_list');
                     $id=$M->field('id')->where($map)->find();
                     //如果已经签到过了那就改成最新的签到时间
                     if($id){
@@ -81,15 +81,22 @@ class IndexController extends Controller {
             }
         }
     }
+    
+    //司机当日收货统计
+    public function report() {
+
+    }
 
     //司机第一次信息登记
     public function register(){
 
         if(IS_GET){
+            /*
             if(session('?user')) {
                  $this->redirect('delivery');
             }
             else{
+            */
             $this->title = '请填写完整的签到信息';
             //仓库列表
             $storge=A('List','Logic');
@@ -97,7 +104,8 @@ class IndexController extends Controller {
             $this->assign('sign_storge',$storge);
             $this->assign('car',$this->car);
             $this->display('tms:register'); 
-            }   
+            exit();
+            //}   
         }
         if(IS_POST){
             $code = I('post.mobile/d',0);
