@@ -554,4 +554,56 @@ class PurchaseController extends CommonController {
     	$this->assign($column);
     	$this->display('Purchase:print');
     }
+
+    //处理预览数据
+    public function preview(){
+    	$pro_infos = I('pro_infos');
+    	if(empty($pro_infos)){
+    		$this->msgReturn(0,'请提交批量处理的信息');
+    	}
+    	$pro_infos_list = explode("\n", $pro_infos);
+
+    	$pro_codes = array();
+    	$purchase_infos = array();
+    	foreach($pro_infos_list as $pro_info){
+    		$pro_info_arr = explode("\t", $pro_info);
+    		$pro_codes[] = $pro_info_arr[0];
+    		$purchase_infos[$pro_info_arr[0]]['pro_qty'] = $pro_info_arr[1];
+    		$purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
+    	}
+
+    	$sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+
+    	//拼接模板
+    	foreach($sku_list as $pro_code => $sku){
+    		$result .= '<tr class="tr-cur">
+			    <td style="width:50%;">
+			    	<input type="hidden" value="'.$pro_code.'" name="pros[pro_code][]" class="pro_code form-control input-sm"><input type="hidden" value="'.$sku['name'].'" name="pros[pro_name][]" class="pro_name form-control input-sm"><input type="hidden" value="'.$sku['pro_attrs_str'].'" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm">
+			    	<input type="text" value="'.'['.$pro_code.'] '.$sku['wms_name'].'" class="pro_names typeahead form-control input-sm" autocomplete="off">
+			    </td>
+			    <td style="width:10%;">
+			        <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量" value="'.$purchase_infos[$pro_code]['pro_qty'].'" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off">
+			    </td>
+			    <td style="width:10%;">
+			        <select name="pros[pro_uom][]" class="form-control input-sm">
+			            <!--<option value="箱">箱</option>-->
+			            <option value="件">件</option>
+			        </select>
+			    </td>
+			    <td style="width:10%;">
+			        <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价" value="'.$purchase_infos[$pro_code]['pro_qty'].'" class="form-control input-sm text-left p_price">
+			    </td>
+			       
+			    <td style="width:10%;">
+			        <label type="text" value="" class="text-left p_res"></label>
+			    </td>
+
+			    <td style="width:10%;" class="text-center">
+			        <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+			    </td>
+			</tr>';
+    	}
+    	
+    	$this->msgReturn(1,'',array('html'=>$result));
+    }
 }
