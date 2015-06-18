@@ -39,7 +39,7 @@ class IndexController extends Controller {
             }
             else {
                 $user = array('mobile'=> $code,'username' => $name);
-                $M1=D('TmsUser');
+                $M1=M('TmsUser');
                 $data=$M1->where($user)->find();                 
                 if($data){
                     $date = date('Y-m-d H:i:s',NOW_TIME);
@@ -53,7 +53,7 @@ class IndexController extends Controller {
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']=$data['id'];
                     unset($M);
-                    $M=D('TmsSignList');
+                    $M=M('TmsSignList');
                     $id=$M->field('id')->where($map)->find();
                     //如果已经签到过了那就改成最新的签到时间
                     if($id){
