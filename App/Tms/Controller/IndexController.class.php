@@ -39,7 +39,7 @@ class IndexController extends Controller {
             }
             else {
                 $user = array('mobile'=> $code,'username' => $name);
-                $M1=M('TmsUser');
+                $M1=D('TmsUser');
                 $data=$M1->where($user)->find();                 
                 if($data){
                     $date = date('Y-m-d H:i:s',NOW_TIME);
@@ -53,7 +53,7 @@ class IndexController extends Controller {
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']=$data['id'];
                     unset($M);
-                    $M=M('TmsSignList');
+                    $M=D('TmsSignList');
                     $id=$M->field('id')->where($map)->find();
                     //如果已经签到过了那就改成最新的签到时间
                     if($id){
@@ -81,7 +81,7 @@ class IndexController extends Controller {
             }
         }
     }
-    
+
     //司机当日收货统计
     public function report() {
 
