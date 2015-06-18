@@ -2,8 +2,8 @@
 namespace Wms\Model;
 use Think\Model\RelationModel;
 class WavePickingModel extends RelationModel {
-	protected $insertFields = array('id','wave_id','type','order_sum','pro_type_sum','pro_qty_sum','line_id','wh_id','status','created_user','created_time','updated_time','updated_user','is_deleted');
-    protected $updateFields = array('wave_id','type','order_sum','pro_type_sum','pro_qty_sum','line_id','wh_id','status','created_user','created_time','updated_time','updated_user','is_deleted');
+	protected $insertFields = array('id','code','wave_id','type','order_sum','pro_type_sum','pro_qty_sum','line_id','wh_id','status','created_user','created_time','updated_time','updated_user','is_deleted');
+    protected $updateFields = array('code','wave_id','type','order_sum','pro_type_sum','pro_qty_sum','line_id','wh_id','status','created_user','created_time','updated_time','updated_user','is_deleted');
     protected $readonlyField = array();
     public $tableName = 'stock_wave_picking';
 

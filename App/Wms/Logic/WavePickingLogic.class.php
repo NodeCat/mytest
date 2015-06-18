@@ -108,6 +108,7 @@ class WavePickingLogic{
             
             //处理剩余的线路数据
             foreach($result_arr as $line => $result){
+                $data['code'] = get_sn('picking');
                 $data['wave_id'] = $wave_id;
                 $data['type'] = 'picking';
                 $data['order_sum'] = $result['order_sum'];
@@ -158,6 +159,7 @@ class WavePickingLogic{
         foreach($result_arr as $line => $result){
             //如果某个线路上的订单处理了10个 开始创建一个分拣单
             if($result['order_sum'] >= $this->order_max){
+                $data['code'] = get_sn('picking');
                 $data['wave_id'] = $wave_id;
                 $data['type'] = 'picking';
                 $data['order_sum'] = $result['order_sum'];
