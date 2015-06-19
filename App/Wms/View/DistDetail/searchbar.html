@@ -1,0 +1,98 @@
+<notempty name="query">
+<form class="form-horizontal form-ajax table-search" action="__SELF__" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
+<div class="row">
+<include file="search" />
+<volist name="query" id="vo" key="k">
+<eq name="k%5" value="0"></div><div class="row"></eq>
+<div class="form-group  col-lg-3">
+<neq name="vo['control_type']" value="checkbox">
+<label class="control-label col-lg-4 col-sm-4 col-xs-4">{$vo.title}</label>
+</neq>
+<div class="col-lg-8 col-sm-8 col-xs-8">
+     <switch name="vo['control_type']">
+        <case value="null|text|area">{~$a++}
+            <input type="txt" name="query[{$key}]" class="form-control input-sm">
+        </case>
+        <case value="date|datetime|time">{~$a++}
+            {~$datetime_format=array('datetime'=>'yyyy-mm-dd hh:ii:ss','date'=>'yyyy-mm-dd','time'=>'hh:ii:ss')}
+            <div class="input-group input-group-sm">
+            <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
+             <!--<span class="input-group-btn">
+                <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-calendar"></i></button>
+              </span>-->
+            </div>
+            <eq name="vo['query_type']" value="between">{~$a++}
+            </div></div>
+            <div class="form-group  col-lg-3 ">
+            <label class="control-label col-lg-4 col-sm-4 col-xs-4 " style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;－</label>
+            <div class="col-lg-8 col-sm-8 col-xs-8">
+            <div class="input-group input-group-sm">
+                <input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
+                <!--<span class="input-group-btn">
+                <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-calendar"></i></button>
+              </span>-->
+            </div>
+            </eq>
+        </case>
+        <case value="digit">{~$a++}
+            <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm">
+            <eq name="vo['query_type']" value="between">
+                －&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="txt" rel='datepicker' name="query[{$key}_1]" class="form-control input-sm">
+            </eq>
+        </case>
+        <case value="checkbox" >{~$a++}
+            &nbsp;&nbsp;<label class="checkbox"><input type="checkbox" name="query[{$key}]" id="query[{$key}]" />{$vo['title']} </label>&nbsp;&nbsp;
+        </case>
+        <case value="select">{~$a++}
+            <select name="query[{$key}]" class="form-control input-sm ">
+                <option value ="">全部</option>
+                <volist name="vo['value']" id="op">
+                    <option value ="{$key}">{$op}</option>
+                </volist>
+            </select>
+        </case>
+        <case value="refer">{~$a++}
+            {~$items=explode(',',$vo['value'])}
+            <div class="input-group  input-group-sm" id="{$items[0]}-query">
+                <input type="text" value="" data-target="{$items[2]}" class="form-control" placeholder="" readonly="">
+                <input type="hidden" value="" name="query[{$key}]" id="query[{$key}]" data-target="{$items[1]}" class="" placeholder="">
+                <span class="input-group-btn">
+                <a data-href="{:U(end($items),'refer='.$items[0].'-query')}" data-target="#modal-refer" data-toggle="modal" class="btn btn-default btn-"><i class="glyphicon glyphicon-search"></i></a>
+                </span>
+            </div>
+        </case>
+        <case value="getField">{~$a++}
+            <php>
+                $_parm=explode('.',$vo['value']);
+                
+                if(count($_parm)===2){
+                    $A=A($_parm[0]);
+                    $items=$A->get_list($_parm[0],$_parm[1]);
+                }
+            </php>
+            <select name="query[{$key}]" class="form-control input-sm">
+                <option value ="">全部</option>
+                <volist name="items" id="op">
+                    <option value ="{$key}">{$op}</option>
+                </volist>
+            </select>
+        </case>
+        <default/>{~$a++}
+            <label class="control-label col-lg-4 col-sm-4 col-xs-4">{$vo.title}</label><input type="txt" name="query[{$key}]" class="input-sm">
+    </switch>
+</div>
+</div>
+</volist>
+<div class="form-group  col-lg-3">
+<div class="col-lg-10 col-lg-offset-2">
+   <button type="submit" data-href="__SELF__" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
+   <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
+</div>
+</div>
+   <eq name="search_addon" value="TRUE">
+   <include file="search_addon" />
+   </eq>
+</div>
+<div class="clearfix"></div>
+</form>
+</notempty>

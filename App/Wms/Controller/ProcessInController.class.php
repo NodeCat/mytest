@@ -53,7 +53,7 @@ class ProcessInController extends CommonController {
 	                'control_type' => 'select',
 	                'value' => array(
 	        	            	'parpare' => '待入库',
-			            'on' => '已上架',
+			            'on' => '已入库',
 	                ),
 	        ),
 	        'erp_process_in.created_time' => array(

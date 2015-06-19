@@ -277,7 +277,6 @@ class WaveLogic{
 
             $lines_arr[$value['id']] = $value['name'];
         }
-
         return $lines_arr;
     }
 

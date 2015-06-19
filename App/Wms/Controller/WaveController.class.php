@@ -12,7 +12,6 @@ namespace Wms\Controller;
 use Think\Controller;
 class WaveController extends CommonController {
 
-
 	protected $filter = array(
 
               'company_id'=>array(
@@ -292,3 +291,4 @@ class WaveController extends CommonController {
 
 /* End of file WaveController.class.php */
 /* Location: ./Application/Controller/WaveController.class.php */
+
