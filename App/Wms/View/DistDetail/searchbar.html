@@ -96,3 +96,28 @@
 <div class="clearfix"></div>
 </form>
 </notempty>
+
+<script>
+	$(function() {
+		var url = "/Distribution/line_order_num";
+		$.ajax({
+	    		url:url,
+	    		success:function (msg) {
+	    			var msg = eval('('+msg+')');	
+	    			$("select[name='query[line]']").children('option').each(function() {
+	    				var content = $(this).html();
+	    				var value = $(this).val();
+	    				
+	    				if (typeof(msg[value]) == 'undefined') {
+	    					$(this).html(content+'(0)');
+	    				} else {
+	    					$(this).html(content+'('+msg[value]+')');
+	    				}
+	    				if (value == '') {
+	    					$(this).html(content+'('+msg["sum"]+')');
+	    				}
+	    			})
+	    		}
+		})
+	})
+</script>

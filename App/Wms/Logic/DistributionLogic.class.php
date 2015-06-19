@@ -21,7 +21,7 @@ class DistributionLogic {
         $M = M('stock_bill_out');
         
         //$map['company_id'] = $search['company_id'];
-        $map['wh_id'] = $search['wh_id'];
+        $map['wh_id'] = $session('user.wh_id');
         $map['line_id'] = $search['line'];
         if (isset($search['time'])) {
             switch ($search['time']) {
@@ -36,7 +36,7 @@ class DistributionLogic {
         }
         $map['delivery_date'] = $search['date'];
         $map['process_type'] = $search['type'];
-        $map['status'] = 4; //状态 分拣完成
+        $map['status'] = 5; //状态 分拣完成
         $result = $M->where($map)->select();
         if (empty($result)) {
             $return['msg'] = '没有符合符号条件的订单';
@@ -68,10 +68,10 @@ class DistributionLogic {
             $return['msg'] = '请选择系统';
             return $return;
         }
-        if (empty($post['wh_id'])) {
+        /*if (empty($post['wh_id'])) {
             $return['msg'] = '请选择仓库';
             return $return;
-        }
+        }*/
         if (empty($post['type'])) {
             $return['msg'] = '请选择订单类型';
             return $return;
@@ -206,7 +206,7 @@ class DistributionLogic {
                 }
                 $map['refer_code'] = $id;
                 $sta = $M->field('status')->where($map)->find();
-                if ($sta['status'] != 4) {
+                if ($sta['status'] != 6) {
                     $return['msg'] = '订单已经加入了配送单';
                     return $return;
                 }
@@ -264,7 +264,7 @@ class DistributionLogic {
             //更新出库单状态
             
             $map['refer_code'] = array('in', $value);
-            $data['status'] = 5;
+            $data['status'] = 6;
             if ($M->create($data)) {
                 $M->where($map)->save();
             }
@@ -272,6 +272,40 @@ class DistributionLogic {
        
         $return['status'] = true;
         $reurn['msg'] = '成功';
+        return $return;
+    }
+    
+    /**
+     * 获取所有已分拣订单 并按线路ID统计数量
+     * @return array
+     */
+    public function get_all_orders() {
+        $return = array('status' => false, 'msg' => '');
+        
+        $M = M('stock_bill_out');
+        $map['type'] = 1; //类型 1销售出库
+        $map['status'] = 5; //状态 检货完成
+        //$map['wh_id'] = $session('user.wh_id');
+        
+        $result = $M->where($map)->select();
+        if (empty($result)) {
+            $return['status'] = true;
+            $return['msg'] = '没有待发运的订单';
+            $return['list'] = array();
+            return $return;
+        }
+        $list = array();
+        foreach ($result as $value) {
+            if (!isset($list[$value['line_id']])) {
+                $list[$value['line_id']] = 1;
+            } else {
+                $list[$value['line_id']] += 1;
+            }
+        }
+        $list['sum'] = array_sum($list); //总计
+        $return['status'] = true;
+        $return['msg'] = '成功';
+        $return['list'] = $list;
         return $return;
     }
     

@@ -10,7 +10,6 @@ class DistributionController extends CommonController {
         )
     );
     protected $columns = array (
-            //'id' => '',
             'dist_code' => '配送单号',
             'total_price' => '应收总金额',
             'order_count' => '总单数',
@@ -19,19 +18,6 @@ class DistributionController extends CommonController {
             'created_user' => '创建者',
             'created_time' => '创建时间',
             'status' => '状态',
-            //'remarks' => '备注',
-            //'deal_price' => '实收总金额',
-            //'site_src' => '1大厨网，2 大果网',
-            //'line_id' => '线路ID',
-            //'deliver_time' => '配送时间',
-            //'total_distance' => '预估总里程数',
-            //'begin_time' => '配送开始时间',
-            //'end_time' => '配送结束时间',
-            //'updated_id' => '更新人id',
-            //'updated_time' => '更新时间',
-            //'is_deleted' => '0未删除 >0已删除',
-            //'is_printed' => '是否打印：1已打印，0未打印',
-            //'city_id' => '城市ID',
     );
     protected $query   = array (
             'stock_wave_distribution.company_id' => array(
@@ -320,5 +306,71 @@ class DistributionController extends CommonController {
         }
         $this->assign('attrs', $items);
         $this->display();
+    }
+    
+    /**
+     * 线路订单量统计
+     */
+    public function line_order_num() {
+        $D = D('Distribution', 'Logic');
+        $list = $D->get_all_orders();
+        if ($list['status'] == false || empty($list['list'])) {
+            echo '';
+        } else {
+            echo json_encode($list['list'], true);
+        }
+    }
+    
+    /**
+     * pda端送货完成
+     */
+    public function over() {
+        if (!IS_POST) {
+            $this->title = '请输入配送单号';
+            $this->display();
+            return;
+        }
+        $post = I('post.dist_code');
+        if (empty($post)) {
+            $this->msgReturn(false, '请输入配送单号');
+        }
+        $M = M('stock_wave_distribution');
+        $det = M('stock_wave_distribution_detail');
+        $stock = M('stock_bill_out');
+        $map['dist_code'] = $post;
+        $result = $M->where($map)->find();
+        if (empty($result)) {
+            $this->msgReturn(false, '配送单不存在');
+        }
+        if ($result['status'] == 2) {
+            $this->msgReturn(false, '配送单已经完成');
+        }
+        unset($map);
+        $map['pid'] = $result['id'];
+        $order_ids = $det->where($map)->select();
+        if (empty($order_ids)) {
+            $this->msgReturn(false, '空配送单');
+        }
+        unset($map);
+        
+        $map['dist_code'] = $post;
+        $data['status'] = 2; //已完成
+        //更新状态为已完成
+        if ($M->create($data)) {
+            $M->where($map)->save();
+        }
+        unset($map);
+        unset($data);
+        //更新订单状态
+        $order_idarr = array();
+        foreach ($order_ids as $value) {
+            $order_idarr[] = $value['bill_out_id'];
+        }
+        $map['refer_code'] = array('in', $order_idarr);
+        $data['status'] = 7; //已完成
+        if ($stock->create($data)) {
+            $stock->where($map)->save();
+        }
+        $this->msgReturn(true, '已完成', '', '', U('over'));
     }
 }
