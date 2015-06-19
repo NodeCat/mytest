@@ -515,7 +515,7 @@ class WaveLogic{
 
     	$idsArr = explode(',', $ids);
 
-    	if($idsArr) return FALSE;
+    	if(!$idsArr) return FALSE;
 
     	foreach($idsArr as $key=>$value){
 
