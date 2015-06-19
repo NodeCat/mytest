@@ -26,7 +26,18 @@ class OrderApi extends CommApi{
 				$return = array('error_code' => '202', 'error_message' => 'detail is empty' );
 				$this->ajaxReturn($return);
 			}
-
+			if(empty($order_info['info']['warehouse_id'])){
+				$return = array('error_code' => '203', 'error_message' => 'warehouse_id is empty' );
+				$this->ajaxReturn($return);
+			}
+			//根据warehouse_id查询对应的仓库是否存在 如果不存在 不写入出库表
+			$map['code'] = $order_info['info']['warehouse_id'];
+			$warehouse = M('warehouse')->where($map)->find();
+			if(empty($warehouse)){
+				$return = array('error_code' => '204', 'error_message' => 'warehouse is not exsist' );
+				$this->ajaxReturn($return);
+			}
+			
 			//写入出库单
 			$params['wh_id'] = $order_info['info']['warehouse_id'];
 			$params['type'] = 'SO';
