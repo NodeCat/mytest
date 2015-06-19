@@ -1,6 +1,6 @@
 <ol class="breadcrumb">
   <li><a href="{:U('Pda/index')}">首页</a></li>
-  <li class="active">加工</li>
+  <li class="active">配送完成</li>
 </ol>
 
 <div class="page-header text-center">
@@ -14,11 +14,11 @@
 <div class="alert alert-danger text-center" role="alert">{$error_msg}</div>
 </notempty>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
-<form class="form-horizontal form-ajax form-view" method="POST" action="/Process/order">
+<form class="form-horizontal form-ajax form-view" method="POST" action="/Distribution/over">
   <div class="form-group">
-    <label for="location" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">加工单号</label>
+    <label for="location" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">配送单号</label>
     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-      <input type="text" class="form-control input-lg-8" id="process_code" name="process_code" placeholder="请输入加工单号">
+      <input type="text" class="form-control input-lg" id="process_code" name="dist_code" placeholder="请输入配送单号">
     </div>
   </div>
   <br>

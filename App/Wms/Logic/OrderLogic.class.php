@@ -85,7 +85,6 @@ class OrderLogic{
 	    if (empty($ids)) {
 	        $return['msg'] = '参数有误';
 	    }
-	    
 	    $url = $this->server . '/order/lists';
 	    $map = json_encode(array('order_ids' => $ids, 'itemsPerPage' => count($ids)));
 	    $res = $this->request->post($url, $map);

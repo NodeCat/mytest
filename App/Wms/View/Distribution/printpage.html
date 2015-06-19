@@ -1,6 +1,7 @@
 {__NOLAYOUT__}
 <include file="Index/header"/>
 <body>
+<volist name='list' id='attrs'>
 <div class="container-fluid">
  <a href="javascript:;" id="hidden-map" class="hidden-print btn btn-danger">隐藏地图</a>
 
@@ -117,6 +118,7 @@
 <div style="height:600px;width:900px" id="mapContainer"><img src={$attrs.map_url} /></div>
 </div>
 </div>
+</volist>
 <style type="text/css">
 #mapContainer {
 	top:0;

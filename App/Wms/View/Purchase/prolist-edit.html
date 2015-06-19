@@ -34,10 +34,6 @@
           <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
         </td>
       </tr>
-  			<tr>
-  				<td colspan="6"><a class="add-pro" href="#">添加单个产品</a>
-          </td>
-  			</tr>
 
       <volist name="pros" id="vo">
         
@@ -70,6 +66,11 @@
         
       </volist>
 
+      <tr>
+        <td colspan="6"><a class="add-pro" href="javascript:void(0);">添加单个产品</a>
+        </td>
+      </tr>
+
   		</tbody>
   		</table>
     </div>
@@ -93,7 +94,8 @@ $(function(){
 $('#table-pro').delegate('.p_qty,.p_price','input',function(){
     var qty = $(this).parents('tr').find('.p_qty').val();
     var price = $(this).parents('tr').find('.p_price').val();
-    $(this).parents('tr').find('.p_res').text(qty*price); 
+    var price_total = accMul(qty,price);
+    $(this).parents('tr').find('.p_res').text(price_total); 
 });
 
 typehead();
@@ -109,7 +111,8 @@ $('.add-pro').on('click',function(){
     tr.removeClass('tr-tpl');
     tr.addClass('tr-cur');
     tr.removeClass('hidden');
-    $('#table-pro tr:eq(2)').after(tr);
+    $('#table-pro tr:last').before(tr);
+    //$('#table-pro tr:eq(2)').after(tr);
     typehead();
     $('#table-pro tr.tr-cur .pro_names').focus();
     

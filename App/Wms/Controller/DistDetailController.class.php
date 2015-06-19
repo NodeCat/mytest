@@ -33,12 +33,12 @@ class DistDetailController extends CommonController {
                     'control_type' => 'select',
                     'value' => '',
             ),
-            'wh_id' => array(
+            /*'wh_id' => array(
                     'title' => '所属仓库',
                     'query_type' => 'eq',
                     'control_type' => 'getField',
                     'value' => 'warehouse.id,name',
-            ),
+            ),*/
             'date' => array(
                     'title' => '日期',
                     'query_type' => 'eq',

@@ -87,9 +87,8 @@
 <div class="col-lg-10 col-lg-offset-2">
    <button type="submit" data-href="__SELF__" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
    <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
-   <a href="{:U('DistDetail/index')}?"  class="btn btn-default btn-sm">筛选订单线路</a>
-   <a href="{:U('Distribution/printpage')}?"  class="btn btn-default btn-sm">打印</a>
-   <a href="{:U('Distribution/exportdis')}?"  class="btn btn-default btn-sm">导出</a>
+   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="print-page">打印</a>
+   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-dis">导出</a>
 </div>
 </div>
    <eq name="search_addon" value="TRUE">
@@ -99,3 +98,30 @@
 <div class="clearfix"></div>
 </form>
 </notempty>
+
+<script>
+	$(function() {
+		 $(document).on('click','#print-page',function(){
+			 var ids = getChecked();
+			 //var idArr = ids.split(',');
+			 /*if (idArr.length > 1) {
+				 alert('只能选择一个订单');
+				 return false;
+			 }*/
+			 //var id = idArr[0];
+			 var url = "/Distribution/printpage?id="+ids;
+			 window.open(url);
+		 });
+		 $(document).on('click','#export-dis',function(){
+			 var ids = getChecked();
+			 var idArr = ids.split(',');
+			 if (idArr.length > 1) {
+				 alert('只能选择一个订单');
+				 return false;
+			 }
+			 var id = idArr[0];
+			 var url = "/Distribution/exportdis?id="+id;
+			 location.href = url;
+		 });
+	})
+</script>
