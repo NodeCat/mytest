@@ -22,7 +22,7 @@ if($_SERVER['SERVER_ENV'] == 'production') {
 }
 
 
-define('RUNTIME_PATH','../Runtime/');
+define('RUNTIME_PATH','../../Runtime/');
 
 define('BIND_MODULE','Wms');
 

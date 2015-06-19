@@ -437,7 +437,6 @@ class WaveLogic{
 
 							$this->updateStatus($map, array('is_deleted'=>0));
 
-
 							return FALSE;
 
 						}
@@ -511,6 +510,27 @@ class WaveLogic{
     	return $array[$id];
 
     }
+
+    //查看出库单中所有sku是否满足数量需求
+    public function hasEnough($ids){
+
+    	$idsArr = explode(',', $ids);
+
+    	if($idsArr) return FALSE;
+
+    	foreach($idsArr as $key=>$value){
+
+    		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
+
+    		if($is_enough) return TRUE;
+
+    	}
+
+    	return FALSE;
+
+    }
+
+        
 
 
 }

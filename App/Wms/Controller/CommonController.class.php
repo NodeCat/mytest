@@ -105,7 +105,6 @@ class CommonController extends AuthController {
             }
         }
         
-        
         $this->after($map,'search');//查询条件生成以后，这里可以往$map中加入新的查询条件
         return $map;
     }
