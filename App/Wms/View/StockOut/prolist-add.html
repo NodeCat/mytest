@@ -57,18 +57,22 @@ $('.add-pro').on('click',function(){
     tr.removeClass('hidden');
     $('#table-pro tr:eq(2)').after(tr);
     typehead();
-    $('#table-pro tr.tr-cur .pro_name').focus();
+    $('#table-pro tr.tr-cur .pro_names').focus();
     
 });
+
+$('#table-pro').delegate('.pro_names','focus',function(){
+  $('.tr-active').removeClass('tr-active');
+  $(this).parents('tr').addClass('tr-active');
+});
+
+$('#table-pro').delegate('input','click',function(){
+  $(this).select();
+});
+
 });
 
 function typehead() {
-$('#table-pro .pro_names').on('focus',function(){
-  $(this).parent().addClass('tr-active');
-});
-$('.tr-cur input').on('focus',function(){
-  $(this).select();
-});
 $('.tr-cur .pro_names').typeahead({ 
     display: 'name',
     val: 'val',

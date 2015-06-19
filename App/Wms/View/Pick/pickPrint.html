@@ -29,7 +29,7 @@
     <div class="orderinfo">
     <div class="row">
       <div class="col-xs-4">
-        <p>分拣单号:{$vo.items.id}</p>
+        <p>分拣单号:{$vo.items.code}</p>
         <p class="">线路（片区）:{$vo.items.line_id|getLineNameByid=###}</p>
         <p>订单数：{$vo.items.order_sum}</p>
       </div>
@@ -84,7 +84,7 @@
       </table>
     </div>
   <div class="all_count">
-      <a href="javascript:;" onclick="$('.printpage').addClass('hidden-print');$(this).parent().parent().parent().removeClass('hidden-print');window.print()" class="hidden-print btn-lg btn-success">打印</a>
+      <a href="javascript:;" data-var="{$vo.items.id}" class="hidden-print btn-lg btn-success">打印</a>
     </div>
 </div>
 </div>
@@ -92,3 +92,35 @@
 </volist>
 
 </div>
+
+<script type="text/javascript">
+
+(function(){
+
+  $(document).on('click','.all_count a',function(){
+
+    $('.printpage').addClass('hidden-print');
+
+    $(this).parent().parent().parent().removeClass('hidden-print');
+
+    window.print();
+
+    var ids = "<php> echo I('ids')</php>";
+
+    var id = $(this).attr('data-var');
+
+    var url = "/Pick/doPrint";
+
+    var param = {};
+
+    param.ids = id;
+
+    var callback = function(res){};
+
+    $.post(url, param, callback, 'json');
+
+  });
+
+})();
+
+</script>

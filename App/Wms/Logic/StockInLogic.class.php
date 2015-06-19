@@ -109,8 +109,12 @@ class StockInLogic{
 		$map['code'] = $location_code;
 		$map['type'] = '2';
 		$map['is_deleted'] = 0;
-		$res = M('location')->field('id')->where($map)->find();
+		$res = M('location')->field('id,status')->where($map)->find();
 		unset($map);
+
+		if($res['status'] != $status){
+			return array('res'=>false,'msg'=>'状态不一致，目标库位的状态是：'.en_to_cn($res['status']).'状态');
+		}
 
 		if(empty($res)) {
 			return array('res'=>false,'msg'=>'库位不存在。');

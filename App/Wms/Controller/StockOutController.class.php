@@ -122,6 +122,7 @@ class StockOutController extends CommonController {
                         ),  
         ), 
 
+
         'stock_bill_out.created_time' =>    array (    
             'title' => '下单时间',     
             'query_type' => 'between',     
@@ -129,6 +130,7 @@ class StockOutController extends CommonController {
             'value' => '',   
         ), 
         
+
 	);
 
     public function __construct(){
@@ -147,6 +149,8 @@ class StockOutController extends CommonController {
 
         //修改线路value值
         $lines = A('Wave','Logic')->line();
+
+        //dump($lines);die;
 
         $this->query['stock_bill_out.line_id']['value'] = $lines;
 
@@ -504,6 +508,12 @@ class StockOutController extends CommonController {
         $hasProductionAuth = $waveLogic->hasProductionAuth($ids);
 
         if($hasProductionAuth === FALSE) echojson('1','','你所选的出库单中包其他状态出库单的，请选择待生产的出库单创建！');
+
+        //查看出库单中所有sku是否满足数量需求
+
+        $is_enough = A('Wave','Logic')->hasEnough($ids);
+
+        if($is_enough === FALSE) echojson('1','','你所选的出库单是缺货状态，请重新创建！');
 
         $insertArr = array();
 

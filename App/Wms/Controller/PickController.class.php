@@ -28,6 +28,14 @@ class PickController extends CommonController {
 
        'done'=>'已完成'
 
+      ),
+
+     'is_print'=>array(
+
+       'ON'=>'打印',
+
+       'OFF'=>'未打印'
+
       )
   );
 
@@ -48,6 +56,8 @@ class PickController extends CommonController {
 		'pro_type_sum'      => '总行数',
 
 		'pro_qty_sum'       => '总件数',
+
+    'is_print'          => '是否打印',
 
 		'created_time'      => '开始时间',
 
@@ -116,6 +126,20 @@ class PickController extends CommonController {
                   )
 
       ),
+
+    'stock_wave_picking.is_print'       =>    array ( 
+
+              'title'                 => '已打印', 
+
+              'query_type'            => 'eq', 
+
+              'control_type'          => 'checkbox', 
+
+              'value'                 => 'is_print'
+
+      ),
+
+
 
   );
 
@@ -227,6 +251,25 @@ class PickController extends CommonController {
     $this->assign('list',$items);
 
     $this->display('Pick::pickPrint');  
+  }
+
+  public function doPrint(){
+
+    $ids = I('ids');
+
+    $map = array();
+
+    if($ids){
+
+      $map['id'] = array('in',$ids); 
+
+      $data = array('is_print'=>'ON');
+
+      $m = M('stock_wave_picking');
+
+      $m->where($map)->save($data);
+
+    }
   }
   
 }

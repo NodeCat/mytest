@@ -51,7 +51,7 @@ class ProcessController extends CommonController {
 			        'pass' => '已生效',
 			        'reject' => '已驳回',
 			        'close' => '已作废',
-		            'make' => '已生产',
+		            'make' => '已完成',
                 ),
         ),
 	);
@@ -119,7 +119,8 @@ class ProcessController extends CommonController {
         $pms = D('Pms', 'Logic');
         $code_info = $pms->get_SKU_field_by_pro_codes($code);
         //格式化状态
-        foreach ($data as &$value) {
+        $new_data = array();
+        foreach ($data as $key => &$value) {
             $value['status'] = en_to_cn($value['status']);
             $value['type'] = en_to_cn($value['type']);
             foreach ($warehouse_info as $val) {
@@ -221,7 +222,7 @@ class ProcessController extends CommonController {
     }
 
     //在edit方法执行之前执行该方法
-    protected function before_edit(){
+    protected function before_edit(&$data){
     	    $M = D('Process');
 		$id = I($M->getPk());
 		$map['id'] = $id;
@@ -259,6 +260,12 @@ class ProcessController extends CommonController {
 		//子SKU信息
 		unset($sku[$process_pro_code]);
 		$c_sku_info = $sku;
+		
+		$user = M('user');
+		$map['id'] = $data['created_user'];
+		$name = $user->where($map)->find();
+		$data['created_user'] = $name['nickname'];
+		
 
 		$this->p_sku_info = $p_sku_info;
 		$this->c_sku_info = $c_sku_info;
