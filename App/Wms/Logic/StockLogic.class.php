@@ -647,6 +647,7 @@ class StockLogic{
 	*	'pro_code'=>xxxxx,
 	*	'batch'=>xxxx,
 	*	'status'=>xxxx,
+	*	'change_src_assign_qty'=>xxxx, 是否减少src的assign_qty
 	* )
 	*
 	*/
@@ -729,6 +730,11 @@ class StockLogic{
 				}else{
 					//减少原库存
 					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+				
+					if($param['change_src_assign_qty']){
+						//减少assign_qty
+						M('Stock')->where($map)->setDec('assign_qty',$param['variable_qty']);
+					}
 				}
 				
 
