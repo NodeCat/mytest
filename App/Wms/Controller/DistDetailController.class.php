@@ -6,10 +6,10 @@ class DistDetailController extends CommonController {
             'order_id' => '订单ID',
             'line' => '订单线路',
             'address' => '送货地址',
-            'time' => '送货时间',
+            'deliver_date' => '送货时间',
             'name' => '货品名称',
             'attrs' => '规格',
-            'qty' => '数量',
+            'quantity' => '数量',
     );
     protected $query   = array (
             'company_id' => array(
@@ -132,14 +132,15 @@ class DistDetailController extends CommonController {
         $this->filter_list($data);//对结果集进行过滤转换
         $Dis = D('Distribution', 'Logic');
         if (IS_POST) {
-            $search_info = $Dis->search_test(I('post.query'));
-            //$search_info = $Dis->order_lists(I('post.query'));
+            $search_info = $Dis->order_lists(I('post.query'));
         } else {
             $search_info['list'] = array();
         }
         //获取搜索结果
-        //$search_info = $Dis->search();
-        //dump($search_info['list']);exit();
+        if (isset($search_info['status']) && $search_info['status'] == false) {
+            //echo '<script>alert("'.$search_info['msg'].'")</script>';exit;
+            $this->msgReturn(false, $search_info['msg']);
+        }
         $this->assign('data', $search_info['list']);        
         $maps = $this->condition;
         $template= IS_AJAX ? 'list':'index';

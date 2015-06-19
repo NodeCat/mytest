@@ -1,21 +1,24 @@
+{__NOLAYOUT__}
+<include file="Index/header"/>
+<body>
 <div class="container-fluid">
- <a href="javascript:;" ng-click="printmap()" class="hidden-print btn btn-danger">{{text}</a>
+ <a href="javascript:;" id="hidden-map" class="hidden-print btn btn-danger">隐藏地图</a>
 
-  <div class="printpage" ng-repeat="items in list">
+  <div class="printpage" ng-repeat="attrs in list">
     <div class="orderinfo">
     <div class="row">
       <div class="col-xs-4">
-        <p>配送线路单号:{$items.dist_code}</p>
-        <p class="">线路（片区）:{$items.line_name}</p>
-        <p>客户数：{$items.user_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单数：{$items.orders_length} &nbsp;&nbsp;&nbsp;&nbsp; 总件数：{$items.sku_count}</p>
+        <p>配送线路单号:{$attrs.dist_code}</p>
+        <p class="">线路（片区）:{$attrs.line_name}</p>
+        <p>客户数：{$attrs.user_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单数：{$attrs.orders_length} &nbsp;&nbsp;&nbsp;&nbsp; 总件数：{$attrs.sku_count}</p>
       </div>
       <div class="col-xs-4">
           <p> 配送线路单</p>
-          <img src="{$items.barcode}" />
+          <img src="{$attrs.barcode}" />
       </div>
       <div class="col-xs-4">
-        <p>仓库：{$items.warehouse_name}</p>
-        <p>发车时间：{$items.deliver_date} {$items.deliver_time/* == 1 ? '上午' : '下午'*/}</p>
+        <p>仓库：{$attrs.warehouse_name}</p>
+        <p>发车时间：{$attrs.deliver_date} {$attrs.deliver_time/* == 1 ? '上午' : '下午'*/}</p>
       </div>
     </div>
     <div class="order_print_table">
@@ -38,22 +41,28 @@
             <td width="5%">重量</td>
           </tr>
         </thead>
-        <tbody ng-repeat="order in items.orders" ng-init="pindex=$index+1">
-          <tr ng-repeat="detail in order.detail">
-            <td ng-if="$index == 0" rowspan="{$order.detail.length}">{$order.id}</td>
-            <td ng-if="$index == 0" rowspan="{$order.detail.length}">{$order.line_name}</td>
-            <td ng-if="$index == 0" rowspan="{$order.detail.length}">{$order.shop_name}</td>
-            <td ng-if="$index == 0" rowspan="{$order.detail.length}">{$order.deliver_addr}</td>
-            <td ng-if="$index == 0" rowspan="{$order.detail.length}">{$order.mobile}</td>
-            <td ng-if="$index == 0" rowspan="{$order.detail.length}">{$order.remarks}</td>
-            <td>{$detail.sku_number}</td>
-            <td>{$detail.name}</td>
-            <td><small><span ng-repeat="spec in detail.spec" ng-show="spec.name != '描述'">{$spec.name}：{$spec.val}<span></small></td>
-                <td>{$detail.single_price}/{$detail.close_unit}</td>
-            <td>{$detail.quantity}{$detail.unit_id}</td>
-            <td></td>
-          </tr>
-        </tbody>
+        <volist name="attrs['orders']" id="order">
+          <volist name="order['detail']" id="detail" key="k">
+          	<tr class="order_list">
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.line_name}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.deliver_addr}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.mobile}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.remarks}</td>
+	            <td>{$detail.sku_number}</td>
+	            <td>{$detail.name}</td>
+	            <td>
+	            		<small>
+	            		<volist name="detail['spec']" id="spec">{$spec.name}：{$spec.val}</volist>
+	            		</small>
+	            	</td>
+	            <td>{$detail.single_price}/{$detail.close_unit}</td>
+	            <td>{$detail.quantity}{$detail.unit_id}</td>
+	            <td></td>
+            </tr>
+          </volist>
+        </volist>
         <tr>
           <td>汇总</td>
           <td colspan="5"></td>
@@ -61,7 +70,7 @@
           <td></td>
           <td></td>
           <td></td>
-          <td>{$items.sku_count}</td>
+          <td>{$attrs.sku_count}</td>
           <td></td>
         </tr>
       </table>
@@ -79,16 +88,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="page_break_after" ng-repeat="detail in items.sku_list">
-              <td>{$detail.sku_number}</td>
-              <td>{$detail.name}</td>
-              <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
-              <td>{$detail.quantity}{$detail.unit_id}</td>
-            </tr>
+            <volist name="attrs['sku_list']" id="detail">
+              <tr>
+                <td>{$detail.sku_number}</td>
+                <td>{$detail.name}</td>
+                <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
+                <td>{$detail.quantity}{$detail.unit_id}</td>
+              </tr>
+            </volist>
             <tr>
               <td>汇总</td>
               <td colspan="1"></td>
-              <td>{$items.sku_count}</td>
+              <td>{$attrs.sku_count}</td>
             </tr>
           </tbody>
         </table>
@@ -99,10 +110,189 @@
         <p class="">站点操作人员签字：</p>
       </div>
     </div>
-  <div class="clearfix all_count">
+  <div class="clearfix all_count hidden-print">
       <a href="javascript:;" onclick="window.print()" class="hidden-print btn btn-success">打印全部</a>
     </div>
 </div>
-<div class="mapimg"  ng-class="{'hidden-print':!togglemap}" ng-show="togglemap" id="mapContainer"><img src={$items.map_url} /></div>
+<div style="height:600px;width:900px" id="mapContainer"><img src={$attrs.map_url} /></div>
 </div>
 </div>
+<style type="text/css">
+#mapContainer {
+	top:0;
+	left:0;
+	right:0;
+	bottom:0
+}.ing {
+	background:url("/assets/images/ing.png") !important
+}
+.ed {
+	background:url("/assets/images/ed.png") !important
+}
+.mapOrderlist {
+	height:700px;
+	overflow-y:auto
+}
+.maplist [class*="col-md"] {
+	padding:0
+}
+.maporderdt .col-offset-3 {
+	margin-left:11.9%
+}
+.maporderdt .row {
+	padding:3px 0
+}
+.mt5 {
+	margin-top:5px
+}
+.m-0 {
+	margin:0
+}
+.maporderdl dd {
+	font-size:12px
+}
+.maporderdl .orderlistrow {
+	border-top:1px solid #ddd;
+	padding:5px 0
+}
+.modt div {
+	float:left;
+	padding:5px 0
+}
+.modt .modt-order {
+	margin-left:18px;
+	width:65px
+}
+.modt .modt-id {
+	width:64px
+}
+.map-number {
+	font-size:24px;
+	font-weight:700;
+	color:#999;
+	text-indent:6px
+}
+
+.printpage {
+	width:100%;
+	margin:auto;
+	font-size:12px;
+	page-break-before:avoid;
+	page-break-inside:avoid;
+	page-break-after:always
+}
+.printpage .table-bordered>thead>tr>td {
+	border-bottom-width:1px
+}
+.printpage .table-bordered {
+	border-collapse:collapse
+}
+.orderinfo,.mapimg {
+	page-break-before:avoid;
+	page-break-inside:avoid;
+	min-height:500px
+}
+@page {
+	size:A4 landscape;
+	page-break-before:avoid;
+	page-break-inside:avoid;
+	margin-bottom:10pt;
+	font-size:9pt;
+	-webkit-text-size-adjust:none;
+	left-middle:5pt;
+	right-middle:5pt
+}
+@page:left {
+	margin-left:5pt;
+	margin-right:5pt
+}
+@page:right {
+	margin-left:5pt;
+	margin-right:5pt
+}
+@media print {
+	.sign p {
+	page-break-inside:avoid
+}
+.sth_block {
+	position:relative;
+	page-break-after:always
+}
+.sth_block .col-xs-6 {
+	float:none;
+	display:inline-block
+}
+.sth_block .sign {
+	vertical-align:bottom;
+	width:300px
+}
+.sth_block .sign p {
+	page-break-inside:avoid;
+	position:relative;
+	page-break-before:always;
+	page-break-after:always;
+	line-height:3
+}
+.sth_block .sign p:after {
+	content:'';
+	position:absolute;
+	top:20px;
+	width:200px;
+	border-bottom:1px solid #999
+}
+.page_break_after {
+	page-break-after:always
+}
+.order_print_table table tr {
+	page-break-after:auto;
+	page-break-inside:avoid
+}
+.order_print_table table tr td {
+	page-break-inside:avoid
+}
+.word-wrap {
+	word-wrap:break-word;
+	word-break:break-all
+}
+@media print {
+	.sign p {
+	page-break-inside:avoid
+}
+</style>
+<script src="http://webapi.amap.com/maps?v=1.3&key=67f642a47ca5d2d0b4c4a272baeda00f" type="text/javascript"></script>
+
+<script>
+$(function() {
+	var td =  $('.order_list').children('td[rowspan]');
+	  td.each(function(i) {
+		  //alert($(this).attr('index'));
+		  if ($(this).attr('index') > 1) {
+			  $(this).remove();
+		  }
+	  });
+	$('#hidden-map').click(function() {
+		if ($('#mapContainer').css('display') == "block") {
+			$('#mapContainer').css('display',"none");
+			$(this).html('显示地图');
+		} else if ($('#mapContainer').css('display') == "none") {
+			$('#mapContainer').css('display', "block");
+			$(this).html('隐藏地图');
+		}
+	})
+})
+
+var mapObj, marker, markers = [];
+// 地图初始化
+function mapInit(){
+	
+  mapObj = new AMap.Map("mapContainer",{
+    center:new AMap.LngLat(116.397428,39.90923), //地图中心点
+    level:11  //地图显示的比例尺级别
+    //zoomEnable:false
+  });
+  // AMap.event.addListener(mapObj,'click',getLnglat); //点击事件
+}
+  mapInit();
+</script>
+</body>
+</html>

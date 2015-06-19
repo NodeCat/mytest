@@ -71,7 +71,7 @@ class DistributionController extends CommonController {
     
     public function before_index() {
         $this->table = array(
-                'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+                'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
                 'searchbar' => true, //是否显示搜索栏
                 'checkbox'  => true, //是否显示表格中的浮选款
                 'status'    => false,
@@ -98,109 +98,6 @@ class DistributionController extends CommonController {
         $this->lists('index');
     }
 
-    /**
-     * 分配模板数据
-     */
-    /*public function _before_add() {
-        if (IS_POST) {
-            return;
-        }
-        $company = array(); //所属系统
-        $warehouse = array(); //所属仓库
-        $order_type = array(); //订单类型
-        $line = array(); //线路
-        $time = array(); //时段
-        
-        //获取系统
-        $M = M('company');
-        $result = $M->select();
-        foreach ($result as $value) {
-            $company[$value['id']] = $value['name'];
-        }
-        unset($M);
-        unset($value);
-        unset($result);
-        //获取仓库
-        $M = M('warehouse');
-        $result = $M->select();
-        foreach ($result as $value) {
-            $warehouse[$value['id']] = $value['name'];
-        }
-        unset($M);
-        unset($value);
-        unset($result);
-        //获取订单类别
-        $order_type = array(
-        	    '1' => '普通订单',
-            '2' => '冻品订单',
-            '3' => '爆款订单',
-        );
-        unset($M);
-        unset($value);
-        unset($result);
-        
-        //线路
-        $lines = D('Distribution', 'Logic');
-        $result = $lines->format_line();
-        foreach ($result as $key => $value) {
-            $line[$key] = $value;
-        }
-        unset($value);
-        unset($result);
-        //时段
-        $time = array(
-        	    '3' => '全天',
-            '1' => '上午',
-            '2' => '下午',
-        );
-        $this->assign('company', $company);
-        $this->assign('warehouse', $warehouse);
-        $this->assign('order_type', $order_type);
-        $this->assign('line', $line);
-        $this->assign('time', $time);
-    }*/
-    
-    /**
-     * 订单搜索
-     * @see \Wms\Controller\CommonController::search()
-     */
-    public function order_list() {
-        if (!IS_POST) {
-            $this->msgReturn(false, '未知错误');
-        }
-        $post = I('post.');
-        if (empty($post['company'])) {
-            $this->msgReturn(false, '请选择系统');
-        }
-        if (empty($post['warehouse'])) {
-            $this->msgReturn(false, '请选择仓库');
-        }
-        if (empty($post['order_type'])) {
-            $this->msgReturn(false, '请选择订单类型');
-        }
-        if (empty($post['line'])) {
-            $this->msgReturn(false, '请选择线路');
-        }
-        if (empty($post['time'])) {
-            $this->msgReturn(false, '请选择时段');
-        }
-        if (empty($post['date'])) {
-            $this->msgReturn(false, '请选择日期');
-        }
-        //时段是否区分
-        if ($post['time'] == 3) {
-            unset($post['time']);
-        }
-        $Dis = D('Distribution', 'Logic');
-        //获取搜索结果
-        $seach_info = $Dis->search($post);
-        if ($seach_info['status'] == false) {
-            //搜索失败
-            $this->msgReturn(false, $seach_info['msg']);
-        }
-        $this->assign('order_list', $seach_info);
-        $this->display('order-list');
-    }
     
     /**
      * 生成配送单
@@ -238,7 +135,7 @@ class DistributionController extends CommonController {
         header("Pragma: no-cache");
         header("Expires: 0");
         
-        $get = I('get.dis_id');
+        $get = I('get.id');
         //获取配送单信息
         $M = M('stock_wave_distribution');
         $map['id'] = $get;
@@ -309,7 +206,7 @@ class DistributionController extends CommonController {
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
-        $get = I('get.dis_id');
+        $get = I('get.id');
         if (empty($get)) {
             $this->msgReturn(false, '参数有误');
         }
@@ -331,7 +228,6 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, $result['msg']);
         }
         $result = $result['list'];
-        
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
         $data['is_printed'] = $dis['is_printed']; //是否打印
@@ -345,10 +241,8 @@ class DistributionController extends CommonController {
         $data['sku_count'] = $dis['sku_count']; //sku总数
         $data['total_price'] = $dis['total_price']; //总价格
         $data['line_count'] = $dis['line_count']; //总行数
-        
-        $orderList = $result['orderlist'];
         $this->assign('data', $data);
-        $this->assign('orderList', $orderList);
+        $this->assign('orderList', $result);
         $this->display();
     }
     
@@ -359,7 +253,7 @@ class DistributionController extends CommonController {
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
-        $get = I('get.dis_id');
+        $get = I('get.id');
         if (empty($get)) {
             $this->msgReturn(false, '参数有误');
         }
@@ -386,8 +280,8 @@ class DistributionController extends CommonController {
         $items['line_name'] = $D->format_line($dis['line_id']);
         
         $user_ids = array();
-        foreach ($result['orderlist'] as $value) {
-            $user_id[$value['user_id']] = null;
+        foreach ($result as $value) {
+            $user_ids[$value['user_id']] = null;
         }
         $items['user_count'] = count($user_ids); //总客户数量
         $items['orders_length'] = $dis['order_count'];  //总订单数
@@ -399,8 +293,22 @@ class DistributionController extends CommonController {
         $items['warehouse_name'] = $ware_info['name'];
         $items['deliver_date'] = $dis['deliver_date']; //发车时间
         $items['deliver_time'] = $dis['deliver_time']; //时段
-        $items['orders'] = $result['orderlist']; //订单列表
+        $items['orders'] = $result; //订单列表
         $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=PD1506080001'; //条码
+        
+        $merge = array();
+        foreach ($result as $val) {
+            $merge = array_merge($merge, $val['detail']);
+        }
+        foreach ($merge as $key=>$v) {
+            if (!isset($merge[$v['product_id']])) {
+                $merge[$v['product_id']] = $v;
+            } else {
+                $merge[$v['product_id']]['quantity'] += $v['quantity'];
+            }
+            unset($merge[$key]);
+        }
+        $items['sku_list'] = $merge;
         unset($map);
         //更新打印状态
         if ($dis['is_printed'] <= 0) {
@@ -410,7 +318,7 @@ class DistributionController extends CommonController {
                 $M->where($map)->save();
             }
         }
-        $this->assign('items', $items);
+        $this->assign('attrs', $items);
         $this->display();
     }
 }

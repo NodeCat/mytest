@@ -23,37 +23,31 @@
 
   <tbody>
     <volist name="data" id="vo" key="row" empty="">
-    <tr id="r-{$vo.id}">
-    
-    <input type="hidden" value="{$vo.user_id}" class="order-user_id" />
-    <input type="hidden" value="{$vo.id}" class="order-id" />
-    <input type="hidden" value="{$vo.deliver_addr} {$vo.shop_name}" class="order-adress" />
-    <input type="hidden" value="{$vo.line}" class="order-line" />
-    <input type="hidden" value="{$vo.line_total}" class="order-cat" />
-    <input type="hidden" value="{$vo.sku_total}" class="order-qty" />
+	    
+	<volist name="vo['detail']" id="detail" key="k">
+    <tr id="r-{$vo.id}" class="list_info_all">
       <volist name="columns" id="col" offset="0" length='1'>
-          <td><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$pk]}" data-id="{$pk}" /></eq>{$row}</label></td>
+      <input type="hidden" value="{$vo.user_id}" class="order-user_id" />
+	    <input type="hidden" value="{$vo.id}" class="order-id" />
+	    <input type="hidden" value="{$vo.deliver_addr} {$vo.shop_name}" class="order-adress" />
+	    <input type="hidden" value="{$vo.line}" class="order-line" />
+	    <input type="hidden" value="{$vo.line_total}" class="order-cat" />
+	    <input type="hidden" value="{$vo.sku_total}" class="order-qty" />
+          <td rowspan="{$vo['line_total']}" index="{$k}"><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$pk]}" data-id="{$pk}" /></eq>{$row}</label></td>
           {~$values[$key]=$vo[$key]}
       </volist>
 
-      <volist name="columns" id="col" offset="0">
-              <td>{$vo[$key]}</td>
-              {~$values[$key]=$vo[$key]}
+      <volist name="columns" id="col" offset="0" length="4">
+          <td rowspan="{$vo['line_total']}" index="{$k}">{$vo[$key]}</td>	
+          {~$values[$key]=$vo[$key]}
       </volist>
-      <eq name="table.status" value="true">
-        <td class="inline">
-        <include file="Table:status"/>   
-        </td>
-      </eq>
-      <eq name="table.toolbar_tr" value="true">
-  		<td class="inline">
-        <nobr>
-   			<include file="Table:op-btn-tr"/> 
-        </nobr>
-      </td>  
-      </eq>  
+      <volist name="columns" id="col" offset="4">
+          	  <td>{$detail[$key]}</td>
+              {~$values[$key]=$detail[$key]}
+      </volist>
   		
     </tr>
+    </volist>
     </volist>
   </tbody>
 </table>
@@ -72,7 +66,14 @@
 <script src="__PUBLIC__/js/light-table-filter.min.js"></script>
 <script type="text/javascript">
 $(function() {
-
+  var td =  $('.list_info_all').children('td[rowspan]');
+  td.each(function(i) {
+	  //alert($(this).attr('index'));
+	  if ($(this).attr('index') > 1) {
+		  $(this).remove();
+	  }
+  }) 
+  
   $('#table-content tr').each(function(){
     var id = $(this).attr('id');
     if($('#table-orders #'+id).length > 0){
