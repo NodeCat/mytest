@@ -159,14 +159,14 @@ class DistributionLogic {
      * 根据配送单id获取订单
      * @param int $dis_id 订单ID
      */
-    public function get_order_ids_by_dis_id($dis_id = 0) {
+    public function get_order_ids_by_dis_id($dis_id = array()) {
         $return = array();
         
         if (empty($dis_id)) {
             return $return;
         }
         $M = M('stock_wave_distribution_detail');
-        $map['pid'] = $dis_id;
+        $map['pid'] = array('in', $dis_id);
         $result = $M->field('bill_out_id')->where($map)->select();
         if (empty($result)) {
             return $return;

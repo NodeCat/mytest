@@ -239,72 +239,82 @@ class DistributionController extends CommonController {
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
-        $get = I('get.id');
-        if (empty($get)) {
+        $ids = I('get.id');
+        $idarr = explode(',', $ids);
+        if (empty($idarr)) {
             $this->msgReturn(false, '参数有误');
         }
         
-        //获取配送单信息
         $M = M('stock_wave_distribution');
-        $map['id'] = $get;
-        $dis = $M->where($map)->find();
-        unset($map);
-        
-        //获取订单id
+        $ware = M('warehouse');
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
-        
+        //获取订单id
+        $order_ids = $D->get_order_ids_by_dis_id($idarr);
         //拉取订单
         $Order = D('Order', 'Logic');
-        $result = $Order->getOrderInfoByOrderIdArr($order_ids);
-        if ($result['status'] == false) {
-            $this->msgReturn(false, $result['msg']);
+        $res = $Order->getOrderInfoByOrderIdArr($order_ids);
+        if ($res['status'] == false) {
+            $this->msgReturn(false, $res['msg']);
         }
-        $result = $result['list'];
-        $items = array();
-        $items['dist_code'] = $dis['dist_code'];
-        $items['line_name'] = $D->format_line($dis['line_id']);
-        
-        $user_ids = array();
-        foreach ($result as $value) {
-            $user_ids[$value['user_id']] = null;
-        }
-        $items['user_count'] = count($user_ids); //总客户数量
-        $items['orders_length'] = $dis['order_count'];  //总订单数
-        $items['sku_count'] = $dis['sku_count']; //sku总数
-        //获取仓库名称
-        $ware = M('warehouse');
-        $map['id'] = $dis['wh_id'];
-        $ware_info = $ware->field('name')->where($map)->find();
-        $items['warehouse_name'] = $ware_info['name'];
-        $items['deliver_date'] = $dis['deliver_date']; //发车时间
-        $items['deliver_time'] = $dis['deliver_time']; //时段
-        $items['orders'] = $result; //订单列表
-        $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=PD1506080001'; //条码
-        
-        $merge = array();
-        foreach ($result as $val) {
-            $merge = array_merge($merge, $val['detail']);
-        }
-        foreach ($merge as $key=>$v) {
-            if (!isset($merge[$v['product_id']])) {
-                $merge[$v['product_id']] = $v;
-            } else {
-                $merge[$v['product_id']]['quantity'] += $v['quantity'];
-            }
-            unset($merge[$key]);
-        }
-        $items['sku_list'] = $merge;
-        unset($map);
-        //更新打印状态
-        if ($dis['is_printed'] <= 0) {
-            $data['is_printed'] = 1;
+        $res = $res['list'];
+        $list = array();
+        foreach ($idarr as $get) {
             $map['id'] = $get;
-            if ($M->create($data)) {
-                $M->where($map)->save();
+            $dis = $M->where($map)->find();
+            unset($map);
+            //筛选此配送单下的订单
+            $result = array();
+            foreach ($res as $value) {
+                if ($value['id'] == $dis['refer_code']) {
+                    $result[] = $value;
+                }
             }
+            $items = array();
+            $items['dist_code'] = $dis['dist_code'];
+            $items['line_name'] = $D->format_line($dis['line_id']);
+            $user_ids = array();
+            foreach ($result as $value) {
+                $user_ids[$value['user_id']] = null;
+            }
+            $items['user_count'] = count($user_ids); //总客户数量
+            $items['orders_length'] = $dis['order_count'];  //总订单数
+            $items['sku_count'] = $dis['sku_count']; //sku总数
+            //获取仓库名称
+            
+            $map['id'] = $dis['wh_id'];
+            $ware_info = $ware->field('name')->where($map)->find();
+            $items['warehouse_name'] = $ware_info['name'];
+            $items['deliver_date'] = $dis['deliver_date']; //发车时间
+            $items['deliver_time'] = $dis['deliver_time']; //时段
+            $items['orders'] = $result; //订单列表
+            $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=PD1506080001'; //条码
+            
+            $merge = array();
+            foreach ($result as $val) {
+                $merge = array_merge($merge, $val['detail']);
+            }
+            foreach ($merge as $key=>$v) {
+                if (!isset($merge[$v['product_id']])) {
+                    $merge[$v['product_id']] = $v;
+                } else {
+                    $merge[$v['product_id']]['quantity'] += $v['quantity'];
+                }
+                unset($merge[$key]);
+            }
+            $items['sku_list'] = $merge;
+            unset($map);
+            //更新打印状态
+            if ($dis['is_printed'] <= 0) {
+                $data['is_printed'] = 1;
+                $map['id'] = $get;
+                if ($M->create($data)) {
+                    $M->where($map)->save();
+                }
+            }
+            $list[] = $items;
         }
-        $this->assign('attrs', $items);
+        $this->assign('list', $list);
+        
         $this->display();
     }
     
