@@ -12,5 +12,5 @@ return array(
 	'DB_PWD'    		=> 	'42C23744C955C90E30F78CF5053137', 	// 密码
 	'DB_PORT'   		=> 	3306, 		// 端口
 	'DB_PREFIX' 		=> 	'', 		// 数据库表前缀
-	'DEFAULT_FILTER'	=>	'trim',
+	'DEFAULT_FILTER'	=>	'strip_tags,htmlspecialchars,trim',
 );
