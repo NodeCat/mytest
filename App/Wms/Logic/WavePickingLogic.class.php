@@ -105,6 +105,17 @@ class WavePickingLogic{
                     $this->exec_order($result_arr);
                 }        		
         	}
+
+            //查询当前仓库的发货区的location_id
+            $map['wh_id'] = session('user.wh_id');
+            $map['code'] = 'PACK';
+            $pack_info = M('Location')->where($map)->field('id')->find();
+            unset($map);
+
+            $map['pid'] = $pack_info['id'];
+            $pack_location_info = M('Location')->where($map)->field('id')->find();
+            $dest_location_id = $pack_location_info['id'];
+            unset($map);
             
             //处理剩余的线路数据
             foreach($result_arr as $line => $result){
@@ -127,7 +138,7 @@ class WavePickingLogic{
                     $v['pro_qty'] = $val['pro_qty'];
                     $v['batch'] = $val['batch'];
                     $v['src_location_id'] = $val['src_location_id'];
-                    $v['dest_location_id'] = 0;
+                    $v['dest_location_id'] = $dest_location_id;
                     $data['detail'][] = $v;
                 }
 
@@ -155,6 +166,17 @@ class WavePickingLogic{
     * $result_arr
     */
     protected function exec_order(&$result_arr){
+        //查询当前仓库的发货区的location_id
+        $map['wh_id'] = session('user.wh_id');
+        $map['code'] = 'PACK';
+        $pack_info = M('Location')->where($map)->field('id')->find();
+        unset($map);
+
+        $map['pid'] = $pack_info['id'];
+        $pack_location_info = M('Location')->where($map)->field('id')->find();
+        $dest_location_id = $pack_location_info['id'];
+        unset($map);
+
         //开始创建分拣单 按照线路
         foreach($result_arr as $line => $result){
             //如果某个线路上的订单处理了10个 开始创建一个分拣单
@@ -178,7 +200,7 @@ class WavePickingLogic{
                     $v['pro_qty'] = $val['pro_qty'];
                     $v['batch'] = $val['batch'];
                     $v['src_location_id'] = $val['src_location_id'];
-                    $v['dest_location_id'] = 0;
+                    $v['dest_location_id'] = $dest_location_id;
                     $data['detail'][] = $v;
                 }
 
