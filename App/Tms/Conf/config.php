@@ -2,6 +2,7 @@
 return array(
 	'SESSION_OPTIONS'	=> array('expire'=>'43200'),
 	'SITE_TITLE' =>'大厨网司机配送系统 1.1',
+	'PROJECT_NAME' => '司机配送系统',
 	'LAYOUT_ON'         => TRUE,
 	'URL_MODEL'			=> 2,
 	'SHOW_PAGE_TRACE' => FALSE,
