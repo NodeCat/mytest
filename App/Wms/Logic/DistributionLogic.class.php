@@ -61,6 +61,11 @@ class DistributionLogic {
         return $return;
     }
     
+    /**
+     * 订单筛选字段验证
+     * @param array $post 筛选条件
+     * @return array
+     */
     public function order_lists($post) {
         $return = array('status' => false, 'msg' => '');
 
@@ -191,7 +196,6 @@ class DistributionLogic {
             $return['msg'] = '没有选择订单';
             return $return;
         }
-        dump($ids);exit;
         $nid = array();
         //字符串处理
         foreach ($ids['ids'] as $values) {
@@ -346,5 +350,187 @@ class DistributionLogic {
         }
         
         return $return;
+    }
+    
+    /**
+     * 三联单
+     * @param unknown $item
+     * @return multitype:
+     */
+    public function format_export_data($item) {
+        //抬头部分
+        $csv_data = [
+        ['id', $item['id'], '订单编号', "NO.{$item['order_number']}", '', '', '', '线路', $item['line'] ],
+        [$item['city_name'], $item['address']],
+        [$item['shop_name'], '', $item['realname'], "tel:{$item['mobile']}", '', '下单时间', $item['created_time']],
+        ['销售', $item['bd']['name'], '销售电话', "tel:{$item['bd']['mobile']}", '',  '配送时间', "{$item['deliver_date']} {$item['deliver_time']}"],
+        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+        ['货号', '产品名称', '', '', '', '订货数量', '订货单位', '结算单价', '结算单位', '实收数量', '实收金额'],
+        ];
+    
+        //产品列表部分
+        $details = [];
+        foreach($item['detail'] as $key => $val) {
+            $spec_str = $this->format_spec($val['spec']);
+            $detail   = [
+            $val['sku_number'],
+            $val['name'],
+            '',
+            '',
+            '',
+            $val['quantity'],
+            //$val['unit_id'],
+            $val['unit_id'] == 0 ? $this->_unit_dict[1] : $this->_unit_dict[$val['unit_id']],
+            $val['single_price'] . '元',
+            $val['close_unit'] == 0 ? '/' . $this->_unit_dict[1] : '/' . $this->_unit_dict[$val['close_unit']],
+            '',
+            ''
+                    ];
+    
+            $details[] = $detail;
+        }
+        //为了让尾部内容可以吸底，需要补充一些空行
+        $detail_cnt = count($details);
+        while($detail_cnt < 12) {
+            $details[] = [];
+            $detail_cnt ++;
+        }
+    
+        //合并表头和列表
+        $csv_data = array_merge($csv_data, $details);
+    
+    
+        //尾部内容
+        //湖南大厦ka客户的临时需求
+        $line_need_pay = ['应付总价', $item['final_price']];
+        if($item['mobile'] == '15084783678' || $item['mobile'] == '18618142363' || $item['mobile'] == '18612118635' || $item['mobile'] == '13520205658') {
+            $line_need_pay = ['应付总价', $item['final_price'], 'ka客户月结，司机不用收款'];
+        }
+    
+        $tail_arr = [
+        ['订单备注', $item['remarks']],
+        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+        ['订单总价', $item['total_price'], '', '', '', '', '', '', '',  '实收总金额'],
+        ['活动优惠', '-' . $item['minus_amount']],
+        ['微信支付优惠', '-' . $item['pay_reduce']],
+        ['运费', '+' . $item['deliver_fee']],
+        $line_need_pay,
+        ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
+        ['客户签字'],
+        [],
+        ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
+        ];
+    
+        //大果定制需求
+        if($item['site_name'] == '大果') {
+            $tail_arr = [
+            ['订单备注', $item['remarks']],
+            ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+            ['预估总价', $item['total_price'], '', '', '', '', '', '', '',  '实收总金额'],
+            ['活动优惠', '- ' . $item['minus_amount']],
+            ['微信支付优惠', '-' . $item['pay_reduce']],
+            ['运费', '+' . $item['deliver_fee']],
+            ['应付总价', $item['final_price'], '', '', '', '', '', '', '', '以实际称重为准'],
+            ['支付状态：' . $item['pay_status'] . ', 支付方式：' . $item['pay_type']],
+            ['客户签字'],
+            [],
+            ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
+            ];
+        }
+    
+        $csv_data = array_merge($csv_data, $tail_arr);
+            return $csv_data;
+    }
+    
+    /**
+     * 三联单数据格式化
+     * @param unknown $spec
+     * @return string
+     */
+    public function format_spec($spec = array()) {
+        $spec_str = '';
+        if(empty($spec)) {
+            return $spec_str;
+        }
+        foreach($spec as $item) {
+            if(!empty($item['name']) && $item['name'] != '描述' && !empty($item['val'])) {
+                $spec_str .= $item['name'] . ':' . $item['val'] . ';';
+            }
+        }
+        return $spec_str;
+    }
+    
+    /**
+     * 配送单
+     */
+    public function format_distribution($ids = array()) {
+        $return = array();
+        
+        if (empty($ids)) {
+            return $return;
+        }
+        $M = M('stock_wave_distribution');
+        $wh = M('warehouse');
+        $map['id'] = array('in', $ids);
+        $dis_list = $M->where($map)->select();
+        unset($map);
+        foreach ($dist_list as &$dist) {
+            //格式化仓库名
+            $map['id'] = $dist['wh_id'];
+            $warehouse = $wh->field('name')->where($map)->find();
+            $dist['warehouse_name'] = $warehouse['name'];
+            
+            $dist_arr = [];
+            $dist_arr[] = array('配送线路单号:' . $dist['dist_code'], '', '', '', '', '', '仓库:' . $dist['warehouse_name'], '', '', '', '', '', '', '');
+            $dist_arr[] = array('线路（片区）:' . $dist['line_name'], '', '', '', '', '', '发车时间:' . $dist['deliver_date'] . ($dist['deliver_time'] == 1 ? '上午' : '下午'), '', '', '', '', '', '', '');
+            $dist_arr[] = array('订单数:' . count($dist['orders']), '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('订单明细', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = $title_arr;
+            foreach ($dist['orders'] as $order) {
+                foreach ($order['detail'] as $detail) {
+                    $specs = '';
+                    foreach ($detail['spec'] as $spec) {
+                        if($spec['name'] != '描述') {
+                            $specs .= $spec['name'] . ':' . $spec['val'];
+                        }
+                    }
+                    $dist_arr[] = array(
+                            $order['id'],
+                            $order['order_number'],
+                            $order['shop_name'],
+                            $order['deliver_addr'],
+                            $order['mobile'],
+                            $order['remarks'],
+                            $detail['sku_number'],
+                            $detail['name'],
+                            $specs,
+                            $detail['single_price'],
+                            $detail['close_unit'],
+                            $detail['quantity'],
+                            $detail['unit_id'],
+                            '',
+                    );
+                }
+        
+            }
+        
+            $dist_arr[] = array('汇总', '', '', '', '', '', '', '', '', '', '', $dist['sku_count'], '', '');
+            $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('货品汇总', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('货品号', '产品名称', '订货数量', '', '', '', '', '', '', '', '', '', '', '');
+            foreach ($dist['sku_list'] as $sku) {
+                $dist_arr[] = array(
+                        $sku['sku_number'],
+                        $sku['name'],
+                        $sku['quantity'],
+                );
+            }
+            $dist_arr[] = array('汇总', '', $dist['sku_count'], '', '', '', '', '', '', '', '', '', '', '');
+        
+            $xls_list[] = $dist_arr;
+            $sheet_titles[] = $dist['dist_number'];
+        }
     }
 }

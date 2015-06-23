@@ -86,9 +86,10 @@ class OrderLogic{
 	        $return['msg'] = '参数有误';
 	    }
 	    $url = $this->server . '/order/lists';
-	    $map = json_encode(array('order_ids' => $ids, 'itemsPerPage' => count($ids)));
+	    $map = json_encode(array('order_id' => $ids, 'itemsPerPage' => count($ids)));
 	    $res = $this->request->post($url, $map);
 	    $res = json_decode($res, true);
+	     
 	    if ($res['status'] == 0) {
 	        $return['status'] = true;
 	        $return['msg'] = '成功';
@@ -96,7 +97,6 @@ class OrderLogic{
 	    } else {
 	        $return['msg'] = '没有符合条件的订单';
 	    }
-	    
 	    return $return;
 	}
 }

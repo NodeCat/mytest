@@ -134,6 +134,7 @@ class DistDetailController extends CommonController {
         if (IS_POST) {
             $search_info = $Dis->order_lists(I('post.query'));
         } else {
+            //默认为空
             $search_info['list'] = array();
         }
         //获取搜索结果
