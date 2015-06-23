@@ -266,7 +266,6 @@ class DistributionController extends CommonController {
             $xls_list[] = $dist_arr;
             $sheet_titles[] = $dist['dist_number'];
         }
-        $this->excel_export->export($xls_list, $sheet_
     }
     /**
      * 配送单详情
