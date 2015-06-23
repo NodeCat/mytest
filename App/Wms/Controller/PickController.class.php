@@ -195,6 +195,12 @@ class PickController extends CommonController {
 
   }
 
+  /**
+   * 分拣单打印
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
   public function pickPrint(){
 
     if(!IS_GET) $this->error('请正确操作！');
@@ -259,6 +265,12 @@ class PickController extends CommonController {
     $this->display('Pick::pickPrint');  
   }
 
+  /**
+   * 分拣单打印状态修改
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
   public function doPrint(){
 
     $ids = I('ids');
@@ -278,13 +290,19 @@ class PickController extends CommonController {
     }
   }
 
+  /**
+   * pda 打印单
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
   public function pickOn($t = 'scan_incode'){
 
     $this->cur = '拣货';
 
-    if(IS_GET) {
+    C('LAYOUT_NAME','pda');
 
-      C('LAYOUT_NAME','pda');
+    if(IS_GET) {
 
       switch ($t) {
 
@@ -327,7 +345,11 @@ class PickController extends CommonController {
 
           $result['cut'] = 'scan_outcode';
 
-          $this->msgReturn(1, '分拣单拣货完成!',$result);
+          $url = '/Pick/pickOn';
+
+          $result['url'] = $url;
+
+          $this->msgReturn(2, '分拣单拣货完成!', $result, $url);
 
         }else{
 
