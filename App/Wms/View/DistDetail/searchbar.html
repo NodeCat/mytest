@@ -104,6 +104,10 @@
 	    		url:url,
 	    		success:function (msg) {
 	    			var msg = eval('('+msg+')');	
+	    			if (!msg) {
+	    				alert('获取线路失败');
+	    				return false;
+	    			}
 	    			$("select[name='query[line]']").children('option').each(function() {
 	    				var content = $(this).html();
 	    				var value = $(this).val();
