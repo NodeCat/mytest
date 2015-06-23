@@ -521,11 +521,11 @@ class WaveLogic{
 
     		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
 
-    		if($is_enough) return TRUE;
+    		if(!$is_enough) return FALSE;
 
     	}
 
-    	return FALSE;
+    	return TRUE;
 
     }
 
