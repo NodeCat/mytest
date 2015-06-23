@@ -132,14 +132,15 @@ class DistributionLogic {
     public function format_line($line_id = 0) {
         $return = '';
         
-        //获取线路 只获取一次
+        //获取线路
         if (empty($this->line)) {
             $lines = D('Wave', 'Logic');
             $result = $lines->line();
             $this->line = $result;
         }
+        
         if (empty($line_id)) {
-            //返回所有
+            //不指定线路id则返回所有
             $return = array();
             $return = $this->line;
             return $return;
@@ -172,6 +173,7 @@ class DistributionLogic {
             return $return;
         }
         foreach ($result as $value) {
+            //格式化数据
             $return[] = $value['bill_out_id'];
         }
         
@@ -185,11 +187,13 @@ class DistributionLogic {
     public function add_distributioin($ids = array()) {
         $return = array('status' => false, 'msg' => '');
         
-        if (empty($ids) || count($ids, 1) == count($ids)) {
+        if (empty($ids['ids'])) {
             $return['msg'] = '没有选择订单';
             return $return;
         }
+        dump($ids);exit;
         $nid = array();
+        //字符串处理
         foreach ($ids['ids'] as $values) {
             $nid[] = explode(',', $values);
         }
@@ -201,22 +205,25 @@ class DistributionLogic {
             //判断是否已创建
             foreach ($value as $id) {
                 if (empty($id)) {
+                    //没有选择订单
                     $return['msg'] = '请选择订单';
                     return $return;
                 }
                 $map['refer_code'] = $id;
                 $sta = $M->field('status')->where($map)->find();
-                if ($sta['status'] != 6) {
+                if ($sta['status'] != 5) { //5 检货完成 只有状态5才可以加入配送单
                     $return['msg'] = '订单已经加入了配送单';
                     return $return;
                 }
             }
+            //获取订单详细信息
             $result = $D->getOrderInfoByOrderIdArr($value);
             if ($result['status'] == false) {
                 $return['msg'] = $result['msg'];
                 return $return;
             }
             $result = $result['list'];
+            //创建配送单
             $data = array();
             $data['dist_code'] = get_sn('dis'); //配送单号
             $data['total_price'] = 0; //应收金额
@@ -232,6 +239,7 @@ class DistributionLogic {
                     $data['sku_count'] += $v['quantity']; //sku总数量
                 }
                 if ($i < 1) {
+                    //重复数据  取一次即可
                     $data['line_id'] = $val['line_id']; //路线
                     $data['deliver_date'] = $val['deliver_date']; //配送日期
                     $data['deliver_time'] = $val['deliver_time']; //配送时段
@@ -240,12 +248,15 @@ class DistributionLogic {
                 $i ++;
             }
             if ($dis->create($data)) {
+                //写入操作
                 $pid = $dis->add();
             }
             if (!$pid) {
                 $return['msg'] = '写入失败';
                 return $return;
             }
+            
+            //创建配送单详情
             $detail = array();
             $detail['created_user'] = session()['user']['uid'];
             $detail['created_time'] = get_time();
@@ -256,6 +267,7 @@ class DistributionLogic {
                 $detail['bill_out_id'] = $vv;
                 $detail['pid'] = $pid;
                 if ($det->create($detail)) {
+                    //写入操作
                     $det->add();
                 }
             }
@@ -310,7 +322,7 @@ class DistributionLogic {
     }
     
     /**
-     * 根据pid获取出库单详情 支持批量获取
+     * 根据pid获取出库单详情 可批量获取
      * @param array or int $pid 父id
      */
     public function get_out_detail_by_pids($pid) {
