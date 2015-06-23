@@ -171,6 +171,12 @@ class PickController extends CommonController {
 
    }
 
+  public function after_search(&$map){
+
+    $map['wh_id'] = session('user.wh_id');
+
+  }
+
   public function view(){
 
     $pid = I('id');
@@ -270,6 +276,110 @@ class PickController extends CommonController {
       $m->where($map)->save($data);
 
     }
+  }
+
+  public function pickOn($t = 'scan_incode'){
+
+    $this->cur = '拣货';
+
+    if(IS_GET) {
+
+      C('LAYOUT_NAME','pda');
+
+      switch ($t) {
+
+        case 'scan_incode':
+
+          $this->title = '批量拣选';
+
+          $tmpl = 'Pick:in_scan_Sorting';
+
+          break;
+      }
+
+      $this->display($tmpl);
+
+    }
+
+    if(IS_POST){
+
+      $m = M('stock_wave_picking');
+
+      $code = I('code');//拣货单号
+
+      $type = I('t');//类型
+
+      if($type === 'scan_outcode'){
+
+        $map['status'] = 'done';
+
+        $map['code'] = $code;
+
+        if($m->where($map)->getField('id')) $this->msgReturn(0, '该分拣单已经拣货完成,请不要重复操作！');
+
+        if(A('WavePicking','Logic')->updateBiOuStock($code)){
+
+          $result = array();
+
+          $result['title'] = '拣货确认';
+
+          $result['code_qty'] = I('code_qty');
+
+          $result['cut'] = 'scan_outcode';
+
+          $this->msgReturn(1, '分拣单拣货完成!',$result);
+
+        }else{
+
+          $this->msgReturn(0, '分拣失败！');
+
+        }
+
+      }elseif($type == 'scan_incode'){
+
+        if(!$code) $this->msgReturn(0, '请扫描分拣单条形码');
+
+        $map = array();
+
+        $map['code'] = $code;
+
+        $map['status'] = array('in','draft,picking');
+
+        $map['is_deleted'] = 0;
+
+        $order_sum = $m->where($map)->getField('order_sum');
+
+        if(!$order_sum) $this->msgReturn(0, '该分拣单已经拣货完成,请不要重复操作！');
+
+        $result = array();
+
+        $result['title'] = '拣货确认';
+
+        $result['code_qty'] = $order_sum;
+
+        $result['cut'] = 'scan_outcode';
+
+        $save = array();
+
+        $save['status'] = 'picking';
+
+        $save['updated_time'] = date('Y-m-d H:i:s',time());
+
+        if(!$m->where($map)->save($save)) $this->msgReturn(0, '操作失败，请重新提交');
+
+        $this->msgReturn(1, '请确认拣货单', $result);
+
+      }else{
+
+        $this->msgReturn(0, '请正确操作！');
+
+
+      }
+
+      
+
+    }
+
   }
   
 }

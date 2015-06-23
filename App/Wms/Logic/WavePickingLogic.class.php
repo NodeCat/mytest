@@ -105,6 +105,17 @@ class WavePickingLogic{
                     $this->exec_order($result_arr);
                 }        		
         	}
+
+            //查询当前仓库的发货区的location_id
+            $map['wh_id'] = session('user.wh_id');
+            $map['code'] = 'PACK';
+            $pack_info = M('Location')->where($map)->field('id')->find();
+            unset($map);
+
+            $map['pid'] = $pack_info['id'];
+            $pack_location_info = M('Location')->where($map)->field('id')->find();
+            $dest_location_id = $pack_location_info['id'];
+            unset($map);
             
             //处理剩余的线路数据
             foreach($result_arr as $line => $result){
@@ -127,7 +138,7 @@ class WavePickingLogic{
                     $v['pro_qty'] = $val['pro_qty'];
                     $v['batch'] = $val['batch'];
                     $v['src_location_id'] = $val['src_location_id'];
-                    $v['dest_location_id'] = 0;
+                    $v['dest_location_id'] = $dest_location_id;
                     $data['detail'][] = $v;
                 }
 
@@ -155,6 +166,17 @@ class WavePickingLogic{
     * $result_arr
     */
     protected function exec_order(&$result_arr){
+        //查询当前仓库的发货区的location_id
+        $map['wh_id'] = session('user.wh_id');
+        $map['code'] = 'PACK';
+        $pack_info = M('Location')->where($map)->field('id')->find();
+        unset($map);
+
+        $map['pid'] = $pack_info['id'];
+        $pack_location_info = M('Location')->where($map)->field('id')->find();
+        $dest_location_id = $pack_location_info['id'];
+        unset($map);
+
         //开始创建分拣单 按照线路
         foreach($result_arr as $line => $result){
             //如果某个线路上的订单处理了10个 开始创建一个分拣单
@@ -178,7 +200,7 @@ class WavePickingLogic{
                     $v['pro_qty'] = $val['pro_qty'];
                     $v['batch'] = $val['batch'];
                     $v['src_location_id'] = $val['src_location_id'];
-                    $v['dest_location_id'] = 0;
+                    $v['dest_location_id'] = $dest_location_id;
                     $data['detail'][] = $v;
                 }
 
@@ -189,6 +211,121 @@ class WavePickingLogic{
                 unset($result_arr[$line]);
             }
         }
+    }
+
+    //$code 分拣单code
+    public function updateBiOuStock($code){
+
+        //根据分拣单code 查到出库单
+
+        $map = array();
+
+        $detailW = array();
+
+        $stockW = array();
+
+        $stockSave = array();
+
+        $packingW = array();
+
+        $packSave = array();
+
+        $map['code'] = $code;
+
+        $m = M('stock_wave_picking');
+
+        $pick_detail_m = M('stock_wave_picking_detail');
+
+        $pick_detail_w = array();
+
+        $wave_detail = M('stock_wave_detail');
+
+        $bill_out_m = M('stock_bill_out');
+
+        $wave_R = $m->field('wave_id,id,wh_id')->where($map)->find();
+
+        if(!$wave_R['wave_id'] || !$wave_R['id'] || !$wave_R) return FALSE;
+
+        $wave_id = $wave_R['wave_id'];
+
+        $packing_id = $wave_R['id'];
+
+        $wh_id = $wave_R['wh_id'];
+
+        $packingW['code'] = $code;
+
+        $packSave['status'] = 'done';
+
+        if(!$m->where($packingW)->save($packSave)) return FALSE;
+
+        $pick_detail_w['pid'] = $packing_id;
+
+        $pick_detail_w['is_deleted'] = 0;
+
+        $result = $pick_detail_m->field('pro_qty,pro_code,src_location_id,dest_location_id,batch')->where($pick_detail_w)->select();
+        
+        if(!$result) return FALSE;
+
+        //扣库存和移动货物
+        //@todo liang 修改库存
+
+        foreach ($result as $key => $value) {
+
+            $param = array();
+
+            $param['variable_qty'] = $value['pro_qty'];
+
+            $param['wh_id'] = $wh_id;
+
+            $param['src_location_id'] = $value['src_location_id'];
+
+            $param['dest_location_id'] = $value['dest_location_id'];
+
+            $param['pro_code'] = $value['pro_code'];
+
+            $param['batch'] = $value['batch'];
+
+            $param['status'] = 'qualified';
+
+            $param['change_src_assign_qty'] = '1';
+
+            $res = A('Stock','Logic')->adjustStockByMove($param);
+
+        }
+
+        //判读该波次下得分拣单全部分拣完成，在改波次下得出库单状态为已复核
+
+        $pickedW = array();
+
+        $pickedW['wave_id'] = $wave_id;
+
+        $pickedW['status'] = array('in','draft,picking'); 
+
+        if($m->where($pickedW)->select()) return TRUE;   
+
+        $detailW['pid'] = $wave_id;
+
+        $wave_detailR = $wave_detail->field('bill_out_id')->where($detailW)->select();
+
+        if(!$wave_detailR) return FALSE;
+
+        $bill_outArr = getSubByKey($wave_detailR, 'bill_out_id');
+
+        if(!$bill_outArr) return FALSE;
+
+        $bill_out_idStr = implode(',', $bill_outArr);
+
+        $stockW['id'] = array('in', $bill_out_idStr);
+
+        $stockW['status'] = 4;
+
+        $stockSave['status'] = 5;
+
+        if(!$bill_out_m->where($stockW)->save($stockSave)) return FALSE;
+
+        return TRUE;
+
+
     }
 }
 
