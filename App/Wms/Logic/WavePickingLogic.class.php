@@ -289,7 +289,15 @@ class WavePickingLogic{
 
             $param['change_src_assign_qty'] = '1';
 
-            $res = A('Stock','Logic')->adjustStockByMove($param);
+            try{
+
+                $res = A('Stock','Logic')->adjustStockByMove($param);
+
+            }catch(Exception $e){
+
+                continue;
+
+            }
 
         }
 

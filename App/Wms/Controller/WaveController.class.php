@@ -264,29 +264,30 @@ class WaveController extends CommonController {
 
   }
 
-    /**
-     * 分拣任务Hook
-     *
-     * @author liuguangping@dachuwang.com
-     * @since 2015-06-15
-     */
-    public function packTask(){
+  /**
+   * 分拣任务Hook
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
+  public function packTask(){
 
-      	//@todo这里加个钩子调用李昂的分拣接口
+    	//@todo这里加个钩子调用李昂的分拣接口
 
-        $ids = I('ids');
+      $ids = I('ids');
 
-        $waveLogic = A('Wave','Logic');
+      $waveLogic = A('Wave','Logic');
 
-        $hasIsAuth = $waveLogic->hasIsAuth($ids);
+      $hasIsAuth = $waveLogic->hasIsAuth($ids);
 
-        if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+      if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
 
-        $wave_ids = explode(',', $ids);
+      $wave_ids = explode(',', $ids);
 
-      	A('WavePicking','Logic')->waveExec($wave_ids);
+    	A('WavePicking','Logic')->waveExec($wave_ids);
 
-    }
+  }
+  
 }
 
 /* End of file WaveController.class.php */
