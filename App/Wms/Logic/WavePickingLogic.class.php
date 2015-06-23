@@ -67,9 +67,9 @@ class WavePickingLogic{
         			//遍历出库单详情
                     foreach($bill_out_detail_infos as $bill_out_detail_info){
                         //记录SKU种类数量
-                        $pro_type_sum[$bill_out_detail_info['pro_code']] = true;
+                        $result_arr[$bill_out_info['line_id']]['pro_type_sum']++;
                         //记录SKU总数
-                        $pro_qty_sum += $bill_out_detail_info['order_qty'];
+                        $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] += $bill_out_detail_info['order_qty'];
                         
                         //检查应当从哪个库位出库
                         $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave(array('wh_id'=>session('user.wh_id'),'pro_code'=>$bill_out_detail_info['pro_code'],'pro_qty'=>$bill_out_detail_info['order_qty']));
@@ -87,13 +87,9 @@ class WavePickingLogic{
                     }
 
                     //增加订单数量
-                    $order_sum++;
-                    $result_arr[$bill_out_info['line_id']]['order_sum'] = $order_sum;
-                    //统计SKU种类
-                    $result_arr[$bill_out_info['line_id']]['pro_type_sum'] = count($pro_type_sum);
-                    //统计SKU总数
-                    $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] = $pro_qty_sum;
-
+                    //$order_sum++;
+                    $result_arr[$bill_out_info['line_id']]['order_sum']++;
+                    
                     //把订单状态置为待拣货
                     $data['status'] = 4;
                     $map['id'] = $bill_out_info['id'];
