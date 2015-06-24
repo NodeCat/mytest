@@ -1,5 +1,5 @@
 <notempty name="query">
-<form class="form-horizontal form-ajax table-search" action="__SELF__" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
+<form class="form-horizontal form-ajax-only table-search" action="__SELF__" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
 <div class="row">
 <include file="search" />
 <volist name="query" id="vo" key="k">
@@ -88,7 +88,8 @@
    <button type="submit" data-href="__SELF__" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
    <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
    <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="print-page">打印</a>
-   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-dis">导出</a>
+   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-dis">导出三联单</a>
+   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-disbution">导出配送单</a>
 </div>
 </div>
    <eq name="search_addon" value="TRUE">
@@ -101,14 +102,30 @@
 
 <script>
 	$(function() {
+		$('.form-ajax-only button[type=submit]').on('click',function(){
+			var addr,params;
+			params=$(this).parents('form').serialize();
+			addr=$(this).parents('form').attr('action');
+			$.ajax({
+				url:addr,
+				type:'post',
+				cache : false,
+				async:true,
+				data:params,
+				success: function(msg){
+			        $('.table-content').html(msg);
+				},
+			}); 
+			return false;
+		});
 		 $(document).on('click','#print-page',function(){
 			 var ids = getChecked();
-			 //var idArr = ids.split(',');
-			 /*if (idArr.length > 1) {
+			 /*var idArr = ids.split(',');
+			 if (idArr.length > 1) {
 				 alert('只能选择一个订单');
 				 return false;
-			 }*/
-			 //var id = idArr[0];
+			 }
+			 var id = idArr[0];*/
 			 var url = "/Distribution/printpage?id="+ids;
 			 window.open(url);
 		 });
@@ -116,11 +133,19 @@
 			 var ids = getChecked();
 			 var idArr = ids.split(',');
 			 if (idArr.length > 1) {
-				 alert('只能选择一个订单');
+				 alert('只能选择一个配送单');
+				 return false;
+			 } else if (idArr.length <= 0) {
+				 alert('请选择配送单');
 				 return false;
 			 }
 			 var id = idArr[0];
 			 var url = "/Distribution/exportdis?id="+id;
+			 location.href = url;
+		 });
+		 $(document).on('click','#export-disbution',function(){
+			 var ids = getChecked();
+			 var url = "/Distribution/export_distribution?id="+ids;
 			 location.href = url;
 		 });
 	})

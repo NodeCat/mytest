@@ -123,7 +123,7 @@ class DistDetailController extends CommonController {
         $this->before($M,'lists');//列表显示前的业务处理
 
         $M2 = clone $M;//深度拷贝，M2用来统计数量, M 用来select数据。
-        $M->page($p.','.$page_size);//设置分页
+        //$M->page($p.','.$page_size);//设置分页
         
         //$data = $M->select();//真正的数据查询在这里生效
         //echo $M->getLastSql();die;

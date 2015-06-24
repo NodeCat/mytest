@@ -469,10 +469,22 @@ class DistributionLogic {
         if (empty($ids)) {
             return $return;
         }
+        //获取要导出的配送单
         $M = M('stock_wave_distribution');
         $wh = M('warehouse');
         $map['id'] = array('in', $ids);
-        $dis_list = $M->where($map)->select();
+        $dist_list = $M->where($map)->select();
+        //获取所有订单id
+        $orderids = $this->get_order_ids_by_dis_id($ids);
+        //获取所有订单
+        $D = D('Order', 'Logic');
+        $order_info = $D->getOrderInfoByOrderIdArr($orderids);
+        if ($order_info['status'] == false) {
+            //获取失败
+            return $return;
+        }
+        $order_info = $order_info['list'];
+        
         unset($map);
         foreach ($dist_list as &$dist) {
             //格式化仓库名
@@ -480,6 +492,15 @@ class DistributionLogic {
             $warehouse = $wh->field('name')->where($map)->find();
             $dist['warehouse_name'] = $warehouse['name'];
             
+            //获取此配送单下的订单id
+            $out_ids = $this->get_order_ids_by_dis_id(array($dist['id']));
+            //筛选此配送单下的所有订单
+            $dist['orders'] = array();
+            foreach ($order_info as $val) {
+                if (in_array($val['id'], $out_ids)) {
+                    $dist['orders'][] = $val;
+                }
+            }
             $dist_arr = [];
             $dist_arr[] = array('配送线路单号:' . $dist['dist_code'], '', '', '', '', '', '仓库:' . $dist['warehouse_name'], '', '', '', '', '', '', '');
             $dist_arr[] = array('线路（片区）:' . $dist['line_name'], '', '', '', '', '', '发车时间:' . $dist['deliver_date'] . ($dist['deliver_time'] == 1 ? '上午' : '下午'), '', '', '', '', '', '', '');
@@ -532,5 +553,9 @@ class DistributionLogic {
             $xls_list[] = $dist_arr;
             $sheet_titles[] = $dist['dist_number'];
         }
+        
+        $return['xls_list'] = $xls_list;
+        $return['sheet_titles'] = $sheet_titles;
+        return $return;
     }
 }
