@@ -530,24 +530,33 @@ class WaveLogic{
 
     }
 
-    /*//查看出库单中所有sku是否满足数量需求
-    public function hasEnough($ids){
+    /**
+	 * 查看出库单中所有sku是否满足数量需求出库单
+	 * 
+	 * @param String $ids 条件
+	 * @author liuguangping@dachuwang.com
+	 * @return String $Result;
+	 * 
+	 */
+    public function enoughaResult($ids){
 
     	$idsArr = explode(',', $ids);
 
-    	if(!$idsArr) return FALSE;
+    	$result = array();
+
+    	if(!$idsArr) return $result;
 
     	foreach($idsArr as $key=>$value){
 
     		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
 
-    		if(!$is_enough) return FALSE;
+    		if($is_enough) array_push($result, $value);
 
     	}
 
-    	return TRUE;
+    	return implode(',', $result);
 
-    }*/
+    }
 
         
 

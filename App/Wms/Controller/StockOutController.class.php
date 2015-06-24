@@ -511,9 +511,11 @@ class StockOutController extends CommonController {
 
         //查看出库单中所有sku是否满足数量需求
 
-        $is_enough = A('Wave','Logic')->hasEnough($ids);
+        /*$is_enough = A('Wave','Logic')->hasEnough($ids);
 
-        if($is_enough === FALSE) echojson('1','','你所选的出库单是缺货状态，请重新创建！');
+        if($is_enough === FALSE) echojson('1','','你所选的出库单是缺货状态，请重新创建！');*/
+
+        $ids = $waveLogic->enoughaResult($ids);
 
         $insertArr = array();
 
