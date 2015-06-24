@@ -110,6 +110,16 @@ class DistributionController extends CommonController {
             unset($map['stock_wave_distribution.order_id']);
         }
     }
+    
+    public function after_lists(&$data) {
+        $M = M('user');
+        foreach ($data as &$value) {
+            //格式化创建者昵称
+            $map['id'] = $value['created_user'];
+            $result = $M->field('nickname')->where($map)->find();
+            $value['created_user'] = $result['nickname'];
+        }
+    }
 
     
     /**

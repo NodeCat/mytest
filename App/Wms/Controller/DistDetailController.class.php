@@ -139,10 +139,9 @@ class DistDetailController extends CommonController {
         }
         //获取搜索结果
         if (isset($search_info['status']) && $search_info['status'] == false) {
-            //echo '<script>alert("'.$search_info['msg'].'")</script>';exit;
             $this->msgReturn(false, $search_info['msg']);
         }
-        $this->assign('data', $search_info['list']);        
+        $this->assign('data', $search_info['list']);  //dump($search_info['list']);exit('iiiii');      
         $maps = $this->condition;
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);
