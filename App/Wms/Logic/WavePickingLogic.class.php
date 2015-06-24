@@ -89,6 +89,9 @@ class WavePickingLogic{
                     //增加订单数量
                     //$order_sum++;
                     $result_arr[$bill_out_info['line_id']]['order_sum']++;
+                    //记录订单id到bill_out_id
+                    $result_arr[$bill_out_info['line_id']]['bill_out_ids'] .= $bill_out_info['id'].',';
+
                     
                     //把订单状态置为待拣货
                     $data['status'] = 4;
@@ -123,6 +126,7 @@ class WavePickingLogic{
                 $data['pro_qty_sum'] = $result['pro_qty_sum'];
                 $data['line_id'] = $line;
                 $data['wh_id'] = session('user.wh_id');
+                $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
 
 
@@ -185,6 +189,7 @@ class WavePickingLogic{
                 $data['pro_qty_sum'] = $result['pro_qty_sum'];
                 $data['line_id'] = $line;
                 $data['wh_id'] = session('user.wh_id');
+                $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
 
 
