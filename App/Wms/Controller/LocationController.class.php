@@ -2,6 +2,18 @@
 namespace Wms\Controller;
 use Think\Controller;
 class LocationController extends CommonController {
+
+    public function before_index(){
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            array('name'=>'delete' ,'show' => isset($this->auth['delete']),'new'=>'true'),
+            array('name'=>'import' ,'show' => isset($this->auth['import']),'new'=>'true'),
+            array('name'=>'export' ,'show' => isset($this->auth['export']),'new'=>'true'),
+            array('name'=>'print' ,'show' => isset($this->auth['printpage']),'new'=>'true'),
+            array('name'=>'setting' ,'show' => isset($this->auth['setting']),'new'=>'true'),
+        );
+    }
     
     protected function before_lists(&$M) {
         $map['location.type'] = '2';
@@ -153,5 +165,31 @@ class LocationController extends CommonController {
             $data['is_deleted'] = 1;
             $res = $location_detail->where($map)->save($data);
         
+    }
+
+    public function printpage(){
+        $location_ids = I('location_ids');
+        if(empty($location_ids)){
+            return false;
+        }
+
+        $map['id'] = array('in',$location_ids);
+        $location_infos = M('location')->where($map)->field('id,pid,code')->select();
+        unset($map);
+
+        foreach($location_infos as $key => $location_info){
+            //根据pid查询对应的区域信息
+            $map['id'] = $location_info['pid'];
+            $area_info = M('location')->where($map)->find();
+            unset($map);
+
+            $location_infos[$key]['area_name'] = $area_info['name'];
+        }
+
+        $data['location_infos'] = $location_infos;
+
+        layout(false);
+        $this->assign($data);
+        $this->display('Location:print');
     }
 }
