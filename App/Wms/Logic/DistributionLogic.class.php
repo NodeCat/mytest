@@ -21,7 +21,7 @@ class DistributionLogic {
         $M = M('stock_bill_out');
         
         //$map['company_id'] = $search['company_id'];
-        $map['wh_id'] = $session('user.wh_id');
+        $map['wh_id'] = session('user.wh_id');
         $map['line_id'] = $search['line'];
         if (isset($search['time'])) {
             switch ($search['time']) {
@@ -507,7 +507,7 @@ class DistributionLogic {
             $dist_arr[] = array('订单数:' . count($dist['orders']), '', '', '', '', '', '', '', '', '', '', '', '', '');
             $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '', '', '');
             $dist_arr[] = array('订单明细', '', '', '', '', '', '', '', '', '', '', '', '', '');
-            $dist_arr[] = $title_arr;
+            //$dist_arr[] = $title_arr;
             foreach ($dist['orders'] as $order) {
                 foreach ($order['detail'] as $detail) {
                     $specs = '';
