@@ -1,0 +1,88 @@
+
+<html style="height: 100%">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style type="text/css">
+          .one_card {
+              padding-left:20px;
+              width:50%;
+              height:50%;
+              /*border:1px solid #F00;*/
+              float:right;
+              text-align: center;
+          }
+          .prod_code {
+              width:100%;
+              height:25%;
+              /*border:1px solid #F00;*/
+              font-size:90px;
+              font-weight:bold;
+              float:right;
+          }
+
+          .prod_name {
+            width:100%;
+            height:30%;
+            /*border:1px solid #F00;*/
+            font-size:50px;
+            font-weight:bold;
+            float:right;
+            overflow:hidden;
+          }
+          .prod_attr {
+            width:100%;
+            height:25%;
+            /*border:1px solid #F00;*/
+            float:right;
+            font-size:30px;
+            overflow:hidden
+          }
+          .page_container {
+              padding-right: 0px;
+              padding-left: 0px;
+              margin-right: auto;
+              margin-left: auto;
+          }
+
+        </style>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>大厨网WMS系统</title>
+        <link href="__PUBLIC__/Bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                color: #000 !important;
+                word-wrap: break-word;
+            }
+            .border-black td {
+                border-top: 1px solid black !important;
+            }
+            .table-condensed > thead > tr > th {
+                border-bottom: 1px solid black !important;
+            }
+            .zero_min_height {
+                min-height: 0px !important;
+            }
+
+        </style>
+    </head>
+    <body class="page_container">
+        <div class="page">
+            <volist name='location_infos' id='location_info'> 
+            <div class="one_card">
+                    <div class="prod_name">
+                        <span>{$location_info.area_name}</span>
+                    </div>
+                    <div class="prod_name">
+                        <span>{$location_info.code}</span>
+                    </div>
+                    <br>
+                    <br>
+                  <img width="280" height="100" src="http://api.pda.dachuwang.com/barcode/get?text={$location_info.code}">
+            </div>
+            </volist>
+      </div>
+      <script type="text/javascript">
+      alert('请进行打印设置，去掉页眉页脚，上下左右边距设置为5mm，纸张设置为A4，布局设置为横向');
+      </script>
+</body>
+</html>
