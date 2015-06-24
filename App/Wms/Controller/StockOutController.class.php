@@ -91,7 +91,7 @@ class StockOutController extends CommonController {
                         ),   
 		),
 
-        'stock_bill_out.customer_realname' => array (     
+        /*'stock_bill_out.customer_realname' => array (     
             'title' => '客户名称',     
             'query_type' => 'like',     
             'control_type' => 'text',     
@@ -103,7 +103,7 @@ class StockOutController extends CommonController {
             'query_type' => 'like',     
             'control_type' => 'text',     
             'value' => 'delivery_address',   
-        ),
+        ),*/
 
         'stock_bill_out.delivery_date' =>    array (    
             'title' => '送货日期',     
@@ -172,8 +172,8 @@ class StockOutController extends CommonController {
         );
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
-            'edit'=>array('name'=>'edit','show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1"),
-            'delete'=>array('name'=>'delete', 'show' => isset($this->auth['delete']),'new'=>'true','domain'=>"1"),
+            //'edit'=>array('name'=>'edit','show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1"),
+            //'delete'=>array('name'=>'delete', 'show' => isset($this->auth['delete']),'new'=>'true','domain'=>"1"),
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),

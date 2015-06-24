@@ -4,7 +4,13 @@
         <h3 class="panel-title">
             <div class="col-lg-6 col-sm-6 col-md-6 col-xs-12">
             <if condition="$data['status'] eq '待生产'">
-            <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="编辑" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-edit"></i> 编辑</a>
+            <notempty name="auth['edit']">
+                <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="编辑" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-edit"></i> 编辑</a>
+            </notempty>
+
+            <notempty name="auth['delete']">
+                <a data-href="{:U('StockOut/delete')}" data-value="{$data.id}" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-remove"></i> 删除</a>
+            </notempty>
             <notempty name="auth['stockOut']">
             <a href="#" id="stock_out" data-title="出库" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon"></i> 出库</a>
             </notempty>
@@ -132,7 +138,43 @@ $(function(){
 			}
 		});
 		return true;
-	})
+	});
+
+    $(document).on('click','.btn-delete',function(){
+
+        var url = $(this).attr('data-href');
+
+        var ids = $(this).attr('data-value');
+
+        var param = {};
+
+        param.id = ids;
+
+        var callback = function(res){
+
+            if(res.status == 1){
+
+                alert(res.msg);
+
+                window.location.href= '/StockOut/index';
+
+            }else{
+
+                alert(res.msg);
+            }
+
+        }
+
+        var isdelete = confirm('你确定要删除！');
+        
+        if(isdelete){
+
+            $.post(url,param,callback,'json');
+
+        }
+
+
+    });
 	
 })
 </script>
