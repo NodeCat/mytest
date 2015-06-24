@@ -27,9 +27,6 @@ $(function(){
 
 		param.ids = ids;
 
-		//请求分拣任务
-		$.post(urls,param,function(json){},'json');
-
 		$.ajax({
 			url:'/Wave/packing',
 			type:'post',
@@ -43,7 +40,10 @@ $(function(){
                     refresh_list();
 				}
 				if(json.status=='0'){
+
 					alert(json.msg);
+					//请求分拣任务
+					$.post(urls,param,function(json){},'json');
                     refresh_list();
 				}
 			}

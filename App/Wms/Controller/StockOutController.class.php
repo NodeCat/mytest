@@ -91,7 +91,7 @@ class StockOutController extends CommonController {
                         ),   
 		),
 
-        'stock_bill_out.customer_realname' => array (     
+        /*'stock_bill_out.customer_realname' => array (     
             'title' => '客户名称',     
             'query_type' => 'like',     
             'control_type' => 'text',     
@@ -103,7 +103,7 @@ class StockOutController extends CommonController {
             'query_type' => 'like',     
             'control_type' => 'text',     
             'value' => 'delivery_address',   
-        ),
+        ),*/
 
         'stock_bill_out.delivery_date' =>    array (    
             'title' => '送货日期',     
@@ -172,8 +172,8 @@ class StockOutController extends CommonController {
         );
         $this->toolbar_tr =array(
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
-            'edit'=>array('name'=>'edit','show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1"),
-            'delete'=>array('name'=>'delete', 'show' => isset($this->auth['delete']),'new'=>'true','domain'=>"1"),
+            //'edit'=>array('name'=>'edit','show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1"),
+            //'delete'=>array('name'=>'delete', 'show' => isset($this->auth['delete']),'new'=>'true','domain'=>"1"),
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
@@ -187,11 +187,11 @@ class StockOutController extends CommonController {
         $pill = array(
 			'status'=> array(
 				'1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
-                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary'),
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
-                '6'=>array('value'=>'6','title'=>'己复核','class'=>'warning')
+                '6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
+                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
 				
 			)
 		);

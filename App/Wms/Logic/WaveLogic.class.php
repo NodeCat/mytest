@@ -150,9 +150,9 @@ class WaveLogic{
 
 		$created_time_1 	= I('created_time_1');
 
-		$customer_realname 	= I('customer_realname');
+		/*$customer_realname 	= I('customer_realname');
 
-		$delivery_address 	= I('delivery_address');
+		$delivery_address 	= I('delivery_address');*/
 
 		$delivery_date 		= I('delivery_date');
 
@@ -271,6 +271,7 @@ class WaveLogic{
 
         $lines = $A->line($map);
 
+
         $lines_arr = array();
 
         foreach ($lines as $key => $value) {
@@ -288,13 +289,13 @@ class WaveLogic{
 	 * @return Boolean $result;
 	 * 
 	 */
-    public function hasIsAuth($ids = ''){
+    public function hasIsAuth($ids = '',$status = '201,900'){
 
     	if(!$ids) return FALSE;
 
 		$map = array();
 
-		$map['status'] =  array('in', '201,900');
+		$map['status'] =  array('in', $status);
 
 		$map['id'] = array('in', $ids);
 
@@ -521,13 +522,32 @@ class WaveLogic{
 
     		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
 
-    		if($is_enough) return TRUE;
+    		if(!$is_enough) return FALSE;
 
     	}
 
-    	return FALSE;
+    	return TRUE;
 
     }
+
+    /*//查看出库单中所有sku是否满足数量需求
+    public function hasEnough($ids){
+
+    	$idsArr = explode(',', $ids);
+
+    	if(!$idsArr) return FALSE;
+
+    	foreach($idsArr as $key=>$value){
+
+    		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
+
+    		if(!$is_enough) return FALSE;
+
+    	}
+
+    	return TRUE;
+
+    }*/
 
         
 

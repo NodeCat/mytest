@@ -28,7 +28,7 @@ class PickController extends CommonController {
 
        'done'=>'已完成'
 
-      ),
+      )/*,
 
      'is_print'=>array(
 
@@ -36,14 +36,14 @@ class PickController extends CommonController {
 
        'OFF'=>'未打印'
 
-      )
+      )*/
   );
 
 	protected $columns = array (
 
 		'id'                => '',
 
-    'pick_id'           => '分拣号',
+    'code'           => '分拣单号',
 
     'type'              => '类型',
 
@@ -57,7 +57,7 @@ class PickController extends CommonController {
 
 		'pro_qty_sum'       => '总件数',
 
-    'is_print'          => '是否打印',
+    /*'is_print'          => '是否打印',*/
 
 		'created_time'      => '开始时间',
 
@@ -67,15 +67,15 @@ class PickController extends CommonController {
 
 	protected $query   = array (
 
-    'stock_wave_picking.id'   =>    array ( 
+    'stock_wave_picking.code'   =>    array ( 
 
-      'title'         => '分拣号', 
+      'title'         => '分拣单号', 
 
       'query_type'    => 'eq', 
 
       'control_type'  => 'text', 
 
-      'value'         => 'id',
+      'value'         => 'code',
 
     ),
 
@@ -127,7 +127,7 @@ class PickController extends CommonController {
 
       ),
 
-    'stock_wave_picking.is_print'       =>    array ( 
+    /*'stock_wave_picking.is_print'       =>    array ( 
 
               'title'                 => '已打印', 
 
@@ -137,7 +137,7 @@ class PickController extends CommonController {
 
               'value'                 => 'is_print'
 
-      ),
+      ),*/
 
 
 
@@ -195,6 +195,12 @@ class PickController extends CommonController {
 
   }
 
+  /**
+   * 分拣单打印
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
   public function pickPrint(){
 
     if(!IS_GET) $this->error('请正确操作！');
@@ -259,6 +265,12 @@ class PickController extends CommonController {
     $this->display('Pick::pickPrint');  
   }
 
+  /**
+   * 分拣单打印状态修改
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
   public function doPrint(){
 
     $ids = I('ids');
@@ -278,13 +290,19 @@ class PickController extends CommonController {
     }
   }
 
+  /**
+   * pda 打印单
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
   public function pickOn($t = 'scan_incode'){
 
     $this->cur = '拣货';
 
-    if(IS_GET) {
+    C('LAYOUT_NAME','pda');
 
-      C('LAYOUT_NAME','pda');
+    if(IS_GET) {
 
       switch ($t) {
 
@@ -327,7 +345,11 @@ class PickController extends CommonController {
 
           $result['cut'] = 'scan_outcode';
 
-          $this->msgReturn(1, '分拣单拣货完成!',$result);
+          $url = '/Pick/pickOn';
+
+          $result['url'] = $url;
+
+          $this->msgReturn(2, '分拣单拣货完成!', $result, $url);
 
         }else{
 

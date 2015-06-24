@@ -22,10 +22,11 @@
       margin-top: 20px;
     }
   </style>
-
+<a href="javascript:void(0);" ng-click="printAll" class="hidden-print btn btn-danger ng-binding">打印全部</a>
+<div style="margin-bottom:10px;"></div>
  <volist name="list" id="vo" key="row" empty="">
 
-  <div class="printpage direction hidden-print" ng-repeat="items in list">
+  <div class="printpage direction" ng-repeat="items in list">
     <div class="orderinfo">
     <div class="row">
       <div class="col-xs-4">
@@ -60,6 +61,8 @@
             <td>规格</td>
             <!-- <td>结算单价</td> -->
             <td>订货数量</td>
+            <!-- <td>批次</td> -->
+            <td>库位</td>
             <td>重量</td>
           </tr>
         </thead>
@@ -71,6 +74,8 @@
               <td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$vos.pro_code|getSkuInfoByCode='pro_attrs_str',###}<br></small></td>
               <!-- <td>{$vos.name}/{$vos.name}</td> -->
               <td>{$vos.pro_qty}</td>
+              <!-- <td>{$vos.batch}</td> -->
+              <td>{$vos.src_location_id|getLocationNameById='code',###}</td>
               <td></td>
             </tr>
           </volist>
@@ -79,12 +84,14 @@
               <td colspan="2"></td>
               <td>{$vo.items.pro_qty_sum}</td>
               <td></td>
+              <!-- <td></td> -->
+              <td></td>
           </tr>
         </tbody>
       </table>
     </div>
   <div class="all_count">
-      <a href="javascript:;" data-var="{$vo.items.id}" class="hidden-print btn-lg btn-success">打印</a>
+      <a href="javascript:void(0);" data-var="{$vo.items.id}" class="hidden-print btn-lg btn-success">打印</a>
     </div>
 </div>
 </div>
@@ -118,6 +125,27 @@
     var callback = function(res){};
 
     $.post(url, param, callback, 'json');
+
+  });
+
+  $(document).on('click','[ng-click = printAll]',function(){
+
+    $('.printpage').removeClass('hidden-print');
+
+    window.print();
+
+    var ids = "<php> echo I('ids')</php>";
+    
+    var url = "/Pick/doPrint";
+
+    var param = {};
+
+    param.ids = ids;
+
+    var callback = function(res){};
+
+    $.post(url, param, callback, 'json');
+
 
   });
 

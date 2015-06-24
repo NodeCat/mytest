@@ -67,9 +67,9 @@ class WavePickingLogic{
         			//遍历出库单详情
                     foreach($bill_out_detail_infos as $bill_out_detail_info){
                         //记录SKU种类数量
-                        $pro_type_sum[$bill_out_detail_info['pro_code']] = true;
+                        $result_arr[$bill_out_info['line_id']]['pro_type_sum']++;
                         //记录SKU总数
-                        $pro_qty_sum += $bill_out_detail_info['order_qty'];
+                        $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] += $bill_out_detail_info['order_qty'];
                         
                         //检查应当从哪个库位出库
                         $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave(array('wh_id'=>session('user.wh_id'),'pro_code'=>$bill_out_detail_info['pro_code'],'pro_qty'=>$bill_out_detail_info['order_qty']));
@@ -87,13 +87,12 @@ class WavePickingLogic{
                     }
 
                     //增加订单数量
-                    $order_sum++;
-                    $result_arr[$bill_out_info['line_id']]['order_sum'] = $order_sum;
-                    //统计SKU种类
-                    $result_arr[$bill_out_info['line_id']]['pro_type_sum'] = count($pro_type_sum);
-                    //统计SKU总数
-                    $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] = $pro_qty_sum;
+                    //$order_sum++;
+                    $result_arr[$bill_out_info['line_id']]['order_sum']++;
+                    //记录订单id到bill_out_id
+                    $result_arr[$bill_out_info['line_id']]['bill_out_ids'] .= $bill_out_info['id'].',';
 
+                    
                     //把订单状态置为待拣货
                     $data['status'] = 4;
                     $map['id'] = $bill_out_info['id'];
@@ -127,6 +126,7 @@ class WavePickingLogic{
                 $data['pro_qty_sum'] = $result['pro_qty_sum'];
                 $data['line_id'] = $line;
                 $data['wh_id'] = session('user.wh_id');
+                $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
 
 
@@ -189,6 +189,7 @@ class WavePickingLogic{
                 $data['pro_qty_sum'] = $result['pro_qty_sum'];
                 $data['line_id'] = $line;
                 $data['wh_id'] = session('user.wh_id');
+                $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
 
 
@@ -289,13 +290,21 @@ class WavePickingLogic{
 
             $param['change_src_assign_qty'] = '1';
 
-            $res = A('Stock','Logic')->adjustStockByMove($param);
+            try{
+
+                $res = A('Stock','Logic')->adjustStockByMove($param);
+
+            }catch(Exception $e){
+
+                continue;
+
+            }
 
         }
 
         //判读该波次下得分拣单全部分拣完成，在改波次下得出库单状态为已复核
 
-        $pickedW = array();
+        /*$pickedW = array();
 
         $pickedW['wave_id'] = $wave_id;
 
@@ -313,9 +322,21 @@ class WavePickingLogic{
 
         if(!$bill_outArr) return FALSE;
 
-        $bill_out_idStr = implode(',', $bill_outArr);
+        $bill_out_idStr = implode(',', $bill_outArr);*/
 
-        $stockW['id'] = array('in', $bill_out_idStr);
+        $pickedW = array();
+
+        $pickedW['id'] = $packing_id;
+
+        $pickedW['status'] = 'done'; 
+
+        $bill_out_ids = $m->where($pickedW)->getField('bill_out_ids');
+
+        if(!$bill_out_ids) return FALSE;
+
+        //$bill_out_idStr = implode(',', $bill_outArr);
+
+        $stockW['id'] = array('in', $bill_out_ids);
 
         $stockW['status'] = 4;
 
