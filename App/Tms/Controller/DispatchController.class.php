@@ -15,6 +15,12 @@ class DispatchController extends Controller{
         'mark'         => '备注',
          
     );
+
+    protected $car=array(
+        'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货'),
+        'car_from' =>array('速派得','云鸟','58'),
+        'warehouse'=>array(5=>'成都仓库',6=>'北京北仓',7=>'北京白盆窑仓库',9=>'天津仓库',10=>'上海仓库',11=>'武汉仓库',13=>'长沙仓库'),
+    );
 	public function index(){
         $D=D("TmsSignList");
         $start_date = date('Y-m-d',NOW_TIME);
@@ -22,11 +28,10 @@ class DispatchController extends Controller{
         $map['created_time'] = array('between',$start_date.','.$end_date);
 
         //选择仓库
-        if(I('post.sign_storge')){
+        if(I('post.warehouse')){
 
-            $map1['warehouse']=I('post.sign_storge');
-            $this->option=$map1['warehouse'];
-
+            $map1['warehouse']=I('post.warehouse');
+            $this->warehouse=$this->car['warehouse'][$map1['warehouse']];
             $id=M('TmsUser');
             $id=$id->field('id')->where($map1)->select();
             foreach ($id as $value) {
@@ -40,14 +45,14 @@ class DispatchController extends Controller{
             }else{
             $map['userid']=NULL;
             }
-
-
-
         }
-        $storge=D('List','Logic');
-        $storge=$storge->storge();
-        $this->assign('sign_storge',$storge);
+        $this->assign('car',$this->car);
         $list=$D->relation('TmsUser')->where($map)->group('userid')->order('created_time DESC')->select();
+        //把仓库id变成名字
+        foreach ($list as $key => &$value) {
+            $value['warehouse']=$this->car['warehouse'][$value['warehouse']];
+            
+        }
         $this->assign('list',$list);
         $this->display('tms:list'); 
     }
@@ -61,7 +66,7 @@ class DispatchController extends Controller{
         $columns = $this->columns;
         $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
         $Sheet = $this->get_excel_sheet($Excel);
-        foreach ($columns as $key  => $value) { 
+        foreach ($columns as $value) { 
             $Sheet->setCellValue($ary[$i/27].$ary[$i%27].'1', $value);
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setSize(14);
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
@@ -73,9 +78,9 @@ class DispatchController extends Controller{
         $map['created_time'] = array('between',$start_date.','.$end_date);
 
         //选择是哪个仓库
-        if(I('post.sign_storge')){
+        if(I('post.warehouse')){
 
-            $map1['warehouse']=I('post.sign_storge');
+            $map1['warehouse']=I('post.warehouse');
             $id=M('TmsUser');
             $id=$id->field('id')->where($map1)->select();
             foreach ($id as $value) {
@@ -90,9 +95,12 @@ class DispatchController extends Controller{
             }
         }
 
-
-
         $result = $M->relation(TRUE)->where($map)->group('userid')->order('created_time DESC')->select();
+        //把仓库id变成名字
+        foreach ($result as &$values) {
+            $values['warehouse']=$this->car['warehouse'][$values['warehouse']];
+            
+        }
         $this->filter_list($result);
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;

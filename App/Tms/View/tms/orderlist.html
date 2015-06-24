@@ -1,0 +1,48 @@
+<include file="Index:nav-cur" />
+	<div class="col-xs-12">
+
+	<div>
+		<span>
+			<h4 class="list-group-item-heading">已签收{$list['sign_orders']|default='0'}单</h4>
+		</span>
+	</div>
+	<div>
+		<span>
+			<h4>拒收{$list['unsign_orders']}单</h4>
+		</span> 
+	</div>
+	<div>
+		<span>
+			<h4>派送中{$list['delivering']}单</h4>
+		</span> 
+	</div>
+	<div >
+		<span>
+			<h4>交货款{$list['values']|sprintf="%1.2f",###}元</h4>
+		</span>
+	</div
+<div class="table-responsive">
+
+	<table class="table table-bordered" style="text-align:center">
+		<!--<thead align="center">-->
+		<tr style="text-align:center;">          
+			<th>货号</th>
+			<th>名称</th>
+			<th>回仓数量</th>
+		</tr>
+		<!--</thead>-->
+		<tbody>
+			<volist name="back_lists" id='lists'>
+
+						<tr>
+							<th scope="row">{$key}</th>
+							<td>{$lists.name}</td>
+							<td>{$lists['quantity']} {$lists['unit_id']}</td>
+						</tr>
+
+			</volist>
+		</tbody>
+	</table>
+</div>
+
+</div>
