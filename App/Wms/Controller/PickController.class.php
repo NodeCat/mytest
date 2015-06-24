@@ -28,7 +28,7 @@ class PickController extends CommonController {
 
        'done'=>'已完成'
 
-      ),
+      )/*,
 
      'is_print'=>array(
 
@@ -36,14 +36,14 @@ class PickController extends CommonController {
 
        'OFF'=>'未打印'
 
-      )
+      )*/
   );
 
 	protected $columns = array (
 
 		'id'                => '',
 
-    'pick_id'           => '分拣号',
+    'code'           => '分拣单号',
 
     'type'              => '类型',
 
@@ -57,7 +57,7 @@ class PickController extends CommonController {
 
 		'pro_qty_sum'       => '总件数',
 
-    'is_print'          => '是否打印',
+    /*'is_print'          => '是否打印',*/
 
 		'created_time'      => '开始时间',
 
@@ -67,15 +67,15 @@ class PickController extends CommonController {
 
 	protected $query   = array (
 
-    'stock_wave_picking.id'   =>    array ( 
+    'stock_wave_picking.code'   =>    array ( 
 
-      'title'         => '分拣号', 
+      'title'         => '分拣单号', 
 
       'query_type'    => 'eq', 
 
       'control_type'  => 'text', 
 
-      'value'         => 'id',
+      'value'         => 'code',
 
     ),
 
@@ -127,7 +127,7 @@ class PickController extends CommonController {
 
       ),
 
-    'stock_wave_picking.is_print'       =>    array ( 
+    /*'stock_wave_picking.is_print'       =>    array ( 
 
               'title'                 => '已打印', 
 
@@ -137,7 +137,7 @@ class PickController extends CommonController {
 
               'value'                 => 'is_print'
 
-      ),
+      ),*/
 
 
 

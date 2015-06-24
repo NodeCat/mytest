@@ -304,7 +304,7 @@ class WavePickingLogic{
 
         //判读该波次下得分拣单全部分拣完成，在改波次下得出库单状态为已复核
 
-        $pickedW = array();
+        /*$pickedW = array();
 
         $pickedW['wave_id'] = $wave_id;
 
@@ -322,9 +322,21 @@ class WavePickingLogic{
 
         if(!$bill_outArr) return FALSE;
 
-        $bill_out_idStr = implode(',', $bill_outArr);
+        $bill_out_idStr = implode(',', $bill_outArr);*/
 
-        $stockW['id'] = array('in', $bill_out_idStr);
+        $pickedW = array();
+
+        $pickedW['id'] = $packing_id;
+
+        $pickedW['status'] = 'done'; 
+
+        $bill_out_ids = $m->where($pickedW)->getField('bill_out_ids');
+
+        if(!$bill_out_ids) return FALSE;
+
+        //$bill_out_idStr = implode(',', $bill_outArr);
+
+        $stockW['id'] = array('in', $bill_out_ids);
 
         $stockW['status'] = 4;
 
