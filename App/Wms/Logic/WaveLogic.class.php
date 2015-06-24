@@ -544,17 +544,31 @@ class WaveLogic{
 
     	$result = array();
 
-    	if(!$idsArr) return $result;
+    	$result['tureResult'] = array();
+
+    	$result['falseResult'] = array();
+
+    	if(!$idsArr) return '';
 
     	foreach($idsArr as $key=>$value){
 
     		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
 
-    		if($is_enough) array_push($result, $value);
+    		if($is_enough){ 
+
+    			array_push($result['tureResult'], $value);
+
+    		}else{
+
+    			array_push($result['falseResult'], $value);
+
+    		}
 
     	}
 
-    	return implode(',', $result);
+    	$result['tureResult'] = implode(',', $result['tureResult']);
+
+    	return $result;
 
     }
 

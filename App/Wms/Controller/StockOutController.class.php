@@ -515,7 +515,11 @@ class StockOutController extends CommonController {
 
         if($is_enough === FALSE) echojson('1','','你所选的出库单是缺货状态，请重新创建！');*/
 
-        $ids = $waveLogic->enoughaResult($ids);
+        $idsArr = $waveLogic->enoughaResult($ids);
+
+        $ids = $idsArr['tureResult'];
+
+        //dump($idsArr);die;
 
         $insertArr = array();
 
@@ -553,7 +557,33 @@ class StockOutController extends CommonController {
 
             }
 
-            echojson('1','','波次创建成功！');
+            $result = array();
+
+            $result['wave_id'] = $wave_id;
+
+            $result['order_count'] = $insertArr['order_count'];
+
+            $result['false_bill_out_count'] = count($idsArr['falseResult']);
+
+            if($result['false_bill_out_count']){
+
+                $M = M('stock_bill_out');
+
+                $bill_outW['id'] = array('in',$idsArr['falseResult']);
+
+                $wave_detail_arr = $M->field('code')->where($bill_outW)->select();
+
+                $bill_outArr = getSubByKey($wave_detail_arr, 'code');
+
+                $result['false_bill_out_result'] = implode(',', $bill_outArr);
+
+            }else{
+
+                $result['false_bill_out_result'] = '';
+
+            }
+
+            echojson('1',$result,'波次创建成功！');
 
         }
 

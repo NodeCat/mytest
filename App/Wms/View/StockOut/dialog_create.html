@@ -1,0 +1,48 @@
+<script type='text/html' id="dialog_create">
+<div class="modal fade in" role="dialog" aria-labelledby="gridSystemModalLabeldialog" style="display:block;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" onclick="alert_dialog.close();" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabelalert"> {{title}}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid lgo">
+
+          <div class="row">
+
+            <div class="col-md-2">波次号：</div>
+            <div class="col-md-10">{{wave_id}}</div>
+
+          </div>
+          <br>
+
+          <div class="row">
+
+            <div class="col-md-2">订单数：</div>
+            <div class="col-md-10">{{order_count}}</div>
+
+          </div>
+
+          <br>
+
+          <div>
+
+            <div class="alert alert-danger" style="word-break: break-all;" role="alert">
+                有<strong>{{false_bill_out_count}}</strong> 个订单因库存不足未加入波次！
+                <br>
+                出库单分别为<strong>{{false_bill_out_result}}</strong>；
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="alert_dialog.close();">确定</button>
+        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</script>
