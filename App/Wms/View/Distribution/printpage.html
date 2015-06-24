@@ -1,12 +1,13 @@
 {__NOLAYOUT__}
 <include file="Index/header"/>
 <body>
-<volist name='list' id='attrs'>
+<div>
+	<a href="javascript:;" id="hidden-map" class="hidden-print btn btn-danger">隐藏地图</a>
+</div>
+<volist name='list' id='attrs' key="kk">
 <div class="container-fluid">
- <a href="javascript:;" id="hidden-map" class="hidden-print btn btn-danger">隐藏地图</a>
-
   <div class="printpage" ng-repeat="attrs in list">
-    <div class="orderinfo">
+    <div class="">
     <div class="row">
       <div class="col-xs-4">
         <p>配送线路单号:{$attrs.dist_code}</p>
@@ -53,9 +54,9 @@
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.remarks}</td>
 	            <td>{$detail.sku_number}</td>
 	            <td>{$detail.name}</td>
-	            <td>
+	            <td>            		
 	            		<small>
-	            		<volist name="detail['spec']" id="spec">{$spec.name}：{$spec.val}</volist>
+	            		<foreach name="detail['spec']" item="spec">{$spec.name}：{$spec.val}</foreach>
 	            		</small>
 	            	</td>
 	            <td>{$detail.single_price}/{$detail.close_unit}</td>
@@ -115,7 +116,7 @@
       <a href="javascript:;" onclick="window.print()" class="hidden-print btn btn-success">打印全部</a>
     </div>
 </div>
-<div style="height:600px;width:900px" id="mapContainer"><img src={$attrs.map_url} /></div>
+<div style="height:600px;width:900px;margin-bottom:50px;" class="mapContainer" id="mapContainer{$kk}"></div>
 </div>
 </div>
 </volist>
@@ -273,28 +274,31 @@ $(function() {
 		  }
 	  });
 	$('#hidden-map').click(function() {
-		if ($('#mapContainer').css('display') == "block") {
-			$('#mapContainer').css('display',"none");
+		if ($('.mapContainer').css('display') == "block") {
+			$('.mapContainer').css('display',"none");
 			$(this).html('显示地图');
-		} else if ($('#mapContainer').css('display') == "none") {
-			$('#mapContainer').css('display', "block");
+		} else if ($('.mapContainer').css('display') == "none") {
+			$('.mapContainer').css('display', "block");
 			$(this).html('隐藏地图');
 		}
-	})
+	});
+	$(".mapContainer").each(function(i){
+		var mapObj, marker, markers = [];
+		var num = i + 1;
+		// 地图初始化
+		function mapInit(){
+		  mapObj = new AMap.Map("mapContainer"+num,{
+		    center:new AMap.LngLat(116.397428,39.90923), //地图中心点
+		    level:11  //地图显示的比例尺级别
+		    //zoomEnable:false
+		  });
+		  // AMap.event.addListener(mapObj,'click',getLnglat); //点击事件
+		}
+		  mapInit();
+	});	
 })
 
-var mapObj, marker, markers = [];
-// 地图初始化
-function mapInit(){
-	
-  mapObj = new AMap.Map("mapContainer",{
-    center:new AMap.LngLat(116.397428,39.90923), //地图中心点
-    level:11  //地图显示的比例尺级别
-    //zoomEnable:false
-  });
-  // AMap.event.addListener(mapObj,'click',getLnglat); //点击事件
-}
-  mapInit();
+
 </script>
 </body>
 </html>

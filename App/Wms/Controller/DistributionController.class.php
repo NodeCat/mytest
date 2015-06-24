@@ -114,12 +114,27 @@ class DistributionController extends CommonController {
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
-        header("Content-type:application/octet-stream");
-        header("Accept-Ranges:bytes");
-        header("Content-type:application/vnd.ms-excel");
-        header("Content-Disposition:attachment;filename=distribution.csv");
-        header("Pragma: no-cache");
-        header("Expires: 0");
+        import("Common.Lib.PHPExcel");
+        import("Common.Lib.PHPExcel.IOFactory");
+        $Excel = new \PHPExcel();
+        $i = 1;
+        if(empty($this->columns)) {
+            $table = get_tablename(CONTROLLER_NAME);
+            $res = get_setting($table);
+            $columns = $res['list'];
+        }
+        else {
+            $columns = $this->columns;
+        }
+        
+        $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+        $Sheet = $this->get_excel_sheet($Excel);
+        foreach ($columns as $key  => $value) {
+            $Sheet->setCellValue($ary[$i/27].$ary[$i%27].'1', $value);
+            $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setSize(14);
+            $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
+            ++$i;
+        }
         
         $get = I('get.id');
         //获取配送单信息
@@ -128,7 +143,7 @@ class DistributionController extends CommonController {
         $dis = $M->where($map)->find();
         unset($map);
         
-        //获取订单id
+        //获取订单
         $D = D('Distribution', 'Logic');
         $order_ids = $D->get_order_ids_by_dis_id($get);
         $order = D('Order', 'Logic');
@@ -136,54 +151,121 @@ class DistributionController extends CommonController {
         if (empty($result)) {
             $this->msgReturn(false, '获取订单失败');
         }
-        $string = '';
-        foreach ($result as $value) {
-            $pay_type = '';
-            $pay_status = '';
+        $result = $result['list'];
+        $data = array();
+        foreach ($result as &$value) {
             switch ($value['pay_type']) {
             	   case 0:
-            	       $pay_type = '货到付款';
+            	       $value['pay_type'] = '货到付款';
             	       break;
             	   case 1:
-            	       $pay_type = '微信支付';
+            	       $value['pay_type'] = '微信支付';
             	       break;
             }
             switch ($value['pay_status']) {
             	   case -1:
-            	       $pay_status = '支付失败';
+            	       $value['pay_status'] = '支付失败';
             	       break;
             	   case 0:
-            	       $pay_status = '未支付';
+            	       $value['pay_status'] = '未支付';
             	       break;
             	   case 1:
-            	       $pay_status = '已支付';
+            	       $value['pay_status'] = '已支付';
             	       break;
             }
-            $string .= '订单ID,' . $value['id'] . ',订单编号,' . $value['order_number'] . ', ,' . ',线路,' . $value['line'] . "\n";
-            $string .= $value['city_name'] . ',' . $value['address'] . "\n";
-            $string .= $value['shop_name'] . ',' . $value['realname'] . ',' . 'tel:' . $value['mobile'] . ',下单时间,' . $value['created_time'] . "\n";
-            $string .= '销售,' . $value['bd']['name'] . ',销售电话,' . 'tel:' . $value['bd']['mobile'] . ',配送时间,' . $value['deliver_date'] . $value['deliver_time'] . "\n";
-            $string .= '------------------------------------------------------------------------------' . "\n";
-            $string .= '货号,产品名称,订货数量,订货单位,结算单价,结算单位,实收数量,实收金额' . "\n";
-            foreach ($value['detail'] as $val) {
-                $string .= $val['product_id'] . ',' . $value['name'] . ',' . $value['quantity'] . ', ,' . $value['price'] . '元,' . $value['unit_id'] . ', , ,' . "\n";
-            }
-            $string .= "\n\n\n\n\n\n\n\n\n\n";
-            $string .= '订单备注' . "\n";
-            $string .= '------------------------------------------------------------------------------' . "\n";
-            $string .= '订单总价,' . $value['total_price'] . ', , , , , , , ,实收总金额' . "\n";
-            $string .= '活动优惠,-0' . "\n";
-            $string .= '微信支付,-0' . "\n";
-            $string .= '运费,+0' . "\n";
-            $string .= '\n';
-            $string .= '应付总价,' . $value['total_price'] . "\n";
-            $string .= '支付状态,' . $pay_status . ',支付方式,' . $pay_type . "\n";
-            $string .= '客户签字' . "\n";
-            $string .= "\n";
-            $string .= '客户(白联),存根(粉联)' . "\n";
-            $string .= ' , , , , , , ,售后电话,' . $value['am']['mobile'] . "\n";
+            //创建数据
+            $data[] = $D->format_export_data($value);
         }
-        echo iconv("UTF-8","GB2312",$string);
+        $i = 0;
+        foreach ($data as $v){
+        	   
+        	   for($j  = 0;$j<count($data) ; ++$j){
+        	       $sheet = $Excel->createSheet($j);
+        	       dump($sheet);exit;
+        	       foreach ($data[$j] as $vv){
+        	           $sheet->setCellValue($ary[$i/27].$ary[$i%27].($j+2), $data[$j]);
+        	       }
+        	   }
+        	   $i++;
+        }
+        exit('tyyyyy');
+        
+        if(ini_get('zlib.output_compression')) {
+            ini_set('zlib.output_compression', 'Off');
+        }
+        date_default_timezone_set("Asia/Shanghai");
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/download");
+        header("Content-Transfer-Encoding: binary");
+        header('Accept-Ranges: bytes');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition:attachment;filename = ".time().".xlsx");
+        header('Cache-Control: max-age=0');
+        header("Pragma:no-cache");
+        header("Expires:0");
+        header("Content-Length: ");
+        $objWriter  =  \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007');
+        $objWriter->save('php://output');
+        
+    }
+    
+    /**
+     * 导出配送单
+     */
+    public function export_distribution() {
+        foreach ($dist_list as $dist) {
+            $dist_arr = [];
+            $dist_arr[] = array('配送线路单号:' . $dist['dist_number'], '', '', '', '', '', '仓库:' . $dist['warehouse_name'], '', '', '', '', '', '', '');
+            $dist_arr[] = array('线路（片区）:' . $dist['line_name'], '', '', '', '', '', '发车时间:' . $dist['deliver_date'] . ($dist['deliver_time'] == 1 ? '上午' : '下午'), '', '', '', '', '', '', '');
+            $dist_arr[] = array('订单数:' . count($dist['orders']), '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('订单明细', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = $title_arr;
+            foreach ($dist['orders'] as $order) {
+                foreach ($order['detail'] as $detail) {
+                    $specs = '';
+                    foreach ($detail['spec'] as $spec) {
+                        if($spec['name'] != '描述') {
+                            $specs .= $spec['name'] . ':' . $spec['val'];
+                        }
+                    }
+                    $dist_arr[] = array(
+                            $order['id'],
+                            $order['order_number'],
+                            $order['shop_name'],
+                            $order['deliver_addr'],
+                            $order['mobile'],
+                            $order['remarks'],
+                            $detail['sku_number'],
+                            $detail['name'],
+                            $specs,
+                            $detail['single_price'],
+                            $detail['close_unit'],
+                            $detail['quantity'],
+                            $detail['unit_id'],
+                            '',
+                    );
+                }
+        
+            }
+        
+            $dist_arr[] = array('汇总', '', '', '', '', '', '', '', '', '', '', $dist['sku_count'], '', '');
+            $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('货品汇总', '', '', '', '', '', '', '', '', '', '', '', '', '');
+            $dist_arr[] = array('货品号', '产品名称', '订货数量', '', '', '', '', '', '', '', '', '', '', '');
+            foreach ($dist['sku_list'] as $sku) {
+                $dist_arr[] = array(
+                        $sku['sku_number'],
+                        $sku['name'],
+                        $sku['quantity'],
+                );
+            }
+            $dist_arr[] = array('汇总', '', $dist['sku_count'], '', '', '', '', '', '', '', '', '', '', '');
+        
+            $xls_list[] = $dist_arr;
+            $sheet_titles[] = $dist['dist_number'];
+        }
     }
     /**
      * 配送单详情
@@ -246,9 +328,10 @@ class DistributionController extends CommonController {
         }
         
         $M = M('stock_wave_distribution');
+        //$detail = M('stock_wave_distribution_detail');
         $ware = M('warehouse');
         $D = D('Distribution', 'Logic');
-        //获取订单id
+        //获取所有配送单下的订单id
         $order_ids = $D->get_order_ids_by_dis_id($idarr);
         //拉取订单
         $Order = D('Order', 'Logic');
@@ -261,12 +344,16 @@ class DistributionController extends CommonController {
         foreach ($idarr as $get) {
             $map['id'] = $get;
             $dis = $M->where($map)->find();
+            //获取此配送单下的订单ID
+            $out_ids = $D->get_order_ids_by_dis_id(array($get));
             unset($map);
             //筛选此配送单下的订单
             $result = array();
-            foreach ($res as $value) {
-                if ($value['id'] == $dis['refer_code']) {
+            foreach ($res as $key => $value) {
+                //获取此配送单下的订单
+                if (in_array($value['id'], $out_ids)) {
                     $result[] = $value;
+                    unset($res[$key]);
                 }
             }
             $items = array();
@@ -325,7 +412,7 @@ class DistributionController extends CommonController {
         $D = D('Distribution', 'Logic');
         $list = $D->get_all_orders();
         if ($list['status'] == false || empty($list['list'])) {
-            echo '';
+            echo 0;
         } else {
             echo json_encode($list['list'], true);
         }
