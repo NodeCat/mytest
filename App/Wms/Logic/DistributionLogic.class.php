@@ -53,6 +53,12 @@ class DistributionLogic {
             $return['msg'] = $order_info['msg'];
             return $return;
         }
+        //订单类型筛选
+        foreach ($order_info['list'] as $key => $val) {
+            if ($val['order_type'] != $search['order_type']) {
+                unset($order_info['list'][$key]);
+            }
+        }
         $list = array();
         $this->format_data($order_info['list']);
         $return['msg'] = '成功';
@@ -72,7 +78,7 @@ class DistributionLogic {
         if (empty($post['company_id'])) {
             $return['msg'] = '请选择系统';
             return $return;
-        }
+        }     
         /*if (empty($post['wh_id'])) {
             $return['msg'] = '请选择仓库';
             return $return;
@@ -318,7 +324,8 @@ class DistributionLogic {
                 $list[$value['line_id']] += 1;
             }
         }
-        $list['sum'] = array_sum($list); //总计
+        
+        $list['sum'] = array_sum($list) > 0 ? array_sum($list) : 0; //总计
         $return['status'] = true;
         $return['msg'] = '成功';
         $return['list'] = $list;

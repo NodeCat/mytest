@@ -23,8 +23,9 @@ class DistDetailController extends CommonController {
                     'query_type' => 'eq',
                     'control_type' => 'select',
                     'value' => array(
-                            '1' => '未发运',
-                            '2' => '已发运',
+                            '1' => '普通订单',
+                            '2' => '冻品订单',
+                            '3' => '爆款订单',
                     ),
             ),
             'line' => array(
@@ -55,7 +56,9 @@ class DistDetailController extends CommonController {
                        '2' => '下午',
                    ),
             )
-    );	
+    );
+    
+
     public function before_index() {
         $this->table = array(
                 'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
@@ -117,6 +120,7 @@ class DistDetailController extends CommonController {
         if(in_array(CONTROLLER_NAME, $controllers_muilt) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('in',session('user.rule'));
         }
+        
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }
@@ -139,9 +143,11 @@ class DistDetailController extends CommonController {
         }
         //获取搜索结果
         if (isset($search_info['status']) && $search_info['status'] == false) {
-            $this->msgReturn(false, $search_info['msg']);
+            if (IS_AJAX) {
+                $this->msgReturn(false, $search_info['msg']);
+            }
         }
-        $this->assign('data', $search_info['list']);  //dump($search_info['list']);exit('iiiii');      
+        $this->assign('data', $search_info['list']); 
         $maps = $this->condition;
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);

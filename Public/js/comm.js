@@ -85,10 +85,15 @@ $(function () {
 			type:'post',
 			cache : false,
 			async:true,
-			dataType:'html',
 			data:params,
 			success: function(msg){
-				$('.table-content').html(msg);
+				if(msg.msg != '' && msg.msg != null ){
+					alert(msg.msg);
+				}
+				else {
+					$('.table-content').html(msg);
+				}
+
 			}
 		}); 
 		return false;

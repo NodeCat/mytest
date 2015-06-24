@@ -103,11 +103,11 @@
 		$.ajax({
 	    		url:url,
 	    		success:function (msg) {
-	    			var msg = eval('('+msg+')');	
-	    			if (!msg) {
+	    			//var msg = eval('('+msg+')');	
+	    			/*if (!msg) {
 	    				alert('获取线路失败');
 	    				return false;
-	    			}
+	    			}*/
 	    			$("select[name='query[line]']").children('option').each(function() {
 	    				var content = $(this).html();
 	    				var value = $(this).val();
@@ -117,8 +117,10 @@
 	    				} else {
 	    					$(this).html(content+'('+msg[value]+')');
 	    				}
-	    				if (value == '') {
+	    				if (value == '' && typeof(msg['sum'] != 'undefined')) {alert(msg['sum'])
 	    					$(this).html(content+'('+msg["sum"]+')');
+	    				} else {
+	    					$(this).html(content+'(0)');
 	    				}
 	    			})
 	    		}
