@@ -288,13 +288,13 @@ class WaveLogic{
 	 * @return Boolean $result;
 	 * 
 	 */
-    public function hasIsAuth($ids = ''){
+    public function hasIsAuth($ids = '',$status = '201,900'){
 
     	if(!$ids) return FALSE;
 
 		$map = array();
 
-		$map['status'] =  array('in', '201,900');
+		$map['status'] =  array('in', $status);
 
 		$map['id'] = array('in', $ids);
 

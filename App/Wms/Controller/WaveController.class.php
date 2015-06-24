@@ -278,7 +278,7 @@ class WaveController extends CommonController {
 
       $waveLogic = A('Wave','Logic');
 
-      $hasIsAuth = $waveLogic->hasIsAuth($ids);
+      $hasIsAuth = $waveLogic->hasIsAuth($ids, '900');
 
       if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
 
