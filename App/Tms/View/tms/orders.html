@@ -112,7 +112,7 @@
     <ul class="list-group" >  -->
   <volist name="vo['detail']" id="v">
   <li class="list-group-item">
-    {$v.sku_number} {$v.name} <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach> <label class="label label-info">请在下面录入实际收货数量：</label>
+    {$v.sku_number} {$v.name} <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach><br /> <label  class="label label-info">请在下面录入实际收货数量：</label>
   </li>
   <li class="list-group-item">
     <div class="input-group row">
@@ -263,6 +263,7 @@ form.order ul.list-group{
       $('.order-id').each(function(){
         if($(this).text().indexOf(search) == -1) {
           $(this).parents('.panel').hide();
+
         }
         else {
           $(this).parents('.panel').show();
@@ -360,6 +361,4 @@ form.order ul.list-group{
         });
     });
   });
-
-
 </script>
