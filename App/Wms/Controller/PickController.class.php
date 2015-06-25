@@ -22,7 +22,7 @@ class PickController extends CommonController {
 
      'status'=>array(
 
-       'draft'=>'未开始',
+       'draft'=>'未运行',
 
        'picking'=>'执行中',
 
@@ -89,7 +89,7 @@ class PickController extends CommonController {
 
               'value'           => array(
 
-                  'pick'        => '拣货'
+                  'picking'        => '拣货'
 
                   ),
       ),

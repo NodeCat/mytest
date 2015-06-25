@@ -31,7 +31,7 @@ class OrderApi extends CommApi{
 				$this->ajaxReturn($return);
 			}
 			//根据warehouse_id查询对应的仓库是否存在 如果不存在 不写入出库表
-			$map['code'] = $order_info['info']['warehouse_id'];
+			$map['id'] = $order_info['info']['warehouse_id'];
 			$warehouse = M('warehouse')->where($map)->find();
 			if(empty($warehouse)){
 				$return = array('error_code' => '204', 'error_message' => 'warehouse is not exsist' );

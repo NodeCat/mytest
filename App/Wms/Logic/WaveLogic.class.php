@@ -544,17 +544,53 @@ class WaveLogic{
 
     	$result = array();
 
-    	if(!$idsArr) return $result;
+    	$result['tureResult'] = array();
+
+    	$result['falseResult'] = array();
+
+    	if(!$idsArr) return '';
 
     	foreach($idsArr as $key=>$value){
 
     		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
 
-    		if($is_enough) array_push($result, $value);
+    		if($is_enough){ 
+
+    			array_push($result['tureResult'], $value);
+
+    		}else{
+
+                $tablename = 'stock_bill_out';
+
+                $data['refused_type'] = 2;
+
+                $map['id'] = $value;
+
+                $this->updateStauts($tablename, $data, $map);
+
+    			array_push($result['falseResult'], $value);
+
+    		}
 
     	}
 
-    	return implode(',', $result);
+    	$result['tureResult'] = implode(',', $result['tureResult']);
+
+    	return $result;
+
+    }
+
+    public function updateStauts($tablename, $data, $map){
+
+        $result = TRUE;
+
+        if(!$map || !$tablename || !$data) $result = FALSE;
+
+        $m = M($tablename);
+
+        if(!$m->where($map)->save($data)) $result = FALSE;
+
+        return $result;
 
     }
 

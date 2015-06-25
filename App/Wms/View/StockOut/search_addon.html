@@ -6,8 +6,49 @@
 <div class="form-group  col-lg-1">
 <a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
 </div>
+
+<include file="dialog_create" />
+
+
 <script type="text/javascript">
+
+var alert_dialog = {
+	
+	close:function(){
+
+		this.hide();
+
+	},
+
+	show:function(title, content){
+
+		title  = title?title:'提示框';
+
+		content = content?content:"<div class='row'>content</div>";
+
+		$('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+
+		$('[aria-labelledby = gridSystemModalLabeldialog]').show();
+
+		$("#gridSystemModalLabelalert").html(title);
+
+		$(".lgo").html(content);
+
+	},
+
+	hide:function(){
+
+		$('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+
+		$('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+
+	}
+};
+
+
 $(function(){
+
+
 	$('#stock_out').on('click',function(){
 		var ids = getChecked();
 		$.ajax({
@@ -72,11 +113,24 @@ $(function(){
 			data:param,
 			success: function(json){
 				if(json.status=='1'){
-					alert(json.msg);
+
+					json.data.title = '波次创建成功';
+					if(json.data.false_bill_out_count){
+
+						var html = template('dialog_create',json.data);
+						$('body').append(html);
+
+					}else{
+
+						alert(json.msg);
+
+					}
+					
                     refresh_list();
                     //window.href.location.reload();
 				}
 				if(json.status=='0'){
+
 					alert(json.msg);
                     refresh_list();
 				}
