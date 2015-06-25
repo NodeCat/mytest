@@ -89,7 +89,7 @@ class PickController extends CommonController {
 
               'value'           => array(
 
-                  'pick'        => '拣货'
+                  'picking'        => '拣货'
 
                   ),
       ),
