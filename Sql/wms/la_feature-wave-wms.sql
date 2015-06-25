@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `stock_wave_distribution` (
   PRIMARY KEY (`id`),
   KEY `dist_number` (`dist_code`),
   KEY `deliver_date` (`deliver_date`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送单表' AUTO_INCREMENT=32 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送单表' AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -73,11 +73,11 @@ CREATE TABLE IF NOT EXISTS `stock_wave_distribution_detail` (
   `is_deleted` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否已删除 0未删除 >0已删除',
   PRIMARY KEY (`id`),
   KEY `order_id` (`bill_out_id`,`pid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送单详情表' AUTO_INCREMENT=20 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='配送单详情表' AUTO_INCREMENT=1 ;
 
 DROP TABLE IF EXISTS `stock_bill_out`;
 CREATE TABLE `stock_bill_out` (
-  `id` int(11) unsigned NOT NULL,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(45) NOT NULL DEFAULT '',
   `wh_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '仓库id',
   `type` int(11) NOT NULL DEFAULT '0' COMMENT '单据类型\n入库 in\n出库 out\n移库 move',
@@ -124,7 +124,7 @@ CREATE TABLE `stock_wave` (
   `start_time` datetime NOT NULL,
   `end_time` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='波次表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='波次表';
 
 -- ----------------------------
 --  Table structure for `stock_wave_detail`
@@ -141,7 +141,7 @@ CREATE TABLE `stock_wave_detail` (
   `status` varchar(32) NOT NULL DEFAULT '''''',
   `is_deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COMMENT='波次_出库单关联表';
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='波次_出库单关联表';
 
 -- ----------------------------
 --  Table structure for `stock_wave_picking`
@@ -166,7 +166,7 @@ CREATE TABLE `stock_wave_picking` (
   `is_deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `is_print` char(3) NOT NULL DEFAULT 'OFF' COMMENT 'ON 已打印 OFF 未打印',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Table structure for `stock_wave_picking_detail`
@@ -187,7 +187,7 @@ CREATE TABLE `stock_wave_picking_detail` (
   `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `is_deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
