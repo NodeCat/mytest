@@ -35,7 +35,7 @@ class DistributionLogic {
             $map['delivery_ampm'] = $search['time'];
         }
         $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
-        $map['process_type'] = $search['type'];
+        //$map['process_type'] = $search['type'];
         $map['status'] = 5; //状态 分拣完成
         $result = $M->where($map)->select();
         if (empty($result)) {
