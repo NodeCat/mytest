@@ -57,6 +57,10 @@
 
 //加入配送单按钮
 $('#add-order').on('click',function(){
+		if($("#table-orders tr").length == 1){
+			alert('请选择订单');
+			return;
+		};
 		var duser = $('.table-summary .s-user').text();
 		var dorder = $('.table-summary .s-order').text();
 		var dcat = $('.table-summary .s-cat').text();
