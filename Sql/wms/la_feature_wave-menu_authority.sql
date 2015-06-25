@@ -30,3 +30,6 @@ INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `a
 (363, 'DistDetail', '3', 'Wms', 'Wms', 'Distdetail', 'index', 'Wms/Distbution/index', '', '', '配送单筛选', 1, 359, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
 (364, 'deleted', '4', 'Wms', 'Wms', 'Wave', 'deleted', 'Wms/Wave/delAll', '', '', '波次删除', 1, 351, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
 (365, 'pickPrint', '4', 'Wms', 'Wms', 'Pick', 'pickPrint', 'Wms/Pick/pickPrint', '', '', '分拣单打印', 1, 354, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);
+
+INSERT INTO `numbs` (`name`, `wh_id`, `prefix`, `mid`, `suffix`, `sn`, `date`, `status`, `updated_time`, `updated_user`, `created_time`, `created_user`, `is_deleted`) VALUES
+('picking', 0, 'F', '%date%%wh_id%', '4', 1, '', '1', '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0, 0);
