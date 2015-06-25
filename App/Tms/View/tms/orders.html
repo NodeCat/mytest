@@ -55,13 +55,13 @@
 <case value="已签收" break="0"></case>
 <case value="已完成" break="0"></case>
 <case value="已回款" break="1">
-  <a class="list-group-item list-group-item-success" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
+  <a onclick="check(this)" class="list-group-item list-group-item-success" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
   </case>
 <case value="已退货" break="1">
-  <a class="list-group-item list-group-item-danger collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
+  <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
   </case>
 <default />
-<a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
+<a onclick="check(this)" class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
 </switch>
  <!--{$vo.order_type_cn}--> <span class="order-id">{$vo.id}</span>&nbsp;
  <!--
@@ -81,7 +81,7 @@
 </case>
 <default />
 </switch>
- <span style="color:red;">点击展开</span>
+ <span id="show" style="color:red;">点击展开</span>
 </a>
   <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
   <form class="order">
@@ -123,8 +123,8 @@
       <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}" />
       <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
        
-      <input type="number" name="quantity[]" min="0" class="form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
-      <span class="input-group-addon">{$v.unit_id}</span>
+      <input type="number" name="quantity[]" min="0" class="form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+      <span class="input-group-addon">{$v.close_unit}</span>
       <!--
       <input type="number" name="price_sum[]" min="0" class="form-control p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
       -->
@@ -159,13 +159,13 @@
 <case value="已签收" break="0"></case>
 <case value="已完成" break="0"></case>
 <case value="已回款" break="1">
-  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.deal_price}">  
+  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.deal_price}" readonly>  
 </case>
 <case value="已退货" break="1">
-  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="0">  
+  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="0" readonly>  
 </case>
 <default />
-<input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.final_price}">
+<input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.final_price}" readonly>
 </switch>
  </div>
     </div>
@@ -361,4 +361,14 @@ form.order ul.list-group{
         });
     });
   });
+
+function check(x){
+    var val
+    val=$(x).children('#show').text();
+    if(val=='点击展开'){
+        $(x).children('#show').text('点击收回');
+    }else{
+        $(x).children('#show').text('点击展开');
+    }
+}
 </script>
