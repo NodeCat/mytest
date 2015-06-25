@@ -55,7 +55,7 @@ class DistributionLogic {
         }
         //订单类型筛选
         foreach ($order_info['list'] as $key => $val) {
-            if ($val['order_type'] != $search['order_type']) {
+            if ($val['order_type'] != $search['type']) {
                 unset($order_info['list'][$key]);
             }
         }
