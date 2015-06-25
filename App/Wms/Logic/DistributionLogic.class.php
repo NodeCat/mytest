@@ -305,9 +305,9 @@ class DistributionLogic {
         $return = array('status' => false, 'msg' => '');
         
         $M = M('stock_bill_out');
-        $map['type'] = 1; //类型 1销售出库
+        //$map['type'] = 1; //类型 1销售出库
         $map['status'] = 5; //状态 检货完成
-        //$map['wh_id'] = $session('user.wh_id');
+        $map['wh_id'] = session('user.wh_id');
         
         $result = $M->where($map)->select();
         if (empty($result)) {
@@ -324,7 +324,6 @@ class DistributionLogic {
                 $list[$value['line_id']] += 1;
             }
         }
-        
         $list['sum'] = array_sum($list) > 0 ? array_sum($list) : 0; //总计
         $return['status'] = true;
         $return['msg'] = '成功';
