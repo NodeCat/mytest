@@ -18,10 +18,8 @@ function get_batch($code=''){
     if(empty($code)) {
         $code = get_sn('batch');
     }
-
     $map['code'] = $code;
     $re = M('stock_batch')->where($map)->find();
-
     if(empty($re)){
         $data['code'] = $code;
         $data['product_date'] = get_time();
@@ -102,7 +100,6 @@ function set_site_config() {
     }
     C($config);
 }
-
 function check_maintain() {
 	$res = C('MAINTENANCE');
 	if($res === 'Closed'){
@@ -139,7 +136,6 @@ function auth_md5($str, $key = ''){
     }
 	return '' === $str ? '' : md5(sha1($str) . $key);
 }
-
 /**
  * 系统加密方法
  * @param string $data 要加密的字符串
@@ -165,7 +161,6 @@ function auth_encrypt($data, $key, $expire = 0) {
 	}
 	return str_replace('=', '', base64_encode($str));
 }
-
 /**
  * 系统解密方法
  * @param string $data 要解密的字符串 （必须是auth_encrypt方法加密的字符串）
@@ -198,7 +193,6 @@ function auth_decrypt($data, $key){
 	}
 	return base64_decode($str);
 }
-
 function logs($id, $data, $action = ''){
     $M = M('log');
     if(empty($action)) {
@@ -243,7 +237,6 @@ function X($t, $id=null, $value = ''){
             S($t.$id,$value);
             return;
         }
-
         if(empty($data)){
             $data = M($t)->find($id);
             S($t.$id,$data,MT);
@@ -264,15 +257,12 @@ function auth_module_black_list($module){
         'Menu',
         'Article',
         'Wave',
-
         );
     if(in_array($module, $black_list)){
         return true;
     }
-
     return false;
 }
-
 /**
 * 校验是否是日期
 */
@@ -283,7 +273,6 @@ function check_data_is_valid($str){
     }
     return true;
 }
-
 /**
  * Ajax json 返回结果
  * @param Int ids 状态
@@ -293,17 +282,11 @@ function check_data_is_valid($str){
  * @since 2015-06-13
  */
 function echojson($status, $data, $msg){
-
     $return['status'] = $status;
-
     $return['msg']    = $msg;
-
     $return['data']   = $data;
-
     echo json_encode($return); exit;
-
 }
-
 /**
  * getSubByKey 将两个二维数组根据指定的字段来连接起来
  * @param Array $pArray 二维数组
@@ -312,27 +295,16 @@ function echojson($status, $data, $msg){
  * @since 2015-06-13
  */
 function getSubByKey($pArray, $pKey = "") {
-
     $result = array();
-
     if(is_array($pArray)){
-
         foreach($pArray as $key=>$value){
-
             foreach ($value as $keys => $values) {
-
                 if($keys == $pKey){
-
                     array_push($result, $values);
-
                 }
-
             }
-
         }
-
     }
-
     return $result;
     
 }
