@@ -560,6 +560,14 @@ class WaveLogic{
 
     		}else{
 
+                $tablename = 'stock_bill_out';
+
+                $data['refused_type'] = 2;
+
+                $map['id'] = $value;
+
+                $this->updateStauts($tablename, $data, $map);
+
     			array_push($result['falseResult'], $value);
 
     		}
@@ -569,6 +577,20 @@ class WaveLogic{
     	$result['tureResult'] = implode(',', $result['tureResult']);
 
     	return $result;
+
+    }
+
+    public function updateStauts($tablename, $data, $map){
+
+        $result = TRUE;
+
+        if(!$map || !$tablename || !$data) $result = FALSE;
+
+        $m = M($tablename);
+
+        if(!$m->where($map)->save($data)) $result = FALSE;
+
+        return $result;
 
     }
 
