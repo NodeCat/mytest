@@ -1,6 +1,0 @@
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('Wave',3,'Wms','Wms','Wave','','Wms/Wave/index','波次',1,2,1);
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('index',4,'Wms','Wms','Wave','index','Wms/Wave/index','波次',1,342,1);
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('Distribution',3,'Wms','Wms','Distribution','','Wms/Distribution/index','配送路线单',1,2,1);
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('index',4,'Wms','Wms','Distribution','index','Wms/Distribution/index','配送路线单',1,344,1);
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('WavePicking',3,'Wms','Wms','WavePicking','','Wms/WavePicking/index','分拣任务',1,2,1);
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('index',4,'Wms','Wms','WavePicking','index','Wms/WavePicking/index','分拣任务',1,346,1);

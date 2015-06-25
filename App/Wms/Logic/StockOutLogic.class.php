@@ -1,6 +1,5 @@
 <?php
 namespace Wms\Logic;
-
 class StockOutLogic{
 	/**
 	* 创建出库单
@@ -21,13 +20,11 @@ class StockOutLogic{
    		if(empty($params['wh_id']) || empty($params['detail'])){
    			return false;
    		}
-
         //查找出库单类型
         $stock_out_type = isset($params['type'])? $params['type'] : 'SO';
         $map['type'] = $stock_out_type;
         $type = M('stock_bill_out_type')->where($map)->getField('id');
         unset($map);
-
         $data['code'] = get_sn($stock_out_type, $params['wh_id']);
         $data['wh_id'] = $params['wh_id'];
         $data['line_id'] = isset($params['line_id']) ? $params['line_id'] : '';
@@ -46,17 +43,13 @@ class StockOutLogic{
         $data['updated_time'] = date('Y-m-d H:i:s');
         $data['updated_user'] = UID;
         $data['is_deleted'] = 0;
-
         //添加出库单
         $stock_out_id = M('stock_bill_out')->add($data);
-
         //请求pms数据
         $pro_codes = array_column($params['detail'],'pro_code');
         $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
         unset($pro_codes);
-
         $total = 0;//计算一个出库单的总出库数量
-
         //添加明细
         foreach($params['detail'] as $val) {
             $detail = array();
@@ -83,7 +76,6 @@ class StockOutLogic{
             $detail['updated_time'] = date('Y-m-d H:i:s');
             $detail['updated_user'] = UID;
             $detail['is_deleted'] = 0;
-
             $total += $val['order_qty'];
             $res = M('stock_bill_out_detail')->add($detail);
         }
