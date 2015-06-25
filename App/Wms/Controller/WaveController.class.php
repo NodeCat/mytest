@@ -213,9 +213,12 @@ class WaveController extends CommonController {
                 $data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];*/
 
                 //区域标识
-                $location_info = A('Location','Logic')->getParentById($bill_out['line_id']);
+                //$location_info = A('Location','Logic')->getParentById($bill_out['line_id']);
 
-                $result[$key]['area_name'] = $location_info['name'];
+                //echo $bill_out['line_id'];die;
+
+                $result[$key]['area_name'] = getLineNameByid($bill_out['line_id']);//$location_info['name'];
+                //dump($result[$key]['area_name']);die;
 
                 $result[$key]['type_cn'] = $type_cn;
 
