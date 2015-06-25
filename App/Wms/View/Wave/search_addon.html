@@ -1,32 +1,22 @@
 <notempty name="auth['packing']">
-
 	<div class="form-group  col-lg-1">
 	<a href="#" id='packing' class="btn btn-sm btn-default btn-tool">开始拣货</a>
 	</div>
-
 </notempty>
-
 <notempty name="auth['deleted']">
 	
 	<div class="form-group  col-lg-1">
 	<a href="#" id='delAll' class="btn btn-sm btn-default btn-tool">删除</a>
 	</div>
-
 </notempty>
 <script type="text/javascript">
 $(function(){
 	$('#packing').on('click',function(){
-
 		var ids = getChecked();
-
 		var urls = '/Wave/packTask';
-
 		var ids = getChecked();
-
 		var param = {};
-
 		param.ids = ids;
-
 		$.ajax({
 			url:'/Wave/packing',
 			type:'post',
@@ -34,13 +24,11 @@ $(function(){
 			dataType:'json',
 			data:'ids='+ids,
 			success: function(json){
-
 				if(json.status=='1'){
 					alert(json.msg);
                     refresh_list();
 				}
 				if(json.status=='0'){
-
 					alert(json.msg);
 					//请求分拣任务
 					$.post(urls,param,function(json){},'json');
@@ -50,11 +38,8 @@ $(function(){
 		});
 		return true;
 	})
-
 	$(document).on('click','#delAll',function(res){
-
 		var ids = getChecked();
-
 		//alert(ids);return false;
 		
 		$.ajax({
@@ -75,9 +60,7 @@ $(function(){
 				}
 			}
 		});
-
 	});
-
 	
 })
 </script>

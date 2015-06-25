@@ -1,6 +1,5 @@
 <?php
 namespace Wms\Logic;
-
 class WavePickingLogic{
     protected $order_max = 10; //每个线路每次处理最多订单数
     /**波次运行
@@ -16,11 +15,9 @@ class WavePickingLogic{
             $map['is_deleted'] = 0;
         	$bill_out_ids = M('stock_wave_detail')->where($map)->field('bill_out_id')->select();
         	unset($map);
-
         	if(empty($bill_out_ids)){
         		return array('status'=>0,'msg'=>'波次中的出库单不存在');
         	}
-
             //结果
             $result_arr = array();
             //订单数量
@@ -52,18 +49,14 @@ class WavePickingLogic{
                         unset($data);
                         continue;
                     }
-
                     //按照line_id 创建数组
                     if(!isset($result_arr[$bill_out_info['line_id']])){
                         $result_arr[$bill_out_info['line_id']] = array();
                     }
-
         			//根据bill_out_id 查询出库单详情
         			$map['pid'] = $bill_out_info['id'];
         			$bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
         			unset($map);
-
-
         			//遍历出库单详情
                     foreach($bill_out_detail_infos as $bill_out_detail_info){
                         //记录SKU种类数量
@@ -85,13 +78,11 @@ class WavePickingLogic{
                             $result_arr[$bill_out_info['line_id']]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['src_location_id'] = $assign_stock_info['location_id'];
                         }
                     }
-
                     //增加订单数量
                     //$order_sum++;
                     $result_arr[$bill_out_info['line_id']]['order_sum']++;
                     //记录订单id到bill_out_id
                     $result_arr[$bill_out_info['line_id']]['bill_out_ids'] .= $bill_out_info['id'].',';
-
                     
                     //把订单状态置为待拣货
                     $data['status'] = 4;
@@ -99,18 +90,15 @@ class WavePickingLogic{
                     M('stock_bill_out')->where($map)->save($data);
                     unset($map);
                     unset($data);
-
                     //处理分拣单 每个分拣单最多处理$order_max个订单
                     $this->exec_order($result_arr);
                 }        		
         	}
-
             //查询当前仓库的发货区的location_id
             $map['wh_id'] = session('user.wh_id');
             $map['code'] = 'PACK';
             $pack_info = M('Location')->where($map)->field('id')->find();
             unset($map);
-
             $map['pid'] = $pack_info['id'];
             $pack_location_info = M('Location')->where($map)->field('id')->find();
             $dest_location_id = $pack_location_info['id'];
@@ -128,11 +116,8 @@ class WavePickingLogic{
                 $data['wh_id'] = session('user.wh_id');
                 $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
-
-
                 $wave_picking = D('WavePicking');
                 $data = $wave_picking->create($data);
-
                 foreach($result['detail'] as $val){
                     $v['pro_code'] = $val['pro_code'];
                     $v['pro_qty'] = $val['pro_qty'];
@@ -141,14 +126,11 @@ class WavePickingLogic{
                     $v['dest_location_id'] = $dest_location_id;
                     $data['detail'][] = $v;
                 }
-
                 //创建分拣单
                 $wave_picking->relation('detail')->add($data);
-
                 //创建完毕后 把该线路的数据释放掉
                 unset($result_arr[$line]);
             }
-
             //更新波次的状态
             $data['status'] = 900;
             $map['id'] = $wave_id;
@@ -156,10 +138,8 @@ class WavePickingLogic{
             unset($data);
             unset($map);
         }
-
         return array('status'=>1);
     }
-
     /**
     * 处理分拣单 每个分拣单最多处理$order_max个订单
     * @param
@@ -171,12 +151,10 @@ class WavePickingLogic{
         $map['code'] = 'PACK';
         $pack_info = M('Location')->where($map)->field('id')->find();
         unset($map);
-
         $map['pid'] = $pack_info['id'];
         $pack_location_info = M('Location')->where($map)->field('id')->find();
         $dest_location_id = $pack_location_info['id'];
         unset($map);
-
         //开始创建分拣单 按照线路
         foreach($result_arr as $line => $result){
             //如果某个线路上的订单处理了10个 开始创建一个分拣单
@@ -191,11 +169,8 @@ class WavePickingLogic{
                 $data['wh_id'] = session('user.wh_id');
                 $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
-
-
                 $wave_picking = D('WavePicking');
                 $data = $wave_picking->create($data);
-
                 foreach($result['detail'] as $val){
                     $v['pro_code'] = $val['pro_code'];
                     $v['pro_qty'] = $val['pro_qty'];
@@ -204,194 +179,80 @@ class WavePickingLogic{
                     $v['dest_location_id'] = $dest_location_id;
                     $data['detail'][] = $v;
                 }
-
                 //创建分拣单
                 $wave_picking->relation('detail')->add($data);
-
                 //创建完毕后 把该线路的数据释放掉
                 unset($result_arr[$line]);
             }
         }
     }
-
     //$code 分拣单code
     public function updateBiOuStock($code){
-
         //根据分拣单code 查到出库单
-
         $map = array();
-
         $detailW = array();
-
         $stockW = array();
-
         $stockSave = array();
-
         $packingW = array();
-
         $packSave = array();
-
         $map['code'] = $code;
-
         $m = M('stock_wave_picking');
-
         $pick_detail_m = M('stock_wave_picking_detail');
-
         $pick_detail_w = array();
-
         $wave_detail = M('stock_wave_detail');
-
         $bill_out_m = M('stock_bill_out');
-
         $wave_R = $m->field('wave_id,id,wh_id')->where($map)->find();
-
         if(!$wave_R['wave_id'] || !$wave_R['id'] || !$wave_R) return FALSE;
-
         $wave_id = $wave_R['wave_id'];
-
         $packing_id = $wave_R['id'];
-
         $wh_id = $wave_R['wh_id'];
-
         $packingW['code'] = $code;
-
         $packSave['status'] = 'done';
-
         if(!$m->where($packingW)->save($packSave)) return FALSE;
-
         $pick_detail_w['pid'] = $packing_id;
-
         $pick_detail_w['is_deleted'] = 0;
-
         $result = $pick_detail_m->field('pro_qty,pro_code,src_location_id,dest_location_id,batch')->where($pick_detail_w)->select();
         
         if(!$result) return FALSE;
-
         //扣库存和移动货物
         //@todo liang 修改库存
-
         foreach ($result as $key => $value) {
-
             $param = array();
-
             $param['variable_qty'] = $value['pro_qty'];
-
             $param['wh_id'] = $wh_id;
-
             $param['src_location_id'] = $value['src_location_id'];
-
             $param['dest_location_id'] = $value['dest_location_id'];
-
             $param['pro_code'] = $value['pro_code'];
-
             $param['batch'] = $value['batch'];
-
             $param['status'] = 'qualified';
-
             $param['change_src_assign_qty'] = '1';
-
             try{
-
                 $res = A('Stock','Logic')->adjustStockByMove($param);
-
             }catch(Exception $e){
-
                 continue;
-
             }
-
         }
-
         //判读该波次下得分拣单全部分拣完成，在改波次下得出库单状态为已复核
-
         /*$pickedW = array();
-
         $pickedW['wave_id'] = $wave_id;
-
         $pickedW['status'] = array('in','draft,picking'); 
-
         if($m->where($pickedW)->select()) return TRUE;   
-
         $detailW['pid'] = $wave_id;
-
         $wave_detailR = $wave_detail->field('bill_out_id')->where($detailW)->select();
-
         if(!$wave_detailR) return FALSE;
-
         $bill_outArr = getSubByKey($wave_detailR, 'bill_out_id');
-
         if(!$bill_outArr) return FALSE;
-
         $bill_out_idStr = implode(',', $bill_outArr);*/
-
         $pickedW = array();
-
         $pickedW['id'] = $packing_id;
-
         $pickedW['status'] = 'done'; 
-
         $bill_out_ids = $m->where($pickedW)->getField('bill_out_ids');
-
         if(!$bill_out_ids) return FALSE;
-
         //$bill_out_idStr = implode(',', $bill_outArr);
-
         $stockW['id'] = array('in', $bill_out_ids);
-
         $stockW['status'] = 4;
-
         $stockSave['status'] = 5;
-
         if(!$bill_out_m->where($stockW)->save($stockSave)) return FALSE;
-
         return TRUE;
-
-
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

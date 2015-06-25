@@ -8,34 +8,23 @@
       </div>
       <div class="modal-body">
         <div class="container-fluid lgo">
-
           <div class="row">
-
             <div class="col-md-2">波次号：</div>
             <div class="col-md-10">{{wave_id}}</div>
-
           </div>
           <br>
-
           <div class="row">
-
             <div class="col-md-2">订单数：</div>
             <div class="col-md-10">{{order_count}}</div>
-
           </div>
-
           <br>
-
           <div>
-
             <div class="alert alert-danger" style="word-break: break-all;" role="alert">
                 有<strong>{{false_bill_out_count}}</strong> 个订单因库存不足未加入波次！
                 <br>
                 出库单分别为<strong>{{false_bill_out_result}}</strong>；
             </div>
-
           </div>
-
         </div>
       </div>
       <div class="modal-footer">

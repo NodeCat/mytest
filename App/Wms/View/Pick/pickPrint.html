@@ -11,13 +11,11 @@
       page-break-inside: avoid;
       page-break-after: always;
     }
-
     .orderinfo, .mapimg {
       page-break-before: avoid;
       page-break-inside: avoid;
       min-height: 500px;
     }
-
     .all_count{
       margin-top: 20px;
     }
@@ -25,7 +23,6 @@
 <a href="javascript:void(0);" ng-click="printAll" class="hidden-print btn btn-danger ng-binding">打印全部</a>
 <div style="margin-bottom:10px;"></div>
  <volist name="list" id="vo" key="row" empty="">
-
   <div class="printpage direction" ng-repeat="items in list">
     <div class="orderinfo">
     <div class="row">
@@ -97,58 +94,31 @@
 </div>
 <div class="clearfix"></div>
 </volist>
-
 </div>
-
 <script type="text/javascript">
-
 (function(){
-
   $(document).on('click','.all_count a',function(){
-
     $('.printpage').addClass('hidden-print');
-
     $(this).parent().parent().parent().removeClass('hidden-print');
-
     window.print();
-
     var ids = "<php> echo I('ids')</php>";
-
     var id = $(this).attr('data-var');
-
     var url = "/Pick/doPrint";
-
     var param = {};
-
     param.ids = id;
-
     var callback = function(res){};
-
     $.post(url, param, callback, 'json');
-
   });
-
   $(document).on('click','[ng-click = printAll]',function(){
-
     $('.printpage').removeClass('hidden-print');
-
     window.print();
-
     var ids = "<php> echo I('ids')</php>";
     
     var url = "/Pick/doPrint";
-
     var param = {};
-
     param.ids = ids;
-
     var callback = function(res){};
-
     $.post(url, param, callback, 'json');
-
-
   });
-
 })();
-
 </script>

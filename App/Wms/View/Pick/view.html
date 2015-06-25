@@ -2,31 +2,22 @@
 <div class="panel panel-default">
   
   <div class="panel-body">
-
     <div class="row">
     </div>
     
-
 <div class="row">
-
 <div class="table-responsive">
 <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
   <thead>
     <tr class="text-center">
-
       <th>行号</th><th>货品号</th><th>货品名</th><th>待拣货量</th><th>批次号</th><th>从库位</th><th>到库位</th>
       
     </tr>
   </thead>
-
   <tbody>
-
     <volist name="pickDetail" id="vo" key="row" empty="">
-
     <tr class="tr-cur">
-
         <td style="width:10%;">{$row}</td>
-
         <td style="width:10%;">{$vo.pro_code}</td>
         
         <td style="width:15%;">{$vo.pro_code|getPronameByCode='name',###}</td>
@@ -34,27 +25,21 @@
         <td style="width:30%;">{$vo.pro_qty}</td>
         
         <td style="width:10%;">{$vo.batch}</td>
-
         <td style="width:10%;">{$vo.src_location_id|getLocationNameById='code',###}</td>
-
         <td style="width:10%;">{$vo.dest_location_id|getLocationNameById='code',###}</td>
          
     </tr>
-
     </volist>
   </tbody>
 </table>
 </div>
 <!-- <include file="Index:pager"/> -->
-
 <style type="text/css">
   .table-operate-btn{
     word-wrap:keep-all;
     white-space: nowrap;
   }
 </style>
-
-
 </div>
 <include file="prolist-view" />
 </div>
