@@ -15,7 +15,7 @@ class WarehouseApi extends Controller{
         $map['is_deleted'] = 0;
         $map['status'] = 2;
 
-        $res = $warehouse->field('code as id, name')->where($map)->select();      
+        $res = $warehouse->field('id, name')->where($map)->select();      
         if(empty($res)) {
             $return = array('error_code' => '401', 'error_message' => 'get warehouse error', 'data' => '' );
             $this->ajaxReturn($return);
