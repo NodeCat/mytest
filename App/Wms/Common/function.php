@@ -270,3 +270,38 @@ function getLineNameByid($id){
     return $result;
     
 }
+/**
+ * Ajax json 返回结果
+ * @param Int ids 状态
+ * @param Array $data 数据
+ * @param String $meg 提示信息
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function echojson($status, $data, $msg){
+    $return['status'] = $status;
+    $return['msg']    = $msg;
+    $return['data']   = $data;
+    echo json_encode($return); exit;
+}
+/**
+ * getSubByKey 将两个二维数组根据指定的字段来连接起来
+ * @param Array $pArray 二维数组
+ * @param String $pKey 指定的键
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getSubByKey($pArray, $pKey = "") {
+    $result = array();
+    if(is_array($pArray)){
+        foreach($pArray as $key=>$value){
+            foreach ($value as $keys => $values) {
+                if($keys == $pKey){
+                    array_push($result, $values);
+                }
+            }
+        }
+    }
+    return $result;
+    
+}
