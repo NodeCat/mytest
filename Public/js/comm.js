@@ -198,6 +198,17 @@ $('.modal').on('shown.bs.modal', function (e) {
 		$($(this).data('target')+' #title').text($(this).data('title'));
 	});
 
+	$('.content').on('click','.table-toolbar .btn-print',function(){
+		var _location_ids=getChecked();
+		if(!_location_ids){
+			alert('请选中要操作的行。');
+			return false;
+		}
+
+		window.location.href=$(this).data('href')+'?location_ids='+_location_ids;
+		return false;
+	});
+
 	$('.content').on('click','.table-toolbar .btn-delete',function(){
 		var params=getChecked();
 		if(!params){
