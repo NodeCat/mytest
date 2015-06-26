@@ -1,1 +1,0 @@
-insert into wms.auth_authority (`name`,`type`,`app`,`group`,`module`,`action`,`url`,`title`,`show`,`pid`,`status`) VALUES ('cancel',4,'Wms','Wms','PurchaseRefund','cancel','Wms/PurchaseRefund/cancel','作废',1,331,1);
