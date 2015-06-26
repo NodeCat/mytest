@@ -178,7 +178,11 @@ class PurchaseInDetailController extends CommonController {
         }
 
         //查询符合条件的采购入库单
-        $purchase_in_details = M('erp_purchase_in_detail')->where($map)->order('id DESC')->select();
+        $purchase_in_details = M('erp_purchase_in_detail')
+        ->join("inner join stock_purchase on stock_purchase.code=erp_purchase_in_detail.purchase_code ")
+        ->join("inner join partner on stock_purchase.partner_id=partner.id ")
+        ->field('erp_purchase_in_detail.*,partner.name as partner_name')
+        ->where($map)->order('id DESC')->select();
 
         if(empty($purchase_in_details)){
             $data['status'] = 0;
@@ -187,39 +191,41 @@ class PurchaseInDetailController extends CommonController {
             $this->ajaxReturn($data);
         }
 
-        $purchase_in_details = A('Pms','Logic')->add_fields($purchase_in_details,'pro_name');
+        //$purchase_in_details = A('Pms','Logic')->add_fields($purchase_in_details,'pro_name');
 
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel();
 
         $Excel->getActiveSheet()->setCellValue('A1', '入库单号'); 
-        $Excel->getActiveSheet()->setCellValue('B1', '采购单号'); 
-        $Excel->getActiveSheet()->setCellValue('C1', '到货单号');
-        $Excel->getActiveSheet()->setCellValue('D1', '货品号');
-        $Excel->getActiveSheet()->setCellValue('E1', '入库数量');
-        $Excel->getActiveSheet()->setCellValue('F1', '单价');
-        $Excel->getActiveSheet()->setCellValue('G1', '小计');
-        $Excel->getActiveSheet()->setCellValue('H1', '支付状态');
-        $Excel->getActiveSheet()->setCellValue('I1', '付款时间');
+        $Excel->getActiveSheet()->setCellValue('B1', '供应商'); 
+        $Excel->getActiveSheet()->setCellValue('C1', '采购单号'); 
+        $Excel->getActiveSheet()->setCellValue('D1', '到货单号');
+        $Excel->getActiveSheet()->setCellValue('E1', '货品号');
+        $Excel->getActiveSheet()->setCellValue('F1', '入库数量');
+        $Excel->getActiveSheet()->setCellValue('G1', '单价');
+        $Excel->getActiveSheet()->setCellValue('H1', '小计');
+        $Excel->getActiveSheet()->setCellValue('I1', '支付状态');
+        $Excel->getActiveSheet()->setCellValue('J1', '付款时间');
 
         $i = 2; 
         foreach($purchase_in_details as $purchase_in_detail){
             $Excel->getActiveSheet()->setCellValue('A' . $i, $purchase_in_detail['id']); 
-            $Excel->getActiveSheet()->setCellValue('B' . $i, $purchase_in_detail['purchase_code']); 
-            $Excel->getActiveSheet()->setCellValue('C' . $i, $purchase_in_detail['stock_in_code']);
-            $Excel->getActiveSheet()->setCellValue('D' . $i, $purchase_in_detail['pro_code']); 
-            $Excel->getActiveSheet()->setCellValue('E' . $i, $purchase_in_detail['pro_qty']); 
-            $Excel->getActiveSheet()->setCellValue('F' . $i, $purchase_in_detail['price_unit']); 
-            $Excel->getActiveSheet()->setCellValue('G' . $i, $purchase_in_detail['price_subtotal']); 
-            $Excel->getActiveSheet()->setCellValue('H' . $i, $purchase_in_detail['status']);
-            $Excel->getActiveSheet()->setCellValue('I' . $i, $purchase_in_detail['updated_time']); 
+            $Excel->getActiveSheet()->setCellValue('B' . $i, $purchase_in_detail['partner_name']); 
+            $Excel->getActiveSheet()->setCellValue('C' . $i, $purchase_in_detail['purchase_code']); 
+            $Excel->getActiveSheet()->setCellValue('D' . $i, $purchase_in_detail['stock_in_code']);
+            $Excel->getActiveSheet()->setCellValue('E' . $i, $purchase_in_detail['pro_code']); 
+            $Excel->getActiveSheet()->setCellValue('F' . $i, $purchase_in_detail['pro_qty']); 
+            $Excel->getActiveSheet()->setCellValue('G' . $i, $purchase_in_detail['price_unit']); 
+            $Excel->getActiveSheet()->setCellValue('H' . $i, $purchase_in_detail['price_subtotal']); 
+            $Excel->getActiveSheet()->setCellValue('I' . $i, $this->filter['status'][$purchase_in_detail['status']]);
+            $Excel->getActiveSheet()->setCellValue('J' . $i, $purchase_in_detail['updated_time']); 
             $i ++;
         }
 
         date_default_timezone_set("Asia/Shanghai");
         header("Content-Type: application/force-download");
-        header("Content-Type: application/download");
+        header("Content-Type: application/download;charset=utf-8");
         header("Content-Transfer-Encoding: binary");
         header('Accept-Ranges: bytes');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
