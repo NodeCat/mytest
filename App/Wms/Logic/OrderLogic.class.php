@@ -16,12 +16,12 @@ class OrderLogic{
     }
 
 	public function order($map=''){
-		$url = '/order/lists';
+		$url = '/suborder/lists';
 		$res = $this->get($url,$map);
 		return $res['orderlist'];
 	}
 	public function sign($map='') {
-    	$url = '/order/set_status';
+    	$url = '/suborder/set_status';
 		$res = $this->get($url,$map);
 		return $res;
     }

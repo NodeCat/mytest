@@ -114,7 +114,7 @@ class IndexController extends Controller {
             
             $map['dist_id'] = $res['dist_id'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-            $A = A('Tms/Order','Logic');
+            $A = A('Common/Order','Logic');
             $orders = $A->order($map);
             $this->data = $orders;
             $J=0;
@@ -313,7 +313,7 @@ class IndexController extends Controller {
             
             $map['dist_id'] = $res['dist_id'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-            $A = A('Tms/Order','Logic');
+            $A = A('Common/Order','Logic');
             $orders = $A->order($map);
             foreach ($orders as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
@@ -353,7 +353,7 @@ class IndexController extends Controller {
 
     //司机签收
     public function sign() {
-        $map['order_id'] = I('post.id/d',0);
+        $map['suborder_id'] = I('post.id/d',0);
         $map['status']   = '6';
         $map['deal_price'] = I('post.deal_price/f',0);
         $map['sign_msg'] = I('post.sign_msg');
@@ -368,20 +368,20 @@ class IndexController extends Controller {
             $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
             $map['order_details'][] = $row;
         }
-        $map['driver'] = '司机'.session('user.username').session('user.mobile');
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         
-        $A = A('Tms/Order','Logic');
+        $A = A('Common/Order','Logic');
         $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
 
     //客户退货
     public function reject() {
-        $map['order_id'] = I('post.id/d',0);
+        $map['suborder_id'] = I('post.id/d',0);
         $map['status'] = '7';
         $map['sign_msg'] = I('post.sign_msg');
-        $map['driver'] = '司机'.session('user.username').session('user.mobile');
-        $A = A('Tms/Order','Logic');
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+        $A = A('Common/Order','Logic');
         $res = $A->set_status($map);
         $this->ajaxReturn($res);
     }
@@ -413,7 +413,7 @@ class IndexController extends Controller {
             //查询该配送单的信息
             //$map['dist_number'] = substr($id, 2);
             $map['id'] = $id;
-            $A = A('Tms/Order','Logic');
+            $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
             
             //if($id != $dist['dist_number']) {
@@ -454,10 +454,10 @@ class IndexController extends Controller {
                 $orders = $A->order($map);
                 unset($map);
                 $map['status']  = '8';//已装车
-                $map['driver'] = '司机'.session('user.username').session('user.mobile');
+                $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['id'];
-                    $map['order_id'] = $val['id'];
+                    $map['suborder_id'] = $val['id'];
                     $res = $A->set_status($map);
                 }
                 unset($map);
