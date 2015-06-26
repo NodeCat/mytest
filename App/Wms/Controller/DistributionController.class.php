@@ -309,7 +309,10 @@ class DistributionController extends CommonController {
         if ($result['status'] == false) {
             $this->msgReturn(false, $result['msg']);
         }
-        $result = $result['list'];
+        
+        //替换订单sku
+        $info = $D->replace_sku_info($result, $get);
+        $result = $info;
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
         $data['is_printed'] = $dis['is_printed']; //是否打印
