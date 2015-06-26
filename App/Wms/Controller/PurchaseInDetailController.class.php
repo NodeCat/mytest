@@ -130,4 +130,28 @@ class PurchaseInDetailController extends CommonController {
 
 		$this->ajaxReturn($data);
     }
+
+    //导出
+    public function export(){
+        $purchase_code = I('post.purchase_code');
+        $stock_in_code = I('post.stock_in_code');
+        $pro_code = I('post.pro_code');
+        $status = I('post.status');
+
+        if(!empty($purchase_code)){
+            $map['purchase_code'] = array(array('like','%'.$purchase_code.'%'));
+        }
+        if(!empty($stock_in_code)){
+            $map['stock_in_code'] = array(array('like','%'.$stock_in_code.'%'));
+        }
+        if(!empty($pro_code)){
+            $map['pro_code'] = array(array('like','%'.$pro_code.'%'));
+        }
+        if(!empty($status)){
+            $map['status'] = $status;
+        }
+        //查询符合条件的采购入库单
+        $purchase_in_details = M('erp_purchase_in_detail')->where($map)->select();
+        var_dump($purchase_in_details);
+    }
 }
