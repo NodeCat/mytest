@@ -353,9 +353,15 @@ class WaveLogic{
     }
     public function updateStauts($tablename, $data, $map){
         $result = TRUE;
-        if(!$map || !$tablename || !$data) $result = FALSE;
+
+        if(!$map || !$tablename || !$data){
+            $result = FALSE;
+        }
+
         $m = M($tablename);
-        if(!$m->where($map)->save($data)) $result = FALSE;
+        if(!$m->where($map)->save($data)){
+            $result = FALSE;
+        }
         return $result;
     }
         

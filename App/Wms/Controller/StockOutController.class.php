@@ -4,30 +4,30 @@ use Think\Controller;
 class StockOutController extends CommonController {
     
     protected $filter = array(
-                    'line_id'=>array(
-                        ),
-                    'status'=>array(
-                        '1'=>'待生产',
-                        '2'=>'已出库',
-                        '3'=>'波次中',
-                        '4'=>'待拣货',
-                        '5'=>'待复核',
-                        '6'=>'己复核'  
-                        ),
-                   'process_type'=>array(
-                        '1'=>'正常单',
-                        '2'=>'取消单'
-                        ),
-                    'refused_type'=>array(
-                        '1'=>'空',
-                        '2'=>'缺货'
-                        ),
-                    'op_time'=>array(
-                        '0'=>'全天',
-                        '1'=>'上午',
-                        '2'=>'下午'
-                        )
-                    );
+        'line_id'=>array(
+            ),
+        'status'=>array(
+            '1'=>'待生产',
+            '2'=>'已出库',
+            '3'=>'波次中',
+            '4'=>'待拣货',
+            '5'=>'待复核',
+            '6'=>'己复核'  
+            ),
+       'process_type'=>array(
+            '1'=>'正常单',
+            '2'=>'取消单'
+            ),
+        'refused_type'=>array(
+            '1'=>'空',
+            '2'=>'缺货'
+            ),
+        'op_time'=>array(
+            '0'=>'全天',
+            '1'=>'上午',
+            '2'=>'下午'
+            )
+        );
     protected $columns = array (  
         'code' => '出库单号',
         'type_name' => '出库单类型',

@@ -12,42 +12,42 @@ namespace Wms\Controller;
 use Think\Controller;
 class WaveController extends CommonController {
 	protected $filter = array(
-              'company_id'=>array(
-                  '1' =>'大厨波次',
-                  '2' =>'大果波次'
-                 ),
-               'status'=>array(
-	               '200'=>'待运行',
-	               '201'=>'运行中',
-	               '900'=>'已释放'
-                )
-              );
+        'company_id'=>array(
+            '1' =>'大厨波次',
+            '2' =>'大果波次'
+           ),
+         'status'=>array(
+           '200'=>'待运行',
+           '201'=>'运行中',
+           '900'=>'已释放'
+          )
+        );
 	protected $columns = array (
-  				'id'                => '',
-  				'wave_id'				    => '波次号',
-  				'company_id'        => '波次主表名称',
-  				'order_count'       => '总单数',
-  				'line_count'        => '总行数',
-  				'total_count'       => '总件数',
-  				'status' 				    => '波次状态',
-  				'start_time'        => '开始时间',
-  				'end_time'          => '结束时间',
-			);
+				'id'                => '',
+				'wave_id'				    => '波次号',
+				'company_id'        => '波次主表名称',
+				'order_count'       => '总单数',
+				'line_count'        => '总行数',
+				'total_count'       => '总件数',
+				'status' 				    => '波次状态',
+				'start_time'        => '开始时间',
+				'end_time'          => '结束时间',
+		);
 	protected $query   = array (
-			'stock_wave.id' 	=>    array ( 
-			 	'title' 		=> '波次号', 
-			 	'query_type' 	=> 'eq', 
-			 	'control_type' 	=> 'text', 
-			 	'value' 		=> 'id',
+			'stock_wave.id' 	    =>    array ( 
+  			 	'title' 		      => '波次号', 
+  			 	'query_type' 	    => 'eq', 
+  			 	'control_type'    => 'text', 
+  			 	'value' 		      => 'id',
 			),
-			'stock_wave.type'   =>    array ( 
-			 	'title'        	=> '波次状态', 
-			 	'query_type'   	=> 'eq', 
-			 	'control_type' 	=> 'select', 
-			 	'value' => array(
-			 		'200'		=> '待运行',
-			 		'201'		=> '运行中',
-			 		'900'		=> '已释放',
+			'stock_wave.type'     =>    array ( 
+			 	'title'        	    => '波次状态', 
+			 	'query_type'   	    => 'eq', 
+			 	'control_type' 	    => 'select', 
+			 	'value'             => array(
+			 		'200'		          => '待运行',
+			 		'201'		          => '运行中',
+			 		'900'		          => '已释放',
 			 		),
 			),
 	);
@@ -72,17 +72,17 @@ class WaveController extends CommonController {
      * @since 2015-06-15
      */
     public function packing(){
-    	$ids = I('ids');
-    	$m = M('stock_wave');
-    	$waveLogic = A('Wave','Logic');
-    	$hasIsAuth = $waveLogic->hasIsAuth($ids);
-    	if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
-    	$controllerStatus = $waveLogic->execPack($ids);
-    	if($controllerStatus === FALSE){
-    		echojson('1','','分拣失败！');
-    	}else{
-    		echojson('0','','操作成功，分拣中！');
-    	}
+      	$ids = I('ids');
+      	$m = M('stock_wave');
+      	$waveLogic = A('Wave','Logic');
+      	$hasIsAuth = $waveLogic->hasIsAuth($ids);
+      	if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+      	$controllerStatus = $waveLogic->execPack($ids);
+      	if($controllerStatus === FALSE){
+      		echojson('1','','分拣失败！');
+      	}else{
+      		echojson('0','','操作成功，分拣中！');
+      	}
     	
     }
     /**
@@ -92,17 +92,22 @@ class WaveController extends CommonController {
      * @since 2015-06-15
      */
     public function delAll(){
-    	$ids = I('ids');
-    	$m = M('stock_wave');
-    	$waveLogic = A('Wave','Logic');
-    	$hasIsAuth = $waveLogic->hasIsAuth($ids);
-    	if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
-    	$controllerStatus = $waveLogic->delWave($ids);
-    	if($controllerStatus === FALSE){
-    		echojson('1','','删除失败！');
-    	}else{
-    		echojson('0','','删除成功！');
-    	}
+      	$ids = I('ids');
+      	$m = M('stock_wave');
+      	$waveLogic = A('Wave','Logic');
+      	$hasIsAuth = $waveLogic->hasIsAuth($ids);
+
+      	if($hasIsAuth === FALSE){
+            echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+        }
+        
+      	$controllerStatus = $waveLogic->delWave($ids);
+
+      	if($controllerStatus === FALSE){
+      		echojson('1','','删除失败！');
+      	}else{
+      		echojson('0','','删除成功！');
+      	}
     }
     public function after_search(&$map){
     	$map['wh_id'] = session('user.wh_id');
@@ -161,11 +166,12 @@ class WaveController extends CommonController {
    */
   public function packTask(){
     	//@todo这里加个钩子调用李昂的分拣接口
-      $ids = I('ids');
+      $ids       = I('ids');
       $waveLogic = A('Wave','Logic');
       $hasIsAuth = $waveLogic->hasIsAuth($ids, '900');
       if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
-      $wave_ids = explode(',', $ids);
+      $wave_ids  = explode(',', $ids);
+
     	A('WavePicking','Logic')->waveExec($wave_ids);
   }
   
