@@ -1,0 +1,224 @@
+
+<div class="col-md-8 col-lg-8" style="padding:0px">
+<block name ="searchbar">
+<eq name="table.searchbar" value="true">
+  <include file="searchbar"/>
+</eq>
+</block>
+
+<block name ="list">
+<div class="table-content" id="table-content">
+  <include file="list"/>
+</div>
+</block>
+
+</div>
+<div class="col-md-4 col-lg-4">
+
+
+<table class="table table-summary table-bordered">
+	<caption style="font-size:26px;font-weight700;color:#000">已选订单  <button class="btn btn-primary" id="add-order">加入配送单</button></caption>
+<tr>
+			<th><span class="s-user">0</span>个客户</th>
+    		<th><span class="s-order">0</span>单</th>
+    		<th><span class="s-cat">0</span>行</th>
+    		<th><span class="s-qty">0</span>件</th>
+    		
+    </tr>
+</table>
+<table class="table table-condensed table-bordered" id="table-orders">
+    <tr>
+    		<th></th>
+    		<th>订单id</th>
+    		<th>客户id</th>
+			<th>线路</th>
+			<th>地址</th>
+    </tr>
+
+</table>
+<br>
+<table class="table table-dist table-bordered">
+<tr>
+			<th></th>
+    		<th>线路</th>
+    		<th>客户数</th>
+    		<th>订单数</th>
+			<th>行数</th>
+			<th>件数</th>
+    </tr>
+
+</table>
+<br>
+
+<button class="btn btn-success" id="add-dist">创建配送单</button>
+</div>
+
+<script type="text/javascript">
+
+//加入配送单按钮
+$('#add-order').on('click',function(){
+		if($("#table-orders tr").length == 1){
+			alert('请选择订单');
+			return;
+		};
+		var duser = $('.table-summary .s-user').text();
+		var dorder = $('.table-summary .s-order').text();
+		var dcat = $('.table-summary .s-cat').text();
+		var dqty = $('.table-summary .s-qty').text();
+		var dline = $('#table-orders tr:eq(2)').find('.so-line').text();
+		var list=$("#table-orders tr").map(function() {
+			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
+			return $(this).find('.so-id').text();
+		}).get().join(',');
+		var tr = '<tr><td><a class="dist-remove"><i class="glyphicon glyphicon-remove"></i></a></td><td><input class="order_ids" type="hidden" value="'+list+'">'+dline+'</td><td>'+duser+'</td><td>'+dorder+'</td><td>'+dcat+'</td><td>'+dqty+'</td></tr>'
+		$('.table-dist tr:last').after(tr);
+		$('#table-orders tr').each(function(){
+			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
+			var id =$(this).attr('id');
+			$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',true);
+			$(this).addClass('hidden');
+		});
+		calc();
+});
+
+$('#add-dist').on('click',function(){
+	$('#add-dist').prop('disabled', true);
+	var order_ids = new Array();
+	$('.table-dist tr').each(function(){
+		if($(this).find('.order_ids').length == 0  )return ;
+		var ids =$(this).find('.order_ids').val();
+		order_ids.push(ids);
+		if($(this).find('.dist-remove').length > 0){
+			$(this).find('.dist-remove').click();
+		}
+	});
+	$.ajax({
+      url:"{:U('Distribution/add')}",
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:{ids:order_ids},
+      success: function(msg){
+        $('#add-dist').prop('disabled', false);
+        
+          alert(msg.msg);
+        
+        
+        if(msg.data != '' && msg.data != null ){
+           $('.alert').hide();
+            //$('.content').html(msg.data);
+        }
+        if(msg.url != '' && msg.url != null ){
+          //setTimeout(function() {document.location=msg.url}, 0);
+        }
+      }
+    }); 
+});
+	
+	$('.content').delegate('.order-remove','click',function(){
+		var id =$(this).parents('tr').attr('id');
+		$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',false);
+		$('#data-table #'+id).find('input[type=checkbox]').prop('checked',false);
+
+		$(this).parents('tr').remove();
+		calc();
+	});
+
+	$('.content').delegate('.dist-remove','click',function(){
+		var ids =$(this).parents('tr').find('.order_ids').val();
+		var row_ids = ids.split(',');
+
+		row_ids.forEach(function(id){
+			
+			$('#data-table #r-'+id).find('input[type=checkbox]').prop('disabled',false);
+			$('#data-table #r-'+id).find('input[type=checkbox]').prop('checked',false);
+			$('#table-orders #r-'+id).remove();
+		});
+		$(this).parents('tr').remove();
+	});
+
+	$('#table-content').delegate('input[type=checkbox]','change',function(){
+		if($(this).hasClass('select-all')) {
+			return;	
+		};
+		if($(this).prop('checked') == true) {
+			var tr = $(this).parents('tr');
+			var row = new Array();
+			row['id'] = tr.find('.order-id').val();
+			row['user_id'] = tr.find('.order-user_id').val();
+			row['adress'] = tr.find('.order-adress').val();
+			row['line'] = tr.find('.order-line').val();
+			row['cat'] = tr.find('.order-cat').val();
+			row['qty'] = tr.find('.order-qty').val();
+			addRow(row);
+		}
+		else {
+			var id = $(this).parents('tr').find('.order-id').val();
+			removeRow(id);
+		}
+		calc();
+	});
+
+
+
+
+	function syncRow(id) {
+		 var id =$(this).parents('tr').attr('id');
+		 
+	}
+	function calc(){
+		var order = new Array();
+		var user = new Array();
+		var cat = 0;
+		var qty = 0;
+		$('#table-orders tr').each(function(){
+			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
+			var row = new Array();
+			row['id'] = $(this).find('.so-id').text();
+			row['user_id'] = $(this).find('.so-user_id').text();
+			row['user_id'] = $(this).find('.so-user_id').text();
+			row['line'] = $(this).find('.so-line').text();
+			row['cat'] = $(this).find('.so-cat').text();
+			row['qty'] = $(this).find('.so-qty').text();
+			cat += new Number(row['cat']);
+			qty += new Number(row['qty']);
+			if(user.indexOf(row['user_id']) == -1) {
+				user.push(row['user_id']);
+			}
+			order.push(row);
+		});
+		$('.table-summary .s-user').text(user.length);
+		$('.table-summary .s-order').text(order.length);
+		$('.table-summary .s-cat').text(cat);
+		$('.table-summary .s-qty').text(qty);
+	}
+
+	function removeRow(id) {
+		$('#table-orders #r-'+id).remove();
+	}
+
+	function addRow(e) {
+		//list.forEach(function(e){
+			var tr = $('#table-orders #r-'+e.id);
+			if( tr.length == 0) {
+				tr = '<tr id="r-'+e.id+'"><td><a class="order-remove"><i class="glyphicon glyphicon-remove"></i></a></td><td class="so-id">'+e.id+'</td><td class="so-user_id">'+e.user_id+'</td><td class="so-line">'+e.line+'</td><td class="so-adress">'+e.adress+'</td><td class="hidden so-cat">'+e.cat+'</td><td class="hidden so-qty">'+e.qty+'</td></tr>';
+				$('#table-orders tr:last').after(tr);
+			}
+		//})
+	}
+
+	function getRow(){
+		var rows = new Array();
+		var list=$("#data-table input:checked").each(function(index,element) {
+			var tr = $(this).parents('tr');
+			var row = new Array();
+			row['id'] = tr.find('.order-id').val();
+			row['user_id'] = tr.find('.order-user_id').val();
+			row['adress'] = tr.find('.order-adress').val();
+			row['line'] = tr.find('.order-line').val();
+			rows.push(row);
+		});
+		return rows;
+	}
+
+</script>

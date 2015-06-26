@@ -15,14 +15,12 @@ function set_session($uid){
     if (!$Auth) {
         $Auth       =   new \Common\Lib\Auth();
     }
-
     $user_roles = $Auth->getRoles($uid);
     foreach ($user_roles as $value) {
         $roles[] = $value['id'];
     }
     
     $roles = implode('_', $roles);
-
     $rules = $Auth->getRule($uid);
     
     if(!empty($rules)) {
@@ -42,11 +40,9 @@ function set_session($uid){
         'rule'           => $rules,
         'wh_id'           => $wh
     );
-
     session('user', $auth);
     session('user_auth_sign', data_auth_sign($auth));
 }
-
 function destory_session() {
     //$role = I('session.user_auth.role');
     //S("_ROLE_MENU_LIST_".$role, null);
@@ -55,7 +51,6 @@ function destory_session() {
     session('user_auth_sign', null);
     session('[destroy]');
 }
-
 function validator($vo){
         $str ='{';
         $str .= $vo['null']=='NO'?'required:true,':'';
@@ -108,10 +103,8 @@ function validator($vo){
             ||  strpos($vo['type'],'double')!==false
             )
             $type='digit';
-
         return $type;
     }
-
 function where_array_to_str($where = array(), $relation = 'AND'){
     if(empty($where)){
         return false;
@@ -125,7 +118,6 @@ function where_array_to_str($where = array(), $relation = 'AND'){
     
     return $where_str;
 }
-
 //英文转中文
 function en_to_cn($str){
     $filter = array(
@@ -148,15 +140,13 @@ function en_to_cn($str){
         'unite' => '组合',
         'split' => '拆分',
         'draft' => '草稿',
-        'make' => '已生产',
+        'make' => '已完成',
         'pass' => '已生效',
         'reject' => '已驳回',
         'close' => '已作废',
         );
-
     return $filter[$str];
 }
-
 //中文转英文
 function cn_to_en($str){
     $filter = array(
@@ -166,10 +156,8 @@ function cn_to_en($str){
         '上架' => 'on',
         '库存移动' => 'move_location',
         );
-
     return $filter[$str];
 }
-
 //根据单号返回单据中文类型
 function get_type_by_bill($bill_code){
     if(strstr($bill_code,'PD')){
@@ -178,10 +166,8 @@ function get_type_by_bill($bill_code){
     if(strstr($bill_code,'STOCK')){
         $type = '状态调整';
     }
-
     return $type;
 }
-
 //根据USER_AGENT判断是否是移动端
 function is_mobile_terminal(){
     $mobile_ua = array(
@@ -194,4 +180,128 @@ function is_mobile_terminal(){
         }
     }
     return false;
+}
+/**
+ * getProname 根据suk code 获取sku 名称
+ * @param Int $Prcode sku code
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getPronameByCode($name, $prcode) {
+    $result = '';
+    if($prcode){
+        $infos = A('Pms','Logic')->get_SKU_by_pro_codes($prcode);
+        if($infos['status'] == 0){
+            if($infos['list']){
+                $result = $infos['list']['0'][$name];
+            }
+        }
+    }
+    return $result;
+    
+}
+/**
+ * getProname 根据suk code 获取处理过的信息
+ * @param Int $Prcode sku code
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getSkuInfoByCode($name, $prcode) {
+    $result = '';
+    if($prcode){
+        $infos = A('Pms','Logic')->get_SKU_field_by_pro_codes($prcode);
+        if($infos[$prcode]){
+            $result = $infos[$prcode][$name];
+        }
+    }
+    return $result;
+    
+}
+/**
+ * getProname 根据 库位id 获取库位信息
+ * @param Int $location_id 仓库id
+ * @param String $name 要字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getLocationNameById($name, $location_id) {
+    $result = '';
+    if($location_id){
+        $infos = M('location')->where('id='.$location_id)->getField($name);
+        $result = $infos;
+    }
+    return $result;
+    
+}
+/**
+ * getProname 根据表名 和 主键 要 获取的字段
+ * @param String $tablename 表名
+ * @param Int $id 主键
+ * @param String $field 字段
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getTableFieldById($tablename, $field='', $id){
+    $result = '';
+    if($tablename && $id && $field){
+        $infos = M($tablename)->where('id='.$id)->getField($field);
+        $result = $infos;
+    }elseif($tablename && $id && !$field){
+        $infos = M($tablename)->where('id='.$id)->find();
+        $result = $infos;
+    }
+    return $result;
+    
+}
+/**
+ * getLineNameByid 根据线路id得到线路信息
+ * @param Int $id 线路id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getLineNameByid($id){
+    $result = '';
+    $lines = A('Wave','Logic')->line();
+    if(isset($lines[$id])){
+        $result = $lines[$id];
+    }
+    return $result;
+    
+}
+/**
+ * Ajax json 返回结果
+ * @param Int ids 状态
+ * @param Array $data 数据
+ * @param String $meg 提示信息
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function echojson($status, $data, $msg){
+    $return['status'] = $status;
+    $return['msg']    = $msg;
+    $return['data']   = $data;
+    echo json_encode($return); exit;
+}
+/**
+ * getSubByKey 将两个二维数组根据指定的字段来连接起来
+ * @param Array $pArray 二维数组
+ * @param String $pKey 指定的键
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getSubByKey($pArray, $pKey = "") {
+    $result = array();
+    if(is_array($pArray)){
+        foreach($pArray as $key=>$value){
+            foreach ($value as $keys => $values) {
+                if($keys == $pKey){
+                    array_push($result, $values);
+                }
+            }
+        }
+    }
+    return $result;
+    
 }

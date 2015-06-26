@@ -105,7 +105,6 @@ class CommonController extends AuthController {
             }
         }
         
-        
         $this->after($map,'search');//查询条件生成以后，这里可以往$map中加入新的查询条件
         return $map;
     }
@@ -227,7 +226,6 @@ class CommonController extends AuthController {
         if(in_array(CONTROLLER_NAME, $controllers_muilt) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('in',session('user.rule'));
         }
-        
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
         }
@@ -237,6 +235,7 @@ class CommonController extends AuthController {
         $M->page($p.','.$page_size);//设置分页
         
         $data = $M->select();//真正的数据查询在这里生效
+        //echo $M->getLastSql();die;
         $count  = $M2->page()->limit()->count();//获取查询总数
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换

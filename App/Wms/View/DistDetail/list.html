@@ -1,0 +1,118 @@
+<div class="table-responsive">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+    <tr class="text-center">
+      <th>
+        <eq name="table.checkbox" value="true">
+        <label class="checkbox hidden">
+          <input type="checkbox" class="select-all" data-target="data-table"> 全选
+        </label>
+        </eq>
+      </th>
+      <volist name="columns" id="col" offset="isset($columns['id'])?1:0">
+              <th id="{$key}">{$col}</th>
+      </volist>
+      <eq name="table.status" value="true">
+          <th>状态</th>
+        </eq>
+      <eq name="table.toolbar_tr" value="true">
+      <th class="sorter-false">操作</th> 
+      </eq> 
+    </tr>
+  </thead>
+
+  <tbody>
+    <volist name="data" id="vo" key="row" empty="">	
+	    
+	<volist name="vo['detail']" id="detail" key="k">
+    <tr id="r-{$vo.id}" class="list_info_all">
+      <volist name="columns" id="col" offset="0" length='1'>
+      <input type="hidden" value="{$vo.user_id}" class="order-user_id" />
+	    <input type="hidden" value="{$vo.id}" class="order-id" />
+	    <input type="hidden" value="{$vo.deliver_addr} {$vo.shop_name}" class="order-adress" />
+	    <input type="hidden" value="{$vo.line}" class="order-line" />
+	    <input type="hidden" value="{$vo.line_total}" class="order-cat" />
+	    <input type="hidden" value="{$vo.sku_total}" class="order-qty" />
+          <td rowspan="{$vo['line_total']}" index="{$k}"><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$pk]}" data-id="{$pk}" /></eq>{$row}</label></td>
+          {~$values[$key]=$vo[$key]}
+      </volist>
+
+      <volist name="columns" id="col" offset="0" length="4">
+          <td rowspan="{$vo['line_total']}" index="{$k}">{$vo[$key]}</td>	
+          {~$values[$key]=$vo[$key]}
+      </volist>
+      <volist name="columns" id="col" offset="4">
+          	  <td>{$detail[$key]}</td>
+              {~$values[$key]=$detail[$key]}
+      </volist>
+  		
+    </tr>
+    </volist>
+    </volist>
+  </tbody>
+</table>
+</div>
+<include file="Index:pager"/>
+
+<style type="text/css">
+  .table-operate-btn{
+    word-wrap:keep-all;
+    white-space: nowrap;
+  }
+</style>
+
+<script src="__PUBLIC__/tablesorter/js/jquery.tablesorter.js"></script>
+<script src="__PUBLIC__/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+<script src="__PUBLIC__/js/light-table-filter.min.js"></script>
+<script type="text/javascript">
+$(function() {
+  var td =  $('.list_info_all').children('td[rowspan]');
+  td.each(function(i) {
+	  //alert($(this).attr('index'));
+	  if ($(this).attr('index') > 1) {
+		  $(this).remove();
+	  }
+  }) 
+  
+  $('#table-content tr').each(function(){
+    var id = $(this).attr('id');
+    if($('#table-orders #'+id).length > 0){
+      $(this).find('input[type=checkbox]').prop('checked',true);
+      $('#data-table #'+id).find('input[type=checkbox]').prop('disabled',true);
+    };
+  });
+
+
+  $.extend($.tablesorter.themes.bootstrap, {
+    // these classes are added to the table. To see other table classes available,
+    // look here: http://twitter.github.com/bootstrap/base-css.html#tables
+    table      : 'table table-bordered',
+    caption    : 'caption',
+    header     : 'bootstrap-header', // give the header a gradient background
+    footerRow  : '',
+    footerCells: '',
+    icons      : '', // add "icon-white" to make them white; this icon class is added to the <i> in the header
+    sortNone   : 'bootstrap-icon-unsorted',
+    sortAsc    : 'icon-chevron-up glyphicon glyphicon-chevron-up',     // includes classes for Bootstrap v2 & v3
+    sortDesc   : 'icon-chevron-down glyphicon glyphicon-chevron-down', // includes classes for Bootstrap v2 & v3
+    active     : '', // applied when column is sorted
+    hover      : '', // use custom css here - bootstrap class may not override it
+    filterRow  : '', // filter row class
+    even       : '', // odd row zebra striping
+    odd        : ''  // even row zebra striping
+  });
+});
+</script>
+<script type="text/javascript">
+$(function() {
+  $(".table").tablesorter({
+    theme : "bootstrap",
+    headers: {
+          0: {sorter: false},
+      },
+    widthFixed: true,
+    headerTemplate : '{content} {icon}', // new in v2.7. Needed to add the bootstrap icon!
+    widgets : [ "uitheme",  "zebra" ],
+  });
+});
+</script>

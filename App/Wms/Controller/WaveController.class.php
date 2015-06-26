@@ -1,145 +1,183 @@
 <?php
+// +----------------------------------------------------------------------
+// | DaChuWang [ Let people eat at ease ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 20015 http://dachuwang.com All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liuguangping <liuguangpingtest@163.com>
+// +----------------------------------------------------------------------
 namespace Wms\Controller;
 use Think\Controller;
-
-class WaveController extends Controller {
-	
-	public function lists(){
-		$line_ids = $this->line();
-		$map['status'] = L('订单状态待生产');
-		//$map['line_ids'] = $line_ids;
-		$A = A('Order','Logic');
-		$orders = $A->order($map);
-		foreach ($orders as $key => $val) {
-			$order_ids[] = $val['id'];
-			foreach ($val['detail'] as $k => $v) {
-				$pros[$v['sku_number']] += $v['quantity'];
-			}
-		}
-		$order_count = count($order_ids);
-		$line_count = count($pros);
-		$qty_total = array_sum($pros);
-		//dump($order_count);
-		//dump($line_count);
-		//dump($qty_total);
-		dump($orders);
-		return $order_ids;
-
-	}
-	//创建波次
-	public function create($order_ids='') {
-		//创建波次，获取波次ID
-		$data['code'] = get_sn('wave');
-		$wave_id = M('stock_wave')->add($data);
-
-		//获取勾选的订单列表
-		$order_ids = $this->lists();
-		$order_ids = implode(',', $order_ids);
-
-		$map['wave_id'] = $wave_id;
-		$map['order_ids'] = $order_ids;
-		$map['status'] = L('订单状态波次中');
-		$A = A('Order','Logic');
-		$res = $A->operate($map);
-		dump($res);
-		
-	}
-	//释放订单
-	public function release() {
-		//将订单状态改为待生产，波次号改为0
-		$map['status'] = L('订单状态待生产');
-		$map['order_ids'] = $order_ids;
-		$map['wave_id'] = 0;
-		$res = A('Order','Logic')->operate($map);
-	}
-
-	//删除波次
-	public function delete() {
-		//删除波次
-
-		$where['id'] = $wave_id;
-		$data['is_deleted'] = 1;
-		M('stock_wave')->where($where)->save($data);
-
-		//将订单状态改为待生产，波次号改为0
-		$map['status'] = L('订单状态待生产');
-		$map['order_ids'] = $order_ids;
-		$map['wave_id'] = 0;
-		$res = A('Order','Logic')->operate($map);
-	}
-	public function picking() {
-		//获取提交的波次ID
-		$wave_id = I('post.wave_id');
-		$wave_id = 71;
-		$map['status'] = L('订单状态待生产');
-		//$map['wave_id'] = $wave_id;
-		$A = A('Order','Logic');
-		$orders = $A->order($map);
-		foreach ($orders as $key => &$val) {
-			$line_orders[$val['line_id']]['order_ids'][] = $val['id'];
-			foreach ($val['detail'] as $k => $v) {
-				$line_orders[$val['line_id']]['pros'][$v['sku_number']] += $v['quantity'];
-			}
-		}
-		
-		foreach ($line_orders as $key => $val) {
-			$order_count = count($val['order_ids']);
-			$line_count = count($val['pros']);
-			$qty_total = array_sum($val['pros']);
-			
-		}
-		
-		dump($line_orders);
-
-	}
-	
-	public function order_detail() {
-
-	}
-
-	public function view(){
-		echo L('订单');
-	}
-	
-	//根据仓库ID获取线路列表
-	public function line(){
-		$map['warehouse_id'] = 2;
-		$map['status'] = '1';
-		$A = A('Order','Logic');
-		$lines = $A->line($map);
-		$citys = $A->city();
-		foreach ($lines as $key => $val) {
-			$line_ids[] = $val['id'];
-			$lines[$key]['city'] = $citys[$val['location_id']];
-		}
-		$line_ids = implode(',',$line_ids);
-		return $line_ids;
-	}
-
-	//获取待生产的订单列表
-	public function order($map=''){
-		$A = A('Order','Logic');
-		$res = $A->order($map);
-		return $res;
-		$this->columns = array(
-			'订单号' => 'order_number',
-			'波次号' => 'wave_id',
-			'总件数' => '',
-			'状态' => 'status_cn',
-			'' => '',
+class WaveController extends CommonController {
+	protected $filter = array(
+        'company_id'=>array(
+            '1' =>'大厨波次',
+            '2' =>'大果波次'
+           ),
+         'status'=>array(
+           '200'=>'待运行',
+           '201'=>'运行中',
+           '900'=>'已释放'
+          )
+        );
+	protected $columns = array (
+	       'id'                => '',
+	       'wave_id'				    => '波次号',
+	       'company_id'        => '波次主表名称',
+	       'order_count'       => '总单数',
+	       'line_count'        => '总行数',
+         'total_count'       => '总件数',
+         'status' 				    => '波次状态',
+         'start_time'        => '开始时间',
+         'end_time'          => '结束时间',
 		);
-	}
-	//释放波次，创建分拣任务
-	public function create_pick_task(){
+	protected $query   = array (
+  			'stock_wave.id' 	    =>    array ( 
+    			 	'title' 		      => '波次号', 
+    			 	'query_type' 	    => 'eq', 
+    			 	'control_type'    => 'text', 
+    			 	'value' 		      => 'id',
+  			),
+  			'stock_wave.type'     =>    array ( 
+  			 	'title'        	    => '波次状态', 
+  			 	'query_type'   	    => 'eq', 
+  			 	'control_type' 	    => 'select', 
+  			 	'value'             => array(
+  			 		'200'		          => '待运行',
+  			 		'201'		          => '运行中',
+  			 		'900'		          => '已释放',
+  			 		),
+			),
+	);
+	protected function before_index() {
+        $this->table = array(
+            'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
+            'searchbar' => true, //是否显示搜索栏
+            'checkbox'  => true, //是否显示表格中的浮选款
+            'status'    => false, 
+            'toolbar_tr'=> true,
+            'statusbar' => true
+        );
+        $this->toolbar_tr =array(
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+        );
+        $this->search_addon = true;
+    }
+    /**
+     * 开始分拣
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-15
+     */
+    public function packing(){
+      	$ids = I('ids');
+      	$m = M('stock_wave');
+      	$waveLogic = A('Wave','Logic');
+      	$hasIsAuth = $waveLogic->hasIsAuth($ids);
+      	if($hasIsAuth === FALSE){
+          echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+        }
+      	$controllerStatus = $waveLogic->execPack($ids);
+      	if($controllerStatus === FALSE){
+      		echojson('1','','分拣失败！');
+      	}else{
+      		echojson('0','','操作成功，分拣中！');
+      	}
+    	
+    }
+    /**
+     * 删除波次
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-15
+     */
+    public function delAll(){
+      	$ids = I('ids');
+      	$m = M('stock_wave');
+      	$waveLogic = A('Wave','Logic');
+      	$hasIsAuth = $waveLogic->hasIsAuth($ids);
 
-	}
-	//完成分拣
-	public function finish_task(){
+      	if($hasIsAuth === FALSE){
+            echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+        }
+        
+      	$controllerStatus = $waveLogic->delWave($ids);
 
-	}
-	public function deliever(){
+      	if($controllerStatus === FALSE){
+      		echojson('1','','删除失败！');
+      	}else{
+      		echojson('0','','删除成功！');
+      	}
+    }
+    public function after_search(&$map){
+    	$map['wh_id'] = session('user.wh_id');
+    }
+    public function view(){
+        $pid = I('id');
+        $m = M('stock_wave_detail');
+        $map['pid'] = $pid;
+        $result = array();
+        $result = $m->where($map)->select();
+        if($result){
+            foreach ($result as $key => $value) {
+                $bill_out = M('stock_bill_out')->where(array('id'=>$value['bill_out_id']))->find();
+                $type_cn = M('stock_bill_out_type')->where(array('id'=>$bill_out['type']))->getField('name');
+                //根据pro_code 查询对应的pro_name
+                /*$pro_codes = array($data['pro_code']);
+                $SKUs = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+                $data['pro_name'] = $SKUs[$data['pro_code']]['wms_name'];*/
+                //区域标识
+                //$location_info = A('Location','Logic')->getParentById($bill_out['line_id']);
+                //echo $bill_out['line_id'];die;
+                $result[$key]['area_name'] = getLineNameByid($bill_out['line_id']);//$location_info['name'];
+                //dump($result[$key]['area_name']);die;
+                $result[$key]['type_cn'] = $type_cn;
+                $status_cn = A('Wave', 'Logic')->getStatusCn($bill_out['status']);
+                $result[$key]['status_cn'] = $status_cn;
+                $process_type_cn = '';
+                $order_count = 0;
+                $count = A('Wave','Logic')->sumStockBillOut($value['bill_out_id']);
+                if(isset($count['totalCount'])) $order_count = $count['totalCount'];
+                if($bill_out['process_type'] == 1) $process_type_cn = '正常单';
+                if($bill_out['process_type'] == 2) $process_type_cn = '取消单';
+                $result[$key]['process_type_cn'] = $process_type_cn;
+                if($bill_out['delivery_date'] == "0000-00-00 00:00:00" || $bill_out['delivery_date'] == "1970-01-01 00:00:00") {
+                  $bill_out['delivery_date'] = '无';
+                }else {
+                  $bill_out['delivery_date'] = date('Y-m-d',strtotime($bill_out['delivery_date'])) .'<br>'. $bill_out['delivery_time'];
+                
+                }
+                $result[$key]['delivery_date'] = $bill_out['delivery_date'];
+                $result[$key]['order_qty_count'] = $order_count;
+                $result[$key]['bill_out'] = $bill_out;
+                
+            }
+        }
+        $this->assign('waveDetail',$result);
+        //dump($result);
+        parent::view();
+  }
+  /**
+   * 分拣任务Hook
+   *
+   * @author liuguangping@dachuwang.com
+   * @since 2015-06-15
+   */
+  public function packTask(){
+    	//@todo这里加个钩子调用李昂的分拣接口
+      $ids       = I('ids');
+      $waveLogic = A('Wave','Logic');
+      $hasIsAuth = $waveLogic->hasIsAuth($ids, '900');
+      if($hasIsAuth === FALSE){
+        echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+      }
+      $wave_ids  = explode(',', $ids);
 
-	}
-
-
+    	A('WavePicking','Logic')->waveExec($wave_ids);
+  }
+  
 }
+/* End of file WaveController.class.php */
+/* Location: ./Application/Controller/WaveController.class.php */
