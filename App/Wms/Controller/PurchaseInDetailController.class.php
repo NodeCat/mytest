@@ -152,6 +152,13 @@ class PurchaseInDetailController extends CommonController {
         }
         //查询符合条件的采购入库单
         $purchase_in_details = M('erp_purchase_in_detail')->where($map)->select();
+
+        if(empty($purchase_in_details)){
+            $data['status'] = 0;
+            $data['msg'] = '没有符合条件的数据';
+
+            $this->ajaxReturn($data);
+        }
         var_dump($purchase_in_details);
     }
 }
