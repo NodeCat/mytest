@@ -455,6 +455,9 @@ class StockOutController extends CommonController {
         if($is_enough === FALSE) echojson('1','','你所选的出库单是缺货状态，请重新创建！');*/
         $idsArr    = $waveLogic->enoughaResult($ids);
         $ids       = $idsArr['tureResult'];
+        if(!$ids){
+           echojson('0','','你选择的出库单因库存不足，波次创建失败！'); 
+        }
         $insertArr = array();
         $insertArr = $waveLogic->getWaveDate($ids, $site_url);
         if($insertArr === FALSE){
