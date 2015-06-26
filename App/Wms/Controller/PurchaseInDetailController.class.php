@@ -178,7 +178,7 @@ class PurchaseInDetailController extends CommonController {
         }
 
         //查询符合条件的采购入库单
-        $purchase_in_details = M('erp_purchase_in_detail')->where($map)->select();
+        $purchase_in_details = M('erp_purchase_in_detail')->where($map)->order('id DESC')->select();
 
         if(empty($purchase_in_details)){
             $data['status'] = 0;
