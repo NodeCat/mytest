@@ -44,17 +44,10 @@ $(function(){
 		var _stock_in_code = _condition[1];
 		var _pro_code = _condition[2];
 		var _status = $("select[name^='query']").val();
+		var _partner = $("input[name='partner_name']").val();
 		
-		$.ajax({
-          url:'/PurchaseInDetail/export',
-          type:'post',
-          cache : false,
-          dataType:'json',
-          data:'purchase_code='+_purchase_code+'&stock_in_code='+_stock_in_code+'&pro_code='+_pro_code+'&status='+_status,
-          success: function(msg){
-            
-          }
-        });
+		window.location.href="/PurchaseInDetail/export?"+'purchase_code='+_purchase_code+'&stock_in_code='+_stock_in_code+'&pro_code='+_pro_code+'&status='+_status+'&partner='+_partner; 
+
 	});
 })
 </script>
