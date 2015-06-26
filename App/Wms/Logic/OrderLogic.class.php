@@ -62,4 +62,41 @@ class OrderLogic{
 		$res = json_decode($res,true);
 		return $res;
 	}
+	//根据order_id 或者 order_number 查询订单信息
+	public function getOrderInfoByOrderId($orderId){
+		if(empty($orderId)){
+			return false;
+		}
+		$url = $this->server . '/order/info';
+		$map = json_encode(array('order_id'=>$orderId));
+		$res = $this->request->post($url,$map);
+		$res = json_decode($res,true);
+		return $res;
+	}
+	
+	/**
+	 * 根据订单ID批量获取订单
+	 * @param array ids 订单id数组
+	 * @param unknown $ids
+	 */
+	public function getOrderInfoByOrderIdArr($ids = array()) {
+	    $return = array('status' => false, 'msg' => '');
+	    
+	    if (empty($ids)) {
+	        $return['msg'] = '参数有误';
+	    }
+	    $url = $this->server . '/order/lists';
+	    $map = json_encode(array('order_ids' => $ids, 'itemsPerPage' => count($ids)));
+	    $res = $this->request->post($url, $map);
+	    $res = json_decode($res, true);
+	     
+	    if ($res['status'] == 0) {
+	        $return['status'] = true;
+	        $return['msg'] = '成功';
+	        $return['list'] = $res['orderlist'];
+	    } else {
+	        $return['msg'] = '没有符合条件的订单';
+	    }
+	    return $return;
+	}
 }

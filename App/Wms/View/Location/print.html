@@ -5,8 +5,8 @@
         <style type="text/css">
           .one_card {
               padding-left:20px;
-              width:50%;
-              height:50%;
+              width:100%;
+              height:25%;
               /*border:1px solid #F00;*/
               float:right;
               text-align: center;
@@ -24,7 +24,7 @@
             width:100%;
             height:30%;
             /*border:1px solid #F00;*/
-            font-size:50px;
+            font-size:70px;
             font-weight:bold;
             float:right;
             overflow:hidden;
@@ -70,19 +70,16 @@
             <volist name='location_infos' id='location_info'> 
             <div class="one_card">
                     <div class="prod_name">
-                        <span>{$location_info.area_name}</span>
-                    </div>
-                    <div class="prod_name">
                         <span>{$location_info.code}</span>
                     </div>
                     <br>
                     <br>
-                  <img width="280" height="100" src="http://api.pda.dachuwang.com/barcode/get?text={$location_info.code}">
+                  <img width="300" height="70" src="http://api.pda.dachuwang.com/barcode/get?text={$location_info.code}">
             </div>
             </volist>
       </div>
       <script type="text/javascript">
-      alert('请进行打印设置，去掉页眉页脚，上下左右边距设置为5mm，纸张设置为A4，布局设置为横向');
+      alert('请进行打印设置，去掉页眉页脚，上下左右边距设置为5mm，纸张设置为A4，布局设置为横纵向');
       </script>
 </body>
 </html>
