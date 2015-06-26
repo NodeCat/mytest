@@ -157,7 +157,7 @@ class PmsLogic{
 	}
 
 	//根据pro_code 查询对应的SKU信息，信息是经过整理后的
-	public function get_SKU_field_by_pro_codes($pro_codes = array()){
+	public function get_SKU_field_by_pro_codes($pro_codes = array(), $pagesize = 0){
 		if(empty($pro_codes)){
 			return false;
 		}
@@ -165,7 +165,7 @@ class PmsLogic{
 		$request = new \HttpCurl();
 		$data = array(
 			'currentPage' => 1,
-			'itemsPerPage' => C('PAGE_SIZE'),
+			'itemsPerPage' => $pagesize > 0 ? $pagesize : C('PAGE_SIZE'),
 			'where' => array('in'=>array('sku_number'=>$pro_codes)),
 			);
 		$url = C('PMS_API').'/sku/manage';
