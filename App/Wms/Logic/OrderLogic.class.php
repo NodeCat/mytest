@@ -67,8 +67,8 @@ class OrderLogic{
 		if(empty($orderId)){
 			return false;
 		}
-		$url = $this->server . '/order/info';
-		$map = json_encode(array('order_id'=>$orderId));
+		$url = $this->server . '/suborder/info';
+		$map = json_encode(array('suborder_id'=>$orderId));
 		$res = $this->request->post($url,$map);
 		$res = json_decode($res,true);
 		return $res;
@@ -85,8 +85,8 @@ class OrderLogic{
 	    if (empty($ids)) {
 	        $return['msg'] = '参数有误';
 	    }
-	    $url = $this->server . '/order/lists';
-	    $map = json_encode(array('order_ids' => $ids, 'itemsPerPage' => count($ids)));
+	    $url = $this->server . '/suborder/lists';
+	    $map = json_encode(array('suborder_ids' => $ids, 'itemsPerPage' => count($ids)));
 	    $res = $this->request->post($url, $map);
 	    $res = json_decode($res, true);
 	     
