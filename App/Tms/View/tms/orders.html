@@ -1,92 +1,103 @@
 <include file="Index:nav-cur" />
 
 <div class="col-xs-12">
-<form class="form-horizontal form-pda form-scan" action="__SELF__" method="POST">
-  <input type="hidden" name="t" value="login" />
-  <div class="row-fluid">
-  <div class="col-xs-12">
-  <div class="form-group">
-  <div class="input-group">
-      <span class="input-group-addon">
-      <i class="glyphicon glyphicon-pencil"></i>
-    	</span>
-      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入订单id">
-      <span class="input-group-btn">
-        <button class="btn btn-lg btn-default" id="btn-clear" type="button"><i class="glyphicon glyphicon-remove"></i></button>
-      </span>
-    </div>
-  </div>
- </div>
- <div class="clearfix"></div>
- </div>
- <br/>
-
-</form>
+    <form class="form-horizontal form-pda form-scan" action="__SELF__" method="POST">
+        <input type="hidden" name="t" value="login" />
+        <div class="row-fluid">
+            <div class="col-xs-12">
+                <div class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="glyphicon glyphicon-pencil"></i>
+                       </span>
+                        <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入订单id">
+                        <span class="input-group-btn">
+                            <button class="btn btn-lg btn-default" id="btn-clear" type="button">
+                                <i class="glyphicon glyphicon-remove"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <br/>
+    </form>
 </div>
 
 <div class="col-xs-12" id="orders">
-<volist name="data" id="vo">
+    <volist name="data" id="vo">
+        <neq name="i" value="1">
+            <neq name="vo['user_id']" value="$user_id">
+                <gt name="j" value="0">
+                  </div>
+                </gt>
+                {~$j = 0 ;}
+            </neq>
+        </neq>
+        <neq name="vo['user_id']" value="$user_id">
+            <div class="panel panel-default">
+                <div class="list-group-item list-group-item-inf">
+                    <h4 class="list-group-item-heading">
+                        <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">【{$vo.shop_name}】{$vo.deliver_addr}
+                            <i class="glyphicon glyphicon-map-marker"></i>
+                            <span>
+                                <small>导航</small>
+                            </span>
+                        </a>
+                    </h4>
+                    <hr/>
+                    <i class="glyphicon glyphicon-user"></i>{$vo.realname}  &nbsp;&nbsp;
+                    <i class="glyphicon glyphicon-phone"></i>
+                    <a href="tel:{$vo.mobile}" class="user-mobile">{$vo.mobile} &nbsp; 
+                        <i class="glyphicon glyphicon-earphone"></i>
+                        <small>拨号</small>
+                    </a> 
+                </div>
+                <notempty name="vo['remarks']">
+                    <div class="panel-footer">
+                        <i class="glyphicon glyphicon-comment"></i>{$vo.remarks}
+                    </div>
+                </notempty>
+        </neq>
 
-<neq name="i" value="1">
-<neq name="vo['user_id']" value="$user_id">
-<gt name="j" value="0"></div></gt>
-{~$j = 0 ;}
-</neq>
-</neq>
-
-<neq name="vo['user_id']" value="$user_id">
-<div class="panel panel-default">
-  <div class="list-group-item list-group-item-inf">
-    <h4 class="list-group-item-heading">
-      <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">【{$vo.shop_name}】{$vo.deliver_addr}
-      <i class="glyphicon glyphicon-map-marker"></i><span><small>导航</small></span></a>
-    </h4>
-    <hr/>
-    <i class="glyphicon glyphicon-user"></i>{$vo.realname}  &nbsp;&nbsp;
-    <i class="glyphicon glyphicon-phone"></i><a href="tel:{$vo.mobile}" class="user-mobile">{$vo.mobile} &nbsp; 
-    <i class="glyphicon glyphicon-earphone"></i><small>拨号</small></a> 
-  </div>
-  <notempty name="vo['remarks']">
-  <div class="panel-footer"><i class="glyphicon glyphicon-comment"></i> {$vo.remarks}</div>
-  </notempty>
-</neq>
-
-<switch name="vo['status_cn']" >
-<case value="已签收" break="0"></case>
-<case value="已完成" break="0"></case>
-<case value="已回款" break="1">
-  <a class="list-group-item list-group-item-success" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
-  </case>
-<case value="已退货" break="1">
-  <a class="list-group-item list-group-item-danger collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
-  </case>
-<default />
-<a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
-</switch>
- <!--{$vo.order_type_cn}--> <span class="order-id">{$vo.id}</span>&nbsp;
- <!--
-  <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
-    <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
-  <br/>
-  -->
-    <i class="glyphicon glyphicon-yen"></i>{$vo.final_price} 元  &nbsp;&nbsp;{$vo.pay_status} &nbsp;
-<switch name="vo['status_cn']" >
-<case value="已签收" break="0"></case>
-<case value="已完成" break="0"></case>
-<case value="已回款" break="1">
-  <label class="label label-success">{$vo.status_cn}</label>
-  </case>
-<case value="已退货" break="1">
- <label class="label label-danger">{$vo.status_cn}</label>
-</case>
-<default />
-</switch>
- <span style="color:red;">点击展开</span>
-</a>
-  <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
-  <form class="order">
-    <input type="hidden" name="id" value="{$vo.id}" />
-    <ul class="list-group" >
+        <switch name="vo['status_cn']" >
+            <case value="已签收" break="0"></case>
+            <case value="已完成" break="0"></case>
+            <case value="已回款" break="1">
+                <a onclick="check(this)" class="list-group-item list-group-item-success" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
+            </case>
+            <case value="已退货" break="1">
+                <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
+            </case>
+            <default />
+                <a onclick="check(this)" class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
+        </switch>
+        <!--{$vo.order_type_cn}--> 
+        <span class="order-id">{$vo.id}</span>&nbsp;
+        <!--
+        <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
+        <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
+        <br/>
+        -->
+        <i class="glyphicon glyphicon-yen"></i>{$vo.final_price} 元  &nbsp;&nbsp;{$vo.pay_status} &nbsp;
+        <switch name="vo['status_cn']" >
+            <case value="已签收" break="0"></case>
+            <case value="已完成" break="0"></case>
+            <case value="已回款" break="1">
+                <label class="label label-success">{$vo.status_cn}</label>
+            </case>
+            <case value="已退货" break="1">
+                <label class="label label-danger">{$vo.status_cn}</label>
+            </case>
+            <default />
+        </switch>
+        <span id="show" style="color:red;">点击展开</span>
+        </a>
+        <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
+            <form class="order">
+                <input type="hidden" name="id" value="{$vo.id}" />
+                <ul class="list-group" >
     <!--
     <li class="list-group-item">状态：{$vo.status_cn}</li>
 <li class="list-group-item">线路：{$vo.city_name}{$vo.site_name} {$vo.line}</li>
@@ -110,117 +121,106 @@
   <div class="panel-collapse collapse" id="detail_{$vo.id}">
 
     <ul class="list-group" >  -->
-  <volist name="vo['detail']" id="v">
-  <li class="list-group-item">
-    {$v.sku_number} {$v.name} <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach><br /> <label  class="label label-info">请在下面录入实际收货数量：</label>
-  </li>
-  <li class="list-group-item">
-    <div class="input-group row">
-    <input type="hidden" name="pro_id[]" value="{$v.id}" />
-    <!--
-      <input type="hidden" name="price_unit[]" value="{$v.price}" />
-    -->
-      <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}" />
-      <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
-       
-      <input type="number" name="quantity[]" min="0" class="form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
-      <span class="input-group-addon">{$v.unit_id}</span>
-      <!--
-      <input type="number" name="price_sum[]" min="0" class="form-control p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
-      -->
-      <span class="input-group-addon">¥<span class="p_sum">{$v.sum_price}</span>元</span>
-    </div>
-  </li>
-  </volist>
-
-</ul>
-    <div class="panel-footer summary">
-      <div class="input-group row">
-          <span class="input-group-addon">订单 ¥<span class="p_total">{$vo.total_price}</span>元</span>
+                <volist name="vo['detail']" id="v">
+                    <li class="list-group-item">
+                        {$v.sku_number} {$v.name} 
+                        <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach><br />
+                        <label  class="label label-info">请在下面录入实际收货数量：</label>
+                    </li>
+                    <li class="list-group-item">
+                        <div class="input-group row">
+                            <input type="hidden" name="pro_id[]" value="{$v.id}" />
+                        <!--
+                            <input type="hidden" name="price_unit[]" value="{$v.price}" />
+                        --> <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}" />
+                            <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
+                            <eq name="v['close_unit']" value="斤">
+                                <input type="number" name="quantity[]" min="0" class="real form-control p_qty" placeholder="输入数量" value="" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                            <else/>
+                                <input type="number" name="quantity[]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                            </eq>
+                            <span class="input-group-addon">{$v.close_unit}</span>
+                        <!--
+                            <input type="number" name="price_sum[]" min="0" class="form-control p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
+                        -->
+                            <span class="input-group-addon">¥<span class="p_sum">{$v.sum_price}</span>元</span>
+                        </div>
+                    </li>
+                </volist>
+                </ul>
+                <div class="panel-footer summary">
+                    <div class="input-group row">
+                        <span class="input-group-addon">订单 ¥<span class="p_total">{$vo.total_price}</span>元</span>
           <!--
           <input type="hidden" class="form-control" placeholder="{$vo.total_price}" value="{$vo.total_price}" readonly>
           -->
-          <span class="input-group-addon">优惠 ¥<span class="p_minus">{$vo.minus_amount}</span>元</span>
-
-          <span class="input-group-addon">运费 ¥<span class="p_drive">{$vo.deliver_fee}</span>元</span>
-          <span class="input-group-addon"></span>
-          <input type="text" class="form-control" placeholder="" value="" readonly>
-          
+                        <span class="input-group-addon">优惠 ¥<span class="p_minus">{$vo.minus_amount}</span>元</span>
+                        <span class="input-group-addon">运费 ¥<span class="p_drive">{$vo.deliver_fee}</span>元</span>
+                        <span class="input-group-addon"></span>
+                        <input type="text" class="form-control" placeholder="" value="" readonly>
+                    </div>
+                    <div class="input-group row">
+                        <span class="input-group-addon">应收 ¥<span class="p_final">{$vo.final_price}</span>元</span>
+                        <input type="hidden" class="form-control p_final" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
+                        <span class="input-group-addon">实收</span>
+                        <switch name="vo['status_cn']" >
+                            <case value="已签收" break="0"></case>
+                            <case value="已完成" break="0"></case>
+                            <case value="已回款" break="1">
+                                <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.deal_price}" readonly>  
+                            </case>
+                            <case value="已退货" break="1">
+                                <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="0" readonly>  
+                            </case>
+                            <default />
+                                <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.final_price}" readonly>
+                        </switch>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group row">
+                        <span class="input-group-addon">备注</span>
+                        <eq name="vo['sign_msg']" value="0">
+                            {~$vo['sign_msg']='';}
+                        </eq>
+                        <input class="form-control" type="text" name="sign_msg" value="{$vo.sign_msg}" placeholder="签收或退货备注">
+                    </div>
+                </div>
+                <switch name="vo['status_cn']" >
+                    <case value="已签收" break="0"></case>
+                    <case value="已完成" break="0"></case>
+                    <case value="已回款" break="1"></case>
+                    <case value="已退货" break="0"></case>
+                    <case value="已发运" break="0"></case>
+                    <case value="已出库" break="0"></case>
+                    <case value="已装车" break="0"></case>
+                    <case value="待收货" break="0">
+                        <div class="panel-footer">
+                            <div class="col-xs-6">
+                                <a class="btn-reject btn btn-danger btn-block">拒收</a>
+                            </div>
+                            <div class="col-xs-6">
+                                <a class="btn-sign btn btn-success btn-block">签收</a>
+                            </div>
+                            <div class="clearfix"></div>
+                        </div>
+                    </case>
+                </switch>
+            </form>
         </div>
-        <div class="input-group row">
-            <span class="input-group-addon">应收 ¥<span class="p_final">{$vo.final_price}</span>元</span>
-            
-            <input type="hidden" class="form-control p_final" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
 
-            <span class="input-group-addon">实收</span>
-
-
-<switch name="vo['status_cn']" >
-<case value="已签收" break="0"></case>
-<case value="已完成" break="0"></case>
-<case value="已回款" break="1">
-  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.deal_price}">  
-</case>
-<case value="已退货" break="1">
-  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="0">  
-</case>
-<default />
-<input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.final_price}">
-</switch>
- </div>
-    </div>
-<switch name="vo['status_cn']" >
-<case value="已签收" break="0"></case>
-<case value="已完成" break="0"></case>
-<case value="已回款" break="1"></case>
-<case value="已退货" break="0"></case>
-<case value="已发运" break="0"></case>
-<case value="已出库" break="0"></case>
-<case value="已装车" break="0"></case>
-<case value="待收货" break="0">
-
-    <div class="panel-footer">
-      <div class="col-xs-6">
-          <a class="btn-reject btn btn-danger btn-block">拒收</a>
-      </div>
-      <div class="col-xs-6">
-          <a class="btn-sign btn btn-success btn-block">签收</a>
-      </div>
-      <div class="clearfix"></div>
-    </div>
-
-</case>
-</switch>
-<div class="panel-footer">
-      <div class="input-group row">
-        <span class="input-group-addon">备注</span>
-        <eq name="vo['sign_msg']" value="0">
-          {~$vo['sign_msg']='';}
+        <eq name="i" value="1">
+            {~$user_id = $vo['user_id']}
+            <else/>
         </eq>
-      <input class="form-control" type="text" name="sign_msg" value="{$vo.sign_msg}" placeholder="签收或退货备注">
-      </div>
-    </div>
-
-
-    </form>
+        <neq name="vo['user_id']" value="$user_id">
+            </div>
+            <else/>
+                {~$j++;}
+        </neq>
+        {~$user_id = $vo['user_id']}
+    </volist>
 </div>
-
-<eq name="i" value="1">
-{~$user_id = $vo['user_id']}
-<else/>
-
-</eq>
-<neq name="vo['user_id']" value="$user_id">
-</div>
-<else/>
-{~$j++;}
-</neq>
-  {~$user_id = $vo['user_id']}
-
-</volist>
-
-</div>
-
 
 <style type="text/css">
 hr{
@@ -230,7 +230,6 @@ hr{
 form.order ul.list-group{
   margin-bottom: 0px;
 }
-
 </style>
 
 <script type="text/javascript">
@@ -307,31 +306,51 @@ form.order ul.list-group{
     });
 
     $('.btn-sign').on('click',function(){
-        var params = $(this).closest('form.order').serialize();
-        var addr = "{:U('sign')}";
+        real_quantity=$(this).parents('form.order').find('input.real')
+        var i=1;
+        real_quantity.each(function(){
+            real=$(this).val();
+            if(real==''){
+              i=0;
+              $(this).focus();
+              return false;
+            }else{
+              i=1;
+            }
+
+        })
+        if(i==1){
+            var params = $(this).closest('form.order').serialize();
+            var addr = "{:U('sign')}";
         
-        $.ajax({
-          url:addr,
-          type:'post',
-          cache : false,
-          dataType:'json',
-          data:params,
-          success: function(msg){
-            if(msg.status=='0'){
-              if(typeof HostApp == "undefined") {
-                alert(msg.msg);
-              }
-              else {
-                HostApp.toast(msg.msg);
-              }
-              location.reload();
-            }
-            else{
-              alert_error(msg.msg); 
-            }
-          }
-        });
+            $.ajax({
+                url:addr,
+                type:'post',
+                cache : false,
+                dataType:'json',
+                data:params,
+                success: function(msg){
+                    if(msg.status=='0'){
+                        if(typeof HostApp == "undefined") {
+                            alert(msg.msg);
+                        }
+                        else {
+                            HostApp.toast(msg.msg);
+                        }
+                        location.reload();
+                    }
+                    else{
+                        alert_error(msg.msg); 
+                    }
+                }
+                });
+        }else{
+            alert('签收数量不能为空');
+            
+        }
     });
+
+
 
     $('.btn-reject').on('click',function(){
         var params = $(this).closest('form.order').serialize();
@@ -361,4 +380,14 @@ form.order ul.list-group{
         });
     });
   });
+
+function check(x){
+    var val
+    val=$(x).children('#show').text();
+    if(val=='点击展开'){
+        $(x).children('#show').text('点击收回');
+    }else{
+        $(x).children('#show').text('点击展开');
+    }
+}
 </script>
