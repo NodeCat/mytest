@@ -135,7 +135,21 @@
                         --> <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}" />
                             <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
                             <eq name="v['close_unit']" value="斤">
-                                <input type="number" name="quantity[]" min="0" class="real form-control p_qty" placeholder="输入数量" value="" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                                <switch name="vo['status_cn']" >
+                                    <case value="已签收" break="0"></case>
+                                    <case value="已完成" break="0"></case>
+                                    <case value="已回款" break="1">
+                                        <input type="number" name="quantity[]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                                    </case>
+                                    <case value="已退货" break="0"></case>
+                                    <case value="已发运" break="0"></case>
+                                    <case value="已出库" break="0"></case>
+                                    <case value="已装车" break="0"></case>
+                                    <case value="待收货" break="0">
+                                        <input type="number" name="quantity[]" min="0" class="real form-control p_qty" placeholder="输入数量" value="" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                                    </case>
+                                </switch>
+                                
                             <else/>
                                 <input type="number" name="quantity[]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
                             </eq>
