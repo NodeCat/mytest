@@ -42,46 +42,46 @@ class StockOutController extends CommonController {
         'created_time' => '下单时间'
 	);
 	protected $query = array ( 
-		 'stock_bill_out.code' =>    array (     
-			'title' => '出库单号',     
-			'query_type' => 'like',     
-			'control_type' => 'text',     
-			'value' => 'code',   
-		),
+    	 'stock_bill_out.code' =>    array (     
+    		'title' => '出库单号',     
+    		'query_type' => 'like',     
+    		'control_type' => 'text',     
+    		'value' => 'code',   
+    	),
          'stock_bill_out.wave_id' =>    array (     
-			'title' => '波次号',     
-			'query_type' => 'eq',     
-			'control_type' => 'text',     
-			'value' => 'wave_id',   
-		),  
-		'stock_bill_out.type' =>    array (     
-			'title' => '出库单类型',     
-			'query_type' => 'eq',     
-			'control_type' => 'getField',     
-			'value' => 'stock_bill_out_type.id,name'
+    		'title' => '波次号',     
+    		'query_type' => 'eq',     
+    		'control_type' => 'text',     
+    		'value' => 'wave_id',   
+    	),  
+    	'stock_bill_out.type' =>    array (     
+    		'title' => '出库单类型',     
+    		'query_type' => 'eq',     
+    		'control_type' => 'getField',     
+    		'value' => 'stock_bill_out_type.id,name'
                             
-		),
-		'stock_bill_out.refused_type' =>    array (     
-			'title' => '拒绝标识',     
-			'query_type' => 'eq',     
-			'control_type' => 'select',     
-			'value' => array(
+    	),
+    	'stock_bill_out.refused_type' =>    array (     
+    		'title' => '拒绝标识',     
+    		'query_type' => 'eq',     
+    		'control_type' => 'select',     
+    		'value' => array(
                         '1'=>'空',
                         '2'=>'缺货'
                         ),   
-		),   
-		
-		'stock_bill_out.line_id' => array (     
-			'title' => '路线片区',     
-			'query_type' => 'eq',     
-			'control_type' => 'select',     
-			'value' => '' 
-			),
-		'stock_bill_out.process_type' => array (     
-			'title' => '处理类型',     
-			'query_type' => 'eq',     
-			'control_type' => 'select',     
-			'value' => array(
+    	),   
+    	
+    	'stock_bill_out.line_id' => array (     
+    		'title' => '路线片区',     
+    		'query_type' => 'eq',     
+    		'control_type' => 'select',     
+    		'value' => '' 
+    		),
+    	'stock_bill_out.process_type' => array (     
+    		'title' => '处理类型',     
+    		'query_type' => 'eq',     
+    		'control_type' => 'select',     
+    		'value' => array(
                         '1'=>'正常单',
                         '2'=>'取消单'
                         ),   
@@ -162,9 +162,10 @@ class StockOutController extends CommonController {
         $this->search_addon = true;
     }
     protected function before_lists(){
+
         $pill = array(
 			'status'=> array(
-				'1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
+	           '1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),

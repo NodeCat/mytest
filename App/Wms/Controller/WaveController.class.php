@@ -23,32 +23,32 @@ class WaveController extends CommonController {
           )
         );
 	protected $columns = array (
-				'id'                => '',
-				'wave_id'				    => '波次号',
-				'company_id'        => '波次主表名称',
-				'order_count'       => '总单数',
-				'line_count'        => '总行数',
-				'total_count'       => '总件数',
-				'status' 				    => '波次状态',
-				'start_time'        => '开始时间',
-				'end_time'          => '结束时间',
+	       'id'                => '',
+	       'wave_id'				    => '波次号',
+	       'company_id'        => '波次主表名称',
+	       'order_count'       => '总单数',
+	       'line_count'        => '总行数',
+         'total_count'       => '总件数',
+         'status' 				    => '波次状态',
+         'start_time'        => '开始时间',
+         'end_time'          => '结束时间',
 		);
 	protected $query   = array (
-			'stock_wave.id' 	    =>    array ( 
-  			 	'title' 		      => '波次号', 
-  			 	'query_type' 	    => 'eq', 
-  			 	'control_type'    => 'text', 
-  			 	'value' 		      => 'id',
-			),
-			'stock_wave.type'     =>    array ( 
-			 	'title'        	    => '波次状态', 
-			 	'query_type'   	    => 'eq', 
-			 	'control_type' 	    => 'select', 
-			 	'value'             => array(
-			 		'200'		          => '待运行',
-			 		'201'		          => '运行中',
-			 		'900'		          => '已释放',
-			 		),
+  			'stock_wave.id' 	    =>    array ( 
+    			 	'title' 		      => '波次号', 
+    			 	'query_type' 	    => 'eq', 
+    			 	'control_type'    => 'text', 
+    			 	'value' 		      => 'id',
+  			),
+  			'stock_wave.type'     =>    array ( 
+  			 	'title'        	    => '波次状态', 
+  			 	'query_type'   	    => 'eq', 
+  			 	'control_type' 	    => 'select', 
+  			 	'value'             => array(
+  			 		'200'		          => '待运行',
+  			 		'201'		          => '运行中',
+  			 		'900'		          => '已释放',
+  			 		),
 			),
 	);
 	protected function before_index() {
@@ -76,7 +76,9 @@ class WaveController extends CommonController {
       	$m = M('stock_wave');
       	$waveLogic = A('Wave','Logic');
       	$hasIsAuth = $waveLogic->hasIsAuth($ids);
-      	if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+      	if($hasIsAuth === FALSE){
+          echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+        }
       	$controllerStatus = $waveLogic->execPack($ids);
       	if($controllerStatus === FALSE){
       		echojson('1','','分拣失败！');
@@ -142,7 +144,6 @@ class WaveController extends CommonController {
                 if($bill_out['process_type'] == 2) $process_type_cn = '取消单';
                 $result[$key]['process_type_cn'] = $process_type_cn;
                 if($bill_out['delivery_date'] == "0000-00-00 00:00:00" || $bill_out['delivery_date'] == "1970-01-01 00:00:00") {
-                  
                   $bill_out['delivery_date'] = '无';
                 }else {
                   $bill_out['delivery_date'] = date('Y-m-d',strtotime($bill_out['delivery_date'])) .'<br>'. $bill_out['delivery_time'];
@@ -169,7 +170,9 @@ class WaveController extends CommonController {
       $ids       = I('ids');
       $waveLogic = A('Wave','Logic');
       $hasIsAuth = $waveLogic->hasIsAuth($ids, '900');
-      if($hasIsAuth === FALSE) echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+      if($hasIsAuth === FALSE){
+        echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+      }
       $wave_ids  = explode(',', $ids);
 
     	A('WavePicking','Logic')->waveExec($wave_ids);

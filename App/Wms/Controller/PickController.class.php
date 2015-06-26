@@ -25,9 +25,10 @@ class PickController extends CommonController {
          'OFF'=>'未打印'
         )*/
   );
-	protected $columns = array (
-  		'id'                => '',
-      'code'           => '分拣单号',
+
+  protected $columns = array (
+      'id'                => '',
+      'code'              => '分拣单号',
       'type'              => '类型',
       'wave_id'           => '波次号',
   	  'status'			      => '状态',
@@ -90,7 +91,7 @@ class PickController extends CommonController {
       );
       
       $this->search_addon = true;
-   }
+  }
   public function after_search(&$map){
       $map['wh_id'] = session('user.wh_id');
   }
