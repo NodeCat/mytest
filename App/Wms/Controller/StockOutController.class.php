@@ -209,7 +209,7 @@ class StockOutController extends CommonController {
     protected function after_lists(&$data) {
         foreach($data as &$val) {
             if(!isset($val['total_qty'])){
-                $total = A('Wave','Logic')->sumStockBillOut($val['id']);
+                $total = A('StockOut','Logic')->sumStockBillOut($val['id']);
                 $val['total_qty'] = $total['totalCount'];
             }
             if($val['delivery_date'] == "0000-00-00 00:00:00" || $val['delivery_date'] == "1970-01-01 00:00:00") {
@@ -455,45 +455,65 @@ class StockOutController extends CommonController {
      */
     public function createWave(){
         $ids          = I('ids');
-        $site_url     = I('site_url')?I('site_url'):1;
+        $company_id   = I('company_id')?I('company_id'):1;
         $waveLogic    = A('Wave','Logic');
-        $idArr        = $waveLogic->getEmptyIds();
-        $idsStr       = implode(',', $idArr);
-        $ids          = $ids?$ids:$idsStr;
-        $hasProductionAuth = $waveLogic->hasProductionAuth($ids);
+        $StockOutLogic= A('StockOut','Logic');
+
+        //如果ids 为空则是满足条件的数据
+        if(!$ids){
+
+            $whereArr     = array();
+            $whereArr     = I();
+            $idsStr        = $StockOutLogic->getSearchDate($whereArr);
+            $ids          = $idsStr;
+        }
+        //验证是否选择中有除了待生产的状态数据
+        $hasProductionAuth = $StockOutLogic->hasProductionAuth($ids);
         if($hasProductionAuth === FALSE){
-            echojson('1','','你所选的出库单中包其他状态出库单的，请选择待生产的出库单创建！');
+            $this->msgReturn('1','你所选的出库单中包其他状态出库单的，请选择待生产的出库单创建！','');
         }
         //查看出库单中所有sku是否满足数量需求
         /*$is_enough = A('Wave','Logic')->hasEnough($ids);
-        if($is_enough === FALSE) echojson('1','','你所选的出库单是缺货状态，请重新创建！');*/
-        $idsArr    = $waveLogic->enoughaResult($ids);
+        if($is_enough === FALSE) $this->msgReturn('1','你所选的出库单是缺货状态，请重新创建！','');*/
+
+        //查找你选择的出库单无缺货出库单数据id
+        $idsArr    = $StockOutLogic->enoughaResult($ids);
         $ids       = $idsArr['tureResult'];
         if(!$ids){
-           echojson('0','','你选择的出库单因库存不足，波次创建失败！'); 
+           $this->msgReturn('0','你选择的出库单因库存不足，波次创建失败！',''); 
         }
+
+        //获取插入数据
         $insertArr = array();
-        $insertArr = $waveLogic->getWaveDate($ids, $site_url);
+        $insertArr = $waveLogic->getWaveDate($ids, $company_id);
         if($insertArr === FALSE){
-            echojson('0','','波次创建失败！');
+            $this->msgReturn('0','波次创建失败！','');
         }
-        $insertArr = array_merge($insertArr,$this->getDefaultInsert());
+        //拼装默认数据
+        $insertArr = array_merge($insertArr,$this->setInsertDefaultDate());
         $insertArr['wh_id'] = session('user.wh_id');
+
+        //插入波次表
         $m = M('stock_wave');
         $wave_id = $m->data($insertArr)->add();
         if(!$wave_id){
-            echojson('0','','波次创建失败！');
+            $this->msgReturn('0','波次创建失败！','');
         }
+
+        //插入波次详细表
         $re = $waveLogic->addWaveDetail($ids,$wave_id);
+        //插入失败做的事务
         if($re === FALSE){
             M('stock_wave')->where(array('id'=>$wave_id))->save(array('is_delete'=>1));
-            echojson('0','','波次创建失败！');
+            $this->msgReturn('0','波次创建失败！','');
         }else{
             if($waveLogic->updateBillOutStatus($ids, $wave_id) === FALSE){
                 M('stock_wave')->where(array('id'=>$wave_id))->save(array('is_deleted'=>1));
                 M('stock_wave_detail')->where(array('pid'=>$wave_id))->delete();
-                echojson('0','','波次创建失败！');
+                $this->msgReturn('0','波次创建失败！','');
             }
+
+            //缺货的出库单的数据 返给前台显示
             $result = array();
             $result['wave_id'] = $wave_id;
             $result['order_count'] = $insertArr['order_count'];
@@ -507,7 +527,7 @@ class StockOutController extends CommonController {
             }else{
                 $result['false_bill_out_result'] = '';
             }
-            echojson('1',$result,'波次创建成功！');
+            $this->msgReturn('1','波次创建成功！',$result);
         }
     }
     /**
@@ -515,7 +535,7 @@ class StockOutController extends CommonController {
      * @author liuguangping@dachuwang.com
      * @since 2015-06-13
      */
-    public function getDefaultInsert(){
+    public function setInsertDefaultDate(){
         $insertArr = array();
         $insertArr['status'] = 200;
         $insertArr['created_user'] = session('user.uid');
