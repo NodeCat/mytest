@@ -151,7 +151,7 @@ class StockOutApi extends Controller{
             $map['stock.status'] = 'qualified';
             $map['stock.is_deleted'] = 0;
             $map['pro_code'] = $val;
-            $res = $stock->field('warehouse.code as wh_name,sum(stock_qty) as total_qty')->join('warehouse on warehouse.id=wh_id')->where($map)->group('wh_name, pro_code')->select();
+            $res = $stock->field('warehouse.id as wh_name,sum(stock_qty) as total_qty')->join('warehouse on warehouse.id=wh_id')->where($map)->group('wh_name, pro_code')->select();
             foreach($res as $v) {
                 $result[$val][$v['wh_name']] = $v['total_qty'];
             }
