@@ -26,6 +26,10 @@ class StockOutController extends CommonController {
             '0'=>'全天',
             '1'=>'上午',
             '2'=>'下午'
+            ),
+        'system_type'=>array(
+            '1'=>'大厨',
+            '2'=>'大果'
             )
         );
     protected $columns = array (  
@@ -36,6 +40,7 @@ class StockOutController extends CommonController {
         'total_qty' => '总件数',
         'line_id' => '线路片区',
         'status' => '出库单状态',
+        'system_type'=>'所属系统',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_date' => '送货时间',
@@ -69,7 +74,16 @@ class StockOutController extends CommonController {
                         '1'=>'空',
                         '2'=>'缺货'
                         ),   
-    	),   
+    	),
+        'stock_bill_out.system_type' =>    array (     
+            'title' => '所属系统',     
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
+                        '1'=>'大厨',
+                        '2'=>'大果'
+                        ),   
+        ), 
     	
     	'stock_bill_out.line_id' => array (     
     		'title' => '路线片区',     

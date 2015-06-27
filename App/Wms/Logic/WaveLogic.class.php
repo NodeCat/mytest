@@ -100,6 +100,7 @@ class WaveLogic{
 		$delivery_address 	= I('delivery_address');*/
 		$delivery_date 		= I('delivery_date');
 		$delivery_ampm 		= I('delivery_ampm');
+        $system_type        = I('system_type');
 		if($code) $map['code'] = $code;
 		if($wave_id) $map['wave_id'] = $wave_id;
 		if($type) $map['type'] = $type;
@@ -110,6 +111,7 @@ class WaveLogic{
 		if($delivery_address) $map['delivery_address'] =array('like','%'.$delivery_address.'%');
 		if($delivery_date) $map['delivery_date'] = $delivery_date;
 		if($delivery_ampm) $map['delivery_ampm'] = $delivery_ampm;
+        if($system_type) $map['system_type'] = $system_type;
 		if($created_time && $created_time_1){
 			if($created_time >= $created_time_1){
 				$map['created_time'] = array('gt', $created_time);

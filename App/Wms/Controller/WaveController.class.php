@@ -64,6 +64,7 @@ class WaveController extends CommonController {
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
         );
         $this->search_addon = true;
+        //dump($this->);
     }
     /**
      * 开始分拣
