@@ -40,52 +40,52 @@ class StockOutController extends CommonController {
         'refused_type' => '拒绝标识',
         'delivery_date' => '送货时间',
         'created_time' => '下单时间'
-	);
-	protected $query = array ( 
-    	 'stock_bill_out.code' =>    array (     
-    		'title' => '出库单号',     
-    		'query_type' => 'like',     
-    		'control_type' => 'text',     
-    		'value' => 'code',   
-    	),
+    );
+    protected $query = array ( 
+         'stock_bill_out.code' =>    array (     
+            'title' => '出库单号',     
+            'query_type' => 'like',     
+            'control_type' => 'text',     
+            'value' => 'code',   
+        ),
          'stock_bill_out.wave_id' =>    array (     
-    		'title' => '波次号',     
-    		'query_type' => 'eq',     
-    		'control_type' => 'text',     
-    		'value' => 'wave_id',   
-    	),  
-    	'stock_bill_out.type' =>    array (     
-    		'title' => '出库单类型',     
-    		'query_type' => 'eq',     
-    		'control_type' => 'getField',     
-    		'value' => 'stock_bill_out_type.id,name'
+            'title' => '波次号',     
+            'query_type' => 'eq',     
+            'control_type' => 'text',     
+            'value' => 'wave_id',   
+        ),  
+        'stock_bill_out.type' =>    array (     
+            'title' => '出库单类型',     
+            'query_type' => 'eq',     
+            'control_type' => 'getField',     
+            'value' => 'stock_bill_out_type.id,name'
                             
-    	),
-    	'stock_bill_out.refused_type' =>    array (     
-    		'title' => '拒绝标识',     
-    		'query_type' => 'eq',     
-    		'control_type' => 'select',     
-    		'value' => array(
+        ),
+        'stock_bill_out.refused_type' =>    array (     
+            'title' => '拒绝标识',     
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
                         '1'=>'空',
                         '2'=>'缺货'
                         ),   
-    	),   
-    	
-    	'stock_bill_out.line_id' => array (     
-    		'title' => '路线片区',     
-    		'query_type' => 'eq',     
-    		'control_type' => 'select',     
-    		'value' => '' 
-    		),
-    	'stock_bill_out.process_type' => array (     
-    		'title' => '处理类型',     
-    		'query_type' => 'eq',     
-    		'control_type' => 'select',     
-    		'value' => array(
+        ),   
+        
+        'stock_bill_out.line_id' => array (     
+            'title' => '路线片区',     
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => '' 
+            ),
+        'stock_bill_out.process_type' => array (     
+            'title' => '处理类型',     
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
                         '1'=>'正常单',
                         '2'=>'取消单'
                         ),   
-		),
+        ),
         /*'stock_bill_out.customer_realname' => array (     
             'title' => '客户名称',     
             'query_type' => 'like',     
@@ -120,7 +120,7 @@ class StockOutController extends CommonController {
             'value' => '',   
         ), 
         
-	);
+    );
     public function __construct(){
         parent::__construct();
         if(IS_GET && ACTION_NAME == 'add'){
@@ -164,32 +164,32 @@ class StockOutController extends CommonController {
     protected function before_lists(){
 
         $pill = array(
-			'status'=> array(
-	           '1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
+            'status'=> array(
+                '1'=>array('value'=>'1','title'=>'待生产','class'=>'warning'),
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
                 '6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
                 '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
-				
-			)
-		);
-		$stock_out = M('stock_bill_out');
-		$map['is_deleted'] = 0;
+                
+            )
+        );
+        $stock_out = M('stock_bill_out');
+        $map['is_deleted'] = 0;
         $map['wh_id'] = session('user.wh_id');
-		$res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
-		foreach ($res as $val) {
+        $res = $stock_out->field('status,count(status) as qty')->where($map)->group('status')->select();
+        foreach ($res as $val) {
             if(array_key_exists($val['status'], $pill['status'])) {
-			    $pill['status'][$val['status']]['count'] = $val['qty'];
+                $pill['status'][$val['status']]['count'] = $val['qty'];
                 $pill['status']['total'] += $val['qty'];
-		    }
+            }
         }
         foreach($pill['status'] as $k => $val) {
-			if(empty($val['count'])){
-				$pill['status'][$k]['count'] = 0;
-			}
-		}
-		$this->pill = $pill;
+            if(empty($val['count'])){
+                $pill['status'][$k]['count'] = 0;
+            }
+        }
+        $this->pill = $pill;
     }
    
     protected function after_lists(&$data) {
@@ -210,9 +210,9 @@ class StockOutController extends CommonController {
     protected function before_add(&$M) {
         $post = I('post.');
         $n = count($post['pros']['pro_code']);
-		if($n < 2 || empty($post['pros']['pro_code'][1])) {
+        if($n < 2 || empty($post['pros']['pro_code'][1])) {
             $this->msgReturn(0,'请至少填写一个货品');
-		}
+        }
         foreach($post['pros']['order_qty'] as $val) {
             if(empty($val)) {
                 $this->msgReturn(0,'订单数量不能为0');    
@@ -246,14 +246,14 @@ class StockOutController extends CommonController {
         $column['status'] = 1;
         
         $n = count($post['pro_code']);
-		if($n < 2) {
-			$this->msgReturn(1,'','',U('view','id='.$id));
-		}
+        if($n < 2) {
+            $this->msgReturn(1,'','',U('view','id='.$id));
+        }
         
         for($i = $n-1;$i > 0;$i--) {
             if(empty($post['pro_code'][$i])) {
-				continue;
-			}
+                continue;
+            }
             $column['pro_code'] = $post['pro_code'][$i];
             $column['pro_name'] = $post['pro_name'][$i];
             $column['pro_attrs'] = $post['pro_attrs'][$i];
@@ -268,13 +268,13 @@ class StockOutController extends CommonController {
             }
         }
         unset($map);
-		$field="sum(order_qty) as total_qty";
-		$map['pid'] = $id;
-		$data = $stock_bill_detail->field($field)->where($map)->group('pid')->find();
-		$where['id'] = $id;
-		$stock_bill_out = M('stock_bill_out');
-		$stock_bill_out->where($where)->save($data);
-		$this->msgReturn(1,'','',U('view','id='.$id));
+        $field="sum(order_qty) as total_qty";
+        $map['pid'] = $id;
+        $data = $stock_bill_detail->field($field)->where($map)->group('pid')->find();
+        $where['id'] = $id;
+        $stock_bill_out = M('stock_bill_out');
+        $stock_bill_out->where($where)->save($data);
+        $this->msgReturn(1,'','',U('view','id='.$id));
         
     }
     protected function before_edit(&$data) {
