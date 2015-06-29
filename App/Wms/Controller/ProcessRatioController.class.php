@@ -206,7 +206,7 @@ class ProcessRatioController extends CommonController {
 	    }
 	    //调用PMS接口获取产品信息
 	    $code_info = $pms->get_SKU_field_by_pro_codes($code, count($code));
-	    foreach ($data as &$val) {
+	    foreach ($data as $key => &$val) {
 	        foreach ($code_info as $k => $v) {
 	            if ($val['p_pro_code'] == $k) {
 	                $val['p_pro_name'] = $v['name'];
