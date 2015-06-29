@@ -177,7 +177,7 @@ class DistributionController extends CommonController {
         }
         $result = $result['list'];
         $data = array();
-        foreach ($result as &$value) {
+        foreach ($result as $value) {
             switch ($value['pay_type']) {
             	   case 0:
             	       $value['pay_type'] = '货到付款';
@@ -196,6 +196,21 @@ class DistributionController extends CommonController {
             	   case 1:
             	       $value['pay_status'] = '已支付';
             	       break;
+            }
+            //筛选sku
+            foreach ($order_ids as $sku_id => $order_id) {
+                $sku_info = $D->get_out_detail_by_pids($sku_id);
+                $sku_info = $sku_info['list'];
+                foreach ($sku_info as $sku) {
+                    $skucodearr[] = $sku['pro_code'];
+                }
+                foreach ($value as $kk => &$vv) {
+                    foreach ($vv['detail'] as $key => $detail_info) {
+                        if (!in_array($detail_info['sku_number'], $skucodearr)) {
+                            unset($vv['detail'][$key]);
+                        }
+                    } 
+                }
             }
             //创建数据
             $data[] = $D->format_export_data($value);
@@ -372,9 +387,20 @@ class DistributionController extends CommonController {
                     unset($res[$key]);
                 }
             }
-            //获取配送单下的出库单
+            //筛选sku
             foreach ($out_ids as $sku_id => $order_id) {
-                //$res = $
+                $sku_info = $D->get_out_detail_by_pids($sku_id);
+                $sku_info = $sku_info['list'];
+                foreach ($sku_info as $sku) {
+                    $skucodearr[] = $sku['pro_code'];
+                }
+                foreach ($result as $kk => &$vv) {
+                    foreach ($vv['detail'] as $key => $detail_info) {
+                        if (!in_array($detail_info['sku_number'], $skucodearr)) {
+                            unset($vv['detail'][$key]);
+                        }
+                    } 
+                }
             }
             $items = array();
             $items['dist_code'] = $dis['dist_code'];
@@ -394,7 +420,7 @@ class DistributionController extends CommonController {
             $items['deliver_date'] = $dis['deliver_date']; //发车时间
             $items['deliver_time'] = $dis['deliver_time']; //时段
             $items['orders'] = $result; //订单列表
-            $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=PD1506080001'; //条码
+            $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=' . $dis['dist_code']; //条码
             
             $merge = array();
             foreach ($result as $val) {
