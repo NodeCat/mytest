@@ -19,7 +19,7 @@ class AuthController extends Controller {
         if(!check_maintain()){
             destory_session();
             layout(FALSE);
-            $this->display('index:closed');
+            $this->display('Index:closed');
             exit();
         }
 
