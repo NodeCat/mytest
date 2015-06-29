@@ -1,0 +1,1 @@
+ALTER TABLE `stock_bill_out` ADD COLUMN `system_type` tinyint(2) NOT NULL DEFAULT 1 COMMENT '所属系统 1 大厨 2 大果' AFTER `system_type`;
