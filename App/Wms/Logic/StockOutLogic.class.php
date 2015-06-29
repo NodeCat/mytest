@@ -56,6 +56,7 @@ class StockOutLogic{
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['pro_code'];
             $detail['order_qty'] = $val['order_qty'];
+            $detail['price'] = $val['price'];
             //如果是加工出库单 采购出库单，则默认的实际发货量为0，其余类型出库单默认发货量等于订单量
             if(in_array($stock_out_type , array('MNO','SO')) ) {
                 $detail['delivery_qty'] = 0;
@@ -78,9 +79,12 @@ class StockOutLogic{
             $detail['is_deleted'] = 0;
             $total += $val['order_qty'];
             $res = M('stock_bill_out_detail')->add($detail);
+
+            $total_amount = $val['order_qty'] * $val['price'];
         }
         
         $stock_out_data['total_qty'] = $total;
+        $stock_out_data['total_amount'] = $total_amount;
         $map['id'] = $stock_out_id;
         M('stock_bill_out')->where($map)->save($stock_out_data);
        
