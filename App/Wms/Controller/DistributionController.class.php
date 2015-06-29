@@ -170,7 +170,7 @@ class DistributionController extends CommonController {
         //获取订单
         $D = D('Distribution', 'Logic');
         $order_ids = $D->get_order_ids_by_dis_id($get);
-        $order = D('Order', 'Logic');
+        $order = D('Common/Order', 'Logic');
         $result = $order->getOrderInfoByOrderIdArr($order_ids);
         if (empty($result)) {
             $this->msgReturn(false, '获取订单失败');
@@ -304,7 +304,7 @@ class DistributionController extends CommonController {
         $order_ids = $D->get_order_ids_by_dis_id($get);
         
         //拉取订单
-        $Order = D('Order', 'Logic');
+        $Order = D('Common/Order', 'Logic');
         $result = $Order->getOrderInfoByOrderIdArr($order_ids);
         if ($result['status'] == false) {
             $this->msgReturn(false, $result['msg']);
@@ -348,7 +348,7 @@ class DistributionController extends CommonController {
         //获取所有配送单下的订单id
         $order_ids = $D->get_order_ids_by_dis_id($idarr);
         //拉取订单
-        $Order = D('Order', 'Logic');
+        $Order = D('Common/Order', 'Logic');
         $res = $Order->getOrderInfoByOrderIdArr($order_ids);
         if ($res['status'] == false) {
             $this->msgReturn(false, $res['msg']);

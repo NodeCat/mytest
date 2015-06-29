@@ -91,7 +91,7 @@ class WaveLogic{
         $map['wh_id'] = session('user.wh_id');
         $map['status'] = '1';
         $map['itemsPerPage'] = 1000;
-        $A = A('Order','Logic');
+        $A = A('Common/Order','Logic');
         $lines = $A->line($map);
         $lines_arr = array();
         foreach ($lines as $key => $value) {
