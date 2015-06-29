@@ -1,0 +1,35 @@
+<form  class="form-horizontal" role="form" action="{:U(CONTROLLER_NAME.'/save')}" method="post" id='form'>
+	<div class="col-lg-6">
+			<div class="form-group">
+		    	<textarea name="content" class="form-control" rows="20" placeholder="描述…">{$data}</textarea>
+		    </div>
+			<div class="form-group">
+		    	<button id="btn-submit" type="submit" class="btn btn-primary ">&nbsp;保 存&nbsp;</button>
+			</div>
+	</div>
+	<div class="col-lg-6">
+		<div class="col-lg-12">
+			<h4>字典列表</h4>
+			<p class="text-primary">
+			每行一对，中间以<strong>一个英文空格</strong>为分隔符<br />
+			如有重复，则以<strong>第一次出现为准</strong><br />
+			<strong>不区分大小写</strong><br />
+			示例：<br />
+			user 用户<br />
+			name 姓名<br />
+			</p>
+			<hr />
+			<h4>菜单黑名单列表</h4>
+			<p class="text-primary">
+				即不做为菜单的权限名称<br />
+				比如删除，编辑等，一般作为按钮的形式出现，不会以菜单形式出现，为了方便菜单设置，可以加入到黑名单……
+			</p>
+		</div>
+		<div class="col-lg-12">
+			<div class="form-group">
+		    	<textarea name="content-black" class="form-control" rows="5" placeholder="黑名单…">{$black}</textarea>
+		    </div>
+		</div>
+	</div>
+</form>
+

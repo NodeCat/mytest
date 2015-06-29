@@ -1,0 +1,11 @@
+<div id="alert" class="center alert message fade in hide">
+    <a class="dismiss close" data-dismiss="alert">×</a>
+    <label id="msg"></label>
+</div>
+<notempty name="msg">
+	<script type="text/javascript">
+		$(function(){
+			alert(<php> echo '"'.$msg.'"';$msg=null;</php>);
+		});
+	</script>
+</notempty>
