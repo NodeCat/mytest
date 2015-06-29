@@ -5,13 +5,13 @@ class LocationController extends CommonController {
 
     public function before_index(){
         $this->toolbar =array(
-            array('name'=>'add', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            array('name'=>'edit', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            array('name'=>'delete' ,'show' => isset($this->auth['delete']),'new'=>'true'),
-            array('name'=>'import' ,'show' => isset($this->auth['import']),'new'=>'true'),
+            array('name'=>'add', 'show' => isset($this->auth['view']),'new'=>'false'), 
+            array('name'=>'edit', 'show' => isset($this->auth['view']),'new'=>'false'), 
+            array('name'=>'delete' ,'show' => isset($this->auth['delete']),'new'=>'false'),
+            array('name'=>'import' ,'show' => isset($this->auth['import']),'new'=>'false'),
             array('name'=>'export' ,'show' => isset($this->auth['export']),'new'=>'true'),
-            array('name'=>'print' ,'show' => isset($this->auth['printpage']),'new'=>'true'),
-            array('name'=>'setting' ,'show' => isset($this->auth['setting']),'new'=>'true'),
+            array('name'=>'print' ,'show' => isset($this->auth['printpage']),'new'=>'false'),
+            array('name'=>'setting' ,'show' => isset($this->auth['setting']),'new'=>'false'),
         );
     }
     
