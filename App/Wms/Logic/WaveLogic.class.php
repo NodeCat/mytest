@@ -161,7 +161,7 @@ class WaveLogic{
 	 * 
 	 */
     public function line(){
-        //$map['wh_id'] = session('user.wh_id');
+        $map['wh_id'] = session('user.wh_id');
         $map['status'] = '1';
         $map['itemsPerPage'] = 1000;
         $A = A('Order','Logic');
