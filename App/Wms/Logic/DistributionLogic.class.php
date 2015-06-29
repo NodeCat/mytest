@@ -47,7 +47,7 @@ class DistributionLogic {
             $data[] = $value['refer_code'];
         }
         //获取订单详情
-        $order = D('Order', 'Logic');
+        $order = D('Common/Order', 'Logic');
         $order_info = $order->getOrderInfoByOrderIdArr($data);
         if ($order_info['status'] == false) {
             $return['msg'] = $order_info['msg'];
@@ -207,7 +207,7 @@ class DistributionLogic {
         foreach ($ids['ids'] as $values) {
             $nid[] = explode(',', $values);
         }
-        $D = D('Order', 'Logic');
+        $D = D('Common/Order', 'Logic');
         $dis = D('Distribution'); 
         $det = M('stock_wave_distribution_detail');
         $M = M('stock_bill_out');
@@ -483,7 +483,7 @@ class DistributionLogic {
         //获取所有订单id
         $orderids = $this->get_order_ids_by_dis_id($ids);
         //获取所有订单
-        $D = D('Order', 'Logic');
+        $D = D('Common/Order', 'Logic');
         $order_info = $D->getOrderInfoByOrderIdArr($orderids);
         if ($order_info['status'] == false) {
             //获取失败
