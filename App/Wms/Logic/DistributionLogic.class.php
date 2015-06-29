@@ -703,7 +703,7 @@ class DistributionLogic {
                             $detail['name'],
                             $specs,
                             $detail['single_price'],
-                            $detail['close_unit']
+                            $detail['close_unit'],
                             $detail['quantity'],
                             $detail['unit_id'],
                             '',
