@@ -358,9 +358,11 @@ class StockOutController extends CommonController {
                 foreach($detail_info as $val) {
                     $data['pro_code'] = $val['pro_code'];
                     $data['pro_qty'] = $val['delivery_qty'];
+                    $data['refer_code'] = $stock_info['code'];
+                    $data['wh_id'] = $stock_info['wh_id'];
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
                     //存储此货品出库的相关内容
-                    $stock_container = D('stock_bill_out_container');
+                    /*$stock_container = D('stock_bill_out_container');
                     $container['refer_code'] = $stock_info['code'];
                     $container['pro_code'] = $val['pro_code'];
                     $container['wh_id'] = $stock_info['wh_id'];
@@ -370,7 +372,7 @@ class StockOutController extends CommonController {
                         $container['qty'] = $v['qty'];
                         $columns = $stock_container->create($container);
                         $stock_container->add();
-                    }
+                    }*/
                 }
             }
             unset($list);
