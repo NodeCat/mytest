@@ -79,9 +79,12 @@ class StockOutLogic{
             $detail['is_deleted'] = 0;
             $total += $val['order_qty'];
             $res = M('stock_bill_out_detail')->add($detail);
+
+            $total_amount = $val['order_qty'] * $val['price'];
         }
         
         $stock_out_data['total_qty'] = $total;
+        $stock_out_data['total_amount'] = $total_amount;
         $map['id'] = $stock_out_id;
         M('stock_bill_out')->where($map)->save($stock_out_data);
        
