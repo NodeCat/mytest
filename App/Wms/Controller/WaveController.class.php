@@ -40,7 +40,7 @@ class WaveController extends CommonController {
     			 	'control_type'    => 'text', 
     			 	'value' 		      => 'id',
   			),
-  			'stock_wave.type'     =>    array ( 
+  			'stock_wave.status'     =>    array ( 
   			 	'title'        	    => '波次状态', 
   			 	'query_type'   	    => 'eq', 
   			 	'control_type' 	    => 'select', 
