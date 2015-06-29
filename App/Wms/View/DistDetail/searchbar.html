@@ -45,7 +45,7 @@
         </case>
         <case value="select">{~$a++}
             <select name="query[{$key}]" class="form-control input-sm ">
-                <option value ="">全部</option>
+                <option value ="">--请选择--</option>
                 <volist name="vo['value']" id="op">
                     <option value ="{$key}">{$op}</option>
                 </volist>
@@ -71,7 +71,7 @@
                 }
             </php>
             <select name="query[{$key}]" class="form-control input-sm">
-                <option value ="">全部</option>
+                <option value ="">--请选择--</option>
                 <volist name="items" id="op">
                     <option value ="{$key}">{$op}</option>
                 </volist>

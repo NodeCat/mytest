@@ -310,6 +310,8 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, $result['msg']);
         }
         $result = $result['list'];
+        //替换sku
+        $result = $D->replace_sku_info($result, $get);
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
         $data['is_printed'] = $dis['is_printed']; //是否打印
@@ -369,6 +371,10 @@ class DistributionController extends CommonController {
                     $result[] = $value;
                     unset($res[$key]);
                 }
+            }
+            //获取配送单下的出库单
+            foreach ($out_ids as $sku_id => $order_id) {
+                //$res = $
             }
             $items = array();
             $items['dist_code'] = $dis['dist_code'];
@@ -442,12 +448,16 @@ class DistributionController extends CommonController {
             return;
         }
         $post = I('post.dist_code');
+        $confirm = I('post.confirm'); //是否是确认操作
         if (empty($post)) {
             $this->msgReturn(false, '请输入配送单号');
         }
         $M = M('stock_wave_distribution');
         $det = M('stock_wave_distribution_detail');
         $stock = M('stock_bill_out');
+        $D = D('Distribution', 'Logic');
+        $stockOut = D('StockOut', 'Logic');
+        //获取配送单
         $map['dist_code'] = $post;
         $result = $M->where($map)->find();
         if (empty($result)) {
@@ -457,31 +467,133 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '配送单已经完成');
         }
         unset($map);
+        //获取配送单详情
         $map['pid'] = $result['id'];
+        $map['is_deleted'] = 0;
         $order_ids = $det->where($map)->select();
         if (empty($order_ids)) {
             $this->msgReturn(false, '空配送单');
         }
         unset($map);
-        
+        //获取所有出库单 IDS
+        $bill_out_idarr = array();
+        foreach ($order_ids as $value) {
+            $bill_out_idarr[] = $value['bill_out_id'];
+        }
+        //判断出库单状态是否为分拣完成
+        $map['id'] = array('in', $bill_out_idarr);
+        $map['is_deleted'] = 0;
+        $bill_out_status = $stock->where($map)->select();
+        unset($map);
+        if (empty($bill_out_status)) {
+            $this->msgReturn(false, '不存在的出库单');
+        }
+        $unpass_ids = ''; //未分拣出库单号
+        $pass_ids = array();  //分拣出库单id
+        foreach ($bill_out_status as $key => $val) {
+            if ($val['status'] != 5) { //状态5 待复核 分拣完成
+                $unpass_ids .= $val['id'] . ',';
+            } else {
+                $pass_ids[] = $val['id'];
+            }
+        }
+        if (empty($pass_ids)) {
+            $this->msgReturn(false, '没有待复核的出库单');
+        }
+        $unpass_ids = rtrim($unpass_ids, ',');
+        if (!empty($unpass_ids)) {
+            //弹出没有分拣的出库单
+            if (!empty($confirm)) {
+                //继续操作
+                //删除此配送单下的这些出库单
+                $map['pid'] = $result['id'];
+                $data['is_deleted'] = 1; //已删除
+                if ($det->create($data)) {
+                    $det->where($map)->save();
+                }
+                unset($map);    
+                unset($data);
+            } else {
+                $unpass_ids .= ',' . $post;
+                $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids));
+            }
+        }
+        //统计SKU数量扣减库存
+        //获取出库详情
+        $sku_detail = $D->get_out_detail($pass_ids);
+        $sku_detail = $sku_detail['list'];
+        //统计
+        $merg = array(); //sku统计结果
+        foreach ($sku_detail as $v) {
+            if (!isset($merg[$v['pro_code']])) {
+                $merg[$v['pro_code']] = $v;
+            } else {
+                $merg['order_qty'] += $v['order_qty']; 
+            }
+        }
+        //获取去拣货区库位
+        $loc = M('location');
+        $map['code'] = 'PACK';
+        $map['wh_id'] = session('user.wh_id');
+        $location = $loc->field('id')->where($map)->find();
+        unset($map);
+        $map['pid'] = $location['id'];
+        $location_id = $loc->field('id')->where($map)->find();
+        if (empty($location_id)) {
+            $this->msgReturn(false, '还没创建分拣区库位');
+        }
+        unset($map);
+        //扣减库存
+        foreach ($merg as $sku) {
+            $stockOut->outStockBySkuFIFO(session('user.wh_id'), $sku['pro_code'], $sku['order_qty'], $post, $location_id);
+        }
         $map['dist_code'] = $post;
-        $data['status'] = 2; //已完成
-        //更新状态为已完成
+        $data['status'] = 2; //已发运
+        //更新配送状态为已完成
         if ($M->create($data)) {
             $M->where($map)->save();
         }
         unset($map);
         unset($data);
-        //更新订单状态
-        $order_idarr = array();
-        foreach ($order_ids as $value) {
-            $order_idarr[] = $value['bill_out_id'];
+        //更新配送详情状态为已完成
+        $map['pid'] = $result['id'];
+        $map['is_deleted'] = 0;
+        $data['status'] = 1; //已完成
+        if ($det->create($data)) {
+            $det->where($map)->save();
         }
-        $map['refer_code'] = array('in', $order_idarr);
-        $data['status'] = 7; //已完成
+        unset($map);
+        unset($data);
+        //更新出库单状态
+        $map['id'] = array('in', $pass_ids);
+        $data['status'] = 2; //已出库
+        $data['dis_mark'] = 1; //已分拨
         if ($stock->create($data)) {
             $stock->where($map)->save();
         }
         $this->msgReturn(true, '已完成', '', '', U('over'));
+    }
+    
+    
+    public function unpass() {
+        if (!IS_GET) {
+            $this->msgReturn(false, '未知错误');
+        }
+        $get = I('get.ids');
+        $get = explode(',', $get);
+        if (empty($get)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        $data['dist_code'] = array_pop($get);
+        //获取出库单号码
+        $stock = M('stock_bill_out');
+        $map['id'] = array('in', $get);
+        $res = $stock->where($map)->select();
+        foreach ($res as $value) {
+            $data['out_code'][] = $value['code'];
+        }
+        $data['count'] = count($res);
+        $this->assign('data', $data);
+        $this->display();
     }
 }

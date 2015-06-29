@@ -20,9 +20,11 @@ class DistributionLogic {
         }
         $M = M('stock_bill_out');
         
-        //$map['company_id'] = $search['company_id'];
         $map['wh_id'] = session('user.wh_id');
-        //$map['line_id'] = $search['line'];
+        $map['company_id'] = $search['company_id'];
+        if (!empty($search['line'])) {
+            $map['line_id'] = $search['line'];
+        }
         if (isset($search['time'])) {
             switch ($search['time']) {
                 	case 1:
@@ -35,9 +37,7 @@ class DistributionLogic {
             $map['delivery_ampm'] = $search['time'];
         }
         $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
-        //$map['process_type'] = $search['type'];
-        //$map['status'] = 5; //状态 分拣完成
-        $map['status'] = array('neq', array(1, 2)); //状态 非等于1带生产 2已出库
+        $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
         //获取出库单
         $result = $M->where($map)->select();
         if (empty($result)) {
@@ -140,6 +140,7 @@ class DistributionLogic {
         }
         $M = M('stock_bill_out_detail');
         $map['pid'] = array('in', $ids);
+        $map['is_deleted'] = array('eq', 0);
         $result = $M->where($map)->select();
         if (empty($result)) {
             return $return;
@@ -205,10 +206,10 @@ class DistributionLogic {
             $return['msg'] = '请选择订单类型';
             return $return;
         }
-        if (empty($post['line'])) {
+        /*if (empty($post['line'])) {
             $return['msg'] = '请选择线路';
             //return $return;
-        }
+        }*/
         if (empty($post['time'])) {
             $return['msg'] = '请选择时段';
             return $return;
@@ -361,8 +362,9 @@ class DistributionLogic {
                     return $return;
                 }
                 $map['id'] = $id;
-                $sta = $M->field('status')->where($map)->find();
-                if ($sta['dis_mark'] == 1) { //1 已分拨 不可再次加入配送单
+                $sta = $M->where($map)->find();
+                if ($sta['dis_mark'] == 1 || $sta['status'] == 1 || $sta['status'] == 2) {
+                    //1 已分拨 不可再次加入配送单 状态不可为 1带生产 2已出库
                     $return['msg'] = '此出库单已经加入了配送单';
                     return $return;
                 }
@@ -379,7 +381,6 @@ class DistributionLogic {
             //创建配送单
             $data = array();
             $data['dist_code'] = get_sn('dis'); //配送单号
-            //$data['total_price'] = 0; //应收金额
             $data['company_id'] = 1;
             $data['order_count'] = count($value); //订单数
             $data['status'] = 1; //状态 未发运
@@ -449,7 +450,8 @@ class DistributionLogic {
         
         $M = M('stock_bill_out');
         //$map['type'] = 1; //类型 1销售出库
-        $map['status'] = 5; //状态 检货完成
+        $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
+        $map['dis_mark'] = array('eq', 0); //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
         
         $result = $M->where($map)->select();
@@ -492,6 +494,7 @@ class DistributionLogic {
         } else {
             $map['pid'] = $pid;
         }
+        $map['is_deleted'] = array('eq', 0);
         $result = $M->where($map)->select();
         if (!empty($result)) {
             $return['msg'] = '成功';
