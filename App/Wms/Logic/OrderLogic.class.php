@@ -77,7 +77,7 @@ class OrderLogic{
 	/**
 	 * 根据订单ID批量获取订单
 	 * @param array ids 订单id数组
-	 * @param unknown $ids
+	 * @return array
 	 */
 	public function getOrderInfoByOrderIdArr($ids = array()) {
 	    $return = array('status' => false, 'msg' => '');
