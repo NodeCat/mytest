@@ -47,5 +47,5 @@ return array(
 
     //正式PMS接口
     'PMS_API'            => 'http://s.dachuwang.com',
-
+    'DACHUWANG_API_PATH'  => 'http://api.dachuwang.com',
 );

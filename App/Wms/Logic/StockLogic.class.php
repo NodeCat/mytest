@@ -207,6 +207,14 @@ class StockLogic{
 					M('Stock')->where($map)->delete();
 					unset($map);
 
+					//通知实时库存接口
+					$notice_params['wh_id'] = $params['wh_id'];
+					$notice_params['pro_code'] = $params['pro_code'];
+					$notice_params['type'] = 'outgoing';
+					$notice_params['qty'] = $stock['stock_qty'];
+					A('Dachuwang','Logic')->notice_stock_update($notice_params);
+					unset($notice_params);
+
 					$diff_qty = $diff_qty - $stock['stock_qty'];
 					$log_qty = $stock['stock_qty'];
 					$log_old_qty = $stock['stock_qty'];
@@ -243,6 +251,14 @@ class StockLogic{
 					$map['id'] = $stock['id'];
 					M('Stock')->where($map)->delete();
 					unset($map);
+
+					//通知实时库存接口
+					$notice_params['wh_id'] = $params['wh_id'];
+					$notice_params['pro_code'] = $params['pro_code'];
+					$notice_params['type'] = 'outgoing';
+					$notice_params['qty'] = $stock['stock_qty'];
+					A('Dachuwang','Logic')->notice_stock_update($notice_params);
+					unset($notice_params);
 
 					$diff_qty = $diff_qty - $stock['stock_qty'];
 					$log_qty = $stock['stock_qty'];
@@ -286,6 +302,14 @@ class StockLogic{
 					M('stock')->where($map)->data($data)->save();
 					unset($map);
 					unset($data);
+
+					//通知实时库存接口
+					$notice_params['wh_id'] = $params['wh_id'];
+					$notice_params['pro_code'] = $params['pro_code'];
+					$notice_params['type'] = 'outgoing';
+					$notice_params['qty'] = $diff_qty;
+					A('Dachuwang','Logic')->notice_stock_update($notice_params);
+					unset($notice_params);
 
 					//写入库存交易日志
 					$stock_move_data = array(
@@ -376,7 +400,15 @@ class StockLogic{
 		M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
 		M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
 		unset($map);
-		
+
+		//通知实时库存接口
+		$notice_params['wh_id'] = $wh_id;
+		$notice_params['pro_code'] = $pro_code;
+		$notice_params['type'] = '';
+		$notice_params['qty'] = $pro_qty;
+		A('Dachuwang','Logic')->notice_stock_update($notice_params);
+		unset($notice_params);
+
 		//写入库存交易日志
 		$stock_move_data = array(
 			'wh_id' => $wh_id,
