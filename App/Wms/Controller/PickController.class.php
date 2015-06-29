@@ -191,6 +191,7 @@ class PickController extends CommonController {
           if($m->where($map)->getField('id')){
               $this->msgReturn(0, '该分拣单已经拣货完成,请不要重复操作！');
           }
+          //修改库存
           if(A('WavePicking','Logic')->updateBiOuStock($code)){
             $result = array();
             $result['title'] = '拣货确认';
