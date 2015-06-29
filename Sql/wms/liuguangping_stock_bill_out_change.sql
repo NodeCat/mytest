@@ -1,1 +1,1 @@
-ALTER TABLE `stock_bill_out` CHANGE COLUMN `system_type` `company_id` tinyint(2) UNSIGNED NOT NULL DEFAULT 1 COMMENT '所属系统 1 大厨 2 大果';
+ALTER TABLE `stock_bill_out` CHANGE COLUMN `company_id` `company_id` tinyint(2) UNSIGNED NOT NULL DEFAULT 1 COMMENT '所属系统 1 大厨 2 大果';
