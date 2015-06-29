@@ -48,6 +48,7 @@ class OrderApi extends CommApi{
 			$params['delivery_ampm'] = 'am';
 			$params['customer_realname'] = $order_info['info']['realname'];
 			$params['delivery_address'] = $order_info['info']['deliver_addr'];
+			$params['company_id'] = $order_info['info']['site_src'];
 
 			foreach($order_info['info']['detail'] as $order_detail){
 				$detail[] = array(
