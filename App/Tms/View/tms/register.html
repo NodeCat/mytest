@@ -22,7 +22,7 @@
 
   <div class="input-group">
     <span class="input-group-addon">车牌</span>
-    <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号">
+    <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
 
   </div>
   <br />
@@ -50,8 +50,8 @@
   <div class="input-group">
     <span class="input-group-addon">仓库</span>
     <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库">
-      <volist name='sign_storge' id='storge'> 
-        <option>{$storge.name}</option>
+      <volist name='car.warehouse' id='storge'> 
+        <option value="{$key}">{$storge}</option>
       </volist>
     </select>
   </div>

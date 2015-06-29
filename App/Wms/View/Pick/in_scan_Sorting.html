@@ -1,0 +1,75 @@
+<include file="Pda:nav-cur" />
+<form class="form-horizontal form-pda form-scan" action="{:U('__ACTION__')}?times=<php>echo time();</php>" method="POST">
+  <input type="hidden" name="t" value="scan_incode" />
+  
+  <div class="form-group">
+    <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">拣货单号</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入拣货单号">
+    </div>
+  </div>
+  <br>
+  <div class="form-group hidden" id="qty">
+    <label for="code" class="col-lg-2 col-md-3 col-sm-2 col-xs-2 control-label">订单数量</label>
+    <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
+      <input autocomplete="off" type="text" class="form-control input-lg input-pda" value="" id="code_qty" name="code_qty" placeholder="" readonly >
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+      <button type="submit" class="btn btn-lg btn-primary  btn-block">确定</button>
+    </div>
+  </div>
+  <br>
+  <div class="form-group">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12  text-right">
+    <a href="{:U('Pda/index')}" class="btn btn-lg btn-default btn-block">返回</a>
+  </div>
+</div>
+</form>
+<script type="text/javascript">
+$(function(){
+  $('.input-pda').on('focus',function(){
+    $(this).select();
+  });
+  $('.input-pda').focus();
+  $('.form-pda button[type=submit]').on('click',function(){
+    var addr,params,code;
+    code = $('#code').val();
+    if(!code) {alert_error('请输入拣货单号！'); return false;}
+    $(this).prop('disabled', true);
+    params = $(this).parents('form').serialize();
+    addr = $(this).parents('form').attr('action');
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        $('.form-pda button[type=submit]').prop('disabled', false);
+        
+        if(msg.status == 0){
+            alert_error(msg.msg);
+            $('.input-pda').focus();
+            return false;
+        }else if(msg.status == 1 || msg.status == 2){
+          $('[name = code]').prop('readonly',true);
+          $('#qty').removeClass('hidden');
+          $('h3').html(msg.data.title+'<small></small>');
+          $('#code_qty').val(msg.data.code_qty);
+          $("[name = t]").val(msg.data.cut);
+          alert_success(msg.msg);
+          if(msg.status == 2){
+            window.location.href = msg.url;
+          }
+        }
+      }
+    }); 
+    return false;
+    
+  });
+  
+});
+</script>

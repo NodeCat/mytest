@@ -83,7 +83,7 @@ class ProcessRatioController extends CommonController {
 	    $map['id'] = $data['created_user'];
 	    $user = M('user');
 	    $name = $user->where($map)->find();
-	    $data['created_user'] = $name['username'];
+	    $data['created_user'] = $name['nickname'];
 	    $code = array();
 	    $code[] = $data['p_pro_code'];
 	    foreach ($ratio as $val) {
@@ -200,13 +200,13 @@ class ProcessRatioController extends CommonController {
 	    $pms = D('Pms', 'Logic');
 	    $code = array();
 	    //获取所有sku编号
-	    foreach ($data as $key => $value) {
+	    foreach ($data as $value) {
             $code[] = $value['p_pro_code'];
             $code[] = $value['c_pro_code'];
 	    }
 	    //调用PMS接口获取产品信息
-	    $code_info = $pms->get_SKU_field_by_pro_codes($code);
-	    foreach ($data as &$val) {
+	    $code_info = $pms->get_SKU_field_by_pro_codes($code, count($code));
+	    foreach ($data as $key => &$val) {
 	        foreach ($code_info as $k => $v) {
 	            if ($val['p_pro_code'] == $k) {
 	                $val['p_pro_name'] = $v['name'];
@@ -221,7 +221,16 @@ class ProcessRatioController extends CommonController {
 	                $val['company_id'] = $v['name'];
 	            }
 	        }
+	        $new_data[$key] = $val['p_pro_code'];
 	    }
+	    
+	    asort($new_data);
+	    //排序
+	    $arr = array();
+	    foreach ($new_data as $kk => $v) {
+	        $arr[] = $data[$kk];
+	    }
+	    $data = $arr;
 	}
 	
 	/**

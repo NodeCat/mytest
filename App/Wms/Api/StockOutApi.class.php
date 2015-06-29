@@ -9,7 +9,7 @@ class StockOutApi extends Controller{
 	* $params = array(
 	* 	'picking_type_id'=>'',      //仓库code
     *   'stock_out_type'=>'',       //出库单类型code(具体查看配置中的出库单类型设置,默认是SO)
-	*	'line_name'=>'',            //线路名称(目前存的就是线路的字符串)
+	*	'line_id'=>'',            //线路名称(目前存的就是线路的字符串)
 	*	'delivery_time'=>'',        //发货具体时间(0:全天,1:上午,2:下午)
 	*	'delivery_date'=>'',        //发货日期('20150601')
     *   'refer_code'=>'',           //关联单据号
@@ -50,7 +50,7 @@ class StockOutApi extends Controller{
         unset($map);
         $map['code'] = get_sn($stock_out_type, $post['wh_id']);
         $map['wh_id'] = $wh_id;
-        $map['line_name'] = isset($post['line_name'])? $post['line_name']:'';
+        $map['line_id'] = isset($post['line_id'])? $post['line_id']:'';
         $map['op_date'] = isset($post['delivery_date'])? date('Y-m-d',strtotime($post['delivery_date'])) : '';
         $map['op_time'] = isset($post['delivery_time'])? $post['delivery_time'] : '';
         $map['type'] = $type;
@@ -151,7 +151,7 @@ class StockOutApi extends Controller{
             $map['stock.status'] = 'qualified';
             $map['stock.is_deleted'] = 0;
             $map['pro_code'] = $val;
-            $res = $stock->field('warehouse.code as wh_name,sum(stock_qty) as total_qty')->join('warehouse on warehouse.id=wh_id')->where($map)->group('wh_name, pro_code')->select();
+            $res = $stock->field('warehouse.id as wh_name,sum(stock_qty) as total_qty')->join('warehouse on warehouse.id=wh_id')->where($map)->group('wh_name, pro_code')->select();
             foreach($res as $v) {
                 $result[$val][$v['wh_name']] = $v['total_qty'];
             }

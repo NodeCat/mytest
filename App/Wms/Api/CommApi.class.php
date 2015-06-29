@@ -6,9 +6,9 @@ class CommApi extends Controller{
 	protected function _initialize(){
         //API返回JSON格式数据，因此关闭模版布局
         layout(FALSE);
-        if(!defined('UID')) {
-+            define('UID',2);
-+        }
+        if(!defined('UID')) { 
+            define('UID',2);   
+        }
         return;
         //仅允许POST方式请求
         IS_POST || $this->error('403:Forbidden');
@@ -16,24 +16,20 @@ class CommApi extends Controller{
         if(!$this->check_limit()){
 			$this->error('403:Forbidden');
         }
-
         //模块访问控制，判断站点维护及禁止访问的模块
         $access = $this->check_access();
         if ( $access === false ) {          
             $this->error('403:Forbidden');
         }
-
         //检查token
         if(FALSE === $this->auth()) {
             $this->error('403:Forbidden');    
         }
     }
-
     protected function auth(){
 		$client_id = I('post.app_key/d',0);
         $client_timestamp = I('post.ts/d',0);
         $client_token = I('post.token');
-
 		if(!(empty($client_id) || empty($client_token) || empty($client_timestamp))) {
             //时间戳允许误差在配置文件中定义
             $time_diff = abs(NOW_TIME - $client_timestamp);
@@ -52,7 +48,6 @@ class CommApi extends Controller{
 		}
         return FALSE;
     }
-
     protected function check_limit() {
 		//检查黑名单IP
 		$ip  = get_client_ip();
@@ -77,7 +72,6 @@ class CommApi extends Controller{
     		$this->ajaxReturn(0, 'Service maintenance');
     	}
     }
-
     //api 统一返回状态值，0表示失败，1表示成功
     protected function msg($status='0', $msg='', $data='',$type='json'){
         $res['status'] = $status;
@@ -85,7 +79,6 @@ class CommApi extends Controller{
         $res['data']   = $data;
         $this->ajaxReturn($res, $type);
     }
-
     protected function ajaxReturn($data,$type='',$json_option=0) {
         if(empty($type)) $type  =   C('DEFAULT_AJAX_RETURN');
         switch (strtoupper($type)){
@@ -123,5 +116,4 @@ class CommApi extends Controller{
             $this->$func($data, $res);
         }
     }
-
 }

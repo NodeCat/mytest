@@ -16,12 +16,12 @@ class OrderLogic{
     }
 
 	public function order($map=''){
-		$url = '/order/lists';
+		$url = '/suborder/lists';
 		$res = $this->get($url,$map);
 		return $res['orderlist'];
 	}
 	public function sign($map='') {
-    	$url = '/order/set_status';
+    	$url = '/suborder/set_status';
 		$res = $this->get($url,$map);
 		return $res;
     }
@@ -61,5 +61,42 @@ class OrderLogic{
 		$res = $this->request->post($url,$map);
 		$res = json_decode($res,true);
 		return $res;
+	}
+	//根据order_id 或者 order_number 查询订单信息
+	public function getOrderInfoByOrderId($orderId){
+		if(empty($orderId)){
+			return false;
+		}
+		$url = $this->server . '/suborder/info';
+		$map = json_encode(array('suborder_id'=>$orderId));
+		$res = $this->request->post($url,$map);
+		$res = json_decode($res,true);
+		return $res;
+	}
+	
+	/**
+	 * 根据订单ID批量获取订单
+	 * @param array ids 订单id数组
+	 * @param unknown $ids
+	 */
+	public function getOrderInfoByOrderIdArr($ids = array()) {
+	    $return = array('status' => false, 'msg' => '');
+	    
+	    if (empty($ids)) {
+	        $return['msg'] = '参数有误';
+	    }
+	    $url = $this->server . '/suborder/lists';
+	    $map = json_encode(array('suborder_ids' => $ids, 'itemsPerPage' => count($ids)));
+	    $res = $this->request->post($url, $map);
+	    $res = json_decode($res, true);
+	     
+	    if ($res['status'] == 0) {
+	        $return['status'] = true;
+	        $return['msg'] = '成功';
+	        $return['list'] = $res['orderlist'];
+	    } else {
+	        $return['msg'] = '没有符合条件的订单';
+	    }
+	    return $return;
 	}
 }
