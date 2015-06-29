@@ -68,7 +68,7 @@ class OrderLogic{
 		if(empty($orderId)){
 			return false;
 		}
-		$url = $this->server . '/suborder/info';
+		$url = '/suborder/info';
 		$map = array('suborder_id'=>$orderId);
 		$res = $this->get($url,$map);
 		return $res;
@@ -85,7 +85,7 @@ class OrderLogic{
 	    if (empty($ids)) {
 	        $return['msg'] = '参数有误';
 	    }
-	    $url = $this->server . '/suborder/lists';
+	    $url = '/suborder/lists';
 	    $map = array('order_ids' => $ids, 'itemsPerPage' => count($ids));
 	    $res = $this->get($url,$map);
 	     
