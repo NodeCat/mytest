@@ -60,7 +60,7 @@
             <td>订货数量</td>
             <!-- <td>批次</td> -->
             <td>库位</td>
-            <td>重量</td>
+            <!-- <td>重量</td> -->
           </tr>
         </thead>
         <tbody>
@@ -73,7 +73,7 @@
               <td>{$vos.pro_qty}</td>
               <!-- <td>{$vos.batch}</td> -->
               <td>{$vos.src_location_id|getLocationNameById='code',###}</td>
-              <td></td>
+              <!-- <td></td> -->
             </tr>
           </volist>
           <tr>
@@ -82,7 +82,7 @@
               <td>{$vo.items.pro_qty_sum}</td>
               <td></td>
               <!-- <td></td> -->
-              <td></td>
+              <!-- <td></td> -->
           </tr>
         </tbody>
       </table>
