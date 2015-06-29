@@ -54,6 +54,7 @@ class OrderApi extends CommApi{
 				$detail[] = array(
 					'pro_code' => $order_detail['sku_number'],
 					'order_qty' => $order_detail['quantity'],
+					'price' => $order_detail['price'],
 					);
 			}
 			$params['detail'] = $detail;
