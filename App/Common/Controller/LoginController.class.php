@@ -6,7 +6,7 @@ class LoginController extends Controller {
         if(!check_maintain()){
             destory_session();
             layout(FALSE);
-            $this->display('Common@index/closed');
+            $this->display('Common@Index/closed');
             exit();
         }
     }

@@ -1,7 +1,7 @@
 <?php
 namespace Fms\Controller;
-use Think\Controller;
-class TmsController extends Controller{
+
+class TmsController extends \Common\Controller\AuthController{
 	public function orders(){
         $id = I('id',0);
         if(!empty($id)) {
@@ -16,7 +16,7 @@ class TmsController extends Controller{
             $map['dist_id'] = $id;
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
-            $orders = $A->order($map);//dump($orders);
+            $orders = $A->order($map);
             foreach ($orders as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
