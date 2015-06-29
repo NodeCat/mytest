@@ -50,7 +50,7 @@ class DistributionLogic {
         }
         
         //获取订单详情
-        $order = D('Order', 'Logic');
+        $order = D('Common/Order', 'Logic');
         $order_info = $order->getOrderInfoByOrderIdArr($order_ids);
         if ($order_info['status'] == false) {
             $return['msg'] = $order_info['msg'];
