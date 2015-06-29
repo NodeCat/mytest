@@ -63,7 +63,7 @@ $(function(){
 		param.delivery_address = $("[name = 'query[stock_bill_out.delivery_address]']").val();*/
 		param.delivery_date = $("[name = 'query[stock_bill_out.delivery_date]']").val();
 		param.delivery_ampm = $("[name = 'query[stock_bill_out.delivery_ampm]']").val();
-		param.system_type = $("[name = 'query[stock_bill_out.system_type]']").val();
+		param.company_id = $("[name = 'query[stock_bill_out.company_id]']").val();
 		
 		$.ajax({
 			url:'/StockOut/createWave',
@@ -81,8 +81,8 @@ $(function(){
 						alert(json.msg);
 					}
 					
-                    refresh_list();
-                    //window.href.location.reload();
+                    //refresh_list();
+                    window.href.location.reload();
 				}
 				if(json.status=='0'){
 					alert(json.msg);
