@@ -111,6 +111,10 @@ class DistributionController extends CommonController {
         }
     }
     
+    /**
+     * leibiao
+     * @param unknown $data
+     */
     public function after_lists(&$data) {
         $M = M('user');
         foreach ($data as &$value) {
