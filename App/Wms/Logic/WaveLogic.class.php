@@ -187,6 +187,7 @@ class WaveLogic{
 						$idsStr = implode(',', $bill_outArr);
 						$billOutW['id'] = array('in',$idsStr);
 						$billSave['status'] = 1;
+						$billSave['wave_id'] = 0;
 						if(!$billOut->where($billOutW)->save($billSave)){
 							$this->updateStatus($del, array('is_deleted'=>0),'stock_wave_detail');
 							$this->updateStatus($map, array('is_deleted'=>0));
