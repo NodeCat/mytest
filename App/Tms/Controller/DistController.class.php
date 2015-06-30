@@ -176,7 +176,6 @@ class DistController extends Controller {
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $orders;
-            dump($orders);
         }
         $this->title = "客户签收";
         $this->display('tms:sorders');
