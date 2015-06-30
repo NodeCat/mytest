@@ -182,7 +182,7 @@ class StockLogic{
         $map['stock.status'] = 'qualified';
         //指定从哪个库位上出库
         if($params['location_ids']){
-            $map['locaiton_id'] = array('in',$params['location_ids']);
+            $map['location_id'] = array('in',$params['location_ids']);
         }
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
         unset($map);
@@ -226,7 +226,7 @@ class StockLogic{
                         'pro_code' => $params['pro_code'],
                         'batch' => $stock['batch'],
                         'wh_id' => $params['wh_id'],
-                        'location_id' => $params['location_id'],
+                        'location_id' => $stock['location_id'],
                         'qty' => $stock['stock_qty'],
                         );
                     $stock_container = D('stock_bill_out_container');
@@ -285,7 +285,7 @@ class StockLogic{
                         'pro_code' => $params['pro_code'],
                         'batch' => $stock['batch'],
                         'wh_id' => $params['wh_id'],
-                        'location_id' => $params['location_id'],
+                        'location_id' => $stock['location_id'],
                         'qty' => $stock['stock_qty'],
                         );
                     $stock_container = D('stock_bill_out_container');
@@ -351,7 +351,7 @@ class StockLogic{
                         'pro_code' => $params['pro_code'],
                         'batch' => $stock['batch'],
                         'wh_id' => $params['wh_id'],
-                        'location_id' => $params['location_id'],
+                        'location_id' => $stock['location_id'],
                         'qty' => $diff_qty,
                         );
                     $stock_container = D('stock_bill_out_container');
