@@ -176,6 +176,7 @@ class DistController extends Controller {
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $orders;
+            dump($orders);
         }
         $this->title = "客户签收";
         $this->display('tms:sorders');
@@ -195,54 +196,57 @@ class DistController extends Controller {
         $final_price = I('post.final_price/d',0);
         $deal_price  = I('post.deal_price/d',0);
         //更新订单状态
-        $this->set_order_status($refer_code, $deal_price);
-        $M = M('tms_sign_in');
-        //该出库单签收状态
-        $sign_status = $M->table('stock_wave_distribution_detail')
-        ->field('status')
-        ->where(array('bill_out_id' => $refer_code))
-        ->find()['status'];
-        $data = array();
-        //组合一个出库单的签收数据并更新
-        foreach ($detail_id as $val) {
-            $tmp['dist_id']            = $dist_id;
-            $tmp['bill_out_detail_id'] = $val;
-            $tmp['real_sign_qty']      = $quantity[$val];
-            $tmp['real_sign_wgt']      = isset($weight[$val]) ? $weight[$val] : 0;
-            $tmp['measure_unit']       = $unit_id[$val];
-            $tmp['charge_unit']        = $close_unit[$val];
-            $tmp['price_unit']         = $price_unit[$val];
-            $tmp['receivable_sum']     = $final_price;
-            $tmp['real_sum']           = $deal_price;
-            $tmp['sign_driver']        = session('user.mobile');
-            $tmp['sign_time']          = get_time();
-            $tmp['created_time']       = get_time();
-            $tmp['updated_time']       = get_time();
-            $data[] = $tmp;
-            unset($tmp);
-        }
-        if($sign_status == 0) {
-            $M->addAll($data);
-            //更新配送单详情－>配送单状态
-            $A = A('Tms/Dist','Logic');
-            $map['pid'] = $dist_id;
-            $map['bill_out_id'] = $refer_code;
-            $code = $A->set_dist_status($map);
-            $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
-        }
-        else {
-            //更新签收数据
-            foreach ($data as $value) {
-                unset($value['created_time']);
-                $M->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))->save($value);
+        $re = $this->set_order_status($refer_code, $deal_price);
+        if($re['status'] == 0) {
+            $M = M('tms_sign_in');
+            //该出库单签收状态
+            $sign_status = $M->table('stock_wave_distribution_detail')
+            ->field('status')
+            ->where(array('bill_out_id' => $refer_code))
+            ->find()['status'];
+            $data = array();
+            //组合一个出库单的签收数据并更新
+            foreach ($detail_id as $val) {
+                $tmp['dist_id']            = $dist_id;
+                $tmp['bill_out_detail_id'] = $val;
+                $tmp['real_sign_qty']      = $quantity[$val];
+                $tmp['real_sign_wgt']      = isset($weight[$val]) ? $weight[$val] : 0;
+                $tmp['measure_unit']       = $unit_id[$val];
+                $tmp['charge_unit']        = $close_unit[$val];
+                $tmp['price_unit']         = $price_unit[$val];
+                $tmp['receivable_sum']     = $final_price;
+                $tmp['real_sum']           = $deal_price;
+                $tmp['sign_driver']        = session('user.mobile');
+                $tmp['sign_time']          = get_time();
+                $tmp['created_time']       = get_time();
+                $tmp['updated_time']       = get_time();
+                $data[] = $tmp;
+                unset($tmp);
             }
-            $code = 0;
-            $msg = '更新成功';
+            if($sign_status == 0) {
+                $M->addAll($data);
+                //更新配送单详情－>配送单状态
+                $A = A('Tms/Dist','Logic');
+                $map['pid'] = $dist_id;
+                $map['bill_out_id'] = $refer_code;
+                $code = $A->set_dist_status($map);
+                $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
+            }
+            else {
+                //更新签收数据
+                foreach ($data as $value) {
+                    unset($value['created_time']);
+                    $M->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))->save($value);
+                }
+                $code = 0;
+                $msg = '更新成功';
+            }
+            $status = ($code === -1) ? -1 : 0;
+            $json = array('status' => $code, 'msg' => $msg);
+            //code:－1(更新失败);0(未执行更新);1(配送单详情状态更新成功);2(配送单完成)
+            $this->ajaxReturn($json);
         }
-        $status = ($code === -1) ? -1 : 0;
-        $json = array('status' => $code, 'msg' => $msg);
-        //code:－1(更新失败);0(未执行更新);1(配送单详情状态更新成功);2(配送单完成)
-        $this->ajaxReturn($json);
+        $this->ajaxReturn($re);
     }
 
     //司机签收后订单回调
