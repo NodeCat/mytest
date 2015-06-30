@@ -25,7 +25,7 @@ class StockOutLogic{
         $map['type'] = $stock_out_type;
         $type = M('stock_bill_out_type')->where($map)->getField('id');
         unset($map);
-        $data['code'] = get_sn($stock_out_type, $params['wh_id']);
+        $data['code'] = ($params['code']) ? $params['code'] : get_sn($stock_out_type, $params['wh_id']);
         $data['wh_id'] = $params['wh_id'];
         $data['line_id'] = isset($params['line_id']) ? $params['line_id'] : '';
         $data['type'] = $type;

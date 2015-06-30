@@ -39,6 +39,7 @@ class OrderApi extends CommApi{
 			}
 			
 			//写入出库单
+			$params['code'] = $order_info['info']['order_number'];
 			$params['wh_id'] = $order_info['info']['warehouse_id'];
 			$params['type'] = 'SO';
 			$params['line_id'] = $order_info['info']['line_id'];
