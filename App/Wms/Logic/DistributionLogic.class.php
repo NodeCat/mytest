@@ -312,6 +312,7 @@ class DistributionLogic {
         $M = M('stock_wave_distribution_detail');
         $bill_out = M('stock_bill_out');
         $map['pid'] = array('in', $dis_id);
+        $map['is_deleted'] = 0;
         $result = $M->field('bill_out_id')->where($map)->select();
         if (empty($result)) {
             return $return;
