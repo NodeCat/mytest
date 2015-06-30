@@ -601,6 +601,31 @@ class DistributionController extends CommonController {
         if ($stock->create($data)) {
             $stock->where($map)->save();
         }
+        unset($map);
+
+        //通知实时库存接口 需要遍历出库单详情
+        $synch_hop_bill_out_ids = array();
+        $map['id'] = array('in', $pass_ids);
+        $bill_out_infos = M('stock_bill_out')->where($map)->select();
+        foreach($bill_out_infos as $bill_out_info){
+            if(strstr($bill_out_info['code'],'SO') && is_numeric($bill_out_info['refer_code']) && $bill_out_info['refer_code'] > 0){
+                $synch_hop_bill_out_ids[] = $bill_out_info['id'];
+            }
+        }
+        unset($map);
+
+        $map['pid'] = array('in', $synch_hop_bill_out_ids);
+        $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+        foreach($bill_out_detail_infos as $bill_out_detail_info){
+            $notice_params['wh_id'] = session('user.wh_id');
+            $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
+            $notice_params['type'] = 'outgoing';
+            $notice_params['qty'] = $bill_out_detail_info['order_qty'];
+            A('Dachuwang','Logic')->notice_stock_update($notice_params);
+            unset($notice_params);
+        }
+        unset($map);
+
         $this->msgReturn(true, '已完成', '', '', U('over'));
     }
     

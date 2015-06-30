@@ -78,6 +78,19 @@ class WaveLogic{
 		$data['status'] = '3';
 		$data['wave_id'] = $wave_id;
 		$result      = $Model->data($data)->where($map)->save()?TRUE:FALSE;
+
+		//通知hop订单状态改变
+		$bill_out_infos = M('stock_bill_out')->where($map)->select();
+		unset($map);
+
+		foreach($bill_out_infos as $bill_out_info){
+			$map['suborder_id'] = $bill_out_info['refer_code'];
+			$map['status'] = '11';
+			$map['cur']['name'] = session('user.username');
+			$re = A('Common/Order','Logic')->set_status($map);
+			unset($map);
+		}
+
 		return $result;
 	}
 	/**
