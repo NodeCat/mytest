@@ -14,42 +14,25 @@ class WaveLogic{
 	 * 根据出库单格式化出库单数据 
 	 *  
 	 * @param String $ids 出库单id
-	 * @param Int $site_url 来自哪里：1大厨2大果
+	 * @param Int $company_id 来自哪里：1大厨2大果
 	 * @author liuguangping@dachuwang.com
 	 * @return Array $data;
 	 * 
 	 */
-	public function getWaveDate($ids, $site_src = 1){
+	public function getWaveDate($ids, $company_id = 1){
 		if(!$ids) return FALSE;
 		$idsArr = explode(',', $ids);
 		$data = array();
 		$m = M('stock_wave');
-		$sumResult = $this->sumStockBillOut($idsArr);
+		$sumResult = A('StockOut','Logic')->sumStockBillOut($idsArr);
 		$data['wave_type']   = 2;
 		$data['order_count'] = count($idsArr); //订单数
 		$data['line_count']  = $sumResult['skuCount'];//sku码
 		$data['total_count'] = $sumResult['totalCount'];//商品总数
-		$data['company_id']    = $site_src;//pm和王爽说大厨与大果是不会在同一个仓库
+		$data['company_id']    = $company_id;//pm和王爽说大厨与大果是不会在同一个仓库
 		return $data;
 	}
-	/**
-	 * 根据出库单格式化出库单数据 (预计出库量,SKU总数)
-	 *  
-	 * @param String $ids 出库单id
-	 * @author liuguangping@dachuwang.com
-	 * @return Array $data;
-	 * 
-	 */
-	public function sumStockBillOut($idsArr){
-		$m = M('stock_bill_out_detail');
-		$map['pid']  = array('in',$idsArr);
-		$skuCount   =  count($m->field('count(id) as num')->where($map)->group('pro_code')->select());
-		$totalCount = $m->where($map)->sum('order_qty');//预计出库量
-		$data       = array();
-		$data['skuCount']   = $skuCount?$skuCount:0;
-		$data['totalCount'] = $totalCount?$totalCount:0;
-		return $data;
-	}
+	
 	/**
 	 * 根据出库单列表和波次id加入波次详细表
 	 *  
@@ -76,63 +59,7 @@ class WaveLogic{
 		$result = $M->addAll($WaveDetailArr)?TRUE:FALSE;
 		return $result;
 	}
-	/**
-	 * 如果没有选择出库单，则根据条件搜索到的出库单ids做相应的操作
-	 * 
-	 * @author liuguangping@dachuwang.com
-	 * @return Boolean $result;
-	 * 
-	 */
-	public function getEmptyIds(){
-		$map 				= array();
-		$map['is_deleted'] 	= 0;
-		$map['status'] 		= 1;
-		$result 			= array();
-		$code 				= I('code');
-		$wave_id 			= I('wave_id');
-		$type 				= I('type');
-		$refused_type 		= I('refused_type');
-		$line_id 			= I('line_id');
-		$process_type 		= I('process_type');
-		$created_time 		= I('created_time');
-		$created_time_1 	= I('created_time_1');
-		/*$customer_realname 	= I('customer_realname');
-		$delivery_address 	= I('delivery_address');*/
-		$delivery_date 		= I('delivery_date');
-		$delivery_ampm 		= I('delivery_ampm');
-		if($code) $map['code'] = $code;
-		if($wave_id) $map['wave_id'] = $wave_id;
-		if($type) $map['type'] = $type;
-		if($refused_type) $map['refused_type'] = $refused_type;
-		if($line_id) $map['line_id'] = $line_id;
-		if($process_type) $map['process_type'] = $process_type;
-		if($customer_realname) $map['customer_realname'] = array('like','%'.$customer_realname.'%');
-		if($delivery_address) $map['delivery_address'] =array('like','%'.$delivery_address.'%');
-		if($delivery_date) $map['delivery_date'] = $delivery_date;
-		if($delivery_ampm) $map['delivery_ampm'] = $delivery_ampm;
-		if($created_time && $created_time_1){
-			if($created_time >= $created_time_1){
-				$map['created_time'] = array('gt', $created_time);
-			}else{
-				$map['created_time'] = array('between', array($created_time, $created_time_1));
-			}
-		}elseif($created_time && !$created_time_1){
-			$map['created_time'] = array('gt', $created_time);
-		}elseif(!$created_time && $created_time_1){
-			$map['created_time'] = array('lt', $created_time_1);
-		}
-		if(!empty($map)){
-			$m = M('stock_bill_out');
-			$map['wh_id'] = session('user.wh_id');
-			$result = $m->field('id')->where($map)->select();
-			//echo $m->getLastSql();die;
-			$result = getSubByKey($result, 'id');
-			return $result;
-		}else{
-			return $result;
-		}
-		
-	}
+	
 	/**
 	 * 根据出库单列表修改出库单状态
 	 *  
@@ -161,10 +88,10 @@ class WaveLogic{
 	 * 
 	 */
     public function line(){
-        //$map['wh_id'] = session('user.wh_id');
+        $map['wh_id'] = session('user.wh_id');
         $map['status'] = '1';
         $map['itemsPerPage'] = 1000;
-        $A = A('Order','Logic');
+        $A = A('Common/Order','Logic');
         $lines = $A->line($map);
         $lines_arr = array();
         foreach ($lines as $key => $value) {
@@ -190,24 +117,7 @@ class WaveLogic{
 		if($result) return FALSE;
 		return TRUE;
     }
-    /**
-	 * 根据出库单Id判断出库单是否可以创建波次
-	 * 
-	 * @param String $ids 出库单id 
-	 * @author liuguangping@dachuwang.com
-	 * @return Boolean $result;
-	 * 
-	 */
-    public function hasProductionAuth($ids = ''){
-    	if(!$ids) return FALSE;
-		$map = array();
-		$map['status'] =  array('neq', '1');
-		$map['id'] = array('in', $ids);
-		$m = M('stock_bill_out');
-		$result = $m->where($map)->select();
-		if($result) return FALSE;
-		return TRUE;
-    }
+    
     /**
 	 * 根据仓库Id判断波次开始拣货把状态至为分拣中
 	 * 
@@ -322,35 +232,7 @@ class WaveLogic{
     	}
     	return TRUE;
     }
-    /**
-	 * 查看出库单中所有sku是否满足数量需求出库单
-	 * 
-	 * @param String $ids 条件
-	 * @author liuguangping@dachuwang.com
-	 * @return String $Result;
-	 * 
-	 */
-    public function enoughaResult($ids){
-    	$idsArr = explode(',', $ids);
-    	$result = array();
-    	$result['tureResult'] = array();
-    	$result['falseResult'] = array();
-    	if(!$idsArr) return '';
-    	foreach($idsArr as $key=>$value){
-    		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
-    		if($is_enough){ 
-    			array_push($result['tureResult'], $value);
-    		}else{
-                $tablename = 'stock_bill_out';
-                $data['refused_type'] = 2;
-                $map['id'] = $value;
-                $this->updateStauts($tablename, $data, $map);
-    			array_push($result['falseResult'], $value);
-    		}
-    	}
-    	$result['tureResult'] = implode(',', $result['tureResult']);
-    	return $result;
-    }
+    
     public function updateStauts($tablename, $data, $map){
         $result = TRUE;
 

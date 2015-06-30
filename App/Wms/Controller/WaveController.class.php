@@ -25,7 +25,7 @@ class WaveController extends CommonController {
 	protected $columns = array (
 	       'id'                => '',
 	       'wave_id'				    => '波次号',
-	       'company_id'        => '波次主表名称',
+	       'company_id'        => '所属系统',
 	       'order_count'       => '总单数',
 	       'line_count'        => '总行数',
          'total_count'       => '总件数',
@@ -40,7 +40,7 @@ class WaveController extends CommonController {
     			 	'control_type'    => 'text', 
     			 	'value' 		      => 'id',
   			),
-  			'stock_wave.type'     =>    array ( 
+  			'stock_wave.status'     =>    array ( 
   			 	'title'        	    => '波次状态', 
   			 	'query_type'   	    => 'eq', 
   			 	'control_type' 	    => 'select', 
@@ -64,6 +64,7 @@ class WaveController extends CommonController {
             'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
         );
         $this->search_addon = true;
+        //dump($this->);
     }
     /**
      * 开始分拣
@@ -77,13 +78,13 @@ class WaveController extends CommonController {
       	$waveLogic = A('Wave','Logic');
       	$hasIsAuth = $waveLogic->hasIsAuth($ids);
       	if($hasIsAuth === FALSE){
-          echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+          $this->msgReturn('1','你所选的波次中包含运行中和已释放，请选择待运行波次！','');
         }
       	$controllerStatus = $waveLogic->execPack($ids);
       	if($controllerStatus === FALSE){
-      		echojson('1','','分拣失败！');
+      		$this->msgReturn('1','分拣失败！','');
       	}else{
-      		echojson('0','','操作成功，分拣中！');
+      		$this->msgReturn('0','操作成功，分拣中！','');
       	}
     	
     }
@@ -100,15 +101,15 @@ class WaveController extends CommonController {
       	$hasIsAuth = $waveLogic->hasIsAuth($ids);
 
       	if($hasIsAuth === FALSE){
-            echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+            $this->msgReturn('1','你所选的波次中包含运行中和已释放，请选择待运行波次！','');
         }
         
       	$controllerStatus = $waveLogic->delWave($ids);
 
       	if($controllerStatus === FALSE){
-      		echojson('1','','删除失败！');
+      		$this->msgReturn('1','删除失败！','');
       	}else{
-      		echojson('0','','删除成功！');
+      		$this->msgReturn('0','删除成功！','');
       	}
     }
     public function after_search(&$map){
@@ -138,7 +139,7 @@ class WaveController extends CommonController {
                 $result[$key]['status_cn'] = $status_cn;
                 $process_type_cn = '';
                 $order_count = 0;
-                $count = A('Wave','Logic')->sumStockBillOut($value['bill_out_id']);
+                $count = A('StockOut','Logic')->sumStockBillOut($value['bill_out_id']);
                 if(isset($count['totalCount'])) $order_count = $count['totalCount'];
                 if($bill_out['process_type'] == 1) $process_type_cn = '正常单';
                 if($bill_out['process_type'] == 2) $process_type_cn = '取消单';
@@ -171,7 +172,7 @@ class WaveController extends CommonController {
       $waveLogic = A('Wave','Logic');
       $hasIsAuth = $waveLogic->hasIsAuth($ids, '900');
       if($hasIsAuth === FALSE){
-        echojson('1','','你所选的波次中包含运行中和已释放，请选择待运行波次！');
+        $this->msgReturn('1','你所选的波次中包含运行中和已释放，请选择待运行波次！','');
       }
       $wave_ids  = explode(',', $ids);
 
