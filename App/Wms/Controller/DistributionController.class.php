@@ -486,7 +486,7 @@ class DistributionController extends CommonController {
         $det = M('stock_wave_distribution_detail');
         $stock = M('stock_bill_out');
         $D = D('Distribution', 'Logic');
-        $stockOut = D('StockOut', 'Logic');
+        $stockOut = D('Stock', 'Logic');
         //获取配送单
         $map['dist_code'] = $post;
         $result = $M->where($map)->find();
@@ -520,9 +520,11 @@ class DistributionController extends CommonController {
         }
         $unpass_ids = ''; //未分拣出库单号
         $pass_ids = array();  //分拣出库单id
+        $unpass_code = array();
         foreach ($bill_out_status as $key => $val) {
             if ($val['status'] != 5) { //状态5 待复核 分拣完成
                 $unpass_ids .= $val['id'] . ',';
+                $unpass_code[] = $val['id'];
             } else {
                 $pass_ids[] = $val['id'];
             }
@@ -543,6 +545,15 @@ class DistributionController extends CommonController {
                 }
                 unset($map);    
                 unset($data);
+
+                //驳回不符合条件的订单
+                $map['id'] = array('in', $unpass_code);
+                $data['dis_mark'] = 0; //未加入出库单
+                if ($stock->create($data)) {
+                    $stock->where($map)->save();
+                }
+                unset($map);
+                unset($data);
             } else {
                 $unpass_ids .= ',' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids));
@@ -551,7 +562,8 @@ class DistributionController extends CommonController {
         //统计SKU数量扣减库存
         //获取出库详情
         $sku_detail = $D->get_out_detail($pass_ids);
-        $sku_detail = $sku_detail['list'];
+        //$sku_detail = $sku_detail['list'];
+
         //统计
         $merg = array(); //sku统计结果
         foreach ($sku_detail as $v) {
@@ -575,8 +587,9 @@ class DistributionController extends CommonController {
         unset($map);
         //扣减库存
         foreach ($merg as $sku) {
-            $stockOut->outStockBySkuFIFO(session('user.wh_id'), $sku['pro_code'], $sku['order_qty'], $post, $location_id);
+            $stockOut->outStockBySkuFIFO(array('wh_id'=>session('user.wh_id'), 'pro_code'=>$sku['pro_code'], 'pro_qty'=>$sku['order_qty'], 'refer_code'=>$post, 'location_ids'=>$location_id['id']));
         }
+
         $map['dist_code'] = $post;
         $data['status'] = 2; //已发运
         //更新配送状态为已完成
@@ -601,6 +614,37 @@ class DistributionController extends CommonController {
         if ($stock->create($data)) {
             $stock->where($map)->save();
         }
+        unset($map);
+
+        //通知实时库存接口 需要遍历出库单详情
+        $synch_hop_bill_out_ids = array();
+        $map['id'] = array('in', $pass_ids);
+        $bill_out_infos = M('stock_bill_out')->where($map)->select();
+        foreach($bill_out_infos as $bill_out_info){
+            if(is_numeric($bill_out_info['refer_code']) && $bill_out_info['refer_code'] > 0){
+                $synch_hop_bill_out_ids[] = $bill_out_info['id'];
+                //通知hop更改订单状态
+                $order_map['suborder_id'] = $bill_out_info['refer_code'];
+                $order_map['status'] = '5';
+                $order_map['cur']['name'] = session('user.username');
+                A('Common/Order','Logic')->set_status($order_map);
+                unset($order_map);
+            }
+        }
+        unset($map);
+
+        $map['pid'] = array('in', $synch_hop_bill_out_ids);
+        $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+        foreach($bill_out_detail_infos as $bill_out_detail_info){
+            $notice_params['wh_id'] = session('user.wh_id');
+            $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
+            $notice_params['type'] = 'outgoing';
+            $notice_params['qty'] = $bill_out_detail_info['order_qty'];
+            A('Dachuwang','Logic')->notice_stock_update($notice_params);
+            unset($notice_params);
+        }
+        unset($map);
+
         $this->msgReturn(true, '已完成', '', '', U('over'));
     }
     

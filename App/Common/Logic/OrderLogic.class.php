@@ -21,6 +21,7 @@ class OrderLogic{
 			case '1':
 				$func = 'set_status_success';
 				break;
+			//已发货
 			case '5':
 				$func = 'set_status_delivering';
 				break;			
@@ -32,6 +33,10 @@ class OrderLogic{
 				break;			
 			case '7':
 				$func = 'set_status_rejected';
+				break;
+			//波次中
+			case '11':
+				$func = 'set_status_wave_executed';
 				break;
 			default:
 				# code...
