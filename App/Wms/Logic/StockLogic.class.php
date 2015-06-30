@@ -665,6 +665,16 @@ class StockLogic{
 				}
 			}
 		}
+		
+		if($dest_location_info['status'] != 'qualified'){
+			//通知实时库存接口
+			$notice_params['wh_id'] = $param['wh_id'];
+			$notice_params['pro_code'] = $param['pro_code'];
+			$notice_params['type'] = '';
+			$notice_params['qty'] = $param['variable_qty'];
+			A('Dachuwang','Logic')->notice_stock_update($notice_params);
+			unset($notice_params);
+		}
 		return true;
 	}
 
