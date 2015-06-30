@@ -117,14 +117,17 @@ class StockOutApi extends Controller{
                 }
             }
         }
-        
+        if (isset($post['return_type'])) {
+            //出库单号 加工模块使用
+            $code = $map['code']; 
+        }
         unset($map);
         $data['total_qty'] = $total;
         $map['id'] = $stock_out_id;
         $stock_out->where($map)->save($data);
        
         if(isset($post['return_type'])) {
-            return true;
+            return $code;
         }else {
             $return = array('error_code' => '0', 'error_message' => 'success', 'data' => '' );
             $this->ajaxReturn($return);

@@ -53,7 +53,6 @@ class ProcessLogic {
         if ($out_id <= 0) {
             return $return;
         }
-         
         $M = M('stock');
         $map['location_id'] = $out_id;
         $map['wh_id'] = $data['wh_id'];
@@ -71,6 +70,25 @@ class ProcessLogic {
             $return = true;
         }
          
+        return $return;
+    }
+    
+    /**
+     * 出库批次纪录操作
+     */
+    public function add_batch_log($data = array()) {
+        $return = false;
+        
+        if (empty($data)) {
+            return $return;
+        }
+        $D = D('StockBillOutContainer');
+        if ($D->create($data)) {
+            $affect = $D->add();
+            if ($affect) {
+                $return = true;
+            }
+        }
         return $return;
     }
     
@@ -130,6 +148,7 @@ class ProcessLogic {
 		                        ->select();
 		unset($map);
 		//先进先出
+		$container = array();
         foreach ($stock_list as $value) {
             $break = false;
             if ($surplus > $value['stock_qty']) {
@@ -171,12 +190,38 @@ class ProcessLogic {
             if ($stock_move->create($stock_move_data)) {
                 $stock_move->add();
             }
+            //出库批次纪录
+            $container[] = array(
+            	    'refer_code' => $data['refer_code'],
+                'pro_code' => $data['pro_code'],
+                'batch' => $value['batch'],
+                'wh_id' => $data['wh_id'],
+                'location_id' => $out_id,
+                'qty' => $move_qty,
+                'created_time' => get_time(),
+                'updated_time' => get_time(),
+                'created_user' => session('user.uid'),
+                'updated_user' => session('user.uid'),
+            );
+            //$this->add_batch_log($container);
             if ($break) {
                 break;
             }
         }
-		
-         
+		//出库批次纪录
+		$merge = array();
+		//合并同类
+		foreach ($container as $val) {
+		    if (!isset($merge[$val['batch'] . $val['pro_code']])) {
+		        $merge[$val['batch'] . $val['pro_code']] = $val;
+		    } else {
+		        $merge[$val['batch'] . $val['pro_code']] += $val['qty'];
+		    }
+		}
+		//纪录操作
+		foreach ($merge as $mer) {
+            $this->add_batch_log($mer);
+		}
         $return['status'] = true;
         $return['msg'] = '成功';
         return $return;
@@ -422,7 +467,7 @@ class ProcessLogic {
         }
         
         $param['wh_id'] = $data['wh_id']; //所属仓库
-        $param['code'] = get_sn('erp_pro_in'); //加工入库单号
+        $param['code'] = $data['common_in_code']; //加工入库单号
         $param['refer_code'] = $data['code']; //关联加工单号
         $param['process_type'] = $data['type']; //类型 组合 or 拆分
         $param['status'] = $status; //状态 待入库
@@ -497,7 +542,7 @@ class ProcessLogic {
         
         //写入加工入库单详情
         $param['wh_id'] = $data['wh_id']; //所属仓库
-        $param['code'] = get_sn('erp_pro_out'); //加工入库单号
+        $param['code'] = $data['back_code']; //加工入库单号
         $param['refer_code'] = $data['code']; //关联加工单号
         $param['process_type'] = $data['type']; //类型 组合 or 拆分
         $param['status'] = $status; //状态 待入库
