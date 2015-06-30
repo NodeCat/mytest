@@ -1,0 +1,118 @@
+<include file="Index:nav-cur" />
+<br/>
+<div class="col-xs-12">
+<form id="f" class="form-horizontal form-pda form-scan" action="{:U('update')}" method="POST">
+  <!--<input type="hidden" name="t" value="login" />-->
+  <div class="row-fluid">
+  <div class="col-xs-12">
+  <div class="form-group">
+
+  <!--***********************信息登记的表单start*********************-->
+  <div class="input-group">
+      <span class="input-group-addon">手机</span>
+      <input autocomplete="off" value="{$data.mobile}" type="text" class="form-control input-lg input-pda" id="moblie" name="mobile" placeholder="请输入你的手机号码" readonly>
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">姓名</span>
+    <input autocomplete="off" value="{$data.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名">
+
+  </div>
+  <br />
+
+  <div class="input-group">
+    <span class="input-group-addon">车牌</span>
+    <input autocomplete="off" value="{$data.car_num}" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号">
+
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">车型</span>
+    <select autocomplete="off"  class="form-control input-lg input-pda" id="car_type" name="car_type" placeholder="请输入车型">                                   
+        <volist name='car.car_type' id='cars'> 
+        <option>{$cars}</option>
+        </volist>
+      </select>
+
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">平台</span>
+    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台">
+      <volist name='car.car_from' id='cars'> 
+        <option >{$cars}</option>
+      </volist>
+    </select>
+  </div>
+
+  <br />
+
+  <div class="input-group">
+    <span class="input-group-addon">签到仓库</span>
+    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库">
+      <volist name='car.warehouse' id='storge'> 
+        <option value="{$key}">{$storge}</option>
+      </volist>
+    </select>
+  </div>
+
+  </div>
+ </div>
+ <div class="clearfix"></div>
+ </div>
+
+ <br/>
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+    <button type="submit" class="btn btn-primary btn-lg btn-block">修改信息</button>
+  </div>
+</div>
+<br>
+
+</form>
+</div>
+
+
+
+<style type="text/css">
+    hr{
+margin-top: 10px;
+  margin-bottom: 10px;
+    }
+
+</style>
+<script type="text/javascript">
+    (function(){
+    x=document.getElementById('f');
+    // 车型
+        switch("{$data['car_type']}"){
+            <volist name='car.car_type' id='cars' key="k"> 
+                case "{$cars}": val="{$k}"-1;
+                break;
+            </volist>
+            default:val=0; 
+        }
+    x.car_type.options[val].selected=true;
+    // 平台
+    switch("{$data['car_from']}"){
+            <volist name='car.car_from' id='cars' key="k"> 
+                case "{$cars}": val="{$k}"-1;
+                break;
+            </volist>
+            default:val=0; 
+        }
+    x.car_from.options[val].selected=true; 
+    //仓库
+    switch("{$data['warehouse']}"){
+            <volist name='car.warehouse' id='storge' key="k"> 
+                case "{$storge}": val="{$k}"-1;
+                break;
+            </volist>
+            default:val=0; 
+        }
+    x.warehouse.options[val].selected=true;  
+})();
+
+</script>
+
+

@@ -32,7 +32,10 @@ class PurchaseInDetailModel extends Model {
         'default'=>array(
             'where'=>array('erp_purchase_in_detail.is_deleted'=>'0'),
             'order'=>'erp_purchase_in_detail.id DESC',
-            'field' => 'erp_purchase_in_detail.*,erp_purchase_in_detail.id as code',
+            'join'=>array("inner join stock_purchase on stock_purchase.code=erp_purchase_in_detail.purchase_code ",
+                "inner join partner on stock_purchase.partner_id=partner.id ",
+            ),
+            'field' => 'erp_purchase_in_detail.*,erp_purchase_in_detail.id as code,partner.name as partner_name',
         ),
 
         'latest'=>array(

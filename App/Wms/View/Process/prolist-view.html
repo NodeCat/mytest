@@ -9,17 +9,17 @@
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-cond table-hover" style="">
       <thead>
-        <th>父SKU</th><th>产品名称</th><th>型号</th><th>计划数量</th><th>实际数量</th>
+        <th>父SKU</th><th>产品名称</th><th>型号</th><th>计划加工量</th><th>实际加工量</th>
       </thead>
       <tbody>
       <tr class="tr-tpl">
       <td style="width:10%;background: #fff;">
         {$p_sku_info.pro_code}<!--<input type="text" name="p_sku_code" value="{$p_sku_info.pro_code}" class=" typeahead input-sm" readonly="">-->
       </td>
-      <td  style="width:30%;background: #fff;">
+      <td  style="width:35%;background: #fff;">
         {$p_sku_info.wms_name}
       </td>
-      <td  style="width:30%;background: #fff;">
+      <td  style="width:35%;background: #fff;">
       	{$p_sku_info.pro_attrs_str}
       </td>
       <td style="width:10%;background: #fff;">
@@ -47,7 +47,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
       <thead>
-        <th>子SKU</th><th>产品名称</th><th>型号</th><!--<th>可能库存</th>--><th>计划数量</th><th>实际数量</th>
+        <th>子SKU</th><th>产品名称</th><th>型号</th><!--<th>可能库存</th>--><th>计划加工量</th><th>实际加工量</th>
       </thead>
       <tbody>
       <volist name="c_sku_info" id="c_sku">
@@ -55,10 +55,10 @@
       <td style="width:10%; background: #fff;">
       	{$c_sku.pro_code}
       </td>
-      <td  style="width:30%;background: #fff;">
+      <td  style="width:35%;background: #fff;">
       	{$c_sku.wms_name}
       </td>
-      <td  style="width:30%;background: #fff;">
+      <td  style="width:35%;background: #fff;">
       	{$c_sku.pro_attrs_str}
       </td>
       <!--<td style="width:10%;">

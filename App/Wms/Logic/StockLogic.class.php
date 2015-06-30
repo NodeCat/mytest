@@ -3,6 +3,128 @@ namespace Wms\Logic;
 
 class StockLogic{
 	/**
+	* 波次生产，检查出库单中所有sku是否满足数量需求
+	* @param
+	* $order_id
+	**/
+	public function checkStockIsEnoughByOrderId($order_id){
+		if(empty($order_id)){
+			return false;
+		}
+
+		//根据pid查询bill_out_detail
+		$map['pid'] = $order_id;
+		$bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+
+		//判断每条sku是否够用
+		$is_enough = true;
+
+		foreach($bill_out_detail_infos as $bill_out_detail_info){
+			$data['wh_id'] = session('user.wh_id');
+			$data['pro_code'] = $bill_out_detail_info['pro_code'];
+			$data['pro_qty'] = $bill_out_detail_info['order_qty'];
+			$check_re = $this->outStockBySkuFIFOCheck($data);
+			if($check_re['status'] != 1){
+				$is_enough = false;
+			}
+			unset($data);
+
+			//如果不够 直接返回
+			if(!$is_enough){
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	* 波次生产，返回应该从哪个库位出货，按照先进先出原则
+	* @param
+	* $wh_id
+	* $pro_code 
+	* $pro_qty
+	*/
+	public function assignStockByFIFOWave($params = array()){
+		if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+			return array('status'=>0,'msg'=>'参数有误！');
+		}
+
+		$diff_qty = $params['pro_qty'];
+
+		//根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
+		$map['pro_code'] = $params['pro_code'];
+		$map['wh_id'] = $params['wh_id'];
+		//目前只出合格商品
+		$map['stock.status'] = 'qualified';
+		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+		unset($map);
+
+		//检查所有的 库存量 是否满足 出库量
+		/*foreach($stock_list as $stock){
+			$stock_total += $stock['stock_qty'] - $stock['assign_qty'];
+		}
+
+		//是否有足够的货
+		$is_enough = true;
+		if($stock_total < $params['pro_qty']){
+			$is_enough = false;
+		}
+
+		$return['is_enough'] = $is_enough;
+		*/
+
+		$diff_qty = intval($diff_qty);
+
+		//按照现进先出原则 锁定库存量 assign_qty
+		foreach($stock_list as $key=>$stock){
+			//可用量
+			$stock_available = $stock['stock_qty'] - $stock['assign_qty'];
+			if($diff_qty > 0){
+				//可用量小于等于差异量
+				if($stock_available <= $diff_qty){
+                    //获取此次销库存的相关信息
+                    $return['stock_info'][$key]['location_id'] = $stock['location_id'];
+                    $return['stock_info'][$key]['batch'] = $stock['batch'];
+                    $return['stock_info'][$key]['qty'] = $stock['stock_qty'];
+
+					$map['id'] = $stock['id'];
+					$data['assign_qty'] = $stock['assign_qty'] + $stock_available;
+					M('stock')->where($map)->data($data)->save();
+					unset($map);
+					unset($data);
+
+					$diff_qty = $diff_qty - $stock_available;
+
+				//可用量大于差异量
+				}else{
+                    //返回销库存的相关信息
+                    $return['stock_info'][$key]['location_id'] = $stock['location_id'];
+                    $return['stock_info'][$key]['batch'] = $stock['batch'];
+                    $return['stock_info'][$key]['qty'] = $diff_qty;
+
+					//根据id 更新库存表
+					$map['id'] = $stock['id'];
+					$data['assign_qty'] = $stock['assign_qty'] + $diff_qty;
+					M('stock')->where($map)->data($data)->save();
+					unset($map);
+					unset($data);
+
+					break;
+				}
+
+			}else{
+
+				break;
+				
+			}
+		}
+
+		
+		return array('status'=>1, 'data'=>$return);
+	}
+
+	/**
 	 * 检查是否可以一键出库，按照先进先出原则 
 	 * @param 
 	 * $wh_id 仓库id
@@ -43,6 +165,7 @@ class StockLogic{
 	 * $pro_code sku编号
 	 * $pro_qty 产品数量
 	 * $refer_code 出库单号
+	 * $location_ids 指定从哪个库位上出库
 	 * )
 	 */
 	public function outStockBySkuFIFO($params = array()){
@@ -57,6 +180,10 @@ class StockLogic{
 		$map['wh_id'] = $params['wh_id'];
 		//目前只出合格商品
 		$map['stock.status'] = 'qualified';
+		//指定从哪个库位上出库
+		if($params['location_ids']){
+			$map['locaiton_id'] = array('in',$params['location_ids']);
+		}
 		$stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
 		unset($map);
 
@@ -84,6 +211,20 @@ class StockLogic{
 					$map['id'] = $stock['id'];
 					M('Stock')->where($map)->delete();
 					unset($map);
+
+					//写入出库详情表
+					$stock_container_data = array(
+						'refer_code' => $params['refer_code'],
+						'pro_code' => $params['pro_code'],
+						'batch' => $stock['batch'],
+						'wh_id' => $params['wh_id'],
+						'location_id' => $params['location_id'],
+						'qty' => $stock['stock_qty'],
+						);
+					$stock_container = D('stock_bill_out_container');
+					$stock_container_data = $stock_container->create($stock_container_data);
+					$stock_container->data($stock_container_data)->add();
+					unset($stock_container_data);
 
 					$diff_qty = $diff_qty - $stock['stock_qty'];
 					$log_qty = $stock['stock_qty'];
@@ -121,6 +262,20 @@ class StockLogic{
 					$map['id'] = $stock['id'];
 					M('Stock')->where($map)->delete();
 					unset($map);
+
+					//写入出库详情表
+					$stock_container_data = array(
+						'refer_code' => $params['refer_code'],
+						'pro_code' => $params['pro_code'],
+						'batch' => $stock['batch'],
+						'wh_id' => $params['wh_id'],
+						'location_id' => $params['location_id'],
+						'qty' => $stock['stock_qty'],
+						);
+					$stock_container = D('stock_bill_out_container');
+					$stock_container_data = $stock_container->create($stock_container_data);
+					$stock_container->data($stock_container_data)->add();
+					unset($stock_container_data);
 
 					$diff_qty = $diff_qty - $stock['stock_qty'];
 					$log_qty = $stock['stock_qty'];
@@ -164,6 +319,20 @@ class StockLogic{
 					M('stock')->where($map)->data($data)->save();
 					unset($map);
 					unset($data);
+
+					//写入出库详情表
+					$stock_container_data = array(
+						'refer_code' => $params['refer_code'],
+						'pro_code' => $params['pro_code'],
+						'batch' => $stock['batch'],
+						'wh_id' => $params['wh_id'],
+						'location_id' => $params['location_id'],
+						'qty' => $diff_qty,
+						);
+					$stock_container = D('stock_bill_out_container');
+					$stock_container_data = $stock_container->create($stock_container_data);
+					$stock_container->data($stock_container_data)->add();
+					unset($stock_container_data);
 
 					//写入库存交易日志
 					$stock_move_data = array(
@@ -525,6 +694,7 @@ class StockLogic{
 	*	'pro_code'=>xxxxx,
 	*	'batch'=>xxxx,
 	*	'status'=>xxxx,
+	*	'change_src_assign_qty'=>xxxx, 是否减少src的assign_qty
 	* )
 	*
 	*/
@@ -607,6 +777,11 @@ class StockLogic{
 				}else{
 					//减少原库存
 					M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+				
+					if($param['change_src_assign_qty']){
+						//减少assign_qty
+						M('Stock')->where($map)->setDec('assign_qty',$param['variable_qty']);
+					}
 				}
 				
 
@@ -667,6 +842,11 @@ class StockLogic{
 					}else{
 						//减少原库存
 						M('Stock')->where($map)->setDec('stock_qty',$param['variable_qty']);
+
+						if($param['change_src_assign_qty']){
+							//减少assign_qty
+							M('Stock')->where($map)->setDec('assign_qty',$param['variable_qty']);
+						}
 					}
 
 					

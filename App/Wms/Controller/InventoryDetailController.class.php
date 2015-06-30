@@ -71,7 +71,8 @@ class InventoryDetailController extends CommonController {
 	protected function after_lists(&$data){
 		//整理数据项
 		foreach($data as $key => $data_detail){
-            if($data_detail['pro_qty']){
+            if($data_detail['pro_qty'] || $data_detail['status'] == 'done'){
+                $data[$key]['pro_qty'] = (empty($data[$key]['pro_qty'])) ? 0 : $data[$key]['pro_qty'];
                 $data[$key]['diff_qty'] = $data_detail['pro_qty'] - $data_detail['theoretical_qty'];
             }
 		}

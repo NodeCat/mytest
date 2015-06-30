@@ -85,10 +85,15 @@ $(function () {
 			type:'post',
 			cache : false,
 			async:true,
-			dataType:'html',
 			data:params,
 			success: function(msg){
-				$('.table-content').html(msg);
+				if(msg.msg != '' && msg.msg != null ){
+					alert(msg.msg);
+				}
+				else {
+					$('.table-content').html(msg);
+				}
+
 			}
 		}); 
 		return false;
@@ -196,6 +201,17 @@ $('.modal').on('shown.bs.modal', function (e) {
 	
 	$('.content').on('click','.table-toolbar .btn-task,.btn-tool, .table-operate-btn .btn-edit,.table-operate-btn .btn-view,.table-operate-btn .btn-add',function(){
 		$($(this).data('target')+' #title').text($(this).data('title'));
+	});
+
+	$('.content').on('click','.table-toolbar .btn-print',function(){
+		var _location_ids=getChecked();
+		if(!_location_ids){
+			alert('请选中要操作的行。');
+			return false;
+		}
+
+		window.location.href=$(this).data('href')+'?location_ids='+_location_ids;
+		return false;
 	});
 
 	$('.content').on('click','.table-toolbar .btn-delete',function(){

@@ -1,0 +1,124 @@
+<div class="container-fluid">
+  <style>
+    @page{
+      size:A4 portrait;
+    }
+    .printpage {
+      width: 100%;
+      margin: auto;
+      font-size: 12px;
+      page-break-before: avoid;
+      page-break-inside: avoid;
+      page-break-after: always;
+    }
+    .orderinfo, .mapimg {
+      page-break-before: avoid;
+      page-break-inside: avoid;
+      min-height: 500px;
+    }
+    .all_count{
+      margin-top: 20px;
+    }
+  </style>
+<a href="javascript:void(0);" ng-click="printAll" class="hidden-print btn btn-danger ng-binding">打印全部</a>
+<div style="margin-bottom:10px;"></div>
+ <volist name="list" id="vo" key="row" empty="">
+  <div class="printpage direction" ng-repeat="items in list">
+    <div class="orderinfo">
+    <div class="row">
+      <div class="col-xs-4">
+        <p>分拣单号:{$vo.items.code}</p>
+        <p class="">线路（片区）:{$vo.items.line_id|getLineNameByid=###}</p>
+        <p>订单数：{$vo.items.order_sum}</p>
+      </div>
+      <div class="col-xs-4">
+          <p> 分拣单</p>
+          <img src="{$vo.items.barcode}" />
+      </div>
+      <div class="col-xs-4">
+        <p>仓库：{$vo.items.wh_id|getTableFieldById='warehouse','name',###}</p>
+        <p>波次号：{$vo.items.wave_id}</p>
+        <!-- <p>配送时间：{$vo.items.deliver_date}</p> -->
+      </div>
+    </div>
+    <div class="order_print_table">
+      <table class="table table-condensed table-bordered table-striped">
+        <colgroup>
+          <col class="col-xs-1">
+          <col class="col-xs-3">
+          <col class="col-xs-5">
+          <col class="col-xs-1">
+          <col class="col-xs-1">
+          <col class="col-xs-1">
+        </colgroup>
+        <thead>
+          <tr>
+            <td>货品号</td>
+            <td>产品名称</td>
+            <td>规格</td>
+            <!-- <td>结算单价</td> -->
+            <td>订货数量</td>
+            <!-- <td>批次</td> -->
+            <td>库位</td>
+            <!-- <td>重量</td> -->
+          </tr>
+        </thead>
+        <tbody>
+          <volist name="vo.detail" id="vos">
+            <tr ng-repeat="detail in items.sku_list">
+              <td>{$vos.pro_code}</td>
+              <td>{$vos.pro_code|getPronameByCode='name',###}</td>
+              <td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$vos.pro_code|getSkuInfoByCode='pro_attrs_str',###}<br></small></td>
+              <!-- <td>{$vos.name}/{$vos.name}</td> -->
+              <td>{$vos.pro_qty}</td>
+              <!-- <td>{$vos.batch}</td> -->
+              <td>{$vos.src_location_id|getLocationNameById='code',###}</td>
+              <!-- <td></td> -->
+            </tr>
+          </volist>
+          <tr>
+              <td>汇总</td>
+              <td colspan="2"></td>
+              <td>{$vo.items.pro_qty_sum}</td>
+              <td></td>
+              <!-- <td></td> -->
+              <!-- <td></td> -->
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  <div class="all_count">
+      <a href="javascript:void(0);" data-var="{$vo.items.id}" class="hidden-print btn-lg btn-success">打印</a>
+    </div>
+</div>
+</div>
+<div class="clearfix"></div>
+</volist>
+</div>
+<script type="text/javascript">
+(function(){
+  $(document).on('click','.all_count a',function(){
+    $('.printpage').addClass('hidden-print');
+    $(this).parent().parent().parent().removeClass('hidden-print');
+    window.print();
+    var ids = "<php> echo I('ids')</php>";
+    var id = $(this).attr('data-var');
+    var url = "/Pick/doPrint";
+    var param = {};
+    param.ids = id;
+    var callback = function(res){};
+    $.post(url, param, callback, 'json');
+  });
+  $(document).on('click','[ng-click = printAll]',function(){
+    $('.printpage').removeClass('hidden-print');
+    window.print();
+    var ids = "<php> echo I('ids')</php>";
+    
+    var url = "/Pick/doPrint";
+    var param = {};
+    param.ids = ids;
+    var callback = function(res){};
+    $.post(url, param, callback, 'json');
+  });
+})();
+</script>

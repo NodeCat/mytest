@@ -1,0 +1,101 @@
+
+  <div class="" id="row block-title">
+    <div class="">
+      <div class="bs-callout bs-callout-danger">
+        <h4>配送单编号：{$data.dist_code}</h4>
+        <h5 style="margin-top:10px;">状态：{$data['is_printed'] ? '已打印' : '未打印'}</h5>
+      </div>
+      <div>
+        <table class="table table-bordered table-striped">
+          <colgroup>
+            <col class="col-xs-3">
+            <col class="col-xs-3">
+            <col class="col-xs-3">
+            <col class="col-xs-3">
+          </colgroup>
+          <tbody>
+            <tr>
+              <td class="text-center"><h5>创建者</h5></td>
+              <td class="text-center"><h5>{$data.creator}</h5></td>
+              <td class="text-center"><h5>创建时间</h5></td>
+              <td class="text-center"><h5>{$data.created_time}</h5></td>
+            </tr>
+            <tr>
+              <td class="text-center"><h5>总单数</h5></td>
+              <td class="text-center"><h5>{$data.order_count}</h5></td>
+              <td class="text-center"><h5>总金额</h5></td>
+              <td class="text-center"><h5>{$data.total_price}</h5></td>
+            </tr>
+            <tr>
+              <td class="text-center"><h5>总行数</h5></td>
+              <td class="text-center"><h5>{$data.line_count}</h5></td>
+              <td class="text-center"><h5>总件数</h5></td>
+              <td class="text-center"><h5>{$data.sku_count}</h5></td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="table table-bordered table-striped">
+          <thead>
+            <colgroup>
+              <col class="col-xs-2">
+              <col class="col-xs-1">
+              <col class="col-xs-1">
+              <col class="col-xs-2">
+              <col class="col-xs-1">
+              <col class="col-xs-2">
+              <col class="col-xs-1">
+              <col class="col-xs-1">
+              <col class="col-xs-1">
+              <col class="col-xs-1">
+            </colgroup>
+            <tr>
+              <td class="text-center" colspan="10"><h5>订单列表</h5></td>
+            </tr>
+            <tr>
+              <td>店铺名称</td>
+              <td>收件人</td>
+              <td>订单id</td>
+              <td>订单编号</td>
+              <td>货品</td>
+              <td>产品名称</td>
+              <td>规格</td>
+              <td>订货数量</td>
+              <td>单价</td>
+              <td>备注</td>
+            </tr>
+          </thead>
+          <volist name="orderList" id="order">
+            <volist name="order['detail']" id="detail" key="k">
+	            <tr class="order_list_info">
+	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}<p>{$order.deliver_addr}</p></td>
+	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.username}</td>
+	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
+	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.order_number}</td>
+	              <td>{$detail.pro_code}</td>
+	              <td>{$detail.pro_name}</td>
+	              <td>{$detail.pro_attrs}</td>
+	              <td>{$detail.order_qty}</td>
+	              <td>{$detail.price}</td>
+	              <td></td>
+	            </tr>
+            </volist>
+          </volist>
+        </table>
+      </div>
+      <div class="col-xs-12 btn-group form-group">
+        <a href="{:U('index')}" class="btn col-xs-3 btn-lg btn-success">返回</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+$(function() {
+	var td =  $('.order_list_info').children('td[rowspan]');
+    td.each(function(i) {
+	    if ($(this).attr('index') > 1) {
+		    $(this).remove();
+	    }
+    }) 
+})
+
+</script>
