@@ -486,7 +486,7 @@ class DistributionController extends CommonController {
         $det = M('stock_wave_distribution_detail');
         $stock = M('stock_bill_out');
         $D = D('Distribution', 'Logic');
-        $stockOut = D('StockOut', 'Logic');
+        $stockOut = D('Stock', 'Logic');
         //获取配送单
         $map['dist_code'] = $post;
         $result = $M->where($map)->find();
@@ -575,7 +575,7 @@ class DistributionController extends CommonController {
         unset($map);
         //扣减库存
         foreach ($merg as $sku) {
-            $stockOut->outStockBySkuFIFO(session('user.wh_id'), $sku['pro_code'], $sku['order_qty'], $post, $location_id);
+            $stockOut->outStockBySkuFIFO(array(session('user.wh_id'), $sku['pro_code'], $sku['order_qty'], $post, $location_id));
         }
         $map['dist_code'] = $post;
         $data['status'] = 2; //已发运
