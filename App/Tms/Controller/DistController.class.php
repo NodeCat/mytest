@@ -56,9 +56,10 @@ class DistController extends Controller {
                 $data['created_time'] = get_time();
                 $data['updated_time'] = get_time();
                 $data['status']       = '1';
-                $lines = $A->line(array('line_ids'=>array($dist['line_id'])));
+                $cA = A('Common/Order','Logic');//实例化Common下的OrderLogic
+                $lines = $cA->line(array('line_ids'=>array($dist['line_id'])));
                 $data['line_name'] = $lines[0]['name'];
-                $citys = $A->city();
+                $citys = $cA->city();
                 $data['city_id'] = $citys[$dist['city_id']];
                 //添加一条记录到tms_delivery
                 $res = $M->add($data);
@@ -72,7 +73,7 @@ class DistController extends Controller {
                 foreach ($orders as $val) {
                     // $order_ids[] = $val['id'];
                     $map['order_id'] = $val['refer_code'];
-                    $res = $A->set_status($map);
+                    $res = $cA->set_status($map);
                 }
                 unset($map);
                 if($res) {
@@ -137,7 +138,8 @@ class DistController extends Controller {
                 $val['shop_name']    = $val['order_info']['shop_name'];
                 $val['mobile']       = $val['order_info']['mobile'];
                 $val['remarks']      = $val['order_info']['remarks'];
-                $val['status_cn']    = ($val['sign_status'] == 1) ? '已完成' :'已装车';
+                // $val['status_cn']    = ($val['sign_status'] == 1) ? '已完成' :'已装车';
+                $val['status_cn']    = $val['order_info']['status_cn'];
                 $val['total_price']  = $val['order_info']['total_price'];
                 $val['minus_amount'] = $val['order_info']['minus_amount'];
                 $val['deliver_fee']  = $val['order_info']['deliver_fee'];
@@ -242,7 +244,7 @@ class DistController extends Controller {
     }
 
     //司机签收后订单回调
-    public function sign_order() {
+    public function set_order_status() {
         $map['order_id'] = I('post.id/d',0);
         $map['status']   = '6';
         $map['deal_price'] = I('post.deal_price/d',0);
@@ -259,10 +261,11 @@ class DistController extends Controller {
             $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
             $map['order_details'][] = $row;
         }
+        dump($map);die();
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
         
-        $A = A('Tms/Order','Logic');
-        $res = $A->set_status($map);
+        $cA = A('Common/Order','Logic');
+        $res = $cA->set_status($map);
         $this->ajaxReturn($res);
     }
 
@@ -273,8 +276,8 @@ class DistController extends Controller {
         $map['sign_msg'] = I('post.sign_msg');
 
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
-        $A = A('Tms/Order','Logic');
-        $res = $A->set_status($map);
+        $cA = A('Common/Order','Logic');
+        $res = $cA->set_status($map);
         $this->ajaxReturn($res);
     }
 }
