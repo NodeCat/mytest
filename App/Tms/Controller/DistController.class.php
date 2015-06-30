@@ -185,15 +185,17 @@ class DistController extends Controller {
     public function sign() {
         //接收签收数据
         $dist_id     = I('get.dist_id/d');
-        $refer_code  = I('post.refer_code/d');
+        $refer_code  = I('post.refer_code/d',0);
         $detail_id   = I('post.pro_id');
         $quantity    = I('post.quantity');
         $weight      = I('post.weight');
         $unit_id     = I('post.unit_id');
         $close_unit  = I('post.close_unit');
         $price_unit  = I('post.price_unit');
-        $final_price = I('post.final_price');
-        $deal_price  = I('post.deal_price');
+        $final_price = I('post.final_price/d',0);
+        $deal_price  = I('post.deal_price/d',0);
+        //更新订单状态
+        $this->set_order_status($refer_code, $deal_price);
         $M = M('tms_sign_in');
         //该出库单签收状态
         $sign_status = $M->table('stock_wave_distribution_detail')
@@ -244,24 +246,12 @@ class DistController extends Controller {
     }
 
     //司机签收后订单回调
-    public function set_order_status() {
-        $map['order_id'] = I('post.id/d',0);
+    public function set_order_status($refer_code, $deal_price) {
+        $map['order_id'] = $refer_code;
         $map['status']   = '6';
-        $map['deal_price'] = I('post.deal_price/d',0);
+        $map['deal_price'] = $deal_price;
         $map['sign_msg'] = I('post.sign_msg');
 
-        $pro_id = I('post.pro_id');
-        $price_unit = I('post.price_unit');
-        $price_sum = I('post.price_sum');
-        $quantity = I('post.quantity');
-        foreach ($pro_id as $key => $val) {
-            $row['id']= $val;
-            $row['actual_price'] = $price_unit[$key];
-            $row['actual_quantity'] = $quantity[$key];
-            $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
-            $map['order_details'][] = $row;
-        }
-        dump($map);die();
         $map['driver'] = '司机'.session('user.username').session('user.mobile');
         
         $cA = A('Common/Order','Logic');
