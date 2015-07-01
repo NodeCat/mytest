@@ -1,0 +1,4 @@
+insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `id`, `show`, `pid`, `module`, `app`) values ( '分类', 'Wms/Category/index', 'index', 'Category', 'Wms', '3', '371', '1', '2', 'Category', 'Wms');
+insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `id`, `show`, `pid`, `module`, `app`) values ( '获取分类', 'Wms/Category/getCatInfoByPid', 'getCatInfoByPid', 'Category', 'Wms', '4', '372', '1', '371', 'Category', 'Wms');
+insert into `wms`.`auth_authority` ( `url`, `action`, `name`, `group`, `type`, `id`, `module`, `app`) values ( 'Wms/Insales/export', 'export', 'export', 'Wms', '4', '373', 'Insales', 'Wms');
+insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `mpid`, `show`, `pid`, `module`, `app`) values ( '进销存导出execl', 'Wms/Insales/exportInsales', 'exportInsales', 'exportInsales', 'Wms', '4', '0', '1', '369', 'Insales', 'Wms')
