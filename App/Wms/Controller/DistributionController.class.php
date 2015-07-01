@@ -320,8 +320,7 @@ class DistributionController extends CommonController {
         
         //获取订单id
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
-        
+        $order_ids = $D->get_order_ids_by_dis_id($get);dump($order_ids);exit;
         //拉取订单
         $Order = D('Common/Order', 'Logic');
         $result = $Order->getOrderInfoByOrderIdArr($order_ids);
