@@ -1,7 +1,7 @@
 <notempty name="auth['stockOut']">
-<!--<div class="form-group  col-lg-1">
+<div class="form-group  col-lg-1">
 <a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
-</div>-->
+</div>
 <div class="form-group  col-lg-1" style="margin-left: 15px;">
 <a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
 </div>
@@ -11,6 +11,7 @@ var alert_dialog = {
 	
 	close:function(){
 		this.hide();
+		window.location.reload();
 	},
 	show:function(title, content){
 		title  = title?title:'提示框';
@@ -79,10 +80,9 @@ $(function(){
 						$('body').append(html);
 					}else{
 						alert(json.msg);
+						window.location.reload();
 					}
 					
-            
-                    window.location.reload();
                     refresh_list();
 				}
 				if(json.status=='0'){
