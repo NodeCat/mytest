@@ -438,7 +438,7 @@ class DistributionLogic {
         }
        
         $return['status'] = true;
-        $reurn['msg'] = '成功';
+        $return['msg'] = '成功';
         return $return;
     }
     
