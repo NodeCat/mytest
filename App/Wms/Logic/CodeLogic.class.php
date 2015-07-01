@@ -13,15 +13,33 @@ namespace Wms\Logic;
 class CodeLogic{
 
     public function getProCodeByEna13code($ena13code = '') {
-        $len = strlen($ena13code);
-        if($len != 13){
+        $len = strlen(trim($ena13code));
+        if($len != 13 || !$pro_code_ena13){
             return $ena13code;
         }
-
         $codeArr = array($ena13code);
         $pms = A('Pms','Logic');
-        $pro_code_ena13 = $pms->get_SKU_by_ena_code();
-        dump($pro_code_ena13);die;
+        $pro_code_ena13 = $pms->get_SKU_by_ena_code($codeArr);
+
+        if(is_array($pro_code_ena13) && $pro_code_ena13 && isset($pro_code_ena13['list'])){
+
+            if( $pro_code_ena13['status'] == 0){
+
+                $pro_code = $pro_code_ena13['list']['0']['sku_number'];
+
+                $sku_number = $pro_code?$pro_code:$ena13code;
+
+            }else{
+
+                $sku_number = $ena13code;
+            }
+
+        }else{
+
+            $sku_number = $ena13code;
+        }
+        
+        return $sku_number;
     }
 }
 /* End of file WaveLogic.class.php */

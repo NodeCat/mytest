@@ -8,6 +8,10 @@ class StockMoveController extends CommonController {
             if(empty($data['location_code']) || empty($data['pro_code'])) {
                return false; 
             }
+            //ena13 to pro_code
+            $codeLogic = A('Code','Logic');
+            $code = $codeLogic->getProCodeByEna13code($data['pro_code']);
+            $data['pro_code'] = $code;
             //获取用户登录的仓库ID 
             $wh_id = session('user.wh_id');
             
@@ -47,6 +51,10 @@ class StockMoveController extends CommonController {
 
     public function checkStockMove() {
         $data = I('post.');
+        //ena13 to pro_code
+        $codeLogic = A('Code','Logic');
+        $code = $codeLogic->getProCodeByEna13code($data['pro_code']);
+        $data['pro_code'] = $code;
         $stock = M('stock');
         $location = M('location');
         $map['type'] ='2'; 
@@ -71,6 +79,7 @@ class StockMoveController extends CommonController {
         }*/
 
         //检查库位上pro_code是否存在
+
         $map['pro_code'] = $data['pro_code'];
         $map['location_id'] = $location_id;
         $map['wh_id'] = session('user.wh_id');
@@ -90,6 +99,10 @@ class StockMoveController extends CommonController {
         if(empty($data['wh_id']) || empty($data['location_id']) || empty($data['pro_code']) || empty($data['dest_location_code'])) {
             return false;
         }
+        //ena13 to pro_code
+        $codeLogic = A('Code','Logic');
+        $code = $codeLogic->getProCodeByEna13code($data['pro_code']);
+        $data['pro_code'] = $code;
         $location = M('location');
         $stock = M('stock');
       
