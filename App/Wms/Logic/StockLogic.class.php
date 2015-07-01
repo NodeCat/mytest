@@ -44,6 +44,7 @@ class StockLogic{
     * $wh_id
     * $pro_code 
     * $pro_qty
+    * $not_in_location_ids 过滤掉某些库位id
     */
     public function assignStockByFIFOWave($params = array()){
         if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
@@ -57,6 +58,11 @@ class StockLogic{
         $map['wh_id'] = $params['wh_id'];
         //目前只出合格商品
         $map['stock.status'] = 'qualified';
+        //过滤某些仓库id
+        if(!empty($params['not_in_location_ids'])){
+            $map['location_id'] = array('not in',$params['not_in_location_ids']);
+        }
+
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
         unset($map);
 
