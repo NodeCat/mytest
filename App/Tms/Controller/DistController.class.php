@@ -73,7 +73,7 @@ class DistController extends Controller {
                 foreach ($orders as $val) {
                     $order_ids[] = $val['refer_code'];
                     $map['suborder_id'] = $val['refer_code'];
-                    $res = $A->set_status($map);
+                    $res = $cA->set_status($map);
                 }
                 unset($map);
                 if($res) {
