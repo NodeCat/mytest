@@ -1,4 +1,4 @@
-insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `id`, `show`, `pid`, `module`, `app`) values ( '分类', 'Wms/Category/index', 'index', 'Category', 'Wms', '3', '371', '1', '2', 'Category', 'Wms');
-insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `id`, `show`, `pid`, `module`, `app`) values ( '获取分类', 'Wms/Category/getCatInfoByPid', 'getCatInfoByPid', 'Category', 'Wms', '4', '372', '1', '371', 'Category', 'Wms');
-insert into `wms`.`auth_authority` ( `url`, `action`, `name`, `group`, `type`, `id`, `module`, `app`) values ( 'Wms/Insales/export', 'export', 'export', 'Wms', '4', '373', 'Insales', 'Wms');
-insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `mpid`, `show`, `pid`, `module`, `app`) values ( '进销存导出execl', 'Wms/Insales/exportInsales', 'exportInsales', 'exportInsales', 'Wms', '4', '0', '1', '369', 'Insales', 'Wms')
+INSERT INTO `auth_authority` (`name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES
+('Category', '3', 'Wms', 'Wms', 'Category', 'index', 'Wms/Category/index', '', '', '分类', 1, 2, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
+('Category', '4', 'Wms', 'Wms', 'Category', 'getCatInfoByPid', 'Wms/Category/getCatInfoByPid', '', '', '获取分类', 1, 371, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
+('export', '4', 'Wms', 'Wms', 'Insales', 'export', 'Wms/Insales/export', '', '', '进销存导出', 1, 369, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);
