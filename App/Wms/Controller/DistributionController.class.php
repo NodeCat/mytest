@@ -710,7 +710,7 @@ class DistributionController extends CommonController {
         	    $detail->where($map)->save();
         	}
         	//获取出库单ID
-        	$res = $stock->where($map)->select();
+        	$res = $detail->where($map)->select();
         	$bill_out_id = array();
         	foreach ($res as $value) {
         	    $bill_out_id[] = $value['bill_out_id'];
