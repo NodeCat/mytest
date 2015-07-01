@@ -78,9 +78,14 @@ class DistributionLogic {
         }
         //result 中为全部复合搜索条件的出库单
         //取出库单ID获取详情信息
-        foreach ($result as &$out) {
-            //获取出库单详情
-            $out['detail'] = $this->get_out_detail($out['id']);
+        foreach ($result as $index => &$out) {
+            //没有线路的出库单去除
+            if ($out['line_id'] <= 0) {
+                unset($result[$index]);
+            } else {
+                //获取出库单详情
+                $out['detail'] = $this->get_out_detail($out['id']);
+            }
         }
         //整理前端数据
         $list = $this->format_data($result);

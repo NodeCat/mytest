@@ -538,6 +538,7 @@ class DistributionController extends CommonController {
             if (!empty($confirm)) {
                 //继续操作
                 //删除此配送单下的这些出库单
+                $map['bill_out_id'] = array('in', $unpass_code);
                 $map['pid'] = $result['id'];
                 $data['is_deleted'] = 1; //已删除
                 if ($det->create($data)) {
@@ -554,6 +555,24 @@ class DistributionController extends CommonController {
                 }
                 unset($map);
                 unset($data);
+                //更新配送单中总件数 总条数 总行数 总金额
+                $sur_detail = $D->get_out_detail($pass_ids); //通过审核的sku详情
+                $total['order_count'] = count($pass_ids); //总单数
+                $total['sku_count'] = 0; //总件数
+                $total['line_count'] = 0; //总行数
+                $total['total_price'] = 0; //总金额
+                $det_merge = array();
+                foreach ($sur_detail as $sur) {
+                    $total['sku_count'] += $sur['order_qty'];
+                    $total['total_price'] += $sur['order_qty'] * $sur['price'];
+                    $det_merge[$sur['pro_code']] = null; 
+                }
+                $total['line_count'] = count($det_merge);
+                if ($M->create($total)) {
+                    //更新操作
+                    $map['id'] = $result['id'];
+                    $M->where($map)->save();
+                }
             } else {
                 $unpass_ids .= ',' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids));
@@ -562,7 +581,6 @@ class DistributionController extends CommonController {
         //统计SKU数量扣减库存
         //获取出库详情
         $sku_detail = $D->get_out_detail($pass_ids);
-        //$sku_detail = $sku_detail['list'];
 
         //统计
         $merg = array(); //sku统计结果
@@ -645,7 +663,7 @@ class DistributionController extends CommonController {
         }
         unset($map);
 
-        $this->msgReturn(true, '已完成', '', '', U('over'));
+        $this->msgReturn(true, '已完成', '', U('over'));
     }
     
     
