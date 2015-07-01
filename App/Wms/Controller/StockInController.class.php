@@ -245,6 +245,9 @@ class StockInController extends CommonController {
 			$id = I('post.id');
 			$type = I('post.t');
 			if($type == 'scan_procode') {
+				$a = A('Code','Logic');
+				$ac = $a->getProCodeByEna13code($code);
+				dump($ac);die;
 				$A = A('StockIn','Logic');
 				$res = $A->getInQty($id,$code);
 				if($res['res'] == true) {
