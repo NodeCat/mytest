@@ -69,11 +69,11 @@ class DistController extends Controller {
                 $orders = $A->billOut($map);
                 unset($map);
                 $map['status']  = '8';//已装车
-                $map['driver'] = '司机'.session('user.username').session('user.mobile');
+                $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
-                    // $order_ids[] = $val['id'];
-                    $map['order_id'] = $val['refer_code'];
-                    $res = $cA->set_status($map);
+                    $order_ids[] = $val['refer_code'];
+                    $map['suborder_id'] = $val['refer_code'];
+                    $res = $A->set_status($map);
                 }
                 unset($map);
                 if($res) {
@@ -138,7 +138,7 @@ class DistController extends Controller {
                 $val['shop_name']    = $val['order_info']['shop_name'];
                 $val['mobile']       = $val['order_info']['mobile'];
                 $val['remarks']      = $val['order_info']['remarks'];
-                // $val['status_cn']    = ($val['sign_status'] == 1) ? '已完成' :'已装车';
+                // $val['status_cn']    = '已装车';
                 $val['status_cn']    = $val['order_info']['status_cn'];
                 $val['total_price']  = $val['order_info']['total_price'];
                 $val['minus_amount'] = $val['order_info']['minus_amount'];
@@ -150,7 +150,7 @@ class DistController extends Controller {
 
                 $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
                 foreach ($val['detail'] as &$v) {
-                    if($val['sign_status'] == 1) {
+                    if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         //该出库单详情对应的签收数据
                         $sign_in = $M->table('tms_sign_in')->where(array('bill_out_detail_id' => $v['id']))->find();
                         $v['quantity']  = $sign_in['real_sign_qty'];
@@ -166,10 +166,11 @@ class DistController extends Controller {
                     //从订单详情获取SKU信息
                     foreach ($val['order_info']['detail'] as $value) {
                         if($v['pro_code'] == $value['sku_number']){
-                            $v['single_price'] = $value['single_price'];
-                            $v['close_unit']   = $value['close_unit'];
-                            $v['unit_id']      = $value['unit_id'];
-                            $v['sum_price']    = $value['sum_price'];
+                            $v['single_price']    = $value['single_price'];
+                            $v['close_unit']      = $value['close_unit'];
+                            $v['unit_id']         = $value['unit_id'];
+                            $v['sum_price']       = $v['sum_price'] ? $v['sum_price'] : $value['sum_price'];
+                            $v['order_detail_id'] = $value['id'];//获取订单详情ID，用于更新订单状态
                         }
                     }
                 }
@@ -188,15 +189,15 @@ class DistController extends Controller {
         $refer_code  = I('post.refer_code/d',0);
         $detail_id   = I('post.pro_id');
         $quantity    = I('post.quantity');
-        $weight      = I('post.weight');
+        $weight      = I('post.weight', 0);
         $unit_id     = I('post.unit_id');
         $close_unit  = I('post.close_unit');
         $price_unit  = I('post.price_unit');
         $final_price = I('post.final_price/d',0);
         $deal_price  = I('post.deal_price/d',0);
         //更新订单状态
-        $re = $this->set_order_status($refer_code, $deal_price);
-        if($re['status'] == 0) {
+        $re = $this->set_order_status($refer_code, $deal_price, $quantity, $price_unit);
+        if($re['status'] === 0) {
             $M = M('tms_sign_in');
             //该出库单签收状态
             $sign_status = $M->table('stock_wave_distribution_detail')
@@ -249,26 +250,33 @@ class DistController extends Controller {
     }
 
     //司机签收后订单回调
-    public function set_order_status($refer_code, $deal_price) {
-        $map['order_id'] = $refer_code;
+    public function set_order_status($refer_code, $deal_price, $quantity, $price_unit) {
+        $map['suborder_id'] = $refer_code;
         $map['status']   = '6';
         $map['deal_price'] = $deal_price;
-        $map['sign_msg'] = I('post.sign_msg');
-
-        $map['driver'] = '司机'.session('user.username').session('user.mobile');
-        
+        $map['remark'] = I('post.sign_msg');
+        $detail_ids = I('post.order_detail_id');
+        foreach ($detail_ids as $key => $val) {
+            if(intval($val) > 0) {
+                $row['id']= $val;
+                $row['actual_price'] = $price_unit[$key];
+                $row['actual_quantity'] = $quantity[$key];
+                $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
+                $map['order_details'][] = $row;
+            }
+        }
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
-        $this->ajaxReturn($res);
+        return  $res;
     }
 
     //客户退货
     public function reject() {
-        $map['order_id'] = I('post.id/d',0);
+        $map['suborder_id'] = I('post.refer_code/d',0);
         $map['status'] = '7';
-        $map['sign_msg'] = I('post.sign_msg');
-
-        $map['driver'] = '司机'.session('user.username').session('user.mobile');
+        $map['remark'] = I('post.sign_msg');
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
         $this->ajaxReturn($res);
