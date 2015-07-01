@@ -93,7 +93,7 @@ class WavePickingLogic{
                 unset($map);
                 unset($data);
                 //处理分拣单 每个分拣单最多处理$order_max个订单
-                $this->exec_order($result_arr);
+                $this->exec_order($result_arr,$wave_id);
             }
             //查询当前仓库的发货区的location_id
             $map['wh_id'] = session('user.wh_id');
@@ -117,6 +117,7 @@ class WavePickingLogic{
                 $data['wh_id'] = session('user.wh_id');
                 $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
+                $data['is_print'] = 'OFF';
                 $wave_picking = D('WavePicking');
                 $data = $wave_picking->create($data);
                 foreach($result['detail'] as $val){
@@ -146,7 +147,7 @@ class WavePickingLogic{
     * @param
     * $result_arr
     */
-    protected function exec_order(&$result_arr){
+    protected function exec_order(&$result_arr,$wave_id){
         //查询当前仓库的发货区的location_id
         $map['wh_id'] = session('user.wh_id');
         $map['code'] = 'PACK';
@@ -170,6 +171,7 @@ class WavePickingLogic{
                 $data['wh_id'] = session('user.wh_id');
                 $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
+                $data['is_print'] = 'OFF';
                 $wave_picking = D('WavePicking');
                 $data = $wave_picking->create($data);
                 foreach($result['detail'] as $val){
