@@ -63,9 +63,9 @@ class HttpRequest {
         if ($url_element["scheme"] == "https") {
             $this->is_ssl = true;
             $this->host_port = '443';
-        } elseif ($url_element["scheme"] != "http") {
-            throw new Exception("only support http now");
-        }
+        } //elseif ($url_element["scheme"] != "http") {
+            //throw new Exception("only support http now");
+        //}
         
         $this->host_name = $url_element['host'];
         
