@@ -8,7 +8,7 @@ class TmsController extends \Common\Controller\AuthController{
             $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
             if(empty($dist)) {
-                $this->msgReturn('0','提货失败，未找到该单据');
+                $this->msgReturn('0','查询失败，未找到该单据');
             }
             
             unset($map);
@@ -76,10 +76,16 @@ class TmsController extends \Common\Controller\AuthController{
     }
     public function pay() {
         $id = I('get.id',0);
+        if(empty($id)) {
+            $this->msgReturn('0','结算失败，提货码不能为空');
+        }
         $map['dist_id'] = $id;
         $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
         $A = A('Common/Order','Logic');
         $orders = $A->order($map);
+        if(empty($orders)) {
+            $this->msgReturn('0','结算失败，未找到该配送单中的订单。');
+        }
         foreach ($orders as $val) {
             if($val['status_cn'] != '已签收' && $val['status_cn'] != '已退货' ) {
                 if($val['status_cn'] == '已完成') {
