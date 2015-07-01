@@ -12,7 +12,7 @@ class StockOutController extends CommonController {
             '3'=>'波次中',
             '4'=>'待拣货',
             '5'=>'待复核',
-            '6'=>'己复核'  
+            //'6'=>'己复核'  
             ),
        'process_type'=>array(
             '1'=>'正常单',
@@ -183,7 +183,7 @@ class StockOutController extends CommonController {
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
-                '6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
+                //'6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
                 '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
                 
             )
