@@ -118,6 +118,18 @@ class StockOutController extends CommonController {
             'control_type' => 'datetime',     
             'value' => 'delivery_date',   
         ),
+        'stock_bill_out.status' =>    array (    
+            'title' => '出库单状态',     
+            'query_type' => 'eq',     
+            'control_type' => 'select',     
+            'value' => array(
+                        '1'=>'待生产',
+                        '3'=>'波次中',
+                        '4'=>'待拣货',
+                        '5'=>'待复核',
+                        '2'=>'已出库'
+                        ),   
+        ),
         'stock_bill_out.delivery_ampm' =>    array (    
             'title' => '送货时间',     
             'query_type' => 'eq',     
