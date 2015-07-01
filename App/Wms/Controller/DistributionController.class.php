@@ -320,8 +320,7 @@ class DistributionController extends CommonController {
         
         //获取订单id
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
-        
+        $order_ids = $D->get_order_ids_by_dis_id($get);dump($order_ids);exit;
         //拉取订单
         $Order = D('Common/Order', 'Logic');
         $result = $Order->getOrderInfoByOrderIdArr($order_ids);
@@ -398,12 +397,12 @@ class DistributionController extends CommonController {
                 foreach ($sku_info as $sku) {
                     $skucodearr[] = $sku['pro_code'];
                 }
-                foreach ($result as $kk => &$vv) {
-                    foreach ($vv['detail'] as $key => $detail_info) {
-                        if (!in_array($detail_info['sku_number'], $skucodearr)) {
-                            unset($vv['detail'][$key]);
-                        }
-                    } 
+            }
+            foreach ($result as $kk => &$vv) {
+                foreach ($vv['detail'] as $key => $detail_info) {
+                    if (!in_array($detail_info['sku_number'], $skucodearr)) {
+                        unset($vv['detail'][$key]);
+                    }
                 }
             }
             $items = array();
