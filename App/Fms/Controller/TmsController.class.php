@@ -83,16 +83,15 @@ class TmsController extends \Common\Controller\AuthController{
         foreach ($orders as $val) {
             if($val['status_cn'] != '已签收' && $val['status_cn'] != '已退货' ) {
                 if($val['status_cn'] == '已完成') {
-                    //$this->msgReturn('0','结算失败,该配送单已结算过');
+                    $this->msgReturn('0','结算失败,该配送单已结算过');
                 }
-                //$this->msgReturn('0','结算失败，该配送单含有未处理的订单');
+                $this->msgReturn('0','结算失败，该配送单含有未处理的订单');
             }
         }
         unset($map);
-        $map['status']  = '1';//已完成
-        foreach ($orders as &$val) {
+        foreach ($orders as $val) {
             $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'];    
-            foreach ($val['detail'] as &$v) {
+            foreach ($val['detail'] as $v) {
                 if($val['status_cn'] == '已签收') {
                     $val['pay_for_price'] += $v['actual_sum_price'];    
                 }
@@ -108,6 +107,7 @@ class TmsController extends \Common\Controller\AuthController{
                     $val['pay_for_price']=0;
                 }
             }
+            $map['status']  = '1';//已完成
             $map['deal_price'] = $val['pay_for_price'];
             $order_ids[] = $val['id'];
             $map['suborder_id'] = $val['id'];
@@ -115,7 +115,7 @@ class TmsController extends \Common\Controller\AuthController{
             $res = $A->set_status($map);
             unset($map);
         }
-        $this->msgReturn('1','结算成功。');
+        $this->msgReturn('1','结算成功。','',U('Tms/orders',array('id'=>$id)));
     }
 
     protected function msgReturn($res, $msg='', $data = '', $url='') {
