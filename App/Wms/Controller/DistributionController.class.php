@@ -397,12 +397,12 @@ class DistributionController extends CommonController {
                 foreach ($sku_info as $sku) {
                     $skucodearr[] = $sku['pro_code'];
                 }
-                foreach ($result as $kk => &$vv) {
-                    foreach ($vv['detail'] as $key => $detail_info) {
-                        if (!in_array($detail_info['sku_number'], $skucodearr)) {
-                            unset($vv['detail'][$key]);
-                        }
-                    } 
+            }
+            foreach ($result as $kk => &$vv) {
+                foreach ($vv['detail'] as $key => $detail_info) {
+                    if (!in_array($detail_info['sku_number'], $skucodearr)) {
+                        unset($vv['detail'][$key]);
+                    }
                 }
             }
             $items = array();
