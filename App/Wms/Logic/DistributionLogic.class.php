@@ -20,9 +20,11 @@ class DistributionLogic {
         }
         $M = M('stock_bill_out');
         
-        //$map['company_id'] = $search['company_id'];
         $map['wh_id'] = session('user.wh_id');
-        $map['line_id'] = $search['line'];
+        $map['company_id'] = $search['company_id'];
+        if (!empty($search['line'])) {
+            $map['line_id'] = $search['line'];
+        }
         if (isset($search['time'])) {
             switch ($search['time']) {
                 	case 1:
@@ -35,36 +37,158 @@ class DistributionLogic {
             $map['delivery_ampm'] = $search['time'];
         }
         $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
-        $map['process_type'] = $search['type'];
-        $map['status'] = 5; //状态 分拣完成
+        $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
+        //获取出库单
         $result = $M->where($map)->select();
         if (empty($result)) {
             $return['msg'] = '没有符合符号条件的订单';
             return $return;
         }
-        $data = array(); //订单筛选条件
+        $order_ids = array(); //订单ids
         foreach ($result as $value) {
-            $data[] = $value['refer_code'];
+            $order_ids[] = $value['refer_code'];
         }
+        
         //获取订单详情
         $order = D('Common/Order', 'Logic');
-        $order_info = $order->getOrderInfoByOrderIdArr($data);
+        $order_info = $order->getOrderInfoByOrderIdArr($order_ids);
         if ($order_info['status'] == false) {
             $return['msg'] = $order_info['msg'];
             return $return;
         }
+        
         //订单类型筛选
         foreach ($order_info['list'] as $key => $val) {
             if ($val['order_type'] != $search['type']) {
-                unset($order_info['list'][$key]);
+                //不属于所选择订单类型则去除
+                foreach ($result as $k => $v) {
+                    if ($v['refer_code'] == $val['id']) {
+                        unset($result[$k]);
+                    }
+                }
+            } else {
+                //在所选类型内则增加客服id
+                foreach ($result as $k => $v) {
+                    if ($v['refer_code'] == $val['id']) {
+                        $result[$k]['user_id'] = $val['user_id'];
+                    }
+                }
+                
             }
         }
-        $list = array();
-        $this->format_data($order_info['list']);
+        //result 中为全部复合搜索条件的出库单
+        //取出库单ID获取详情信息
+        foreach ($result as $index => &$out) {
+            //没有线路的出库单去除
+            if ($out['line_id'] <= 0) {
+                unset($result[$index]);
+            } else {
+                //获取出库单详情
+                $out['detail'] = $this->get_out_detail($out['id']);
+            }
+        }
+        //整理前端数据
+        $list = $this->format_data($result);
         $return['msg'] = '成功';
         $return['status'] = true;
-        $return['list'] = $order_info['list'];
+        $return['list'] = $list;
         return $return;
+    }
+    
+    /**
+     * 替换订单sku信息
+     */
+    public function replace_sku_info($data = array(), $dis = 0) {
+        $return = array();
+        
+        if (empty($data) || empty($dis)) {
+            return $return;
+        }
+        $M = M('stock_bill_out');
+        $det = M('stock_bill_out_detail');
+        $distri = M('stock_wave_distribution_detail');
+        $map['pid'] = $dis;
+        $detail = $distri->where($map)->select();
+        foreach ($detail as $val) {
+            $detail_ids[] = $val['bill_out_id'];
+        }
+        unset($map);
+        foreach ($data as &$value) {
+            $map['refer_code'] = $value['id'];
+            $info = $M->where($map)->select();
+            foreach ($info as $key => $v) {
+                if (!in_array($v['id'], $detail_ids)) {
+                    unset($info[$key]);
+                }
+            }
+            
+            $info = array_shift($info);
+            unset($map);
+            $map['pid'] = $info['id'];
+            $result = $det->where($map)->select();
+            $value['detail'] = $result;
+        }
+        $return = $data;
+        return $return;
+    }
+    
+    
+    /**
+     * 根据出库单ID获取详情信息
+     * @param unknown $ids
+     */
+    public function get_out_detail($ids = array()) {
+        $return = array();
+        
+        if (empty($ids)) {
+            return $return;
+        }
+        $M = M('stock_bill_out_detail');
+        $map['pid'] = array('in', $ids);
+        $map['is_deleted'] = array('eq', 0);
+        $result = $M->where($map)->select();
+        if (empty($result)) {
+            return $return;
+        }
+        foreach ($result as $value) {
+            $return[] = $value;
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * 根据配送单ID获取订单ID
+     * @param int id 配送单ID 
+     */
+    public function get_order_ids($id = 0) {
+        $return = array();
+        
+        if (empty($id)) {
+            return $return;
+        }
+        $M = M('stock_wave_distribution_detail');
+        $map['pid'] = $id;
+        $dis_id = $M->field('bill_out_id')->where($map)->select();
+        if (empty($dis_id)) {
+            return $return;
+        }
+        $ids = array();
+        foreach ($dis_id as $value) {
+            $ids[] = $value['bill_out_id'];
+        }
+        unset($map);
+        $stock = M('stock_bill_out');
+        $map['id'] = array('in', $ids);
+        $order_ids = $stock->field('refer_code')->where($map)->select();
+        if (empty($order_ids)) {
+            return $return;
+        }
+        foreach ($order_ids as $val) {
+            $return[] = $val['refer_code'];
+        }
+        
+        return array_unique($return);
     }
     
     /**
@@ -87,10 +211,10 @@ class DistributionLogic {
             $return['msg'] = '请选择订单类型';
             return $return;
         }
-        if (empty($post['line'])) {
+        /*if (empty($post['line'])) {
             $return['msg'] = '请选择线路';
-            return $return;
-        }
+            //return $return;
+        }*/
         if (empty($post['time'])) {
             $return['msg'] = '请选择时段';
             return $return;
@@ -121,20 +245,33 @@ class DistributionLogic {
      * @param unknown $data
      * @return multitype:
      */
-    public function format_data(&$data) {
-        foreach ($data as $key => &$value) {
-            $value['order_id'] = $value['id'];
-            $value['line_total'] = count($value['detail']);
-             foreach ($value['detail'] as $k => &$v) {
-                $value['sku_total'] += $v['quantity'];
-                $v['attrs'] = '';
-                foreach ($v['spec'] as $spec) {
-                    $v['attrs'] .= $spec['name'] . ':' . $spec['val'] . ',';
-                }
+    public function format_data($out = array()) {
+        $return = array();
+        
+        if (empty($out)) {
+            return $return;
+        }
+        
+        foreach ($out as $key => $value) {
+            $return[$key]['id'] = $value['id'];
+            $return[$key]['out_id'] = $value['id']; //出库单id
+            $return[$key]['user_id'] = $value['user_id']; //客服名称
+            $return[$key]['order_id'] = $value['refer_code'];//订单id
+            $return[$key]['line'] = $this->format_line($value['line_id']); //线路名称
+            $return[$key]['address'] = $value['delivery_address']; //地址
+            $return[$key]['deliver_date'] = $value['delivery_date'] . ' ' . $value['delivery_time'];//配送时间
+            $return[$key]['line_total'] = count($value['detail']); //sku总数
+            foreach ($value['detail'] as $k => $val) {
+                $return[$key]['sku_total'] += $val['order_qty']; //sku总数
+                $return[$key]['detail'][$k]['name'] = $val['pro_name']; //名称
+                $return[$key]['detail'][$k]['attrs'] = $val['pro_attrs']; //规格
+                $return[$key]['detail'][$k]['quantity'] = $val['order_qty']; //数量
             }
         }
+        
+        return $return;
     }
-    
+        
     /**
      * 根据线路id获取线路名称
      * @param number $line_id
@@ -178,16 +315,27 @@ class DistributionLogic {
             return $return;
         }
         $M = M('stock_wave_distribution_detail');
+        $bill_out = M('stock_bill_out');
         $map['pid'] = array('in', $dis_id);
+        $map['is_deleted'] = 0;
         $result = $M->field('bill_out_id')->where($map)->select();
         if (empty($result)) {
             return $return;
         }
+        $out = array();
         foreach ($result as $value) {
             //格式化数据
-            $return[] = $value['bill_out_id'];
+            $out[] = $value['bill_out_id'];
         }
-        
+        unset($map);
+        $map['id'] = array('in', $out);
+        $res = $bill_out->where($map)->select();
+        if (empty($res)) {
+            return $return;
+        }
+        foreach ($res as $val) {
+            $return[$val['id']] = $val['refer_code'];
+        }
         return $return;
     }
     
@@ -216,44 +364,46 @@ class DistributionLogic {
             foreach ($value as $id) {
                 if (empty($id)) {
                     //没有选择订单
-                    $return['msg'] = '请选择订单';
+                    $return['msg'] = '请选择出库单';
                     return $return;
                 }
-                $map['refer_code'] = $id;
-                $sta = $M->field('status')->where($map)->find();
-                if ($sta['status'] != 5) { //5 检货完成 只有状态5才可以加入配送单
-                    $return['msg'] = '订单已经加入了配送单';
+                $map['id'] = $id;
+                $sta = $M->where($map)->find();
+                if ($sta['dis_mark'] == 1 || $sta['status'] == 1 || $sta['status'] == 2) {
+                    //1 已分拨 不可再次加入配送单 状态不可为 1带生产 2已出库
+                    $return['msg'] = '此出库单已经加入了配送单';
                     return $return;
                 }
             }
-            //获取订单详细信息
-            $result = $D->getOrderInfoByOrderIdArr($value);
-            if ($result['status'] == false) {
-                $return['msg'] = $result['msg'];
-                return $return;
+            unset($map);
+            $map['id'] = array('in', $value);
+            $stock_out = $M->where($map)->select();
+            foreach ($stock_out as &$con) {
+                //获取出库单详情
+                $info = $this->get_out_detail_by_pids($con['id']);
+                $con['detail'] = $info['list'];
             }
-            $result = $result['list'];
+                       
             //创建配送单
             $data = array();
             $data['dist_code'] = get_sn('dis'); //配送单号
-            $data['total_price'] = 0; //应收金额
             $data['company_id'] = 1;
             $data['order_count'] = count($value); //订单数
             $data['status'] = 1; //状态 未发运
             $data['is_printed'] = 0; //未打印
             $i = 0;
-            foreach ($result as $val) {
-                $data['total_price'] += $val['total_price']; //总价格
+            foreach ($stock_out as $val) {
                 $data['line_count'] += count($val['detail']); //总种类
                 foreach ($val['detail'] as $v) {
-                    $data['sku_count'] += $v['quantity']; //sku总数量
-                }
+                    $data['sku_count'] += $v['order_qty']; //sku总数量
+                    $data['total_price'] += $v['price'] * $v['order_qty']; //总价格
+                } 
                 if ($i < 1) {
                     //重复数据  取一次即可
                     $data['line_id'] = $val['line_id']; //路线
-                    $data['deliver_date'] = $val['deliver_date']; //配送日期
-                    $data['deliver_time'] = $val['deliver_time']; //配送时段
-                    $data['wh_id'] = intval($val['warehouse_id']); //所属仓库
+                    $data['deliver_date'] = $val['delivery_date']; //配送日期
+                    $data['deliver_time'] = $val['delivery_ampm'] == 'am' ? 1 : 2; //配送时段
+                    $data['wh_id'] = $val['wh_id']; //所属仓库
                 }
                 $i ++;
             }
@@ -283,17 +433,17 @@ class DistributionLogic {
             }
             unset($map);
             unset($data);
-            //更新出库单状态
+            //更新出库单配送标为1 已分拨
             
-            $map['refer_code'] = array('in', $value);
-            $data['status'] = 6;
+            $map['id'] = array('in', $value);
+            $data['dis_mark'] = 1; //已分拨
             if ($M->create($data)) {
                 $M->where($map)->save();
             }
         }
        
         $return['status'] = true;
-        $reurn['msg'] = '成功';
+        $return['msg'] = '成功';
         return $return;
     }
     
@@ -306,7 +456,8 @@ class DistributionLogic {
         
         $M = M('stock_bill_out');
         //$map['type'] = 1; //类型 1销售出库
-        $map['status'] = 5; //状态 检货完成
+        $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
+        $map['dis_mark'] = array('eq', 0); //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
         
         $result = $M->where($map)->select();
@@ -317,6 +468,7 @@ class DistributionLogic {
             return $return;
         }
         $list = array();
+        //统计数量
         foreach ($result as $value) {
             if (!isset($list[$value['line_id']])) {
                 $list[$value['line_id']] = 1;
@@ -332,7 +484,7 @@ class DistributionLogic {
     }
     
     /**
-     * 根据pid获取出库单详情 可批量获取
+     * 根据出库单id获取出库单详情 可批量获取
      * @param array or int $pid 父id
      */
     public function get_out_detail_by_pids($pid) {
@@ -348,11 +500,20 @@ class DistributionLogic {
         } else {
             $map['pid'] = $pid;
         }
+        $map['is_deleted'] = array('eq', 0);
         $result = $M->where($map)->select();
         if (!empty($result)) {
             $return['msg'] = '成功';
             $return['status'] = true;
-            $return['list'] = $result;
+            if (is_array($pid)) {
+                foreach ($result as $value) {
+                    $return['list'][$value['pid']][] = $value;
+                }
+            } else {
+                foreach ($result as $value) {
+                    $return['list'][] = $value;
+                }
+            }
         }
         
         return $return;
@@ -477,6 +638,7 @@ class DistributionLogic {
         }
         //获取要导出的配送单
         $M = M('stock_wave_distribution');
+        $det = M('stock_wave_distribution_detail');
         $wh = M('warehouse');
         $map['id'] = array('in', $ids);
         $dist_list = $M->where($map)->select();
@@ -490,7 +652,6 @@ class DistributionLogic {
             return $return;
         }
         $order_info = $order_info['list'];
-        
         unset($map);
         foreach ($dist_list as &$dist) {
             //格式化仓库名
@@ -515,7 +676,25 @@ class DistributionLogic {
             $dist_arr[] = array('订单明细', '', '', '', '', '', '', '', '', '', '', '', '', '');
             //$dist_arr[] = $title_arr;
             foreach ($dist['orders'] as $order) {
+                foreach ($orderids as $k => $order_id) {
+                    //获取次订单所属出库单ID
+                    if ($order['id'] == $order_id) {
+                        $outid = $k;
+                        break;
+                    }
+                }
+                //获取出库单下sku信息
+                $info = $this->get_out_detail_by_pids($outid);
+                $info = $info['list'];
+                $sku_code = array();
+                foreach ($info as $sku_num) {
+                    $sku_code[] = $sku_num['pro_code'];
+                }
                 foreach ($order['detail'] as $detail) {
+                    if (!in_array($detail['sku_number'], $sku_code)) {
+                        //非出库单中sku则跳过
+                        continue;
+                    }
                     $specs = '';
                     foreach ($detail['spec'] as $spec) {
                         if($spec['name'] != '描述') {

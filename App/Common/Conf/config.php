@@ -47,4 +47,5 @@ return array(
     'ERROR_MESSAGE'        => '页面错误！请稍后再试～',
     'URL_404_REDIRECT'    => '',
 
+    'DACHUWANG_API_PATH'  => 'http://api.dachuwang.com',
 );

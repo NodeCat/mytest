@@ -9,6 +9,14 @@ class WavePickingLogic{
         if(empty($wave_ids) || !is_array($wave_ids)){
             return array('status'=>0,'msg'=>'参数有误！');
         }
+
+        //获取 收货区 发货区 降级存储区 加工损耗区 加工区 库内报损区 下的库位信息
+        $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+        $pack_location_infos = A('Location','Logic')->getPackLocationId($area_name);
+        foreach($pack_location_infos as $pack_location_infos){
+            $not_in_location_ids[] = $pack_location_infos['id'];
+        }
+
         foreach($wave_ids as $wave_id){
             //根据波次id查询 出库单id
             $map['pid'] = $wave_id;
@@ -58,8 +66,8 @@ class WavePickingLogic{
                     //记录SKU总数
                     $result_arr[$bill_out_info['line_id']]['pro_qty_sum'] += $bill_out_detail_info['order_qty'];
                     
-                    //检查应当从哪个库位出库
-                    $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave(array('wh_id'=>session('user.wh_id'),'pro_code'=>$bill_out_detail_info['pro_code'],'pro_qty'=>$bill_out_detail_info['order_qty']));
+                    //检查应当从哪个库位出库 并锁定库存量 assign_qty
+                    $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave(array('wh_id'=>session('user.wh_id'),'pro_code'=>$bill_out_detail_info['pro_code'],'pro_qty'=>$bill_out_detail_info['order_qty'],'not_in_location_ids'=>$not_in_location_ids));
                     
                     foreach($assign_stock_infos['data']['stock_info'] as $assign_stock_info){
                         //pro_code

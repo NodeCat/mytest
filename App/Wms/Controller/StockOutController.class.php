@@ -12,7 +12,7 @@ class StockOutController extends CommonController {
             '3'=>'波次中',
             '4'=>'待拣货',
             '5'=>'待复核',
-            '6'=>'己复核'  
+            //'6'=>'己复核'  
             ),
        'process_type'=>array(
             '1'=>'正常单',
@@ -27,7 +27,7 @@ class StockOutController extends CommonController {
             '1'=>'上午',
             '2'=>'下午'
             ),
-        'system_type'=>array(
+        'company_id'=>array(
             '1'=>'大厨',
             '2'=>'大果'
             )
@@ -40,7 +40,7 @@ class StockOutController extends CommonController {
         'total_qty' => '总件数',
         'line_id' => '线路片区',
         'status' => '出库单状态',
-        'system_type'=>'所属系统',
+        'company_id'=>'所属系统',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_date' => '送货时间',
@@ -75,7 +75,7 @@ class StockOutController extends CommonController {
                         '2'=>'缺货'
                         ),   
     	),
-        'stock_bill_out.system_type' =>    array (     
+        'stock_bill_out.company_id' =>    array (     
             'title' => '所属系统',     
             'query_type' => 'eq',     
             'control_type' => 'select',     
@@ -183,7 +183,7 @@ class StockOutController extends CommonController {
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
-                '6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
+                //'6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
                 '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
                 
             )
@@ -372,9 +372,11 @@ class StockOutController extends CommonController {
                 foreach($detail_info as $val) {
                     $data['pro_code'] = $val['pro_code'];
                     $data['pro_qty'] = $val['delivery_qty'];
+                    $data['refer_code'] = $stock_info['code'];
+                    $data['wh_id'] = $stock_info['wh_id'];
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
                     //存储此货品出库的相关内容
-                    $stock_container = D('stock_bill_out_container');
+                    /*$stock_container = D('stock_bill_out_container');
                     $container['refer_code'] = $stock_info['code'];
                     $container['pro_code'] = $val['pro_code'];
                     $container['wh_id'] = $stock_info['wh_id'];
@@ -384,7 +386,7 @@ class StockOutController extends CommonController {
                         $container['qty'] = $v['qty'];
                         $columns = $stock_container->create($container);
                         $stock_container->add();
-                    }
+                    }*/
                 }
             }
             unset($list);
