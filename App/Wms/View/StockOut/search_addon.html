@@ -65,6 +65,7 @@ $(function(){
 		param.delivery_date = $("[name = 'query[stock_bill_out.delivery_date]']").val();
 		param.delivery_ampm = $("[name = 'query[stock_bill_out.delivery_ampm]']").val();
 		param.company_id = $("[name = 'query[stock_bill_out.company_id]']").val();
+		param.status = $("[name = 'query[stock_bill_out.status]']").val();
 		
 		$.ajax({
 			url:'/StockOut/createWave',
