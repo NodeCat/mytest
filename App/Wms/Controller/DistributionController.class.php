@@ -688,4 +688,59 @@ class DistributionController extends CommonController {
         $this->assign('data', $data);
         $this->display();
     }
+    
+    /**
+     * 删除配送单
+     */
+    public function delete_dist() {
+        if (!IS_GET) {
+            $this->msgReturn(false, '未知错误');
+        }
+        $ids = I('get.id');
+        $idarr = explode(',', $ids);
+        if (count($idarr) >= 2 || count($idarr) <= 0) {
+            $this->msgReturn(false, '请选择一个配送单');
+        }
+        //配送单id
+        	$id = array_shift($idarr);
+        
+        	$M = M('stock_wave_distribution');
+        	$detail = M('stock_wave_distribution_detail');
+        	$stock = M('stock_bill_out');
+        	
+        //判断是否发运
+        	$map['id'] = $id;
+        	$result = $M->where($map)->find();
+        	if ($result['status'] != 1) {
+        	    $this->msgReturn(false, '不能删除已经发运的配送单');
+        	}
+        	//删除出库单
+        	$data['is_deleted'] = 1;
+        	if ($M->create($data)) {
+        	    $M->where($map)->save();
+        	}
+        unset($map);
+        unset($data);
+        	//删除出库单详情
+        	$map['pid'] = $id;
+        	$data['is_deleted'] = 1;
+        	if ($detail->create($data)) {
+        	    $detail->where($map)->save();
+        	}
+        	//获取出库单ID
+        	$res = $detail->where($map)->select();
+        	$bill_out_id = array();
+        	foreach ($res as $value) {
+        	    $bill_out_id[] = $value['bill_out_id'];
+        	}
+        	unset($map);
+        	unset($data);
+        	//将出库单驳回
+        	$map['id'] = array('in', $bill_out_id);
+        	$data['dis_mark'] = 0;
+        	if ($stock->create($data)) {
+        	    $stock->where($map)->save();
+        	}
+        	$this->msgReturn(true, '已删除', '', U('index'));
+    }
 }
