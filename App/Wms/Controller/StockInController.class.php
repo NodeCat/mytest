@@ -6,7 +6,8 @@ class StockInController extends CommonController {
         parent::__construct();
         if(IS_GET && ACTION_NAME == 'add'){
             $stock_type = M('stock_bill_in_type');
-            $this->stock_in_type = $stock_type->select();
+            $map['type'] = array('not in',array('ASN','MNI'));
+            $this->stock_in_type = $stock_type->where($map)->select();
         }
     }
 	protected $filter = array(

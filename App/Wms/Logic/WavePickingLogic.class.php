@@ -10,9 +10,12 @@ class WavePickingLogic{
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
-        //获取PACK区域下的库位信息
-        $pack_location_info = A('Location','Logic')->getPackLocationId();
-        $not_in_location_ids = array($pack_location_info['id']);
+        //获取 收货区 发货区 降级存储区 加工损耗区 加工区 库内报损区 下的库位信息
+        $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+        $pack_location_infos = A('Location','Logic')->getPackLocationId($area_name);
+        foreach($pack_location_infos as $pack_location_infos){
+            $not_in_location_ids[] = $pack_location_infos['id'];
+        }
 
         foreach($wave_ids as $wave_id){
             //根据波次id查询 出库单id
