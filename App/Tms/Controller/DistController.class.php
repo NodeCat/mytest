@@ -161,7 +161,7 @@ class DistController extends Controller {
                         }
                     }
                     else {
-                        $v['quantity'] = $val['delivery_qty'];
+                        $v['quantity'] = $v['delivery_qty'];
                     }
                     //从订单详情获取SKU信息
                     foreach ($val['order_info']['detail'] as $value) {
