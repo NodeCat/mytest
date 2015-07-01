@@ -20,6 +20,7 @@ class DistributionLogic {
         }
         $M = M('stock_bill_out');
         
+        $map['dis_mark'] = 0; //未加入分配单的
         $map['wh_id'] = session('user.wh_id');
         $map['company_id'] = $search['company_id'];
         if (!empty($search['line'])) {
@@ -452,8 +453,9 @@ class DistributionLogic {
         $M = M('stock_bill_out');
         //$map['type'] = 1; //类型 1销售出库
         $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
-        $map['dis_mark'] = array('eq', 0); //配送标示 0未分拨
+        $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
+        $map['line_id'] = array('gt', 0); //线路ID > 0
         
         $result = $M->where($map)->select();
         if (empty($result)) {
