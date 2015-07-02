@@ -12,7 +12,9 @@ return array(
     'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
     //应用设置
     'MODULE_ALLOW_LIST' => 'Wms',
-    'HOP_API_PATH'=>'http://s.dachuwang.com',
+    'HOP_API_PATH'      => 'http://s.dachuwang.com',
+    //正式PMS接口
+    'PMS_API'           => 'http://s.dachuwang.com',
     //模版设置
     'LAYOUT_ON'         => TRUE,
     'TMPL_CACHE_ON'   => FALSE,  // 默认开启模板编译缓存 false 的话每次都重新编译模板
@@ -45,7 +47,5 @@ return array(
     'ERROR_MESSAGE'        => '页面错误！请稍后再试～',
     'URL_404_REDIRECT'    => '',
 
-    //正式PMS接口
-    'PMS_API'            => 'http://s.dachuwang.com',
     'DACHUWANG_API_PATH'  => 'http://api.dachuwang.com',
 );
