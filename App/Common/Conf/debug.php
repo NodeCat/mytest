@@ -23,7 +23,7 @@ return array(
 
     'AUTH_KEY'            => '1&%^$@(',
 
-    'PMS_API'            => 'http://s.dachuwang.net',
+    'PMS_API'            => 'http://s.test3.dachuwang.com',
     'HOP_API_PATH'        => 'http://s.test3.dachuwang.com',
     'DACHUWANG_API_PATH'  => 'http://api.test3.dachuwang.com',
 );
