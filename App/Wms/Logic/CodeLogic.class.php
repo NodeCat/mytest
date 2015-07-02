@@ -14,13 +14,12 @@ class CodeLogic{
 
     public function getProCodeByEna13code($ena13code = '') {
         $len = strlen(trim($ena13code));
-        if($len != 13 || !$pro_code_ena13){
+        if($len != 13 || !$ena13code){
             return $ena13code;
-        }
+        } 
         $codeArr = array($ena13code);
         $pms = A('Pms','Logic');
         $pro_code_ena13 = $pms->get_SKU_by_ena_code($codeArr);
-
         if(is_array($pro_code_ena13) && $pro_code_ena13 && isset($pro_code_ena13['list'])){
 
             if( $pro_code_ena13['status'] == 0){
