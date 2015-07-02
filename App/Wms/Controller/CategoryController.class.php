@@ -13,6 +13,10 @@ class CategoryController extends CommonController {
     	$cat_data = false;
     	//父级id
 		$cat_pid = I('pid');
+        //顶级
+        if(!$cat_pid){
+            $cat_data = $cat_1;
+        }
 		//父级id的级别 top second
 		$cat_level = I('level');
 

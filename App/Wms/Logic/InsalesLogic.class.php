@@ -107,6 +107,31 @@ class InsalesLogic{
         return $returnRes;
 
     }
+
+    //进销存没有选择分类时做逻辑操作
+    public function getSkuInfoByWhIdUp($wh_id,$offset='',$limit=''){
+        $m               = M('stock');
+        $where           = array();
+        $where['status'] = 'qualified';
+        if($wh_id){
+            $where['wh_id'] = $wh_id;
+        }
+        $result = array();
+        $m->field('wh_id,pro_code,sum(stock_qty) as pro_qty')->where($where)->group('wh_id,pro_code');
+        if($limit){
+            $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
+            $count = count($m->select());
+            //echo $m->getLastSql().'wwwwwwww';
+            $res = $m2->limit($offset,$limit)->select();
+            //echo $m2->getLastSql();
+            $result['count'] = $count;
+            $result['res']   = $res;
+        }else{
+            $result = $m->select();
+        }
+        
+        return $result;
+    }
 }
 /* End of file InsalesLogic.class.php */
 /* Location: ./Application/Logic/InsalesLogic.class.php */

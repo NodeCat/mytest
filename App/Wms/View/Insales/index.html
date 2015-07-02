@@ -21,9 +21,9 @@
 		<div class="col-lg-8 col-sm-8 col-xs-8">
 		<select class="form-control" name="cat_1" id="cat_1">
 			<option value="">全部</option>
-			<volist name="cat_1" id="cat">
+			<!-- <volist name="cat_1" id="cat">
 				<option value="{$cat.id}">{$cat.name}</option>
-			</volist>
+			</volist> -->
 		</select>
 		</div>
 		</div>
@@ -80,8 +80,6 @@
 
                 var url   = "{:U('Insales/exportInsales')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+"&time="+time;
 
-                //alert(url);
-
                 window.location.href = url;
             });
             
@@ -103,6 +101,40 @@
 <script type="text/javascript">
 $(function(){
 
+    var url = '/category/getCatInfoByPid';
+    var param = {};
+    var callback = function(json){
+
+        if(json.status == 0){
+            var _all_option = '<option>全部</option>';
+            $("#cat_2").empty();
+            $("#cat_2").append(_all_option);
+            $("#cat_3").empty();
+            $("#cat_3").append(_all_option);
+            alert(json.msg);
+            return false;
+        }
+        if(json.status == 1){
+            //清空 二级 三级分类
+            var _all_option = '<option>全部</option>';
+            $("#cat_2").empty();
+            $("#cat_2").append(_all_option);
+            $("#cat_3").empty();
+            $("#cat_3").append(_all_option);
+            var _cat_info = json.data;
+            var _cat_1_option =  '<option>全部</option>';
+            for(var i = 0; i<_cat_info.length;i++){
+                //拼接cat_1的数据
+                _cat_1_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+            }
+            
+            //追加一级分类的option
+            $("#cat_1").html(_cat_1_option);
+        }
+
+    };
+    $.post(url,param,callback,'json');
+
 	$('#cat_1').change(function(){
 		//获得当前option的值
 		var _cat_1_id = $(this).val();
@@ -114,6 +146,11 @@ $(function(){
             cache: false,
             success: function(json){
             	if(json.status == 0){
+                    var _all_option = '<option>全部</option>';
+                    $("#cat_2").empty();
+                    $("#cat_2").append(_all_option);
+                    $("#cat_3").empty();
+                    $("#cat_3").append(_all_option);
             		alert(json.msg);
             		return false;
             	}
@@ -149,6 +186,9 @@ $(function(){
             cache: false,
             success: function(json){
             	if(json.status == 0){
+                    var _all_option = '<option>全部</option>';
+                    $("#cat_3").empty();
+                    $("#cat_3").append(_all_option);
             		alert(json.msg);
             		return false;
             	}

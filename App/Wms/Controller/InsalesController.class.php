@@ -17,16 +17,10 @@ class InsalesController extends CommonController {
     protected function lists() {
         //获得仓库信息
         $this->warehouse = M('warehouse')->field('id,name')->select();
-    	//获得分类
-        $pmsLogic = A('Pms','Logic');
-    	$cats = $pmsLogic->get_SKU_category();
-    	//一级分类
-    	$this->cat_1 = $cats['list']['top'];
-    	$this->cat_2 = $cats['list']['second'];
-    	$this->cat_3 = $cats['list']['second_child'];
 
         $p           = I("p",1);
         $page_size   = C('PAGE_SIZE');
+        $offset       = ($p-1)*$page_size;
         $wh_id       = (I('wh_id')== '全部')?'':I('wh_id');
         $cat_1       = I('cat_1');
         $cat_2       = I('cat_2');
@@ -37,39 +31,54 @@ class InsalesController extends CommonController {
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
         $param['second'] = ($cat_2 == '全部')?'':$cat_2;
         $param['second_child'] = ($cat_3 == '全部')?'':$cat_3;
-
-        $categoryLogic = A('Category', 'Logic');
-        $categoryChild = $categoryLogic->getPidBySecondChild($param);
-        $pro_codeArr   = array();
-        if($categoryChild){
-            //获取sku_code
-            $insalesLogic = A('Insales','Logic');
-            $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
-            //帅选sku_code
-            if($result){
-                $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
-            }
-        }
+        $insalesLogic = A('Insales','Logic');
         $array = array();
 
-        if($pro_codeArr){
+        //优化代码如果没选择分类则查本地库
+        if(!$param['top'] && !$param['second'] && !$param['second_child']){
+            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id, $offset, $page_size);
 
-            $array = $pro_codeArr;
+            if($pro_codeArr){
+
+                $array = $pro_codeArr['res'];
+            }
+
+            $count          = $pro_codeArr['count'];
+            $data           = $array;
+
+        }else{
+            $categoryLogic = A('Category', 'Logic');
+            $categoryChild = $categoryLogic->getPidBySecondChild($param);
+            $pro_codeArr   = array();
+            if($categoryChild){
+                //获取sku_code
+                $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
+                //帅选sku_code
+                if($result){
+                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+                }
+            }
+            
+            if($pro_codeArr){
+
+                $array = $pro_codeArr;
+            }
+
+            $count          = count($array);
+            $data           = array_splice($array, $offset, $page_size);
+
         }
 
-        $count          = count($array);
-        $data           = array_splice($array, ($p-1)*$page_size, $page_size);
         $maps           = array();
-
-        $maps           = $param;
+        $maps['cat_1']  = $param['top'];
+        $maps['cat_2']  = $param['second'];
+        $maps['cat_3']  = $param['second_child'];
         $maps['wh_id']  = $wh_id;
 
         $this->data = $data;
-
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);
 
-        //$this->display('Insales:index');
 	}
 
     /**
@@ -92,18 +101,25 @@ class InsalesController extends CommonController {
         $param['second'] = ($cat_2 == '全部')?'':$cat_2;
         $param['second_child'] = ($cat_3 == '全部')?'':$cat_3;
 
-        $categoryLogic = A('Category', 'Logic');
-        $categoryChild = $categoryLogic->getPidBySecondChild($param);
-        $pro_codeArr   = array();
-        if($categoryChild){
-            //获取sku_code
-            $insalesLogic = A('Insales','Logic');
-            $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
-            //帅选sku_code
-            if($result){
-                $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+        $insalesLogic = A('Insales','Logic');
+        if(!$param['top'] && !$param['second'] && !$param['second_child']){
+            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id);
+        }else{
+            $categoryLogic = A('Category', 'Logic');
+            $categoryChild = $categoryLogic->getPidBySecondChild($param);
+            $pro_codeArr   = array();
+            if($categoryChild){
+                //获取sku_code
+                $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
+                //帅选sku_code
+                if($result){
+                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+                }
             }
         }
+        
+
+
         if(!$pro_codeArr){
             $this->msgReturn(false, '导出数据为空！');
         }
