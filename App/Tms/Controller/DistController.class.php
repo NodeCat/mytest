@@ -45,7 +45,7 @@ class DistController extends Controller {
                 //$this->error = '提货失败，该配送单已过期';
             }
 
-            if(empty($this->error)){
+            if(empty($this->error)) {
                 $data['dist_id']      = $dist['id'];
                 $data['dist_code']    = $dist['dist_code'];
                 $data['mobile']       = session('user.mobile');
@@ -139,8 +139,8 @@ class DistController extends Controller {
                 $val['shop_name']    = $val['order_info']['shop_name'];
                 $val['mobile']       = $val['order_info']['mobile'];
                 $val['remarks']      = $val['order_info']['remarks'];
-                $val['status_cn']    = '已装车';
-                // $val['status_cn']    = $val['order_info']['status_cn'];
+                // $val['status_cn']    = '已签收';
+                $val['status_cn']    = $val['order_info']['status_cn'];
                 $val['total_price']  = $val['order_info']['total_price'];
                 $val['minus_amount'] = $val['order_info']['minus_amount'];
                 $val['deliver_fee']  = $val['order_info']['deliver_fee'];
@@ -150,15 +150,18 @@ class DistController extends Controller {
                 $val['user_id']      = $val['order_info']['user_id'];
 
                 $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
+                $sign_in = $M->table('tms_sign_in')->where(array('bill_out_id' => $val['id']))->find();
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         //该出库单详情对应的签收数据
-                        $sign_in = $M->table('tms_sign_in')->where(array('bill_out_detail_id' => $v['id']))->find();
-                        $v['quantity']  = $sign_in['real_sign_qty'];
-                        $v['sum_price'] = $sign_in['real_sign_qty'] * $sign_in['price_unit'];
-                        if($sign_in['measure_unit'] !== $sign_in['charge_unit']) {
-                            $v['weight'] = $sign_in['real_sign_wgt'];
-                            $v['sum_price']     = $sign_in['real_sign_wgt'] * $sign_in['price_unit'];
+                        $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
+                        $val['final_price'] = $sign_in['receivable_sum'];
+                        $val['deal_price']  = $sign_in['real_sum'];
+                        $v['quantity']  = $sign_in_detail['real_sign_qty'];
+                        $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
+                        if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
+                            $v['weight'] = $sign_in_detail['real_sign_wgt'];
+                            $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
                         }
                     }
                     else {
@@ -178,6 +181,7 @@ class DistController extends Controller {
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $orders;
+
         }
         $this->title = "客户签收";
         $this->display('tms:sorders');
@@ -205,6 +209,7 @@ class DistController extends Controller {
         $price_unit  = I('post.price_unit');
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity, $price_unit);
+        $re = array('status' => 0);
         if($re['status'] === 0) {
             $M = M('tms_sign_in');
             //该出库单签收状态
@@ -239,7 +244,7 @@ class DistController extends Controller {
                     //更新配送单详情－>配送单状态
                     $A = A('Tms/Dist','Logic');
                     $map['pid'] = $fdata['dist_id'];
-                    $map['bill_out_id'] = $refer_code;
+                    $map['bill_out_id'] = $fdata['bill_out_id'];
                     $code = $A->set_dist_status($map);
                     $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
                 }
@@ -257,7 +262,7 @@ class DistController extends Controller {
             }
             
             $status = ($code === -1) ? -1 : 0;
-            $json = array('status' => $code, 'msg' => $msg);
+            $json = array('status' => $status, 'msg' => $msg);
             //code:－1(更新失败);0(未执行更新);1(配送单详情状态更新成功);2(配送单完成)
             $this->ajaxReturn($json);
         }
@@ -267,7 +272,7 @@ class DistController extends Controller {
     //司机签收后订单回调
     public function set_order_status($refer_code, $deal_price, $quantity, $price_unit, $sign_msg) {
         $map['suborder_id'] = $refer_code;
-        $map['status']   = '5';
+        $map['status']   = '6';
         $map['deal_price'] = $deal_price;
         $map['remark'] = $sign_msg;
         $detail_ids = I('post.order_detail_id');

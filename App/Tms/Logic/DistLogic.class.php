@@ -27,14 +27,23 @@ class DistLogic{
 		$action = 'lists';
 		//wms API 获取出库单列表
 		$res = R($this->wms_api_path . $action, array($map),'Api');
-		$map['itemsPerPage'] = count($res);
-		$cA = A('Common/Order','Logic');
-		$orders = $cA->order($map);
 		//配送单关联订单信息
-		foreach ($res as &$bill) {
-			foreach ($orders as $value) {
-				if($bill['refer_code'] == $value['id']) {
-					$bill['order_info'] = $value;
+		if($res) {
+			$order_ids = array();
+			foreach ($res as $re) {
+				$order_ids[] = $re['refer_code'];
+			}
+			$map['order_ids'] = $order_ids;
+			$map['itemsPerPage'] = count($res);
+			unset($map['dist_id']);
+			$cA = A('Common/Order','Logic');
+			$orders = $cA->order($map);
+			//配送单关联订单信息
+			foreach ($res as &$bill) {
+				foreach ($orders as $value) {
+					if($bill['refer_code'] == $value['id']) {
+						$bill['order_info'] = $value;
+					}
 				}
 			}
 		}

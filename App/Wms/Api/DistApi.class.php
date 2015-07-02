@@ -35,8 +35,7 @@ class DistApi extends CommApi {
         }
         if($map['dist_id']) {
             //配送单详情查询出库单id,签收状态
-            $dist_detail = $this->model
-            ->table('stock_wave_distribution_detail')
+            $dist_detail = M('stock_wave_distribution_detail')
             ->field('bill_out_id,status')
             ->where(array('pid' => $map['dist_id']))
             ->select();
@@ -49,7 +48,7 @@ class DistApi extends CommApi {
         }
         //查询条件
         if(is_array($detail_ids)) {
-            $map['refer_code'] = array('in', $detail_ids);
+            $map['id'] = array('in', $detail_ids);
         }
         $map['is_deleted'] = 0;
         $order_conditions = $map['order'];
@@ -78,7 +77,7 @@ class DistApi extends CommApi {
             $bill_out_ids[] = $value['id'];
             foreach ($dist_detail as $v) {
                 //配送单详情签收状态
-                if ($value['refer_code'] == $v['bill_out_id']) {
+                if ($value['id'] == $v['bill_out_id']) {
                     $value['sign_status'] = $v['status'];
                 }
             }
