@@ -177,7 +177,7 @@ class LoginController extends Controller {
             }
          }
       }
-      $this->display('Common@Login/changepwd',false);
+      $this->display('Login/changepwd',false);
 
    }
 
