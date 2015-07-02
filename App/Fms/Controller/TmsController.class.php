@@ -8,7 +8,12 @@ class TmsController extends \Common\Controller\AuthController{
             $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
             if(empty($dist)) {
-                $this->msgReturn('0','查询失败，未找到该单据');
+                unset($map);
+                $map['dist_number'] = substr($id, 2);
+                $dist = $A->distInfo($map);
+                if(empty($dist)) {
+                    $this->msgReturn('0','查询失败，未找到该单据');
+                }
             }
             
             unset($map);
