@@ -32,6 +32,7 @@ class PickController extends CommonController {
       'type'              => '类型',
       'wave_id'           => '波次号',
   	  'status'			      => '状态',
+      'line_id_name'      => '线路',
   		'order_sum'         => '订单数',
   		'pro_type_sum'      => '总行数',
   		'pro_qty_sum'       => '总件数',
@@ -103,6 +104,12 @@ class PickController extends CommonController {
       $result = $m->where($map)->select();
       $this->assign('pickDetail',$result);
       parent::view();
+  }
+  protected function after_lists(&$data) {
+      $lines = A('Wave','Logic')->line();
+      foreach($data as $k => $v){
+          $data[$k]['line_id_name'] = $lines[$v['line_id']];
+      }
   }
   /**
    * 分拣单打印
