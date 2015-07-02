@@ -121,9 +121,7 @@ class InsalesLogic{
         if($limit){
             $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
             $count = count($m->select());
-            //echo $m->getLastSql().'wwwwwwww';
             $res = $m2->limit($offset,$limit)->select();
-            //echo $m2->getLastSql();
             $result['count'] = $count;
             $result['res']   = $res;
         }else{
