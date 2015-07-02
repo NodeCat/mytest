@@ -32,7 +32,9 @@
 <br/>
 <div class="col-xs-12">
 <div class="list-group">
-  <a class="list-group-item disabled">已提货配送单(点击可查看详情)</a>
+  <if condition="count($data) neq 0 ">
+    <a class="list-group-item disabled">已提货配送单(点击可查看详情)</a>
+  </if>
   <volist name="data" id="vo">
   <a href="{:U('orders','id='.$vo['id'])}" class="list-group-item list-group-item-ino activ">
   <span class="badge">共 {$vo.order_count} 订单</span>

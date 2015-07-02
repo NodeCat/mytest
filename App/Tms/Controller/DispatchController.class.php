@@ -10,7 +10,8 @@ class DispatchController extends Controller{
         'car_type'     => '车型',  
         'car_from'     => '派车平台',
         'warehouse'    => '签到仓库',
-        'created_time' => '最后签到时间',
+        'created_time' => '第一次签到时间',
+        'updated_time' => '最后签到时间',
         'line'         => '线路',
         'mark'         => '备注',
          
@@ -46,14 +47,14 @@ class DispatchController extends Controller{
             }
         }
         $this->assign('car',$this->car);
-        $list=$D->relation('TmsUser')->where($map)->group('userid')->order('created_time DESC')->select();
+        $list=$D->relation('TmsUser')->where($map)->group('userid')->order('updated_time DESC')->select();
         //把仓库id变成名字
         foreach ($list as $key => &$value) {
             $value['warehouse']=$this->car['warehouse'][$value['warehouse']];
             
         }
         $this->assign('list',$list);
-        $this->display('tms:list'); 
+        $this->display('tms:driverlist'); 
     }
 
      //导出司机信息
@@ -94,7 +95,7 @@ class DispatchController extends Controller{
             }
         }
 
-        $result = $M->relation(TRUE)->where($map)->group('userid')->order('created_time DESC')->select();
+        $result = $M->relation(TRUE)->where($map)->group('userid')->order('updated_time DESC')->select();
         //把仓库id变成名字
         foreach ($result as &$values) {
             $values['warehouse']=$this->car['warehouse'][$values['warehouse']];
