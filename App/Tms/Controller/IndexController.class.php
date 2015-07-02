@@ -529,7 +529,7 @@ class IndexController extends Controller {
                         unset($map);
                         //根据出库单详情表的id查询签收表的签收情况
                         $map['bill_out_detail_id'] = array('in', $detail_id);
-                        $sign_data = M('tms_sign_in')->where($map)->select();
+                        $sign_data = M('tms_sign_in_detail')->where($map)->select();
                         if(!empty($sign_data)){
                             for($j = 0; $j < count($sign_data); $j++){  
                                 $real_sign_qty += $sign_data[$j]['real_sign_qty'];  //累加签收表里的实际签收数量
