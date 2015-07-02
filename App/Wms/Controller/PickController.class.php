@@ -19,8 +19,9 @@ class PickController extends CommonController {
          'draft'=>'未运行',
          'picking'=>'执行中',
          'done'=>'已完成'
-        )/*,
-       'is_print'=>array(
+        ),
+       'line_id'=>array(),
+       /*'is_print'=>array(
          'ON'=>'打印',
          'OFF'=>'未打印'
         )*/
@@ -32,7 +33,7 @@ class PickController extends CommonController {
       'type'              => '类型',
       'wave_id'           => '波次号',
   	  'status'			      => '状态',
-      'line_id_name'      => '线路',
+      'line_id'           => '线路片区',
   		'order_sum'         => '订单数',
   		'pro_type_sum'      => '总行数',
   		'pro_qty_sum'       => '总件数',
@@ -71,6 +72,12 @@ class PickController extends CommonController {
                     'done'              => '已完成',
                     )
         ),
+      'stock_wave_picking.line_id'      => array (     
+                'title'                 => '路线片区',     
+                'query_type'            => 'eq',     
+                'control_type'          => 'select',     
+                'value'                 => '' 
+        ),
       /*'stock_wave_picking.is_print'       =>    array ( 
                 'title'                 => '已打印', 
                 'query_type'            => 'eq', 
@@ -78,6 +85,14 @@ class PickController extends CommonController {
                 'value'                 => 'is_print'
         ),*/
   );
+  public function __construct(){
+      parent::__construct();
+      //修改线路value值
+      $lines = A('Wave','Logic')->line();
+      //dump($lines);die;
+      $this->query['stock_wave_picking.line_id']['value'] = $lines;
+      $this->filter['line_id'] = $lines;
+  }
 	protected function before_index() {
       $this->table = array(
           'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
@@ -105,12 +120,12 @@ class PickController extends CommonController {
       $this->assign('pickDetail',$result);
       parent::view();
   }
-  protected function after_lists(&$data) {
+  /*protected function after_lists(&$data) {
       $lines = A('Wave','Logic')->line();
       foreach($data as $k => $v){
           $data[$k]['line_id_name'] = $lines[$v['line_id']];
       }
-  }
+  }*/
   /**
    * 分拣单打印
    *
