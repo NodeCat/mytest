@@ -1,0 +1,211 @@
+<block name ="searchbar">
+<form class="form-horizontal ajax table-search" action="{:U('Insales/index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
+<div class="row">
+	<div class="col-md-12">
+		<div class="row">
+
+		<div class="form-group  col-lg-3">
+		<label class="control-label col-lg-4 col-sm-4 col-xs-4">仓库</label>
+		<div class="col-lg-8 col-sm-8 col-xs-8">
+		<select class="form-control" name="wh_id" id="wh_ids">
+			<option value="">全部</option>
+			<volist name="warehouse" id="wh">
+				<option value="{$wh.id}">{$wh.name}</option>
+			</volist>
+		</select>
+		</div>
+		</div>
+
+		<div class="form-group  col-lg-3">
+		<label class="control-label col-lg-4 col-sm-4 col-xs-4">一级分类</label>
+		<div class="col-lg-8 col-sm-8 col-xs-8">
+		<select class="form-control" name="cat_1" id="cat_1">
+			<option value="">全部</option>
+		</select>
+		</div>
+		</div>
+
+		<div class="form-group  col-lg-3">
+		<label class="control-label col-lg-4 col-sm-4 col-xs-4">二级分类</label>
+		<div class="col-lg-8 col-sm-8 col-xs-8">
+		<select class="form-control" name="cat_2" id="cat_2">
+			<option value="">全部</option>
+			
+		</select>
+		</div>
+		</div>
+
+		<div class="form-group  col-lg-3">
+		<label class="control-label col-lg-4 col-sm-4 col-xs-4">三级分类</label>
+		<div class="col-lg-8 col-sm-8 col-xs-8">
+		<select class="form-control" name="cat_3" id="cat_3">
+			<option value="">全部</option>
+			
+		</select>
+		</div>
+		</div>
+
+	</div>
+	
+	<div class="form-group  col-lg-3">
+		<div class="col-lg-10 col-lg-offset-2">
+		   <button type="submit" data-href="{:U('Insales/index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
+		   <a href="{:U('Insales/index')}" id="allshow" class="btn btn-default btn-sm">显示全部</a>
+		</div>
+	</div>
+
+    <notempty name="auth['export']">
+        <div class="form-group  col-lg-1">
+            <a href="#" id='exportInsales' class="btn btn-sm btn-default btn-tool">导出</a>
+        </div>
+        <script type="text/javascript">
+        $(function(){
+            $("#allshow").removeClass('active');
+            $(document).on('click','#exportInsales',function(msg){
+
+                var wh_id = ($('#wh_ids').val() == '全部')?'':$('#wh_ids').val();
+
+                var cat_1 = ($('#cat_1').val() == '全部')?'':$('#cat_1').val();
+
+                var cat_2 = ($('#cat_2').val() == '全部')?'':$('#cat_2').val();
+
+                var cat_3 = ($('#cat_3').val() == '全部')?'':$('#cat_3').val();
+
+                var d = new Date();
+
+                var time = d.getTime();
+
+                var url   = "{:U('Insales/exportInsales')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+"&time="+time;
+
+                window.location.href = url;
+            });
+            
+        });
+        </script>
+    </notempty>
+	
+</div>
+<div class="clearfix"></div>
+</form>
+</block>
+
+<block name ="list">
+<div class="table-content col-lg-12 col-sm-12 col-xs-12" id="table-content">
+  <include file="Insales:list"/>
+</div>
+</block>
+
+<script type="text/javascript">
+$(function(){
+
+    var url = '/category/getCatInfoByPid';
+    var param = {};
+    var callback = function(json){
+
+        if(json.status == 0){
+            var _all_option = '<option>全部</option>';
+            $("#cat_2").empty();
+            $("#cat_2").append(_all_option);
+            $("#cat_3").empty();
+            $("#cat_3").append(_all_option);
+            alert(json.msg);
+            return false;
+        }
+        if(json.status == 1){
+            //清空 二级 三级分类
+            var _all_option = '<option>全部</option>';
+            $("#cat_2").empty();
+            $("#cat_2").append(_all_option);
+            $("#cat_3").empty();
+            $("#cat_3").append(_all_option);
+            var _cat_info = json.data;
+            var _cat_1_option =  '<option>全部</option>';
+            for(var i = 0; i<_cat_info.length;i++){
+                //拼接cat_1的数据
+                _cat_1_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+            }
+            
+            //追加一级分类的option
+            $("#cat_1").html(_cat_1_option);
+        }
+
+    };
+    $.post(url,param,callback,'json');
+
+	$('#cat_1').change(function(){
+		//获得当前option的值
+		var _cat_1_id = $(this).val();
+		//查询子分类信息
+		$.ajax({
+            url: '/category/getCatInfoByPid?pid='+_cat_1_id+'&level=top',
+            dataType: "json",
+            type: "GET",
+            cache: false,
+            success: function(json){
+            	if(json.status == 0){
+                    var _all_option = '<option>全部</option>';
+                    $("#cat_2").empty();
+                    $("#cat_2").append(_all_option);
+                    $("#cat_3").empty();
+                    $("#cat_3").append(_all_option);
+            		alert(json.msg);
+            		return false;
+            	}
+            	if(json.status == 1){
+            		//清空 二级 三级分类
+            		var _all_option = '<option>全部</option>';
+            		$("#cat_2").empty();
+            		$("#cat_2").append(_all_option);
+            		$("#cat_3").empty();
+            		$("#cat_3").append(_all_option);
+            		var _cat_info = json.data;
+            		var _cat_2_option = '';
+            		for(var i = 0; i<_cat_info.length;i++){
+            			//拼接cat_2的数据
+            			_cat_2_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+            		}
+            		
+            		//追加二级分类的option
+            		$("#cat_2").append(_cat_2_option);
+            	}
+            }
+        });
+	});
+
+	$('#cat_2').change(function(){
+		//获得当前option的值
+		var _cat_2_id = $(this).val();
+		//查询子分类信息
+		$.ajax({
+            url: '/category/getCatInfoByPid?pid='+_cat_2_id+'&level=second',
+            dataType: "json",
+            type: "GET",
+            cache: false,
+            success: function(json){
+            	if(json.status == 0){
+                    var _all_option = '<option>全部</option>';
+                    $("#cat_3").empty();
+                    $("#cat_3").append(_all_option);
+            		alert(json.msg);
+            		return false;
+            	}
+            	if(json.status == 1){
+            		//清空 二级 三级分类
+            		var _all_option = '<option>全部</option>';
+            		$("#cat_3").empty();
+            		$("#cat_3").append(_all_option);
+            		var _cat_info = json.data;
+            		var _cat_3_option = '';
+            		for(var i = 0; i<_cat_info.length;i++){
+            			//拼接cat_2的数据
+            			_cat_3_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+            		}
+            		
+            		//追加二级分类的option
+            		$("#cat_3").append(_cat_3_option);
+            	}
+            }
+        });
+	});
+});
+</script>
