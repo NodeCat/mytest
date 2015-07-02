@@ -142,7 +142,19 @@ class PickController extends CommonController {
       }else{
         $this->error('操作失败！');
       }
-
+      
+      //结果集处理
+      foreach ($items as &$val) {
+          foreach ($val['detail'] as $k => $v) {
+              if (!isset($val['detail'][$v['pro_code']])) {
+                  $val['detail'][$v['pro_code']] = $v;
+                  unset($val['detail'][$k]);
+              } else {
+                  $val['detail'][$v['pro_code']]['pro_qty'] += $v['pro_qty'];
+                  unset($val['detail'][$k]);
+              }
+          }
+      }
       $this->assign('list',$items);
 
       $this->display('Pick::pickPrint');  

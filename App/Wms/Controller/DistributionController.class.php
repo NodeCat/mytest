@@ -321,7 +321,6 @@ class DistributionController extends CommonController {
         //获取订单id
         $D = D('Distribution', 'Logic');
         $order_ids = $D->get_order_ids_by_dis_id($get);
-        
         //拉取订单
         $Order = D('Common/Order', 'Logic');
         $result = $Order->getOrderInfoByOrderIdArr($order_ids);
@@ -398,12 +397,12 @@ class DistributionController extends CommonController {
                 foreach ($sku_info as $sku) {
                     $skucodearr[] = $sku['pro_code'];
                 }
-                foreach ($result as $kk => &$vv) {
-                    foreach ($vv['detail'] as $key => $detail_info) {
-                        if (!in_array($detail_info['sku_number'], $skucodearr)) {
-                            unset($vv['detail'][$key]);
-                        }
-                    } 
+            }
+            foreach ($result as $kk => &$vv) {
+                foreach ($vv['detail'] as $key => $detail_info) {
+                    if (!in_array($detail_info['sku_number'], $skucodearr)) {
+                        unset($vv['detail'][$key]);
+                    }
                 }
             }
             $items = array();
@@ -538,6 +537,7 @@ class DistributionController extends CommonController {
             if (!empty($confirm)) {
                 //继续操作
                 //删除此配送单下的这些出库单
+                $map['bill_out_id'] = array('in', $unpass_code);
                 $map['pid'] = $result['id'];
                 $data['is_deleted'] = 1; //已删除
                 if ($det->create($data)) {
@@ -554,6 +554,24 @@ class DistributionController extends CommonController {
                 }
                 unset($map);
                 unset($data);
+                //更新配送单中总件数 总条数 总行数 总金额
+                $sur_detail = $D->get_out_detail($pass_ids); //通过审核的sku详情
+                $total['order_count'] = count($pass_ids); //总单数
+                $total['sku_count'] = 0; //总件数
+                $total['line_count'] = 0; //总行数
+                $total['total_price'] = 0; //总金额
+                $det_merge = array();
+                foreach ($sur_detail as $sur) {
+                    $total['sku_count'] += $sur['order_qty'];
+                    $total['total_price'] += $sur['order_qty'] * $sur['price'];
+                    $det_merge[$sur['pro_code']] = null; 
+                }
+                $total['line_count'] = count($det_merge);
+                if ($M->create($total)) {
+                    //更新操作
+                    $map['id'] = $result['id'];
+                    $M->where($map)->save();
+                }
             } else {
                 $unpass_ids .= ',' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids));
@@ -562,7 +580,6 @@ class DistributionController extends CommonController {
         //统计SKU数量扣减库存
         //获取出库详情
         $sku_detail = $D->get_out_detail($pass_ids);
-        //$sku_detail = $sku_detail['list'];
 
         //统计
         $merg = array(); //sku统计结果
@@ -645,7 +662,7 @@ class DistributionController extends CommonController {
         }
         unset($map);
 
-        $this->msgReturn(true, '已完成', '', '', U('over'));
+        $this->msgReturn(true, '已完成', '', U('over'));
     }
     
     
@@ -669,5 +686,60 @@ class DistributionController extends CommonController {
         $data['count'] = count($res);
         $this->assign('data', $data);
         $this->display();
+    }
+    
+    /**
+     * 删除配送单
+     */
+    public function delete_dist() {
+        if (!IS_GET) {
+            $this->msgReturn(false, '未知错误');
+        }
+        $ids = I('get.id');
+        $idarr = explode(',', $ids);
+        if (count($idarr) >= 2 || count($idarr) <= 0) {
+            $this->msgReturn(false, '请选择一个配送单');
+        }
+        //配送单id
+        	$id = array_shift($idarr);
+        
+        	$M = M('stock_wave_distribution');
+        	$detail = M('stock_wave_distribution_detail');
+        	$stock = M('stock_bill_out');
+        	
+        //判断是否发运
+        	$map['id'] = $id;
+        	$result = $M->where($map)->find();
+        	if ($result['status'] != 1) {
+        	    $this->msgReturn(false, '不能删除已经发运的配送单');
+        	}
+        	//删除出库单
+        	$data['is_deleted'] = 1;
+        	if ($M->create($data)) {
+        	    $M->where($map)->save();
+        	}
+        unset($map);
+        unset($data);
+        	//删除出库单详情
+        	$map['pid'] = $id;
+        	$data['is_deleted'] = 1;
+        	if ($detail->create($data)) {
+        	    $detail->where($map)->save();
+        	}
+        	//获取出库单ID
+        	$res = $detail->where($map)->select();
+        	$bill_out_id = array();
+        	foreach ($res as $value) {
+        	    $bill_out_id[] = $value['bill_out_id'];
+        	}
+        	unset($map);
+        	unset($data);
+        	//将出库单驳回
+        	$map['id'] = array('in', $bill_out_id);
+        	$data['dis_mark'] = 0;
+        	if ($stock->create($data)) {
+        	    $stock->where($map)->save();
+        	}
+        	$this->msgReturn(true, '已删除', '', U('index'));
     }
 }

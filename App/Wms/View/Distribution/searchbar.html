@@ -89,7 +89,7 @@
    <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
    <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="print-page">打印</a>
    <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-dis">导出三联单</a>
-   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-disbution">导出配送单</a>
+   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="delete_dist">删除配送单</a>
 </div>
 </div>
    <eq name="search_addon" value="TRUE">
@@ -143,10 +143,15 @@
 			 var url = "/Distribution/exportdis?id="+id;
 			 location.href = url;
 		 });
-		 $(document).on('click','#export-disbution',function(){
+		 /*$(document).on('click','#export-disbution',function(){
 			 var ids = getChecked();
 			 var url = "/Distribution/export_distribution?id="+ids;
 			 location.href = url;
+		 });*/
+		 $(document).on('click','#delete_dist',function(){
+			 var ids = getChecked();
+			 var url = "/Distribution/delete_dist?id="+ids;
+			 location.href = url;
 		 });
-	})
+	});
 </script>

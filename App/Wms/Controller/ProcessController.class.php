@@ -309,6 +309,12 @@ class ProcessController extends CommonController {
         //获得物料清单
         $map['p_pro_code'] = $process['p_pro_code'];
         $process_relation = M('erp_process_sku_relation')->where($map)->select();
+        //获取去所属系统
+        $company_id = 0;
+        foreach ($process_relation as $company) {
+            $company_id = $company['company_id'];
+            break;
+        }
         unset($map);
 
         if($process['status'] != 'confirm'){
@@ -327,13 +333,103 @@ class ProcessController extends CommonController {
              * 父SKU创建入库及入库详情单
              * 子SKU创建出库及出库详情单
              */
+            //-----------wms start------
+            //写入wms入库单
+            //获取入库类型id
+            $name = 'wms_pro_in'; //入库类型名称
+            $stock_type = D('stock_bill_in_type');
+            $numbs = M('numbs');
+            $map['name'] = $name;
+            $type_info = $numbs->field('prefix')->where($map)->find();
+            $id_info = $stock_type->field('id')->where(array('type' => $type_info['prefix']))->find();
+            unset($map);
+            
+            $stock_in = D('StockIn');
+            $param = $process;
+            $param['id'] = $id_info['id'];
+            $param['name'] = $name;
+            $param['company_id'] = $company_id;
+            $data = $Logic->make_process_in_stock_wms(21, $param);
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
+            }
+            $data = $data['data'];
+            //入库单号
+            $common_in_code = $data['code'];
+            if ($stock_in->create($data)) {
+                $pid = $stock_in->add();
+            }
+            if (!$pid) {
+                $this->msgReturn(false,'wms入库单生成失败');
+            }
+            $refer_code = $data['refer_code'];
+            unset($param);
+            unset($data);
+            
+            //创建wms入库详情单数据
+            $stock_in_detail = M('stock_bill_in_detail');
+            $param = $process;
+            $param['pid'] = $pid;
+            $param['pro_code'] = $process['p_pro_code'];
+            $param['code'] = $refer_code;
+            $param['expected_qty'] = $process['plan_qty'];
+            $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '数据创建失败');
+            }
+            $data = $data['data'];
+            if ($stock_in_detail->create($data)) {
+                $affect = $stock_in_detail->add();
+            }
+            if (!affect) {
+                $this->msgReturn(false,'详情写入失败');
+            }
+            unset($pid);
+            unset($affect);
+            unset($data);
+            unset($param);
+            
+            //创建出库数据
+            $data['biz_type'] = $company_id;//所属系统
+            //查询仓库code
+            $wh = M('warehouse');
+            $code_arr = $wh->field('code')->where(array('id' => $process['wh_id']))->find();
+            $data['picking_type_id'] = $code_arr['code']; //所属仓库
+            $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
+            $data['return_type'] = true; //定义接口不输出数据
+            $data['refer_code'] = $process['code']; //关联单号 ＝＝加工单号
+            foreach ($process_relation as $v) {
+                //出库sku
+                $data['product_list'][] = array(
+                        'product_code' => $v['c_pro_code'], //sku编号
+                        'qty' => $v['ratio'] * $process['plan_qty'], //出库量
+                );
+            }
+            //创建API对象
+            $API = new \Wms\Api\StockOutApi();
+            //写入出库单
+            $_POST = array();
+            $_POST = $data;
+            //调用stockout方法自动生成出库单 获取出库单号
+            $back_code = $API->stockout();
+            if (!$back_code) {
+                $this->msgReturn(false, '出库单写入失败');
+            }
+            //-----------wms end-------------
+            
+            
+            unset($pid);
+            unset($affect);
+            unset($data);
+            unset($param);
+            unset($map);
             //-----erp start-----
             
             /**
              *  写入加工入库单 父SKU
              */
             $process_in = D('ProcessIn');
-            
+            $process['common_in_code'] = $common_in_code; //出库单号
             $data = $Logic->make_process_in_stock('parpare', $process);
             if ($data['status'] == false) {
                 $this->msgReturn(false, '创建数据失败');
@@ -372,6 +468,7 @@ class ProcessController extends CommonController {
             
             //写入加工出库单 子SKU
             $process_out = D('ProcessOut');
+            $process['back_code'] = $back_code; //出库单号
             $data = $Logic->make_process_out_stock('parpare', $process);
             if ($data['status'] == false) {
                 $this->msgReturn(false, '创建数据失败');
@@ -388,9 +485,9 @@ class ProcessController extends CommonController {
             $process_out_detail = M('erp_process_out_detail');
             $param = $process;
             $param['pid'] = $pid;
-            $company_id = 1;
+           // $company_id = 1;
             foreach($process_relation as $k => $val){
-                $company_id = $val['company_id'];
+                //$company_id = $val['company_id'];
                 $param['pro_code'] = $val['c_pro_code'];
                 $param['plan_qty'] = $process['plan_qty'] * $val['ratio'];
                 $data = $Logic->make_process_out_stock_detail('prepare', $param);
@@ -409,94 +506,7 @@ class ProcessController extends CommonController {
             
             //-----------erp end--------
             
-            //-----------wms start------
-            //写入wms入库单
-            //获取入库类型id
-            $name = 'wms_pro_in'; //入库类型名称
-            $stock_type = D('stock_bill_in_type');
-            $numbs = M('numbs');
-            $map['name'] = $name;
-            $type_info = $numbs->field('prefix')->where($map)->find();
-            $id_info = $stock_type->field('id')->where(array('type' => $type_info['prefix']))->find();
-            unset($map);
             
-            $stock_in = D('StockIn');
-            $param = $process;
-            $param['id'] = $id_info['id'];
-            $param['name'] = $name;
-            $param['company_id'] = $company_id;
-            $data = $Logic->make_process_in_stock_wms(21, $param);
-            if ($data['status'] == false) {
-                $this->msgReturn(false, '创建数据失败');
-            }
-            $data = $data['data'];
-            if ($stock_in->create($data)) {
-                $pid = $stock_in->add();
-            }
-            if (!$pid) {
-                $this->msgReturn(false,'wms入库单生成失败');
-            }
-            $refer_code = $data['refer_code'];
-            unset($param);
-            unset($data);
-            
-           //创建wms入库详情单数据
-            $stock_in_detail = M('stock_bill_in_detail');
-            $param = $process;
-            $param['pid'] = $pid;
-            $param['pro_code'] = $process['p_pro_code'];
-            $param['code'] = $refer_code;
-            $param['expected_qty'] = $process['plan_qty'];
-            $data = $Logic->make_process_in_stock_wms_detail('parpare', $param);
-            if ($data['status'] == false) {
-                $this->msgReturn(false, '数据创建失败');
-            }
-            $data = $data['data'];
-            if ($stock_in_detail->create($data)) {
-                $affect = $stock_in_detail->add();
-            }
-            if (!affect) {
-                $this->msgReturn(false,'详情写入失败');
-            }
-            unset($pid);
-            unset($affect);
-            unset($data);
-            unset($param);
-            
-            //创建出库数据
-            $data['biz_type'] = $company_id;//所属系统
-            //查询仓库code
-            $wh = M('warehouse');
-            $code_arr = $wh->field('code')->where(array('id' => $process['wh_id']))->find();
-            $data['picking_type_id'] = $code_arr['code']; //所属仓库
-            $data['stock_out_type'] = 'MNO'; //出库类型 加工出库
-            $data['return_type'] = true; //定义接口不输出数据
-            $data['refer_code'] = $process['code']; //关联单号 ＝＝加工单号
-            foreach ($process_relation as $v) {
-                //出库sku
-                $data['product_list'][] = array(
-                	    'product_code' => $v['c_pro_code'], //sku编号
-                    'qty' => $v['ratio'] * $process['plan_qty'], //出库量
-                );
-            }
-            //创建API对象
-            $API = new \Wms\Api\StockOutApi();
-            //写入出库单
-            $_POST = array();
-            $_POST = $data;
-            //调用stockout方法自动生成出库单
-            $back = $API->stockout();
-            if ($back == false) {
-                $this->msgReturn(false, '出库单写入失败');
-            }
-            //-----------wms end-------------
-            
-            
-            unset($pid);
-            unset($affect);
-            unset($data);
-            unset($param);
-            unset($map);
             //更新状态
             $map['id'] = I('id');
             $data['status'] = 'pass'; //批准
@@ -509,83 +519,7 @@ class ProcessController extends CommonController {
              * 父SKU创建出库及出库详情单
              * 子SKU创建入库及入库详情单
              */
-            //--------------erp start-------
             
-            //写入加工出库单 父SKU
-            $process_out = D('ProcessOut');
-            $data = $Logic->make_process_out_stock('parpare', $process);
-            if ($data['status'] == false) {
-                $this->msgReturn(false, '创建数据失败');
-            }
-            $data = $data['data'];
-            if ($process_out->create($data)) {
-                $pid = $process_out->add();
-            }
-            if (!$pid) {
-                $this->msgReturn(false,'加工出库单写入失败');
-            }
-            unset($data);
-            //写入加工出库单详情 父SKU详情
-            $process_out_detail = M('erp_process_out_detail');
-            $param = $process;
-            $param['pid'] = $pid;
-            $param['pro_code'] = $process['p_pro_code'];
-            $data = $Logic->make_process_out_stock_detail('prepare', $param);
-            if ($data['status'] == false) {
-                $this->msgReturn(false, '创建数据失败');
-            }
-            $data = $data['data'];
-            if ($process_out_detail->create($data)) {
-                $process_out_detail->add();
-            }
-            unset($pid);
-            unset($affect);
-            unset($data);
-            unset($param);
-            
-            //写入加工入库单 子SKU
-            $process_in = D('ProcessIn');
-            $Logic = D('Process', 'Logic');
-            $data = $Logic->make_process_in_stock('parpare', $process);
-            if ($data['status'] == false) {
-                $this->msgReturn(false, '创建数据失败');
-            }
-            $data = $data['data'];
-            if ($process_in->create($data)) {
-                $pid = $process_in->add();
-            }
-            if (!$pid) {
-                $this->msgReturn(false,'加工入库单生成失败');
-            }
-            unset($data);
-            //写入加工入库单详情 子SKU
-            $process_in_detail = M('erp_process_in_detail');
-            
-            $param = $process;
-            $param['pid'] = $pid;
-            foreach ($process_relation as $val) {
-                $company_id = $val['company_id'];
-                $param['pro_code'] = $val['c_pro_code'];
-                $param['plan_qty'] = $process['plan_qty'] * $val['ratio'];
-                $data = $Logic->make_process_in_stock_detail('parpare', $param);
-                if ($data['status'] == false) {
-                    $this->msgReturn(false, '数据创建失败');
-                }
-                $data = $data['data'];
-                if ($process_in_detail->create($data)) {
-                    $affect = $process_in_detail->add();
-                }
-                if (!affect) {
-                    $this->msgReturn(false,'详情写入失败');
-                }
-                
-            }
-            unset($pid);
-            unset($affect);
-            unset($data);
-            unset($param);
-            
-            //-------------erp end---------
             //-------------wms start-------
             
             //写入wms入库单
@@ -608,6 +542,8 @@ class ProcessController extends CommonController {
                 $this->msgReturn(false, '数据创建失败');
             }
             $data = $data['data'];
+            //入库单号
+            $common_in_code = $data['code'];
             if ($stock_in->create($data)) {
                 $pid = $stock_in->add();
             }
@@ -653,8 +589,8 @@ class ProcessController extends CommonController {
             $data['refer_code'] = $process['code']; //关联单号 ＝＝加工单号
             //出库sku
             $data['product_list'][] = array(
-            	    'product_code' => $process['p_pro_code'], //sku编号
-                'qty' => $process['plan_qty'], //出库量
+                    'product_code' => $process['p_pro_code'], //sku编号
+                    'qty' => $process['plan_qty'], //出库量
             );
             //创建API对象
             $API = new \Wms\Api\StockOutApi();
@@ -662,14 +598,96 @@ class ProcessController extends CommonController {
             $_POST = array();
             $_POST = $data;
             //调用stockout方法自动生成出库单
-            $API->stockout();
-            
+            $back_code = $API->stockout();
+            if (!$back_code) {
+                $this->msgReturn(false, '出库单写入失败');
+            }            
             //-----------wms end-------------
             unset($pid);
             unset($affect);
             unset($data);
             unset($param);
+            //--------------erp start-------
+            
+            //写入加工出库单 父SKU
+            $process_out = D('ProcessOut');
+            $process['back_code'] = $back_code;
+            $data = $Logic->make_process_out_stock('parpare', $process);
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
+            }
+            $data = $data['data'];
+            if ($process_out->create($data)) {
+                $pid = $process_out->add();
+            }
+            if (!$pid) {
+                $this->msgReturn(false,'加工出库单写入失败');
+            }
+            unset($data);
+            //写入加工出库单详情 父SKU详情
+            $process_out_detail = M('erp_process_out_detail');
+            $param = $process;
+            $param['pid'] = $pid;
+            $param['pro_code'] = $process['p_pro_code'];
+            $data = $Logic->make_process_out_stock_detail('prepare', $param);
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
+            }
+            $data = $data['data'];
+            if ($process_out_detail->create($data)) {
+                $process_out_detail->add();
+            }
+            unset($pid);
+            unset($affect);
+            unset($data);
+            unset($param);
+            
+            //写入加工入库单 子SKU
+            $process_in = D('ProcessIn');
+            $Logic = D('Process', 'Logic');
+            $process['common_in_code'] = $common_in_code;
+            $data = $Logic->make_process_in_stock('parpare', $process);
+            if ($data['status'] == false) {
+                $this->msgReturn(false, '创建数据失败');
+            }
+            $data = $data['data'];
+            if ($process_in->create($data)) {
+                $pid = $process_in->add();
+            }
+            if (!$pid) {
+                $this->msgReturn(false,'加工入库单生成失败');
+            }
+            unset($data);
+            //写入加工入库单详情 子SKU
+            $process_in_detail = M('erp_process_in_detail');
+            
+            $param = $process;
+            $param['pid'] = $pid;
+            foreach ($process_relation as $val) {
+                $company_id = $val['company_id'];
+                $param['pro_code'] = $val['c_pro_code'];
+                $param['plan_qty'] = $process['plan_qty'] * $val['ratio'];
+                $data = $Logic->make_process_in_stock_detail('parpare', $param);
+                if ($data['status'] == false) {
+                    $this->msgReturn(false, '数据创建失败');
+                }
+                $data = $data['data'];
+                if ($process_in_detail->create($data)) {
+                    $affect = $process_in_detail->add();
+                }
+                if (!affect) {
+                    $this->msgReturn(false,'详情写入失败');
+                }
+                
+            }
+            unset($pid);
+            unset($affect);
+            unset($data);
+            unset($param);
             unset($map);
+            
+            //-------------erp end---------
+           
             //更新状态
             $map['id'] = I('id');
             $data['status'] = 'pass'; //批准

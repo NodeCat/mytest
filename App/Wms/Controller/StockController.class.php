@@ -126,6 +126,7 @@ class StockController extends CommonController {
 			$location_name = I('area');
 			if(!empty($location_name)){
 				$map_tmp['name'] = $location_name;
+				$map_tmp['wh_id'] = session('user.wh_id');
 				$location_id_by_area = M('Location')->where($map_tmp)->getField('id');
 				unset($map_tmp);
 				//根据pid（区域id）查找对应的库位id
@@ -138,6 +139,7 @@ class StockController extends CommonController {
 			if(!empty($location_code)){
 				//根据location.code 查询对应的库位id
 				$location_map['code'] = array('LIKE',$location_code.'%');
+				$location_map['wh_id'] = session('user.wh_id');
 				$location_ids_by_code = M('Location')->where($location_map)->getField('id',true);
 				if(empty($location_ids_by_code)){
 					$location_ids_by_code = array(-1);

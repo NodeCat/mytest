@@ -3,6 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class StockBillOutContainerModel extends Model {
     
+    protected $insertFields = array('id','refer_code','pro_code','batch','wh_id','location_id', 'qty', 'created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('id','refer_code','pro_code','batch','wh_id','location_id', 'qty', 'created_user','created_time','updated_user','updated_time','is_deleted');
     public $tableName = 'stock_bill_out_container'; 
     protected $readonlyField = array('id');
 
