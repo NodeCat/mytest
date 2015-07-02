@@ -13,8 +13,8 @@ namespace Wms\Logic;
 class CodeLogic{
 
     public function getProCodeByEna13code($ena13code = '') {
-        $len = strlen(trim($ena13code));
-        if($len != 13 || !$ena13code){
+        $ena13code = trim($ena13code);
+        if(!$ena13code){
             return $ena13code;
         } 
         $codeArr = array($ena13code);
