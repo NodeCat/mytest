@@ -296,6 +296,14 @@
                 </div>
               </case>
             </switch>
+            <!-- 打印小票 -->
+            <div class="panel-footer">
+                <div class="input-group">
+                        <div class="col-xs-12">
+                                <a class="btn btn-primary btn-block" id="btn-print">打印小票</a>
+                        </div>
+                </div>
+            </div>
           </form>
         </div>
     </volist>
@@ -307,6 +315,20 @@
     margin-bottom: 0px; }
   </style>
   <script type="text/javascript">
+
+    function print(printStr){
+      if(typeof HostApp == "undefined") {
+        alert('使用打印功能请您先下载大厨网配送app.');
+      }
+      else {
+        if(!printStr) {
+            HostApp.toast('打印内容不能为空');
+            return;
+          }
+        HostApp.print(printStr);
+      }
+    }
+
     function goToGaodeMap(lat, lng) {
       if (typeof HostApp == "undefined") {
         alert('使用导航功能请您先下载大厨网配送app.');
@@ -452,7 +474,12 @@
         });
       });
     });
-
+    
+    $('#btn-print').on('click',function(){
+        var printStr = {$printStr};
+        print(printStr);
+    })
+    
     function check(x) {
       var val = $(x).children('#show').text();
       if (val == '点击展开') {
