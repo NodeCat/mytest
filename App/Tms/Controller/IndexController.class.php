@@ -324,12 +324,13 @@ class IndexController extends Controller {
                 $this->display('tms:orders');
                 exit();
             }
-            
+            $this->dist = $res;
             $map['dist_id'] = $res['dist_id'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
-            $orders = $A->order($map);
-            foreach ($orders as &$val) {
+            $orderList = $A->order($map);
+            $this->orderCount = count($orderList);
+            foreach ($orderList as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
                 switch ($val['pay_status']) {
@@ -357,7 +358,7 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
-                
+                $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
         }
