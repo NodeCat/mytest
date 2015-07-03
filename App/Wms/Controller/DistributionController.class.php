@@ -1,6 +1,7 @@
 <?php
 namespace Wms\Controller;
 use Think\Controller;
+use Boris\ExportInspector;
 class DistributionController extends CommonController {
     
     protected $filter = array(
@@ -182,25 +183,6 @@ class DistributionController extends CommonController {
         $result = $result['list'];
         $data = array();
         foreach ($result as $value) {
-            switch ($value['pay_type']) {
-            	   case 0:
-            	       $value['pay_type'] = '货到付款';
-            	       break;
-            	   case 1:
-            	       $value['pay_type'] = '微信支付';
-            	       break;
-            }
-            switch ($value['pay_status']) {
-            	   case -1:
-            	       $value['pay_status'] = '支付失败';
-            	       break;
-            	   case 0:
-            	       $value['pay_status'] = '未支付';
-            	       break;
-            	   case 1:
-            	       $value['pay_status'] = '已支付';
-            	       break;
-            }
             //筛选sku
             foreach ($order_ids as $sku_id => $order_id) {
                 $sku_info = $D->get_out_detail_by_pids($sku_id);
@@ -407,10 +389,19 @@ class DistributionController extends CommonController {
             }
             $items = array();
             $items['dist_code'] = $dis['dist_code'];
-            $items['line_name'] = $D->format_line($dis['line_id']);
+            //组合线路片区
+            $dis['line_id'] = explode(',', $dis['line_id']);
+            foreach ($dis['line_id'] as $line_id) {
+                $items['line_name'] .= $D->format_line($line_id) . '/';
+            }
+            $items['line_name'] = rtrim($items['line_name'], '/');
+            
             $user_ids = array();
+            $map_pos = array();
             foreach ($result as $value) {
                 $user_ids[$value['user_id']] = null;
+                //获取地图坐标
+                $map_pos[] = json_decode($value['geo'], true);
             }
             $items['user_count'] = count($user_ids); //总客户数量
             $items['orders_length'] = $dis['order_count'];  //总订单数
@@ -423,8 +414,8 @@ class DistributionController extends CommonController {
             $items['deliver_date'] = $dis['deliver_date']; //发车时间
             $items['deliver_time'] = $dis['deliver_time']; //时段
             $items['orders'] = $result; //订单列表
+            $items['map_pos'] = $map_pos;
             $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=' . $dis['dist_code']; //条码
-            
             $merge = array();
             foreach ($result as $val) {
                 $merge = array_merge($merge, $val['detail']);
@@ -665,7 +656,9 @@ class DistributionController extends CommonController {
         $this->msgReturn(true, '已完成', '', U('over'));
     }
     
-    
+    /**
+     * 发运异常显示
+     */
     public function unpass() {
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
@@ -741,5 +734,101 @@ class DistributionController extends CommonController {
         	    $stock->where($map)->save();
         	}
         	$this->msgReturn(true, '已删除', '', U('index'));
+    }
+    
+    /**
+     * 创建配送单波此
+     */
+    public function create_wave() {
+        if (!IS_GET) {
+            $this->msgReturn(false, '未知错误');
+        }
+        $get = I('get.id');
+        $idarr = explode(',', $get);
+        if (empty($idarr) || count($idarr) > 1) {
+            $this->msgReturn(false, '请选择一个配送单');
+        }
+        //配送单ID
+        $id = array_shift($idarr);
+        $M = M('stock_wave_distribution');
+        $det = M('stock_wave_distribution_detail');
+        $wave_det = M('stock_wave_detail');
+        $stock_out = M('stock_bill_out');
+        $stockout_logic = D('StockOut', 'Logic');
+        //获取配送单信息
+        $map['id'] = $id;
+        $map['is_deleted'] = 0;
+        $res = $M->where($map)->find();
+        //是否发运
+        if (empty($res) || $res['status'] == 2) {
+            $this->msgReturn(false, '配送单已发运');
+        }
+        unset($map);
+        
+        //获取详情
+        $map['pid'] = $id;
+        $map['is_deleted'] = 0;
+        $detail = $det->field('bill_out_id')->where($map)->select();
+        if (empty($detail)) {
+            $this->msgReturn(false, '空的配送单');
+        }
+        unset($map);
+        //是否已加入波此
+        $D = D('Distribution', 'Logic');
+        $bill_out_id = array(); //出库单id
+        foreach ($detail as $value) {
+            $map['bill_out_id'] = $value['bill_out_id'];
+            $map['is_deleted'] = 0;
+            $result = $wave_det->where($map)->find();
+            if (!empty($result)) {
+                //发现不符合条件的出库单
+                $this->msgReturn(false, '此配送单中包含已经创建波次的出库单');
+            }
+            $bill_out_id[] = $value['bill_out_id'];
+        }
+        
+        //订单库存是否充足
+        //查找你选择的出库单无缺货出库单数据id
+        $idsArr = $stockout_logic->enoughaResult(implode(',', $bill_out_id));
+        $ids = $idsArr['tureResult'];
+        if(!$ids){
+            $this->msgReturn(false, '库存不足，无法创建波次');
+        }
+        $ids = explode(',', $ids);
+        $count = count($bill_out_id) - count($ids); //库存不足的订单数量
+        if ($count > 0) {
+            $confirm = I('get.confirm');
+            //确认之后将继续向下执行
+            if (empty($confirm)) {
+                $msg['pup_count'] = $count;
+                $msg['order_count'] = count($bill_out_id);
+                $msg['dist_id'] = $get;
+                $this->msgReturn(true, '', $msg);
+                return;
+            }
+        }
+        unset($map);
+        //剔除库存不足的订单
+        foreach ($detail as $key => $val) {
+            if (!in_array($val['bill_out_id'], $ids)) {
+                unset($detail[$key]);
+            }
+        }
+        //创建波此
+        $res['detail'] = $detail;
+        $back = $D->create_wave($res);
+        if (!$back) {
+            $this->msgReturn(false, '创建波次失败');
+        }
+        //更新出库单状态为波次中
+        $map['id'] = array('in', ids);
+        $data['status'] = 3; //波此中
+        if ($stock_out->create($data)) {
+           $affect = $stock_out->where($map)->save();
+           if (!affect) {
+               $this->msgReturn(false, '出库单状态更新失败');
+           }
+        }
+        $this->msgReturn(true, '创建波次成功', '', U('index'));
     }
 }

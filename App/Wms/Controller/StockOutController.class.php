@@ -75,13 +75,14 @@ class StockOutController extends CommonController {
                         '2'=>'缺货'
                         ),   
     	),
-        'stock_bill_out.company_id' =>    array (     
-            'title' => '所属系统',     
+        'stock_bill_out.order_type' =>    array (     
+            'title' => '订单类型',     
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                        '1'=>'大厨',
-                        '2'=>'大果'
+                        '1' => '普通订单',
+                        '2' => '冻品订单',
+                        '3' => '爆款订单',
                         ),   
         ), 
     	

@@ -23,6 +23,7 @@ class DistributionLogic {
         $map['dis_mark'] = 0; //未加入分配单的
         $map['wh_id'] = session('user.wh_id');
         $map['company_id'] = $search['company_id'];
+        $map['order_type'] = $search['type']; //订单类型
         if (!empty($search['line'])) {
             $map['line_id'] = $search['line'];
         }
@@ -38,7 +39,7 @@ class DistributionLogic {
             $map['delivery_ampm'] = $search['time'];
         }
         $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
-        $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
+        $map['status'] = 1; //状态 1带生产
         //获取出库单
         $result = $M->where($map)->select();
         if (empty($result)) {
@@ -57,25 +58,23 @@ class DistributionLogic {
             $return['msg'] = $order_info['msg'];
             return $return;
         }
-        
-        //订单类型筛选
         foreach ($order_info['list'] as $key => $val) {
-            if ($val['order_type'] != $search['type']) {
+            /*if ($val['order_type'] != $search['type']) {
                 //不属于所选择订单类型则去除
                 foreach ($result as $k => $v) {
                     if ($v['refer_code'] == $val['id']) {
                         unset($result[$k]);
                     }
                 }
-            } else {
-                //在所选类型内则增加客服id
+            } else {*/
+                //增加客服id 创建配送单使用
                 foreach ($result as $k => $v) {
                     if ($v['refer_code'] == $val['id']) {
                         $result[$k]['user_id'] = $val['user_id'];
                     }
                 }
                 
-            }
+           // }
         }
         //result 中为全部复合搜索条件的出库单
         //取出库单ID获取详情信息
@@ -156,40 +155,6 @@ class DistributionLogic {
         }
         
         return $return;
-    }
-    
-    /**
-     * 根据配送单ID获取订单ID
-     * @param int id 配送单ID 
-     */
-    public function get_order_ids($id = 0) {
-        $return = array();
-        
-        if (empty($id)) {
-            return $return;
-        }
-        $M = M('stock_wave_distribution_detail');
-        $map['pid'] = $id;
-        $dis_id = $M->field('bill_out_id')->where($map)->select();
-        if (empty($dis_id)) {
-            return $return;
-        }
-        $ids = array();
-        foreach ($dis_id as $value) {
-            $ids[] = $value['bill_out_id'];
-        }
-        unset($map);
-        $stock = M('stock_bill_out');
-        $map['id'] = array('in', $ids);
-        $order_ids = $stock->field('refer_code')->where($map)->select();
-        if (empty($order_ids)) {
-            return $return;
-        }
-        foreach ($order_ids as $val) {
-            $return[] = $val['refer_code'];
-        }
-        
-        return array_unique($return);
     }
     
     /**
@@ -370,8 +335,8 @@ class DistributionLogic {
                 }
                 $map['id'] = $id;
                 $sta = $M->where($map)->find();
-                if ($sta['dis_mark'] == 1 || $sta['status'] == 1 || $sta['status'] == 2) {
-                    //1 已分拨 不可再次加入配送单 状态不可为 1带生产 2已出库
+                if ($sta['dis_mark'] == 1 || $sta['status'] != 1) {
+                    //1 已分拨 不可再次加入配送单 状态必须为 1带生产
                     $return['msg'] = '此出库单已经加入了配送单';
                     return $return;
                 }
@@ -379,12 +344,20 @@ class DistributionLogic {
             unset($map);
             $map['id'] = array('in', $value);
             $stock_out = $M->where($map)->select();
+            $send_date = array();
             foreach ($stock_out as &$con) {
                 //获取出库单详情
                 $info = $this->get_out_detail_by_pids($con['id']);
                 $con['detail'] = $info['list'];
+                //获取发送日期 判断选择日期是否为同一天用
+                $send_date[] = $con['delivery_date'];
             }
-                       
+            $prm_date = array_unique($send_date);
+            if (count($prm_date) > 1) {
+                //选择的不是同一天
+                $return['msg'] = '请选择相同发运日期的订单';
+                return $return;
+            }     
             //创建配送单
             $data = array();
             $data['dist_code'] = get_sn('dis'); //配送单号
@@ -395,19 +368,20 @@ class DistributionLogic {
             $i = 0;
             foreach ($stock_out as $val) {
                 $data['line_count'] += count($val['detail']); //总种类
+                $data['line_id'] .= $val['line_id'] . ','; //路线
                 foreach ($val['detail'] as $v) {
                     $data['sku_count'] += $v['order_qty']; //sku总数量
                     $data['total_price'] += $v['price'] * $v['order_qty']; //总价格
                 } 
                 if ($i < 1) {
                     //重复数据  取一次即可
-                    $data['line_id'] = $val['line_id']; //路线
                     $data['deliver_date'] = $val['delivery_date']; //配送日期
                     $data['deliver_time'] = $val['delivery_ampm'] == 'am' ? 1 : 2; //配送时段
                     $data['wh_id'] = $val['wh_id']; //所属仓库
                 }
                 $i ++;
             }
+            $data['line_id'] = rtrim($data['line_id'], ',');
             if ($dis->create($data)) {
                 //写入操作
                 $pid = $dis->add();
@@ -449,7 +423,7 @@ class DistributionLogic {
     }
     
     /**
-     * 获取所有已分拣订单 并按线路ID统计数量
+     * 获取所有可加入配送单的出库单 并按线路ID统计数量
      * @return array
      */
     public function get_all_orders() {
@@ -457,7 +431,7 @@ class DistributionLogic {
         
         $M = M('stock_bill_out');
         //$map['type'] = 1; //类型 1销售出库
-        $map['status'] = array('not in', array(1, 2)); //状态 非等于1带生产 2已出库
+        $map['status'] = 1; //状态 1带生产
         $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
         $map['line_id'] = array('gt', 0); //线路ID > 0
@@ -518,6 +492,65 @@ class DistributionLogic {
             }
         }
         
+        return $return;
+    }
+    
+    /**
+     * 创建配送单波此
+     * @param array $data 创建波此所需数据
+     * $data = array(
+     *     '' => 主表字段
+     *     '' => 主表字段
+     *     'detail' => array(
+     *          '' => 辅表数据
+     *     )
+     * )
+     */
+    public function create_wave($data = array()) {
+        $return = false;
+        
+        if (empty($data)) {
+            return $return;
+        }
+        $main = M('stock_wave');
+        $assist = M('stock_wave_detail');
+        //创建主表数据
+        $param = array();
+        $param['wh_id'] = $data['wh_id'];
+        $param['status'] = 200; //待运行
+        $param['wave_type'] = 2; //手动创建
+        $param['order_count'] = $data['order_count'];
+        $param['line_count'] = $data['line_count'];
+        $param['total_count'] = $data['sku_count'];
+        $param['company_id'] = $data['company_id'];
+        $param['refer_code'] = $data['dist_code'];
+        $param['created_time'] = get_time();
+        $param['created_user'] = session('user.uid');
+        $param['updated_time'] = get_time();
+        $param['updated_user'] = session('user.uid');
+        $param['is_deleted'] = 0;
+        if ($main->create($param)) {
+            $pid = $main->add();
+            if (!pid) {
+                return $return;
+            }
+        } 
+        //创建辅表数据
+        foreach ($data['detail'] as $value) {
+            $detail = array();
+            $detail['pid'] = $pid;
+            $detail['bill_out_id'] = $value['bill_out_id'];
+            $detail['created_time'] = get_time();
+            $detail['created_user'] = session('user.uid');
+            $detail['updated_time'] = get_time();
+            $detail['updated_user'] = session('user.uid');
+            $detail['is_deleted'] = 0;
+            if ($assist->create($detail)) {
+                $affected = $assist->add();
+            }
+        }
+        
+        $return = true;
         return $return;
     }
     
@@ -670,6 +703,13 @@ class DistributionLogic {
                     $dist['orders'][] = $val;
                 }
             }
+            //组合线路片区
+            $dist['line_id'] = explode(',', $dist['line_id']);
+            foreach ($dis['line_id'] as $line_id) {
+                $dist['line_name'] .= $D->format_line($line_id) . '/';
+            }
+            $dist['line_name'] = rtrim($dist['line_name'], '/');   
+                     
             $dist_arr = [];
             $dist_arr[] = array('配送线路单号:' . $dist['dist_code'], '', '', '', '', '', '仓库:' . $dist['warehouse_name'], '', '', '', '', '', '', '');
             $dist_arr[] = array('线路（片区）:' . $dist['line_name'], '', '', '', '', '', '发车时间:' . $dist['deliver_date'] . ($dist['deliver_time'] == 1 ? '上午' : '下午'), '', '', '', '', '', '', '');
