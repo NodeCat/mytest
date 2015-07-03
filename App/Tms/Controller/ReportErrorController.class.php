@@ -14,7 +14,7 @@ class ReportErrorController extends Controller{
 		'driver_name' => '司机姓名',
 		'driver_mobile' => '司机手机号',
 		'report_time' => '报错时间',
-		);
+	);
 	public function index(){
 		$this->title = "导出位置报错信息";
 		$this->display('export');
@@ -23,6 +23,12 @@ class ReportErrorController extends Controller{
 		$this->title = "导出位置报错信息";
 		$this->display();
 	}
+
+	public function report_error() {
+		$A = A('Report','Api');
+		$A->report_error();
+	}
+
 	//根据选择的日期区间导出位置报错信息到excel表格
 	public function export_excel(){
 		$start_time = I('post.start_time');
