@@ -36,5 +36,23 @@
         });
     });
 
+    function tmsReportError(id,type) {
+
+    	$.ajax({
+          url:'{:U("report/report_error@api.tms.dachuwang.com")}',
+          type:'post',
+          cache : false,
+          dataType:'json',
+          async:true,
+		  data:{id:id,type:type},
+          success: function(msg){
+            if(msg.status == 1) {
+            	HostApp.reportAddressWrongingSuccess(1);
+            }
+            else {
+            	HostApp.toast('报错失败');
+            }
+         }
+    }
 
 </script>
