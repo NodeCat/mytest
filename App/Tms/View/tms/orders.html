@@ -1,5 +1,12 @@
 <include file="Index:nav-cur" />
 <div class="col-xs-12">
+    <div class="row-fluid">
+        <div class="input-group">
+          <span class="input-group-addon">{$dist['dist_id']}</span>
+          <span class="input-group-addon">{$dist['dist_code']}</span>
+          <input type="text" class="form-control input-lg" placeholder="订单数" value="{$orderCount}订单" readonly>
+        </div>
+    </div>
   <form class="form-horizontal form-pda form-scan" action="__SELF__" method="POST">
     <input type="hidden" name="t" value="login" />
     <div class="row-fluid">
@@ -7,8 +14,8 @@
         <div class="form-group">
           <div class="input-group">
             <span class="input-group-addon">
-              <i class="glyphicon glyphicon-pencil">
-              </i>
+              <i class="glyphicon glyphicon-search">
+              </i> 筛选
             </span>
             <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda"
             id="code" name="code" placeholder="请输入订单id">
@@ -116,9 +123,7 @@
           </case>
           <default />
         </switch>
-        <span id="show" style="color:red;">
-          点击展开
-        </span>
+        <span id="show" style="color:red;">点击展开</span>
         </a>
         <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.id}">
           <form class="order">
@@ -378,7 +383,8 @@
 
       $('.btn-sign').on('click',
       function() {
-        real_quantity = $(this).parents('form.order').find('input.real') var i = 1;
+        real_quantity = $(this).parents('form.order').find('input.real');
+        var i = 1;
         real_quantity.each(function() {
           real = $(this).val();
           if (real == '') {
@@ -389,7 +395,8 @@
             i = 1;
           }
 
-        }) if (i == 1) {
+        });
+        if (i == 1) {
           var params = $(this).closest('form.order').serialize();
           var addr = "{:U('sign')}";
 
@@ -447,7 +454,7 @@
     });
 
     function check(x) {
-      var val val = $(x).children('#show').text();
+      var val = $(x).children('#show').text();
       if (val == '点击展开') {
         $(x).children('#show').text('点击收回');
       } else {
