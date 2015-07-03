@@ -128,16 +128,16 @@ class IndexController extends Controller {
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);
             $this->data = $orders;
-            $J=0;//订单统计
-            $I=0;//签收统计
-            $K=0;//退货统计
+            $all_orders     = 0;  //总订单统计
+            $sign_orders    = 0;  //签收统计
+            $unsign_orders  = 0;  //退货统计
             $arrays=array();
             foreach ($orders as $key => $value) {
-                $J++;
+                $all_orders++;
                 // 统计实收货款和签收未收订单 
                 switch($value['status_cn']){
                     case '已签收':
-                        $I++;
+                        $sign_orders++;
                         if($value['pay_status']=='1') {
                             $value['deal_price'] = 0;
                         }
@@ -156,7 +156,7 @@ class IndexController extends Controller {
                         }
                         break;
                     case '已退货':
-                        $K++;
+                        $unsign_orders++;
                         foreach ($value['detail'] as $key1 => $value1) {
                             if(array_key_exists($value1['sku_number'],$arrays)){
                                 $arrays[$value1['sku_number']]['quantity']+= (int) $value1['quantity'];
@@ -171,10 +171,10 @@ class IndexController extends Controller {
                 
             }
             $list['dist_id'] = $res['dist_id'];
-            $list['values'] = $values;//回款数
-            $list['sign_orders'] = $I;//已签收
-            $list['unsign_orders'] = $K;//未签收
-            $list['delivering'] = $J-$I-$K;//派送中
+            $list['values']  = $values;//回款数
+            $list['sign_orders'] = $sign_orders;//已签收
+            $list['unsign_orders'] = $unsign_orders;//未签收
+            $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
             $this->list = $list;
         }
         $this->back_lists = $arrays;
