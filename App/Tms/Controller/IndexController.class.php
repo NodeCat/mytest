@@ -347,6 +347,8 @@ class IndexController extends Controller {
             }
             $this->data = $orders;
         }
+        //小票数据
+        $this->printStr = A('Tms/billOut', 'Api')->printBill();
         $this->title = "客户签收";
         $this->display('tms:orders');
     }
