@@ -154,6 +154,11 @@ class StockLogic{
         //指定从哪个库位上检查
         if($params['location_ids']){
             $map['location_id'] = array('in',$params['location_ids']);
+            //查询目标库位的状态 并替换掉要查询的库存的status
+            $location_map['id'] = $params['location_ids'][0];
+            $location_status = M('Location')->where($location_map)->find();
+            $map['stock.status'] = $location_status['status'];
+            unset($location_map);
         }
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
         unset($map);
@@ -194,6 +199,11 @@ class StockLogic{
         //指定从哪个库位上出库
         if($params['location_ids']){
             $map['location_id'] = array('in',$params['location_ids']);
+            //查询目标库位的状态 并替换掉要查询的库存的status
+            $location_map['id'] = $params['location_ids'][0];
+            $location_status = M('Location')->where($location_map)->find();
+            $map['stock.status'] = $location_status['status'];
+            unset($location_map);
         }
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
         unset($map);
@@ -776,6 +786,10 @@ class StockLogic{
         $map['location_id'] = $param['src_location_id'];
         $src_stock_info = M('Stock')->where($map)->find();
         unset($map);
+
+        if(empty($src_stock_info)){
+            return array('status'=>0,'msg'=>'原库存为空');
+        }
 
         //查询目标库位的默认status
         $map['id'] = $param['dest_location_id'];
