@@ -10,8 +10,8 @@ public function report_error(){
 	        $post = I('post.');
 	    }
 
-	    $id = $post['id'];
-	    $type = $post['type'];
+	    $id = isset($post['id']) ? $post['id'] : I('get.id');
+	    $type = isset($post['type']) ? $post['type'] : I('get.type');
 	    if(empty($id) || empty($type)){
 	    	unset($data);
 	    	$data = array('status' => '1','msg' => 'error');
