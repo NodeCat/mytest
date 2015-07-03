@@ -93,7 +93,9 @@ $(function(){
 			if(json.status == 2){
 
 				alert(json.msg);
-				window.location.reload();
+				//refresh_list();
+				return true;
+				//window.location.reload();
 
 			}else if(json.status == 1){
 
@@ -117,8 +119,6 @@ $(function(){
 		$.post(url,param,callback,'json');
 
 	});
-
-	
 
 
 	$(document).on('click','#create_wave',function(res){
