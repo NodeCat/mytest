@@ -36,7 +36,7 @@
         });
     });
 
-    function tmsReportError(id,type) {
+    function tmsReportError(para) {
     	if(typeof HostApp == "undefined") {
           alert('使用报错功能请您先下载大厨网配送app.');
           return false;
@@ -47,7 +47,7 @@
           cache : false,
           dataType:'json',
           async:true,
-		      data:{"id":id,"type":type},
+		      data:{"id":para.user_id,"type":para.type},
           success: function(msg){
             if(msg.status == 1) {
             	alert(msg);
