@@ -36,5 +36,28 @@
         });
     });
 
+    function tmsReportError(id,type) {
+    	if(typeof HostApp == "undefined") {
+          alert('使用报错功能请您先下载大厨网配送app.');
+          return false;
+        }
+    	$.ajax({
+          url:'{:U("ReportError/report_error")}',
+          type:'post',
+          cache : false,
+          dataType:'json',
+          async:true,
+		      data:{"id":id,"type":type},
+          success: function(msg){
+            if(msg.status == 1) {
+            	alert(msg);
+            	HostApp.reportAddressWrongingSuccess(1);
+            }
+            else {
+            	HostApp.toast(msg.msg);
+            }
+         }
+    	});
+    }
 
 </script>
