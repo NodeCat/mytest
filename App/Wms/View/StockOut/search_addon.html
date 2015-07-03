@@ -87,12 +87,6 @@ $(function(){
 
 		var ids = getChecked();
 
-		if(!ids && !param.status){
-
-			alert('你所选的出库单中包其他状态出库单的，请选择待生产的出库单创建！');
-			return false;
-		}
-
 		var url = "/StockOut/hasCreate";
 
 		var callback = function(json){
