@@ -102,7 +102,6 @@ class StockOutLogic{
     public function getSearchDate($whereArr = array()){
         $map                = array();
         $map['is_deleted']  = 0;
-        $map['status']      = 1;
         $result             = array();
         $code               = $whereArr['code'];
         $wave_id            = $whereArr['wave_id'];
