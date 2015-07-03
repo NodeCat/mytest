@@ -12,15 +12,14 @@ public function report_error(){
 
 	    $id = $post['id'];
 	    $type = $post['type'];
-	    $id = 12;
-	    $type = array('定位错误','线路错误');
 	    if(empty($id) || empty($type)){
 	    	unset($data);
 	    	$data = array('status' => '1','msg' => 'error');
 	    	$this->ajaxReturn($data,'JSON');
 	    }else{
 		    $A = A('Common/Order','Logic');
-		    $res = $A->customer(array('id' => $id));	//调用Order逻辑，根据客户id查询客户的信息
+		    //调用Order逻辑，根据客户id查询客户的信息
+		    $res = $A->customer(array('id' => $id));	
 		    if(empty($res)){
 		    	unset($data);
 		    	$data = array('status' => '1','msg' => 'error');
