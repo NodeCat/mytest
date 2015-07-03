@@ -7,7 +7,7 @@ class ReportErrorController extends Controller{
 		'customer_name' => '客户姓名',
 		'customer_mobile' => '客户手机号',
 		'customer_address' => '客户地址',
-		'company_id' => '系统',
+		'company_name' => '系统',
 		'line_name' => '线路',
 		'shop_name' => '店铺名',
 		'current_bd' => '现属销售',

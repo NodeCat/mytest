@@ -5,7 +5,7 @@ class ReportApi extends CommApi{
 //根据客户id和报错类型type保存报错信息
 public function report_error(){
 
-	    $id = I('json.id');
+	    $id = I('json.user_id');
 	    $type = I('json.type');
 	    if(empty($id) || empty($type)){
 	    	$data = array('status' => '0','msg' => 'error');
@@ -25,6 +25,7 @@ public function report_error(){
 			    $report['customer_name'] = $res['name'];
 			    $report['customer_address'] = $res['address'];
 			    $report['company_id'] = $res['site_id'];
+			    $report['company_name'] = $this->getCompany($res['site_id']);
 			    $report['line_id'] = $res['line_id'];
 			    $report['line_name'] = $res['line_name'];
 			    $report['shop_name'] = $res['shop_name'];
@@ -43,5 +44,10 @@ public function report_error(){
 			    }
 			}
 	    }
+	}
+	//根据系统id获得系统名字
+	public function getCompany($id){
+		$name = M('company')->field('name')->find($id);
+		return $name['name'];
 	}
 }
