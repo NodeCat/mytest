@@ -151,6 +151,7 @@ class DistController extends Controller {
 
                 $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
                 $sign_in = $M->table('tms_sign_in')->where(array('bill_out_id' => $val['id']))->find();
+
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                         //该出库单详情对应的签收数据
@@ -183,6 +184,8 @@ class DistController extends Controller {
             $this->data = $orders;
 
         }
+        //小票数据
+        $this->printStr = A('Tms/billOut', 'Api')->printBill();
         $this->title = "客户签收";
         $this->display('tms:sorders');
     }

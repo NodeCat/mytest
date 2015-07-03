@@ -5,7 +5,7 @@ use Think\Controller;
 /**
  * 配送单接口
  */
-class BillOutApi extends CommApi {
+class BillOutApi extends Controller {
 
 	protected $model;
 
@@ -29,7 +29,7 @@ class BillOutApi extends CommApi {
             array(0x1B, 0x40),
         );
         foreach ($data as &$value) {
-            $value = is_array($value) ? $this->toStr($value) : $value;
+            $value = is_array($value) ? $this->byteToStr($value) : $value;
         }
         return json_encode($data);
     }

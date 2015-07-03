@@ -211,8 +211,15 @@
       </div>
     </div>
 
-
-    </form>
+  <!-- 打印小票 -->
+  <div class="panel-footer">
+      <div class="input-group">
+              <div class="col-xs-12">
+                      <a class="btn btn-primary btn-block" id="btn-print">打印小票</a>
+              </div>
+      </div>
+  </div>
+</form>
 </div>
 
 <eq name="i" value="1">
@@ -244,6 +251,19 @@ form.order ul.list-group{
 </style>
 
 <script type="text/javascript">
+
+  function print(printStr){
+    if(typeof HostApp == "undefined") {
+      alert('使用打印功能请您先下载大厨网配送app.');
+    }
+    else {
+      if(!printStr) {
+          HostApp.toast('打印内容不能为空');
+          return;
+        }
+      HostApp.print(printStr);
+    }
+  }
 
   function goToGaodeMap(lat,lng){
     if(typeof HostApp == "undefined") {
@@ -387,6 +407,11 @@ form.order ul.list-group{
           }
         });
     });
+
+    $('#btn-print').on('click',function(){
+        var printStr = {$printStr};
+        print(printStr);
+    })
   });
 
 
