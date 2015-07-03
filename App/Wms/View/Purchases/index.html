@@ -75,12 +75,12 @@
 
     <notempty name="auth['export']">
         <div class="form-group  col-lg-1">
-            <a href="#" id='exportInsales' class="btn btn-sm btn-default btn-tool">导出</a>
+            <a href="#" id='exportPurchases' class="btn btn-sm btn-default btn-tool">导出</a>
         </div>
         <script type="text/javascript">
         $(function(){
             $("#allshow").removeClass('active');
-            $(document).on('click','#exportInsales',function(msg){
+            $(document).on('click','#exportPurchases',function(msg){
 
                 var wh_id = ($('#wh_ids').val() == '全部')?'':$('#wh_ids').val();
 
@@ -98,7 +98,7 @@
 
                 var time = d.getTime();
 
-                var url   = "{:U('Purchases/exportInsales')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+'&delivery_date='+delivery_date+"&delivery_ampm="+delivery_ampm+"&time="+time;
+                var url   = "{:U('Purchases/exportPurchases')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+'&delivery_date='+delivery_date+"&delivery_ampm="+delivery_ampm+"&time="+time;
 
                 window.location.href = url;
             });

@@ -264,3 +264,87 @@ function getSubByKey($pArray, $pKey = "") {
     return $result;
     
 }
+/**
+ * getStockQtyByWpcode 根据sku 和 仓库汇总库存量
+ * @param String $pro_code sku code
+ * @param Int $wh_id 仓库id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getStockQtyByWpcode($pro_code,$wh_id){
+
+    $m = M('Stock');
+    if(!$pro_code || !$wh_id){
+
+        return 0;
+    }
+
+    $where = array();
+    $where['wh_id'] = $wh_id;
+    $where['pro_code'] = $pro_code;
+    $where['status'] = 'qualified';
+    $res = $m->where($where)->sum('stock_qty');
+
+    return $res;
+}
+/**
+ * getDownOrderNum 根据sku和仓库id汇总下单数
+ * @param String $pro_code sku code
+ * @param Int $wh_id 仓库id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getDownOrderNum($pro_code,$wh_id){
+
+    $m = M('stock_bill_out_detail');
+    if(!$pro_code || !$wh_id){
+
+        return 0;
+    }
+    $where = array();
+    $where['wh_id'] = $wh_id;
+    $where['pro_code'] = $pro_code;
+    $res = $m->where($where)->sum('order_qty');
+    if(!$res){
+        return 0;
+    }
+    return $res;
+}
+/**
+ * getDownOrderNum 根据sku和仓库id得到需要采购的量
+ * @param String $pro_code sku code
+ * @param Int $wh_id 仓库id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getPurchaseNum($pro_code,$wh_id){
+
+    $res = getDownOrderNum($pro_code,$wh_id)-getStockQtyByWpcode($pro_code,$wh_id);
+    
+    return $res;
+}
+/**
+ * getDownOrderNum 根据物料清单sku和子sku仓库id汇总原理采购量
+ * @param String $pro_code sku code
+ * @param Int $wh_id 仓库id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function getProcessByCode($pro_code,$wh_id,$c_pro_code){
+
+    $m = M('erp_process_sku_relation');
+    if(!$pro_code || !$c_pro_code){
+
+        return 0;
+    }
+    $where = array();
+    $where['c_pro_code'] = $c_pro_code;
+    $where['p_pro_code'] = $pro_code;
+    $ratio = $m->where($where)->getField('ratio');
+    if(!$ratio){
+        return 0;
+    }else{
+        $order_num = getDownOrderNum($pro_code,$wh_id)*$ratio;
+    }
+    return $order_num;
+}

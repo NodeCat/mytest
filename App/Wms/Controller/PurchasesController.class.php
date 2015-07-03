@@ -30,11 +30,12 @@ class PurchasesController extends CommonController {
         $param['second'] = ($cat_2 == '全部')?'':$cat_2;
         $param['second_child'] = ($cat_3 == '全部')?'':$cat_3;
         $insalesLogic = A('Insales','Logic');
+        $purchasesLogic = A('Purchases','Logic');
         $array = array();
 
         //优化代码如果没选择分类则查本地库
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
-            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id, $offset, $page_size);
+            $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm, $offset, $page_size);
 
             if($pro_codeArr){
 
@@ -54,7 +55,7 @@ class PurchasesController extends CommonController {
                 //dump($result);die;
                 //帅选sku_code
                 if($result){
-                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+                    $pro_codeArr = $purchasesLogic->getSkuInfoByWhId($result, $wh_id, $delivery_date, $delivery_ampm);
                 }
             }
             
@@ -85,16 +86,18 @@ class PurchasesController extends CommonController {
     /**
      * 进销存导出
      */
-    public function exportInsales() {
+    public function exportPurchases() {
         
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
         
-        $wh_id       = (I('wh_id')== '全部')?'':I('wh_id');
-        $cat_1       = I('cat_1');
-        $cat_2       = I('cat_2');
-        $cat_3       = I('cat_3');
+        $wh_id              = (I('wh_id')== '全部')?'':I('wh_id');
+        $cat_1              = I('cat_1');
+        $cat_2              = I('cat_2');
+        $cat_3              = I('cat_3');
+        $delivery_date      = I('delivery_date');
+        $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
 
         //获取sku 第三级分类id
         $param = array();
@@ -103,8 +106,9 @@ class PurchasesController extends CommonController {
         $param['second_child'] = ($cat_3 == '全部')?'':$cat_3;
 
         $insalesLogic = A('Insales','Logic');
+        $purchasesLogic = A('Purchases','Logic');
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
-            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id);
+            $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm);
         }else{
             $categoryLogic = A('Category', 'Logic');
             $categoryChild = $categoryLogic->getPidBySecondChild($param);
@@ -114,7 +118,7 @@ class PurchasesController extends CommonController {
                 $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
                 //帅选sku_code
                 if($result){
-                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+                    $pro_codeArr = $purchasesLogic->getSkuInfoByWhId($result, $wh_id, $delivery_date, $delivery_ampm);
                 }
             }
         }
@@ -136,6 +140,11 @@ class PurchasesController extends CommonController {
         $sheet->setCellValue('C1', '规格');
         $sheet->setCellValue('D1', '仓库');
         $sheet->setCellValue('E1', '在库存量');
+        $sheet->setCellValue('F1', '下单量');
+        $sheet->setCellValue('G1', '产品采购量');
+        $sheet->setCellValue('H1', '原料货号');
+        $sheet->setCellValue('I1', '原料名称');
+        $sheet->setCellValue('J1', '原料采购量');
         $i = 1;
         foreach ($pro_codeArr as $value){
             $i++;
@@ -143,7 +152,13 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('B'.$i, getPronameByCode('name',$value['pro_code']));
             $sheet->setCellValue('C'.$i, getSkuInfoByCode('pro_attrs_str',$value['pro_code']));
             $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
-            $sheet->setCellValue('E'.$i, $value['pro_qty']);
+            $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
+            $sheet->setCellValue('F'.$i, getDownOrderNum($value['pro_code'], $value['wh_id']));
+            $sheet->setCellValue('G'.$i, getPurchaseNum($value['pro_code'], $value['wh_id']));
+            $sheet->setCellValue('H'.$i, $value['c_pro_code']);
+            $sheet->setCellValue('I'.$i, getPronameByCode('name', $value['c_pro_code']));
+            $sheet->setCellValue('J'.$i, getProcessByCode($value['pro_code'], $value['wh_id'], $value['c_pro_code']));
+
         }
         
         date_default_timezone_set("Asia/Shanghai");
