@@ -6,7 +6,7 @@
       <a href="{:U('Index/delivery')}" class="btn btn-lg btn-default" style="width:25%"><i class="glyphicon glyphicon-object-align-bottom"></i> 提货</a>
       <a href="{:U('Index/person')}" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-user"></i> 个人</a>
       <a href="{:U('Index/report')}" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-th-list"></i> 统计</a>
-      <a id="navigation" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-send"></i> 地图模式</a>
+      <a id="navigation" class="btn btn-lg btn-default"   style="width:25.2%"><i class="glyphicon glyphicon-send"></i> 路线</a>
     </div>
   </div>
   </div>
@@ -16,19 +16,16 @@
 
     $('#navigation').on('click',function(){
       if(typeof HostApp == "undefined") {
-          alert('使用导航功能请您先下载大厨网配送app.');
+          alert('使用路线功能请您先下载大厨网配送app.');
           return false;
         }
         var addr = "{:U('Index/navigation')}";
-        //var params=null;
         $.ajax({
           url:addr,
           type:'post',
           cache : false,
           dataType:'json',
           async:true,
-
-         // data:params,
           success: function(msg){
             
             HostApp.allNavigation(msg);
@@ -36,7 +33,7 @@
         });
     });
 
-    function tmsReportError(id,type) {
+    function tmsReportError(para) {
     	if(typeof HostApp == "undefined") {
           alert('使用报错功能请您先下载大厨网配送app.');
           return false;
@@ -47,15 +44,14 @@
           cache : false,
           dataType:'json',
           async:true,
-		      data:{"id":id,"type":type},
+		      data:{"id":para.user_id,"type":para.type},
           success: function(msg){
-            if(msg.status == 1) {
+            if(msg.status == 1){
             	HostApp.reportAddressWrongingSuccess(1);
             }
             else {
             	HostApp.toast(msg.msg);
             }
-         }
     	});
     }
 
