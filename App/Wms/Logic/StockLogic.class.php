@@ -137,6 +137,7 @@ class StockLogic{
      * $pro_code sku编号
      * $pro_qty 产品数量
      * $refer_code 出库单号
+     * $location_ids 指定从哪个库位上检查
      * )
      */
     public function outStockBySkuFIFOCheck($params = array()){
@@ -150,6 +151,10 @@ class StockLogic{
         $map['pro_code'] = $params['pro_code'];
         $map['wh_id'] = $params['wh_id'];
         $map['stock.status'] = 'qualified';
+        //指定从哪个库位上检查
+        if($params['location_ids']){
+            $map['location_id'] = array('in',$params['location_ids']);
+        }
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
         unset($map);
 
