@@ -502,6 +502,7 @@ class StockOutController extends CommonController {
         $idsArr    = $StockOutLogic->enoughaResult($ids);
         $result    = array();
         $result['false_bill_out_count'] = count($idsArr['falseResult']);
+        $result['bill_out_count'] = count(explode(',', $ids));
         if($result['false_bill_out_count']){
             $M = M('stock_bill_out');
             $bill_outW['id'] = array('in',$idsArr['falseResult']);
