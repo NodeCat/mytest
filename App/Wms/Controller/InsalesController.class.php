@@ -8,10 +8,7 @@ namespace Wms\Controller;
 use Think\Controller;
 class InsalesController extends CommonController {
 	protected function before_index(){
-		$this->table = array(
-            'searchbar' => true, 
-            'toolbar_tr'=> true,
-        );
+
 	}
 	//显示数据列表
     protected function lists() {

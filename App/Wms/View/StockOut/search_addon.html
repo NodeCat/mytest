@@ -84,36 +84,22 @@ $(function(){
 	$(document).on('click','#create_waves',function(res){
 
 		var param = paramArr.requestParam();
-
 		var ids = getChecked();
-
 		var url = "/StockOut/hasCreate";
-
 		var callback = function(json){
 			if(json.status == 2){
-
 				alert(json.msg);
 				return true;
-
 			}else if(json.status == 1){
-
 				json.data.type = 1;
-
 				if(ids){
-
 					json.data.type = 0;
-
 				}
-
 				json.data.title = '是否确定创建波次？';
 				var html = template('dialog_msg',json.data);
 			    $('body').append(html);
-
 			}
-			
-
 		}
-
 		$.post(url,param,callback,'json');
 
 	});
