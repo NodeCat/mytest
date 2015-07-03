@@ -54,6 +54,52 @@ function get_setting($table) {
 			);
 	return $data;
 }
+
+function set_session($uid){
+    $user = M('User')->find($uid);
+    static $Auth    =   null;
+    if (!$Auth) {
+        $Auth       =   new \Common\Lib\Auth();
+    }
+    $user_roles = $Auth->getRoles($uid);
+    foreach ($user_roles as $value) {
+        $roles[] = $value['id'];
+    }
+    
+    $roles = implode('_', $roles);
+    $rules = $Auth->getRule($uid);
+    
+    if(!empty($rules)) {
+        $wh = current($rules);
+        $rules = implode($rules, ',');
+    }
+    if(empty($wh)) {
+        $rules = '-1,0';
+        $wh = '0';
+    }
+    
+    /* 记录登录SESSION和COOKIES */
+    $auth = array(
+        'uid'             => $user['id'],
+        'username'        => $user['nickname'],
+        'role'            => $roles,
+        'rule'           => $rules,
+        'wh_id'           => $wh,
+        'module'        => MODULE_NAME
+    );
+    session('user', $auth);
+    session('user_auth_sign', data_auth_sign($auth));
+}
+function destory_session() {
+    //$role = I('session.user_auth.role');
+    //S("_ROLE_MENU_LIST_".$role, null);
+    //S('_AUTH_LIST_'.$role.'_4',null);
+    session('user', null);
+    session('user_auth_sign', null);
+    session('[destroy]');
+}
+
+
 //POST数据处理
 //未输入值的txtbox为空，应当移除
 //复选框未选择，则不会出现在post中，应添加条件并赋值为false

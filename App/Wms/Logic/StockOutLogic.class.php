@@ -38,6 +38,7 @@ class StockOutLogic{
         $data['delivery_ampm'] = $params['delivery_ampm'];
         $data['customer_realname'] = $params['customer_realname'];
         $data['delivery_address'] = $params['delivery_address'];
+        $data['order_type'] = $params['order_type'];
         $data['created_time'] = date('Y-m-d H:i:s');
         $data['created_user'] = UID;
         $data['updated_time'] = date('Y-m-d H:i:s');
@@ -115,7 +116,8 @@ class StockOutLogic{
         $delivery_address   = I('delivery_address');*/
         $delivery_date      = $whereArr['delivery_date'];
         $delivery_ampm      = $whereArr['delivery_ampm'];
-        $company_id        = $whereArr['company_id'];
+        $company_id         = $whereArr['company_id'];
+        $status             = $whereArr['status'];
         if($code) $map['code'] = $code;
         if($wave_id) $map['wave_id'] = $wave_id;
         if($type) $map['type'] = $type;
@@ -127,6 +129,7 @@ class StockOutLogic{
         if($delivery_date) $map['delivery_date'] = $delivery_date;
         if($delivery_ampm) $map['delivery_ampm'] = $delivery_ampm;
         if($company_id) $map['company_id'] = $company_id;
+        if($status) $map['status'] = $status;
         if($created_time && $created_time_1){
             if($created_time >= $created_time_1){
                 $map['created_time'] = array('gt', $created_time);

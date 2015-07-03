@@ -6,7 +6,8 @@ class StockInController extends CommonController {
         parent::__construct();
         if(IS_GET && ACTION_NAME == 'add'){
             $stock_type = M('stock_bill_in_type');
-            $this->stock_in_type = $stock_type->select();
+            $map['type'] = array('not in',array('ASN','MNI'));
+            $this->stock_in_type = $stock_type->where($map)->select();
         }
     }
 	protected $filter = array(
@@ -106,6 +107,9 @@ class StockInController extends CommonController {
 		}
 		elseif(IS_POST) {
 			$code = I('post.code');
+			//ena13 to pro_code
+			$codeLogic = A('Code','Logic');
+			$code = $codeLogic->getProCodeByEna13code($code);
 			$id = I('post.id');
 			$type = I('post.t');
 			//扫描SKU编号
@@ -241,6 +245,10 @@ class StockInController extends CommonController {
 		}
 		else if(IS_POST){
 			$code = I('post.code');
+			//ena13 to pro_code
+			$codeLogic = A('Code','Logic');
+			$code = $codeLogic->getProCodeByEna13code($code);
+
 			$id = I('post.id');
 			$type = I('post.t');
 			if($type == 'scan_procode') {

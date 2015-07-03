@@ -33,9 +33,19 @@ class IndexController extends Controller {
             }   
         }
         if(IS_POST) {
-            $code = I('post.code/d',0);
+            if(session('?user')) {
+                $this->redirect('delivery');
+                exit();
+            }
+            $code = I('post.code',0);
+            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$code)){
+                $this->error = "您输入的手机号码格式不正确！";
+                $this->display('Index:login');
+                exit();
+
+            }
             $name   = I('post.name');
-            if(empty($code) || empty($name)){
+            if(empty($name)){
                 $this->error = "请输入您的身份信息";
                 $this->display('Index:login');
             }
@@ -61,6 +71,7 @@ class IndexController extends Controller {
                     //如果已经签到过了那就改成最新的签到时间
                     if($id){
                         $userid['id']=$id['id'];
+                        unset($userid['created_time']);
                         $M->save($userid);
                         session('user',$user);
                         $this->redirect('delivery');
@@ -127,6 +138,9 @@ class IndexController extends Controller {
                 switch($value['status_cn']){
                     case '已签收':
                         $I++;
+                        if($value['pay_status']=='1') {
+                            $value['deal_price']=0;
+                        }
                         $values+=$value['deal_price'];
                         foreach ($value['detail'] as $key1 => $value1) {
                             $count=$value1['quantity']-$value1['actual_quantity'];
@@ -156,6 +170,7 @@ class IndexController extends Controller {
                 } 
                 
             }
+            $list['dist_id'] = $res['dist_id'];
             $list['values']=$values;
             $list['sign_orders']=$I;
             $list['unsign_orders']=$K;
@@ -310,12 +325,13 @@ class IndexController extends Controller {
                 $this->display('tms:orders');
                 exit();
             }
-            
+            $this->dist = $res;
             $map['dist_id'] = $res['dist_id'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
-            $orders = $A->order($map);
-            foreach ($orders as &$val) {
+            $orderList = $A->order($map);
+            $this->orderCount = count($orderList);
+            foreach ($orderList as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
                 switch ($val['pay_status']) {
@@ -343,7 +359,7 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
-                
+                $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
         }

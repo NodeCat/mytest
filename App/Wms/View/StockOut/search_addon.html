@@ -1,6 +1,6 @@
 <notempty name="auth['stockOut']">
 <div class="form-group  col-lg-1">
-<a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
+<!--<a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>-->
 </div>
 <div class="form-group  col-lg-1" style="margin-left: 15px;">
 <a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
@@ -11,6 +11,7 @@ var alert_dialog = {
 	
 	close:function(){
 		this.hide();
+		window.location.reload();
 	},
 	show:function(title, content){
 		title  = title?title:'提示框';
@@ -64,6 +65,7 @@ $(function(){
 		param.delivery_date = $("[name = 'query[stock_bill_out.delivery_date]']").val();
 		param.delivery_ampm = $("[name = 'query[stock_bill_out.delivery_ampm]']").val();
 		param.company_id = $("[name = 'query[stock_bill_out.company_id]']").val();
+		param.status = $("[name = 'query[stock_bill_out.status]']").val();
 		
 		$.ajax({
 			url:'/StockOut/createWave',
@@ -79,10 +81,9 @@ $(function(){
 						$('body').append(html);
 					}else{
 						alert(json.msg);
+						window.location.reload();
 					}
 					
-            
-                    window.location.reload();
                     refresh_list();
 				}
 				if(json.status=='0'){

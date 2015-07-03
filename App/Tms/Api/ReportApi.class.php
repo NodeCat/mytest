@@ -13,7 +13,7 @@ public function report_error(){
 	    }else{
 		    $A = A('Common/Order','Logic');
 		    //调用Order逻辑，根据客户id查询客户的信息
-		    $res = $A->customer(array('id' => $id));	
+		    $res = $A->customer(array('id' => $id));
 		    if(empty($res)){
 		    	$data = array('status' => '0','msg' => 'error');
 		    	$this->ajaxReturn($data,'JSON');

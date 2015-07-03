@@ -10,9 +10,9 @@ class WavePickingLogic{
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
-        //获取PACK区域下的库位信息
-        $pack_location_info = A('Location','Logic')->getPackLocationId();
-        $not_in_location_ids = array($pack_location_info['id']);
+        //获取 收货区 发货区 降级存储区 加工损耗区 加工区 库内报损区 下的库位信息
+        $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+        $not_in_location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
 
         foreach($wave_ids as $wave_id){
             //根据波次id查询 出库单id
@@ -90,7 +90,7 @@ class WavePickingLogic{
                 unset($map);
                 unset($data);
                 //处理分拣单 每个分拣单最多处理$order_max个订单
-                $this->exec_order($result_arr);
+                $this->exec_order($result_arr,$wave_id);
             }
             //查询当前仓库的发货区的location_id
             $map['wh_id'] = session('user.wh_id');
@@ -114,6 +114,7 @@ class WavePickingLogic{
                 $data['wh_id'] = session('user.wh_id');
                 $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
+                $data['is_print'] = 'OFF';
                 $wave_picking = D('WavePicking');
                 $data = $wave_picking->create($data);
                 foreach($result['detail'] as $val){
@@ -143,7 +144,7 @@ class WavePickingLogic{
     * @param
     * $result_arr
     */
-    protected function exec_order(&$result_arr){
+    protected function exec_order(&$result_arr,$wave_id){
         //查询当前仓库的发货区的location_id
         $map['wh_id'] = session('user.wh_id');
         $map['code'] = 'PACK';
@@ -167,6 +168,7 @@ class WavePickingLogic{
                 $data['wh_id'] = session('user.wh_id');
                 $data['bill_out_ids'] = substr($result['bill_out_ids'],0,strlen($result['bill_out_ids']) - 1);
                 $data['status'] = 'draft';
+                $data['is_print'] = 'OFF';
                 $wave_picking = D('WavePicking');
                 $data = $wave_picking->create($data);
                 foreach($result['detail'] as $val){
