@@ -3,11 +3,40 @@
   <div class="container-fluid">
   <div class="row">
     <div class="btn-group" role="group" aria-label="..." style="width:100%;">
-      <a href="{:U('Index/delivery')}" class="btn btn-lg btn-default" style="width:33.33%"><i class="glyphicon glyphicon-object-align-bottom"></i> 提货</a>
-      <a href="{:U('Index/person')}" class="btn btn-lg btn-default"   style="width:33.33%"><i class="glyphicon glyphicon-user"></i> 个人</a>
-      <a href="{:U('Index/report')}" class="btn btn-lg btn-default"   style="width:33.33%"><i class="glyphicon glyphicon-th-list"></i> 统计</a>
+      <a href="{:U('Index/delivery')}" class="btn btn-lg btn-default" style="width:25%"><i class="glyphicon glyphicon-object-align-bottom"></i> 提货</a>
+      <a href="{:U('Index/person')}" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-user"></i> 个人</a>
+      <a href="{:U('Index/report')}" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-th-list"></i> 统计</a>
+      <a id="navigation" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-th-list"></i>地图模式</a>
     </div>
   </div>
   </div>
 </nav>
 </neq>
+<script type="text/javascript">
+
+    $('#navigation').on('click',function(){
+        var addr = "{:U('Index/navigation')}";
+        //var params=null;
+        $.ajax({
+          url:addr,
+          type:'post',
+          cache : false,
+          dataType:'json',
+          async:true,
+
+         // data:params,
+          success: function(msg){
+            if(typeof HostApp == "undefined") {
+                    alert('使用导航功能请您先下载大厨网配送app.');
+                    //window.history.back(1);
+                    location.reload();
+              }
+              else {
+                    HostApp.allNavigation(msg);
+              }
+          }
+        });
+    });
+
+
+</script>

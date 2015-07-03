@@ -128,9 +128,9 @@ class IndexController extends Controller {
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);
             $this->data = $orders;
-            $J=0;
-            $I=0;
-            $K=0;
+            $J=0;//订单统计
+            $I=0;//签收统计
+            $K=0;//退货统计
             $arrays=array();
             foreach ($orders as $key => $value) {
                 $J++;
@@ -139,9 +139,9 @@ class IndexController extends Controller {
                     case '已签收':
                         $I++;
                         if($value['pay_status']=='1') {
-                            $value['deal_price']=0;
+                            $value['deal_price'] = 0;
                         }
-                        $values+=$value['deal_price'];
+                        $values+=$value['deal_price'];//统计回款数
                         foreach ($value['detail'] as $key1 => $value1) {
                             $count=$value1['quantity']-$value1['actual_quantity'];
                             if ($count!=0) {
@@ -170,13 +170,13 @@ class IndexController extends Controller {
                 } 
                 
             }
-            $list['values']=$values;
-            $list['sign_orders']=$I;
-            $list['unsign_orders']=$K;
-            $list['delivering']=$J-$I-$K;
-            $this->list=$list;
+            $list['values'] = $values;//回款数
+            $list['sign_orders'] = $I;//已签收
+            $list['unsign_orders'] = $K;//未签收
+            $list['delivering'] = $J-$I-$K;//派送中
+            $this->list = $list;
         }
-        $this->back_lists=$arrays;
+        $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
         $this->display('tms:orderlist');
     }
@@ -493,6 +493,47 @@ class IndexController extends Controller {
         $this->title = '提货扫码';
         $this->display('tms:delivery'); 
 
+    }
+
+    // 地图模式
+    public function navigation() {
+        if(!IS_AJAX){
+        $this->error('请求错误','',1);
+        exit;
+        }
+        //只显示当天的记录
+        $map['mobile'] = session('user.mobile');
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        unset($M);
+        $M = M('tms_delivery');
+        $data = $M ->where($map)->select();
+        unset($map);
+        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+        $A = A('Common/Order','Logic');
+        $geo_array=array();
+        foreach ($data as $key => $value) {
+            // dump($value['dist_id']);
+            $map['dist_id'] = $value['dist_id'];
+            $orders = $A->order($map);
+            foreach ($orders as $keys => $values) {
+                $values['geo'] = json_decode($values['geo'],TRUE);
+                //如果地址为空的话跳过
+                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ){
+                    continue;
+                }
+                $geo = $values['geo'];
+                $geo['user_id'] = $values['user_id'];
+                $geo['address'] = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                $geo['color_type'] = 0;
+                $geo_array[$values['user_id']] = $geo; 
+                
+            }            
+        }
+        $geo_array  = array_values($geo_array);
+        $geo_arrays =json_encode($geo_array,JSON_UNESCAPED_UNICODE);
+        $this->ajaxReturn($geo_arrays);
     }
 
 
