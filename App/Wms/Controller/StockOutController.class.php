@@ -482,6 +482,39 @@ class StockOutController extends CommonController {
         }
     
     }
+    public function hasCreate(){
+
+        $ids          = I('ids');
+        $company_id   = I('company_id')?I('company_id'):1;
+        $waveLogic    = A('Wave','Logic');
+        $StockOutLogic= A('StockOut','Logic');
+
+        //如果ids 为空则是满足条件的数据
+        if(!$ids){
+
+            $whereArr     = array();
+            $whereArr     = I();
+            $idsStr        = $StockOutLogic->getSearchDate($whereArr);
+            $ids          = $idsStr;
+        }
+
+        //查找你选择的出库单无缺货出库单数据id
+        $idsArr    = $StockOutLogic->enoughaResult($ids);
+        $result    = array();
+        $result['false_bill_out_count'] = count($idsArr['falseResult']);
+        if($result['false_bill_out_count']){
+            $M = M('stock_bill_out');
+            $bill_outW['id'] = array('in',$idsArr['falseResult']);
+            $wave_detail_arr = $M->field('code')->where($bill_outW)->select();
+            $bill_outArr = getSubByKey($wave_detail_arr, 'code');
+            $result['false_bill_out_result'] = implode(',', $bill_outArr);
+        }else{
+            $result['false_bill_out_result'] = '';
+        }
+
+        $this->msgReturn('1','波次创建成功！',$result);
+
+    }
     /**
      * Ajax 创建波次
      * @param String ids 出库单id列表

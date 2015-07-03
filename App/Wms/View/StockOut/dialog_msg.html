@@ -1,0 +1,41 @@
+<script type='text/html' id="dialog_msg">
+<div class="modal fade in" role="dialog" aria-labelledby="gridSystemModalLabeldialog" style="display:block;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" onclick="alert_dialog.close();" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabelalert"> {{title}}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid lgo">
+          <div class="row">
+            <div class="col-md-2">订单数：</div>
+            <div class="col-md-10">{{false_bill_out_count}}</div>
+          </div>
+          <br>
+          {{if false_bill_out_result}}
+            <div>
+              <div class="alert alert-danger" style="word-break: break-all;" role="alert">
+                  有<strong>{{false_bill_out_count}}</strong> 个订单因库存不足未加入波次！
+                  <br>
+                  出库单分别为<strong>{{false_bill_out_result}}</strong>；
+              </div>
+            </div>
+          {{/if}}
+
+          <div>
+            <div style="word-break: break-all;" role="alert">
+                点击<strong>“确定”</strong> 会将符合{{if type}}筛选{{else}}选中{{/if}}条件的出库单加入波次！
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal" id="create_wave">确定</button>
+        <button type="button" class="btn btn-default" onclick="alert_dialog.close();">取消</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</script>
