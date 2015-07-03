@@ -406,11 +406,11 @@ class IndexController extends Controller {
         $id = I('post.code/d',0);
         if(IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
-            $map['mobile'] = session('user.mobile');
+            //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
+            //$map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
             $dist = $M->field('id,mobile')->where($map)->find();
             unset($map);
@@ -419,7 +419,7 @@ class IndexController extends Controller {
                     $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
-                    $map['id'] = $dist['id'];
+                    $map['dist_id'] = $id;
                     $data['status'] = '0';
                     $M->where($map)->save($data);
                 }
@@ -488,6 +488,7 @@ class IndexController extends Controller {
 
         //只显示当天的记录
         $map['mobile'] = session('user.mobile');
+        $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
