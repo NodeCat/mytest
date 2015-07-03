@@ -20,13 +20,10 @@ class BillOutApi extends Controller {
 	 */
 	public function printBill($bill_out_id = 0) {
         $data = array(
-            array(0x1B, 0x57, 0x01),
-            '小票打印               小票打印',
-            '小票打印               小票打印',
-            '小票打印               小票打印',
-            '小票打印               小票打印',
             array(0x0A),
-            array(0x1B, 0x40),
+            array(0x0A),
+            array(0x0A),
+            array(0x0A),
         );
         foreach ($data as &$value) {
             $value = is_array($value) ? $this->byteToStr($value) : $value;
