@@ -4,14 +4,9 @@ use Think\Controller;
 class ReportApi extends CommApi{
 //根据客户id和报错类型type保存报错信息
 public function report_error(){
-		if($_SERVER['HTTP_CONTENT_TYPE'] == 'application/json'){
-	        $post = json_decode(file_get_contents("php://input"),true);
-	    }else{
-	        $post = I('post.');
-	    }
-	    
-	    $id = $post['id'];
-	    $type = $post['type'];
+
+	    $id = I('json.id');
+	    $type = I('json.type');
 	    if(empty($id) || empty($type)){
 	    	unset($data);
 	    	$data = array('status' => '1','msg' => 'error');
