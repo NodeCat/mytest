@@ -235,6 +235,7 @@ class StockOutController extends CommonController {
     }
     protected function before_add(&$M) {
         $post = I('post.');
+        $wh_id = session('user.wh_id');
         $n = count($post['pros']['pro_code']);
         if($n < 2 || empty($post['pros']['pro_code'][1])) {
             $this->msgReturn(0,'请至少填写一个货品');
@@ -249,10 +250,11 @@ class StockOutController extends CommonController {
         $map['id'] = $data['type'];
         $type = $stock_out_type->where($map)->getField('type');
         
-        $M->code = get_sn($type, $post['wh_id']);
+        $M->code = get_sn($type, $wh_id);
         $M->status = 1;
         $M->process_type = 1;
         $M->refused_type = 1;
+        $M->wh_id = $wh_id;
     }
     
     protected function before_save() {
@@ -357,6 +359,14 @@ class StockOutController extends CommonController {
             //查找出库单信息
             $map['id'] = $id;
             $stock_info = $stock_out->field('wh_id,code,total_qty,status')->where($map)->find();
+            
+            //根据出库单号 返回对应的库存区域标识
+            $location_area_name = A('Location','Logic')->getAreaByBillCode($stock_info['code']);
+            //根据标识 整理出应该从哪些库位出库的库位id
+            if(!empty($location_area_name)){
+                $in_location_ids = A('Location','Logic')->getLocationIdByAreaName(array($location_area_name));
+            }
+
             //查找出库单明细
             unset($map);
             $map['pid'] = $id;
@@ -371,6 +381,9 @@ class StockOutController extends CommonController {
                 if(intval($data['pro_qty']) === 0){
                     continue;
                 }
+                if(!empty($in_location_ids)){
+                    $data['location_ids'] = $in_location_ids;
+                }
                 
                 $check_stock = A('Stock', 'Logic')->outStockBySkuFIFOCheck($data);
                 if($check_stock['status'] == 0) {
@@ -382,10 +395,18 @@ class StockOutController extends CommonController {
             if($flag == 'succ') {
                 //销库存
                 foreach($detail_info as $val) {
+                    //如果出库量是0 放弃处理 处理下一条
+                    if(intval($val['delivery_qty']) === 0){
+                        continue;
+                    }
+
                     $data['pro_code'] = $val['pro_code'];
                     $data['pro_qty'] = $val['delivery_qty'];
                     $data['refer_code'] = $stock_info['code'];
                     $data['wh_id'] = $stock_info['wh_id'];
+                    if(!empty($in_location_ids)){
+                        $data['location_ids'] = $in_location_ids;
+                    }
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
                     //存储此货品出库的相关内容
                     /*$stock_container = D('stock_bill_out_container');
@@ -416,11 +437,11 @@ class StockOutController extends CommonController {
         if($state == 'failed') {
             if(count($ids_arr) == 1) {
                 $return['status'] = 0;
-                $return['msg'] = '库存不足，出库失败';
+                $return['msg'] = '库存不足，出库失败'.'('.$location_area_name.')';
                 $this->ajaxReturn($return);
             }else {
                 $return['status'] = 0;
-                $return['msg'] = '部分出库单库存不足，出库失败';
+                $return['msg'] = '部分出库单库存不足，出库失败'.'('.$location_area_name.')';
                 $this->ajaxReturn($return);
             }
         }else {
