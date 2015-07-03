@@ -170,6 +170,7 @@ class IndexController extends Controller {
                 } 
                 
             }
+            $list['dist_id'] = $res['dist_id'];
             $list['values']=$values;
             $list['sign_orders']=$I;
             $list['unsign_orders']=$K;
