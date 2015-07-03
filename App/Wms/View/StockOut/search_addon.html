@@ -88,20 +88,28 @@ $(function(){
 		var url = "/StockOut/hasCreate";
 
 		var callback = function(json){
+			if(json.status == 2){
 
-			var ids = getChecked();
+				alert(json.msg);
+				window.location.reload();
 
-			json.data.type = 1;
+			}else if(json.status == 1){
 
-			if(ids){
+				var ids = getChecked();
 
-				json.data.type = 0;
+				json.data.type = 1;
+				
+				if(ids){
+
+					json.data.type = 0;
+
+				}
+
+				json.data.title = '是否确定创建波次？';
+				var html = template('dialog_msg',json.data);
+			    $('body').append(html);
 
 			}
-
-			json.data.title = '是否确定创建波次？';
-			var html = template('dialog_msg',json.data);
-		    $('body').append(html);
 			
 
 		}

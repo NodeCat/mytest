@@ -498,6 +498,12 @@ class StockOutController extends CommonController {
             $ids          = $idsStr;
         }
 
+        //验证是否选择中有除了待生产的状态数据
+        $hasProductionAuth = $StockOutLogic->hasProductionAuth($ids);
+        if($hasProductionAuth === FALSE){
+            $this->msgReturn('2','你所选的出库单中包其他状态出库单的，请选择待生产的出库单创建！','');
+        }
+
         //查找你选择的出库单无缺货出库单数据id
         $idsArr    = $StockOutLogic->enoughaResult($ids);
         $result    = array();
