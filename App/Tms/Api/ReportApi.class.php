@@ -8,21 +8,19 @@ public function report_error(){
 	    $id = I('json.id');
 	    $type = I('json.type');
 	    if(empty($id) || empty($type)){
-	    	unset($data);
-	    	$data = array('status' => '1','msg' => 'error');
+	    	$data = array('status' => '0','msg' => 'error');
 	    	$this->ajaxReturn($data,'JSON');
 	    }else{
 		    $A = A('Common/Order','Logic');
 		    //调用Order逻辑，根据客户id查询客户的信息
-		    $res = $A->customer(array('id' => $id));	
+		    $res = $A->customer(array('id' => $id));
 		    if(empty($res)){
-		    	unset($data);
-		    	$data = array('status' => '1','msg' => 'error');
+		    	$data = array('status' => '0','msg' => 'error');
 		    	$this->ajaxReturn($data,'JSON');
 		    }else{
 		    	//保存报错信息到数据库
 			    $M = M('tms_report_error');
-			    $report['type'] = implode(',',$type);
+			    $report['type'] = $type;
 			    $report['customer_id'] = $id;
 			    $report['customer_name'] = $res['name'];
 			    $report['customer_address'] = $res['address'];
@@ -41,7 +39,7 @@ public function report_error(){
 			    $count = $M->add($report);
 			    if($count){
 			    	unset($data);
-			    	$data = array('status' => '0','msg' => 'OK');
+			    	$data = array('status' => '1','msg' => 'OK');
 			    	$this->ajaxReturn($data);
 			    }
 			}
