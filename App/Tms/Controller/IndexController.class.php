@@ -13,7 +13,6 @@ class IndexController extends Controller {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
             }
-            
         }
     }
 
@@ -327,6 +326,7 @@ class IndexController extends Controller {
             }
             $this->dist = $res;
             $map['dist_id'] = $res['dist_id'];
+            $map['itemsPerPage'] = $res['order_count'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
             $orderList = $A->order($map);
