@@ -21,8 +21,13 @@ class BillOutApi extends Controller {
 	public function printBill($bill_out_id = 0) {
         $data = array(
             array(0x0A),
-            array(0x0A),
-            array(0x0A),
+            '打印小票                打印小票',
+            '打印小票                打印小票',
+            '打印小票                打印小票',
+            '打印小票                打印小票',
+            '打印小票                打印小票',
+            'aaaaaaaaaaaafvdgnd', 
+            'aaaaaaaaaaaafvdgnd', 
             array(0x0A),
         );
         foreach ($data as &$value) {
