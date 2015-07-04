@@ -25,7 +25,8 @@ class DistDetailController extends CommonController {
                     'value' => array(
                             '1' => '普通订单',
                             '2' => '冻品订单',
-                            '3' => '爆款订单',
+                            '3' => '水果爆款订单',
+                            '4' => '水果订单',
                     ),
             ),
             'line' => array(

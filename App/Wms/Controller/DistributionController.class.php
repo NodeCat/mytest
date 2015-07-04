@@ -415,7 +415,7 @@ class DistributionController extends CommonController {
             $items['deliver_time'] = $dis['deliver_time']; //时段
             $items['orders'] = $result; //订单列表
             $items['map_pos'] = $map_pos;
-            $items['barcode'] = 'http://api.pda.dachuwang.com/barcode/get?text=' . $dis['dist_code']; //条码
+            $items['barcode'] = C('BARCODE_PATH') . $dis['dist_code']; //条码
             $merge = array();
             foreach ($result as $val) {
                 $merge = array_merge($merge, $val['detail']);
