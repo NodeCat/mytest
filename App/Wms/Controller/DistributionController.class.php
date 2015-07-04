@@ -745,28 +745,31 @@ class DistributionController extends CommonController {
         }
         $get = I('get.id');
         $idarr = explode(',', $get);
-        if (empty($idarr) || count($idarr) > 1) {
+        if (empty($idarr)) {
             $this->msgReturn(false, '请选择一个配送单');
         }
         //配送单ID
-        $id = array_shift($idarr);
         $M = M('stock_wave_distribution');
         $det = M('stock_wave_distribution_detail');
         $wave_det = M('stock_wave_detail');
         $stock_out = M('stock_bill_out');
         $stockout_logic = D('StockOut', 'Logic');
         //获取配送单信息
-        $map['id'] = $id;
+        $map['id'] = array('in', $idarr);
         $map['is_deleted'] = 0;
         $res = $M->where($map)->find();
         //是否发运
-        if (empty($res) || $res['status'] == 2) {
-            $this->msgReturn(false, '配送单已发运');
+        if (empty($res)/* || $res['status'] == 2*/) {
+            $this->msgReturn(false, '不存在的配送单');
         }
         unset($map);
-        
+        foreach ($res as $val) {
+            if ($val['status'] == 2) {
+                $this->msgReturn(false, '请选择未发运的配送单');
+            }
+        }
         //获取详情
-        $map['pid'] = $id;
+        $map['pid'] = array('in', $idarr);
         $map['is_deleted'] = 0;
         $detail = $det->field('bill_out_id')->where($map)->select();
         if (empty($detail)) {
@@ -797,6 +800,7 @@ class DistributionController extends CommonController {
         $ids = explode(',', $ids);
         $count = count($bill_out_id) - count($ids); //库存不足的订单数量
         if ($count > 0) {
+            //弹出确认框
             $confirm = I('get.confirm');
             //确认之后将继续向下执行
             if (empty($confirm)) {
@@ -812,6 +816,14 @@ class DistributionController extends CommonController {
         foreach ($detail as $key => $val) {
             if (!in_array($val['bill_out_id'], $ids)) {
                 unset($detail[$key]);
+            }
+        }
+        //创建波次和配送单关联数据
+        foreach ($res as $v) {
+            foreach ($detail as &$det_info) {
+                if ($det_info['pid'] == $v['id']) {
+                    $detail['refer_code'] = $v['dist_code'];
+                }
             }
         }
         //创建波此

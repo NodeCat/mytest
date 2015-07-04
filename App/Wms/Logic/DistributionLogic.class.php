@@ -523,7 +523,6 @@ class DistributionLogic {
         $param['line_count'] = $data['line_count'];
         $param['total_count'] = $data['sku_count'];
         $param['company_id'] = $data['company_id'];
-        $param['refer_code'] = $data['dist_code'];
         $param['created_time'] = get_time();
         $param['created_user'] = session('user.uid');
         $param['updated_time'] = get_time();
@@ -540,6 +539,7 @@ class DistributionLogic {
             $detail = array();
             $detail['pid'] = $pid;
             $detail['bill_out_id'] = $value['bill_out_id'];
+            $detail['refer_code'] = $value['refer_code'];
             $detail['created_time'] = get_time();
             $detail['created_user'] = session('user.uid');
             $detail['updated_time'] = get_time();
