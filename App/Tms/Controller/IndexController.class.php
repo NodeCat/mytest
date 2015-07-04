@@ -8,7 +8,7 @@ class IndexController extends Controller {
         'warehouse'=>array(7=>'北京白盆窑仓库',6=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
     );
 
-    protected function _initialize(){
+    protected function _initialize() {
         if(!session('?user')) {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
@@ -17,7 +17,7 @@ class IndexController extends Controller {
         }
     }
 
-    public function index(){
+    public function index() {
         $this->redirect('delivery'); 
     }
     
@@ -104,81 +104,29 @@ class IndexController extends Controller {
     }
     
     // 车单纬度回款报表
-    public function orderList(){
-
+    public function orderList() {
+        // 获取配送id
         $id = I('get.id',0);
         if(!empty($id)) {
             $M = M('tms_delivery');
             $res = $M->find($id);
-            
             if(empty($res)) {
-                $this->error = '未找到该提货纪录。';
+                $this->error = '未找到该配送单纪录。';
             }
             elseif($res['mobile'] != session('user.mobile')) {
-                $this->error ='不能查看该配送单，您的手机号码与提货人不符合。';
+                $this->error ='不能查看该配送单详情，您的手机号码与提货人不符合。';
             }
             if(!empty($this->error)) {
-                $this->title = "客户签收";
-                $this->display('tms:orders');
+                $this->title = "车单详情";
+                $this->display('tms:orderlist');
                 exit();
             }
-            
-            $map['dist_id'] = $res['dist_id'];
-            $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-            $A = A('Common/Order','Logic');
-            $orders = $A->order($map);
-            $this->data = $orders;
-            $all_orders     = 0;  //总订单统计
-            $sign_orders    = 0;  //签收统计
-            $unsign_orders  = 0;  //退货统计
-            $arrays=array();
-            foreach ($orders as $key => $value) {
-                $all_orders++;
-                // 统计实收货款和签收未收订单 
-                switch($value['status_cn']){
-                    case '已签收':
-                        $sign_orders++;
-                        if($value['pay_status']=='1') {
-                            $value['deal_price'] = 0;
-                        }
-                        $values+=$value['deal_price'];//统计回款数
-                        foreach ($value['detail'] as $key1 => $value1) {
-                            $count=$value1['quantity']-$value1['actual_quantity'];
-                            if ($count!=0) {
-                                if(array_key_exists($value1['sku_number'],$arrays)){
-                                    $arrays[$value1['sku_number']]['quantity'] += $count;
-                                } else {
-                                $arrays[$value1['sku_number']]['quantity'] = $count;
-                                }   
-                                $arrays[$value1['sku_number']]['unit_id'] = $value1['unit_id'];
-                                $arrays[$value1['sku_number']]['name']  =$value1['name'];
-                            }
-                        }
-                        break;
-                    case '已退货':
-                        $unsign_orders++;
-                        foreach ($value['detail'] as $key1 => $value1) {
-                            if(array_key_exists($value1['sku_number'],$arrays)){
-                                $arrays[$value1['sku_number']]['quantity']+= (int) $value1['quantity'];
-                            }else{
-                                $arrays[$value1['sku_number']]['quantity'] = (int) $value1['quantity'];
-                            }
-                            $arrays[$value1['sku_number']]['unit_id']=$value1['unit_id'];
-                            $arrays[$value1['sku_number']]['name']=$value1['name'];
-                        }
-                        break;
-                } 
-                
-            }
-            $list['dist_id'] = $res['dist_id'];
-            $list['values']  = $values;//回款数
-            $list['sign_orders'] = $sign_orders;//已签收
-            $list['unsign_orders'] = $unsign_orders;//未签收
-            $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
-            $this->list = $list;
+            $A = A('Tms/List','Logic');
+            $delivery=$A->deliveryCount($res['dist_id']);
+            $this->list  = $delivery['delivery_count'];
+            $this->back_lists = $delivery['back_lists']; 
+            $this->title =$res['dist_code'].'车单详情';    
         }
-        $this->back_lists = $arrays;
-        $this->title =$res['dist_code'].'车单详情';
         $this->display('tms:orderlist');
     }
 
@@ -462,7 +410,6 @@ class IndexController extends Controller {
                 $data['line_name'] = $lines[0]['name'];
                 $citys = $A->city();
                 $data['city_id'] = $citys[$dist['city_id']];
-                
                 $res = $M->add($data);
                 unset($map);
                 $map['dist_id'] = $dist['id'];
@@ -499,6 +446,7 @@ class IndexController extends Controller {
 
     // 地图模式
     public function navigation() {
+        //如果不是ajax请求
         if(!IS_AJAX){
         $this->error('请求错误','',1);
         exit;
@@ -522,15 +470,25 @@ class IndexController extends Controller {
             foreach ($orders as $keys => $values) {
                 $values['geo'] = json_decode($values['geo'],TRUE);
                 //如果地址为空的话跳过
-                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ){
+                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
                     continue;
                 }
                 $geo = $values['geo'];
                 $geo['user_id'] = $values['user_id'];
                 $geo['address'] = '['.$values['shop_name'].']'.$values['deliver_addr'];
-                $geo['color_type'] = 0;
-                $geo_array[$values['user_id']] = $geo; 
-                
+                // 只要有一单还没送完颜色就是0
+                if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                    if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                        $geo['color_type'] = 3;
+                    }
+                    else{
+                        $geo['color_type'] = 0;
+                    }      
+                }
+                else{
+                    $geo['color_type'] = 0;
+                }   
+                $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
             }            
         }
         $geo_array  = array_values($geo_array);
