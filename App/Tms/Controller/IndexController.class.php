@@ -13,7 +13,6 @@ class IndexController extends Controller {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
             }
-            
         }
     }
 
