@@ -134,16 +134,17 @@ class PurchasesController extends CommonController {
         
         $ary  =  array("A", "B", "C", "D", "E");
         $sheet = $Excel->createSheet('0');
-        $sheet->setCellValue('A1', '产品编号');
-        $sheet->setCellValue('B1', '产品名称');
-        $sheet->setCellValue('C1', '规格');
+        $sheet->setCellValue('A1', '父SKU货号');
+        $sheet->setCellValue('B1', '父SKU名称');
+        $sheet->setCellValue('C1', '父SKU规格');
         $sheet->setCellValue('D1', '仓库');
-        $sheet->setCellValue('E1', '在库存量');
-        $sheet->setCellValue('F1', '下单量');
-        $sheet->setCellValue('G1', '产品采购量');
-        $sheet->setCellValue('H1', '原料货号');
-        $sheet->setCellValue('I1', '原料名称');
-        $sheet->setCellValue('J1', '原料采购量');
+        $sheet->setCellValue('E1', '父SKU在库存量');
+        $sheet->setCellValue('F1', '父SKU下单量');
+        $sheet->setCellValue('G1', '父SKU采购量');
+        $sheet->setCellValue('H1', '子SKU货号');
+        $sheet->setCellValue('I1', '子SKU名称');
+        $sheet->setCellValue('J1', '子SKU在库存量');
+        $sheet->setCellValue('K1', '子SKU采购量');
         $i = 1;
         foreach ($pro_codeArr as $value){
             $i++;
@@ -156,7 +157,8 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('G'.$i, getPurchaseNum($value['pro_code'], $value['wh_id']));
             $sheet->setCellValue('H'.$i, $value['c_pro_code']);
             $sheet->setCellValue('I'.$i, getPronameByCode('name', $value['c_pro_code']));
-            $sheet->setCellValue('J'.$i, getProcessByCode($value['pro_code'], $value['wh_id'], $value['c_pro_code']));
+            $sheet->setCellValue('J'.$i, getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']));
+            $sheet->setCellValue('K'.$i, getProcessByCode($value['pro_code'], $value['wh_id'], $value['c_pro_code']));
 
         }
         
