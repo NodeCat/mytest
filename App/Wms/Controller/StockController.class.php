@@ -303,6 +303,9 @@ class StockController extends CommonController {
 	public function pdaStockSearch(){
 		if(IS_AJAX){
 			$params['pro_code'] = I('pro_code');
+			//ena13 to pro_code
+			$codeLogic = A('Code','Logic');
+			$params['pro_code'] = $codeLogic->getProCodeByEna13code($params['pro_code']);
 			$params['pro_name'] = I('pro_name');
 			$params['location_code'] = I('location_code');
 			$params['stock_status'] = I('status');
@@ -325,6 +328,9 @@ class StockController extends CommonController {
 	//PDA 库存展示页面
 	public function pdaStockShow(){
 		$params['pro_code'] = I('pro_code');
+		//ena13 to pro_code
+		$codeLogic = A('Code','Logic');
+		$params['pro_code'] = $codeLogic->getProCodeByEna13code($params['pro_code']);
 		$params['pro_name'] = I('pro_name');
 		$params['location_code'] = I('location_code');
 		$params['stock_status'] = I('status');

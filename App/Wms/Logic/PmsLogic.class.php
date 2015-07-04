@@ -33,15 +33,16 @@ class PmsLogic{
 	}
 
 	//根据category_id 查询对应的SKU
-	public function get_SKU_by_category_id($category_ids = array()){
+	public function get_SKU_by_category_id($category_ids = array(), $currentPage = 1, $itemsPerPage){
 		if(empty($category_ids)){
 			return false;
 		}
 		import("Common.Lib.HttpCurl");
 		$request = new \HttpCurl();
+		$itemsPerPage = $itemsPerPage?$itemsPerPage:C('PAGE_SIZE');
 		$data = array(
-			'currentPage' => 1,
-			'itemsPerPage' => C('PAGE_SIZE'),
+			'currentPage' => $currentPage,
+			'itemsPerPage' => $itemsPerPage,
 			'where' => array('in'=>array('category_id'=>$category_ids)),
 			);
 		$url = C('PMS_API').'/sku/manage';
@@ -67,6 +68,25 @@ class PmsLogic{
 		$result = $request->post($url,$json_data);
 		return json_decode($result,true);
 	}
+
+	//根据ena13码 查询对应的SKU
+    public function get_SKU_by_ena_code($nea13_codes = array()){
+        if(empty($nea13_codes)){
+            return false;
+        }
+        import("Common.Lib.HttpCurl");
+        $request = new \HttpCurl();
+        $data = array(
+            'currentPage' => 1,
+            'itemsPerPage' => C('PAGE_SIZE'),
+            'where' => array('in'=>array('code'=>$nea13_codes)),
+            );
+        $url = C('PMS_API').'/sku/manage';
+        $json_data = json_encode($data);
+        $result = $request->post($url,$json_data);
+        //var_dump($url,$data,$result);die;
+        return json_decode($result,true);
+    }
 
 	//根据pro_code 模糊查询对应的SKU
 	public function get_SKU_by_pro_codes_fuzzy($pro_code, $page = 1, $count = 10){

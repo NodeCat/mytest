@@ -23,7 +23,8 @@
             <th>车型</th>
             <th>派车平台</th>
             <th>签到仓库</th>
-            <th>最后一次签到日期</th>
+            <th>第一次签到时间</th>
+            <th>最后签到时间</th>
             <th>线路</th>
             <th>备注</th>
           </tr>
@@ -39,7 +40,8 @@
             <td>{$k.car_from}</td>
             <td>{$k.warehouse}</td>
             <td>{$k.created_time}</td>
-            <td></td>
+            <td>{$k.updated_time}</td>
+            <td width="15%">{$k.line_name}</td>
             <td></td>
 
           </tr>

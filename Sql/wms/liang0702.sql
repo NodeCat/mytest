@@ -1,0 +1,1 @@
+ALTER TABLE `stock_bill_out` ADD `order_type` INT(11) NULL DEFAULT '0' AFTER `total_qty`;
