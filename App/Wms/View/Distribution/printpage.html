@@ -117,6 +117,7 @@
     </div>
 </div>
 <div style="height:600px;width:900px;margin-bottom:50px;" class="mapContainer" id="mapContainer{$kk}"></div>
+<div class="hidden" id="map_pos{$kk}" >{$attrs.map_pos}</div>
 </div>
 </div>
 </volist>
@@ -285,16 +286,35 @@ $(function() {
 	$(".mapContainer").each(function(i){
 		var mapObj, marker, markers = [];
 		var num = i + 1;
+		var map_pos = $('#map_pos'+num).html();
+		console.log(map_pos);
 		// 地图初始化
-		function mapInit(){
-		  mapObj = new AMap.Map("mapContainer"+num,{
-		    center:new AMap.LngLat(116.397428,39.90923), //地图中心点
-		    level:11  //地图显示的比例尺级别
-		    //zoomEnable:false
-		  });
-		  // AMap.event.addListener(mapObj,'click',getLnglat); //点击事件
-		}
-		  mapInit();
+		mapObj = new AMap.Map("mapContainer"+num,{
+		  center:new AMap.LngLat(116.397428,39.90923), //地图中心点
+		  level:11  //地图显示的比例尺级别
+		  //zoomEnable:false
+		});
+		
+		<volist name='list' id='attrs' key="kk">
+		  if (num == {$kk}) {
+			 <volist name="attrs['map_pos']" id="pos">
+				var marker = new AMap.Marker({	
+					//复杂图标
+					icon: new AMap.Icon({    
+							//图标大小
+							size:new AMap.Size(28,37),
+							//大图地址
+							image:"http://webapi.amap.com/images/custom_a_j.png", 
+							imageOffset:new AMap.Pixel(-28,0)
+						}),
+					//在地图上添加点
+					position:new AMap.LngLat({$pos.lng},{$pos.lat})
+					
+				});
+				marker.setMap(mapObj);
+			 </volist>
+		  }
+		</volist>
 	});	
 })
 
