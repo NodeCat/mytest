@@ -857,7 +857,7 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '创建波次失败');
         }
         //更新出库单状态为波次中
-        $map['id'] = array('in', ids);
+        $map['id'] = array('in', $ids);
         $data['status'] = 3; //波此中
         if ($stock_out->create($data)) {
            $affect = $stock_out->where($map)->save();
