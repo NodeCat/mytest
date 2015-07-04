@@ -4,14 +4,13 @@ use Think\Model;
 class StockOutModel extends Model {
 
     public $tableName='stock_bill_out';
-    protected $insertFields = array('id','code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_realname','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty');
-    protected $updateFields = array('code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_realname','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty');
+    protected $insertFields = array('id','code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_realname','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty','order_type');
+    protected $updateFields = array('code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_realname','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty','order_type');
     protected $readonlyField = array('id');
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
                 array('type','require','订单类型不能为空',1,'regex',1),
-                array('wh_id','require','仓库不能为空',1,'regex',1),
             );
 
     //array(填充字段,填充内容,[填充条件,附加规则])

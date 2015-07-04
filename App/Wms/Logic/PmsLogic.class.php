@@ -33,15 +33,16 @@ class PmsLogic{
 	}
 
 	//根据category_id 查询对应的SKU
-	public function get_SKU_by_category_id($category_ids = array()){
+	public function get_SKU_by_category_id($category_ids = array(), $currentPage = 1, $itemsPerPage){
 		if(empty($category_ids)){
 			return false;
 		}
 		import("Common.Lib.HttpCurl");
 		$request = new \HttpCurl();
+		$itemsPerPage = $itemsPerPage?$itemsPerPage:C('PAGE_SIZE');
 		$data = array(
-			'currentPage' => 1,
-			'itemsPerPage' => C('PAGE_SIZE'),
+			'currentPage' => $currentPage,
+			'itemsPerPage' => $itemsPerPage,
 			'where' => array('in'=>array('category_id'=>$category_ids)),
 			);
 		$url = C('PMS_API').'/sku/manage';

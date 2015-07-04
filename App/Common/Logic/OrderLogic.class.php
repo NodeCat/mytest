@@ -15,6 +15,12 @@ class OrderLogic{
 		$res = $this->get($url,$map);
 		return $res['orderlist'];
 	}
+	//根据客户id获取客户信息
+	public function customer($map=''){
+		$url = '/customer/view';
+		$res = $this->get($url,$map);
+		return $res['info'];
+	}
 	//修改订单状态
 	public function set_status($map='') {
 		switch ($map['status']) {

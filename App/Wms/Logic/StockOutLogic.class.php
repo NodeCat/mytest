@@ -38,6 +38,7 @@ class StockOutLogic{
         $data['delivery_ampm'] = $params['delivery_ampm'];
         $data['customer_realname'] = $params['customer_realname'];
         $data['delivery_address'] = $params['delivery_address'];
+        $data['order_type'] = $params['order_type'];
         $data['created_time'] = date('Y-m-d H:i:s');
         $data['created_user'] = UID;
         $data['updated_time'] = date('Y-m-d H:i:s');
@@ -101,7 +102,6 @@ class StockOutLogic{
     public function getSearchDate($whereArr = array()){
         $map                = array();
         $map['is_deleted']  = 0;
-        $map['status']      = 1;
         $result             = array();
         $code               = $whereArr['code'];
         $wave_id            = $whereArr['wave_id'];

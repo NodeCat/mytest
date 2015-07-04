@@ -13,7 +13,6 @@ class IndexController extends Controller {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
             }
-            
         }
     }
 
@@ -33,9 +32,19 @@ class IndexController extends Controller {
             }   
         }
         if(IS_POST) {
-            $code = I('post.code/d',0);
+            if(session('?user')) {
+                $this->redirect('delivery');
+                exit();
+            }
+            $code = I('post.code',0);
+            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$code)){
+                $this->error = "您输入的手机号码格式不正确！";
+                $this->display('Index:login');
+                exit();
+
+            }
             $name   = I('post.name');
-            if(empty($code) || empty($name)){
+            if(empty($name)){
                 $this->error = "请输入您的身份信息";
                 $this->display('Index:login');
             }
@@ -61,6 +70,7 @@ class IndexController extends Controller {
                     //如果已经签到过了那就改成最新的签到时间
                     if($id){
                         $userid['id']=$id['id'];
+                        unset($userid['created_time']);
                         $M->save($userid);
                         session('user',$user);
                         $this->redirect('delivery');
@@ -117,17 +127,20 @@ class IndexController extends Controller {
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);
             $this->data = $orders;
-            $J=0;
-            $I=0;
-            $K=0;
+            $all_orders     = 0;  //总订单统计
+            $sign_orders    = 0;  //签收统计
+            $unsign_orders  = 0;  //退货统计
             $arrays=array();
             foreach ($orders as $key => $value) {
-                $J++;
+                $all_orders++;
                 // 统计实收货款和签收未收订单 
                 switch($value['status_cn']){
                     case '已签收':
-                        $I++;
-                        $values+=$value['deal_price'];
+                        $sign_orders++;
+                        if($value['pay_status']=='1') {
+                            $value['deal_price'] = 0;
+                        }
+                        $values+=$value['deal_price'];//统计回款数
                         foreach ($value['detail'] as $key1 => $value1) {
                             $count=$value1['quantity']-$value1['actual_quantity'];
                             if ($count!=0) {
@@ -142,7 +155,7 @@ class IndexController extends Controller {
                         }
                         break;
                     case '已退货':
-                        $K++;
+                        $unsign_orders++;
                         foreach ($value['detail'] as $key1 => $value1) {
                             if(array_key_exists($value1['sku_number'],$arrays)){
                                 $arrays[$value1['sku_number']]['quantity']+= (int) $value1['quantity'];
@@ -156,13 +169,14 @@ class IndexController extends Controller {
                 } 
                 
             }
-            $list['values']=$values;
-            $list['sign_orders']=$I;
-            $list['unsign_orders']=$K;
-            $list['delivering']=$J-$I-$K;
-            $this->list=$list;
+            $list['dist_id'] = $res['dist_id'];
+            $list['values']  = $values;//回款数
+            $list['sign_orders'] = $sign_orders;//已签收
+            $list['unsign_orders'] = $unsign_orders;//未签收
+            $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
+            $this->list = $list;
         }
-        $this->back_lists=$arrays;
+        $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
         $this->display('tms:orderlist');
     }
@@ -310,12 +324,14 @@ class IndexController extends Controller {
                 $this->display('tms:orders');
                 exit();
             }
-            
+            $this->dist = $res;
             $map['dist_id'] = $res['dist_id'];
+            $map['itemsPerPage'] = $res['order_count'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
-            $orders = $A->order($map);
-            foreach ($orders as &$val) {
+            $orderList = $A->order($map);
+            $this->orderCount = count($orderList);
+            foreach ($orderList as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
                 switch ($val['pay_status']) {
@@ -343,7 +359,7 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
-                
+                $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
         }
@@ -390,11 +406,11 @@ class IndexController extends Controller {
         $id = I('post.code/d',0);
         if(IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
-            $map['mobile'] = session('user.mobile');
+            //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
+            //$map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
             $dist = $M->field('id,mobile')->where($map)->find();
             unset($map);
@@ -403,7 +419,7 @@ class IndexController extends Controller {
                     $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
-                    $map['id'] = $dist['id'];
+                    $map['dist_id'] = $id;
                     $data['status'] = '0';
                     $M->where($map)->save($data);
                 }
@@ -472,6 +488,7 @@ class IndexController extends Controller {
 
         //只显示当天的记录
         $map['mobile'] = session('user.mobile');
+        $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
@@ -479,6 +496,47 @@ class IndexController extends Controller {
         $this->title = '提货扫码';
         $this->display('tms:delivery'); 
 
+    }
+
+    // 地图模式
+    public function navigation() {
+        if(!IS_AJAX){
+        $this->error('请求错误','',1);
+        exit;
+        }
+        //只显示当天的记录
+        $map['mobile'] = session('user.mobile');
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        unset($M);
+        $M = M('tms_delivery');
+        $data = $M ->where($map)->select();
+        unset($map);
+        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+        $A = A('Common/Order','Logic');
+        $geo_array=array();
+        foreach ($data as $key => $value) {
+            // dump($value['dist_id']);
+            $map['dist_id'] = $value['dist_id'];
+            $orders = $A->order($map);
+            foreach ($orders as $keys => $values) {
+                $values['geo'] = json_decode($values['geo'],TRUE);
+                //如果地址为空的话跳过
+                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ){
+                    continue;
+                }
+                $geo = $values['geo'];
+                $geo['user_id'] = $values['user_id'];
+                $geo['address'] = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                $geo['color_type'] = 0;
+                $geo_array[$values['user_id']] = $geo; 
+                
+            }            
+        }
+        $geo_array  = array_values($geo_array);
+        $geo_arrays =json_encode($geo_array,JSON_UNESCAPED_UNICODE);
+        $this->ajaxReturn($geo_arrays);
     }
 
 
