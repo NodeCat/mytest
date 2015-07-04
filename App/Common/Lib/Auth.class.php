@@ -37,7 +37,7 @@ class Auth{
         if (!$this->_config['AUTH_ON'])
             return true;
         $authList = $this->getAuthList($uid,$type);
-        
+
         if (is_string($name)) {
             $name = strtolower($name);
             if (strpos($name, ',') !== false) {
@@ -54,6 +54,7 @@ class Auth{
         );
         //读取用户组所有权限规则
         $rules = M()->table($this->_config['AUTH_RULE'])->where($map)->field('action,url')->select();
+
         $list = array();
         foreach ( $rules as $rule ) {
             $auth = strtolower($rule['url']);
@@ -83,7 +84,7 @@ class Auth{
     public function getMenu($uid){
         $M=M('Menu');
         $cur = CONTROLLER_NAME.'/'.ACTION_NAME;
-        $map = array('status'=>'1','is_deleted'=>0);
+        $map = array('module'=> MODULE_NAME,'status'=>'1','is_deleted'=>0);
         $result= $M->where($map)->order('pid,queue,id')->getField("id,id,name,level,pid,icon,link,module,target,show");
         foreach ($result as $k => $v) {
             if($v['show'] == 0 && $v['link'] != $cur){//对于设置隐藏的菜单，并且不是当前链接，则直接跳过
@@ -111,8 +112,13 @@ class Auth{
         }
         
         //将链接为空的菜单再插入回用户可访问的菜单列表
-        $result = array_merge($menu_link_empty,$menu);
-        
+        if(!empty($menu_link_empty)) {
+            $result = array_merge($menu_link_empty,$menu);
+        }
+        else {
+            $result = $menu;
+        }
+
         //菜单分级
         foreach ($result as $k => $v) {
             $data[$v['level']][]=$v;
@@ -244,6 +250,7 @@ class Auth{
             return array();
         }
         $map=array(
+            'group' => MODULE_NAME,
             'id'=>array('in',$ids),
             'type'=> $type,
             'status'=>1,

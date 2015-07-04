@@ -139,23 +139,36 @@ $('#add-dist').on('click',function(){
 
 	$('#table-content').delegate('input[type=checkbox]','change',function(){
 		if($(this).hasClass('select-all')) {
-			return;	
-		};
-		if($(this).prop('checked') == true) {
-			var tr = $(this).parents('tr');
-			var row = new Array();
-			row['id'] = tr.find('.order-id').val();
-			row['user_id'] = tr.find('.order-user_id').val();
-			row['adress'] = tr.find('.order-adress').val();
-			row['line'] = tr.find('.order-line').val();
-			row['cat'] = tr.find('.order-cat').val();
-			row['qty'] = tr.find('.order-qty').val();
-			addRow(row);
+			//找到tbody中的所有checkbox
+			$("#table-content tbody input[type='checkbox']").each(function(){
+				var tr = $(this).parents('tr');
+				var row = new Array();
+				row['id'] = tr.find('.order-id').val();
+				row['user_id'] = tr.find('.order-user_id').val();
+				row['adress'] = tr.find('.order-adress').val();
+				row['line'] = tr.find('.order-line').val();
+				row['cat'] = tr.find('.order-cat').val();
+				row['qty'] = tr.find('.order-qty').val();
+				addRow(row);
+			});
+		}else{
+			if($(this).prop('checked') == true) {
+				var tr = $(this).parents('tr');
+				var row = new Array();
+				row['id'] = tr.find('.order-id').val();
+				row['user_id'] = tr.find('.order-user_id').val();
+				row['adress'] = tr.find('.order-adress').val();
+				row['line'] = tr.find('.order-line').val();
+				row['cat'] = tr.find('.order-cat').val();
+				row['qty'] = tr.find('.order-qty').val();
+				addRow(row);
+			}
+			else {
+				var id = $(this).parents('tr').find('.order-id').val();
+				removeRow(id);
+			}
 		}
-		else {
-			var id = $(this).parents('tr').find('.order-id').val();
-			removeRow(id);
-		}
+		
 		calc();
 	});
 

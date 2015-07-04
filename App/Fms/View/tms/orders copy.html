@@ -1,0 +1,362 @@
+<div class="col-xs-12">
+<form class="form-horizontal form-pda form-scan" action="__SELF__" method="POST">
+  <input type="hidden" name="t" value="login" />
+  <div class="row-fluid">
+  <div class="col-xs-12">
+  <div class="form-group">
+  <div class="input-group">
+      <span class="input-group-addon">
+      <i class="glyphicon glyphicon-pencil"></i>
+    	</span>
+      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入订单id">
+      <span class="input-group-btn">
+        <button class="btn btn-lg btn-default" id="btn-clear" type="button"><i class="glyphicon glyphicon-remove"></i></button>
+      </span>
+    </div>
+  </div>
+ </div>
+ <div class="clearfix"></div>
+ </div>
+ <br/>
+
+</form>
+</div>
+
+<div class="col-xs-12" id="orders">
+<volist name="data" id="vo">
+
+<neq name="i" value="1">
+<neq name="vo['user_id']" value="$user_id">
+<gt name="j" value="0"></div><hr/></gt>
+{~$j = 0 ;}
+</neq>
+</neq>
+
+<neq name="vo['user_id']" value="$user_id">
+<div class="panel panel-default">
+</neq>
+
+<switch name="vo['status_cn']" >
+<case value="已签收" break="0"></case>
+<case value="已完成" break="0"></case>
+<case value="已回款" break="1">
+  <a class="list-group-item list-group-item-success" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
+  </case>
+<case value="已退货" break="1">
+  <a class="list-group-item list-group-item-danger collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true" aria-controls="info_{$vo.id}">
+  </case>
+<default />
+<a class="list-group-item  panel-footer collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
+</switch>
+ <!--{$vo.order_type_cn}--> <span class="order-id">{$vo.id}</span>&nbsp;
+ <!--
+  <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
+    <i class="glyphicon glyphicon-th-large"></i> {$vo.quantity} 件 
+  <br/>
+  -->
+    <i class="glyphicon glyphicon-yen"></i>{$vo.final_price} 元  &nbsp;&nbsp;{$vo.pay_status} &nbsp;
+<switch name="vo['status_cn']" >
+<case value="已签收" break="0"></case>
+<case value="已完成" break="0"></case>
+<case value="已回款" break="1">
+  <label class="label label-success">{$vo.status_cn}</label>
+  </case>
+<case value="已退货" break="1">
+ <label class="label label-danger">{$vo.status_cn}</label>
+</case>
+<default />
+</switch>
+ <span style="color:red;">点击展开</span>
+</a>
+  <div class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
+  <form class="order">
+    <input type="hidden" name="id" value="{$vo.id}" />
+    <ul class="list-group" >
+    <div class="table-responsive">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+<caption><span class="panel-info"><div class="panel-heading info">收货详情</></span></caption>
+  <thead>
+    <tr class="text-center">
+      <th>货品</th>
+      <th>下单数量</th>
+      <th>送货数量</th>
+      <th>实收数量</th>
+      <th>送货重量</th>
+      <th>实收重量</th>
+      <th>结算单价</th>
+      <th>应收小计</th>
+      <th>实收小计</th>
+    </tr>
+  </thead>
+<tbody>
+ <tfoot>
+    <tr>
+      <td>5行</td>
+      <td colspan="6">合计</td>
+      <!--<td>14件</td>
+      <td>153斤</td>
+      <td>13件</td>
+      <td>121斤</td>
+      <td></td>-->
+      <td>3660</td>
+      <td class="dange">3660</td>
+    </tr>
+
+  </tfoot>
+  <volist name="vo['detail']" id="v">
+  <tr>
+  <td>{$v.sku_number} {$v.name}
+  <!-- <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach>-->
+  </td>
+  <td>{$v.quantity}{$v.unit_id}</td>
+  <td class="warnin">{$v.quantity}{$v.unit_id}</td>
+  <td class="dange">{$v.quantity}{$v.unit_id}</td>
+  <td>{$v.actual_quantity}</td>
+  <td>{$v.actual_quantity}</td>
+
+  <td>{$v.single_price}/{$v.close_unit}</td>
+    <td>{$v.sum_price}</td>
+  <td>{$v.actual_sum_price}</td>
+  </tr>
+  </volist>
+</tbody>
+</table>
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+<caption><span class="panel-info"><div class="panel-heading info">总计</></span></caption>
+<thead>
+    <tr>
+      <td>货品金额</td>
+      <td>优惠金额</td>
+      <td>减免金额</td>
+      <td>运费</td>
+      <td>服务费</td>
+      <td>应收总计</td>
+      <td>实收总计</td>
+
+    </tr>
+</thead>
+<tbody>
+    <tr>
+      <td>3550</td>
+      <td>-5</td>
+      <td>-50</td>
+      <td>50</td>
+      <td>50</td>
+      <td class="dange">3660</td>
+      <td class="dange">3660</td>
+    </tr>
+</tbody>
+</table>
+</ul>
+    <div class="panel-footer summary">
+        <div class="input-group row">
+            <span class="input-group-addon">财务结算</span>
+
+
+<switch name="vo['status_cn']" >
+<case value="已签收" break="0"></case>
+<case value="已完成" break="0"></case>
+<case value="已回款" break="1">
+  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.deal_price}">  
+</case>
+<case value="已退货" break="1">
+  <input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="0">  
+</case>
+<default />
+<input type="text" name="deal_price" class="form-control p_deal" placeholder="" value="{$vo.final_price}">
+</switch>
+ </div>
+    </div>
+<switch name="vo['status_cn']" >
+<case value="已签收" break="0"></case>
+<case value="已完成" break="0"></case>
+<case value="已回款" break="1"></case>
+<case value="已退货" break="0"></case>
+<case value="已发运" break="0"></case>
+<case value="已出库" break="0"></case>
+<case value="已装车" break="0"></case>
+<case value="待收货" break="0">
+
+    <div class="panel-footer">
+      <div class="col-xs-6">
+          <a class="btn-reject btn btn-danger btn-block hidden">结货</a>
+      </div>
+      <div class="col-xs-6">
+          <a class="btn-sign btn btn-success btn-block">结款</a>
+      </div>
+      <div class="clearfix"></div>
+    </div>
+
+</case>
+</switch>
+<div class="panel-footer">
+      <div class="input-group row">
+        <span class="input-group-addon">备注</span>
+        <eq name="vo['sign_msg']" value="0">
+          {~$vo['sign_msg']='';}
+        </eq>
+      <input class="form-control" type="text" name="sign_msg" value="{$vo.sign_msg}" placeholder="签收或退货备注">
+      </div>
+    </div>
+
+
+    </form>
+</div>
+
+<eq name="i" value="1">
+{~$user_id = $vo['user_id']}
+<else/>
+
+</eq>
+<neq name="vo['user_id']" value="$user_id">
+</div>
+<else/>
+{~$j++;}
+</neq>
+  {~$user_id = $vo['user_id']}
+</volist>
+
+</div>
+
+
+<style type="text/css">
+hr{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+form.order ul.list-group{
+  margin-bottom: 0px;
+}
+
+</style>
+
+<script type="text/javascript">
+
+  function goToGaodeMap(lat,lng){
+    if(typeof HostApp == "undefined") {
+      alert('使用导航功能请您先下载大厨网配送app.');
+    }
+    else {
+      if(lat == null || lat == "''" || lng == null || lng == "''"){
+          HostApp.toast('无法导航，销售没有录入该客户地址的坐标。');
+          return;
+        }
+      HostApp.navigationToMap(lat,lng);
+    }
+  }
+  $(function(){
+    $('#btn-clear').on('click', function(){
+      $('#code').val('');
+      $('#orders .panel').show();
+    });
+    $('.navigation-map').on('click',function(){
+        var lat = $(this).data('lat');
+        var lng = $(this).data('lng');
+        goToGaodeMap(lat,lng);
+        
+    });
+    $('#code').on('input', function(){
+      var search = $(this).val();
+      $('.order-id').each(function(){
+        if($(this).text().indexOf(search) == -1) {
+          $(this).parents('.panel').hide();
+        }
+        else {
+          $(this).parents('.panel').show();
+        }
+      })
+    });
+
+    $('.p_qty').on('input',function(){
+        var qty = $(this).val();
+        var price_unit = $(this).parent().find('.p_price').val();
+        $(this).parent().find('.p_sum').text(accMul(qty , price_unit));//计算当前行的小计
+        var final_price = 0;
+        var line_qty = 0;
+        var line_price = 0;
+        //计算这张订单的应收金额，累加数量＊单价
+        $(this).parents('.order').find('.p_qty').each(function(index,item){
+          line_qty = $(item).parent().find('.p_price').val();
+          final_price = accAdd(final_price, accMul(line_qty,$(item).val()));
+        });
+        //减去优惠金额
+        var minus = $(this).parents('.order').find('.p_minus').text();
+        var sum = accSub(final_price, minus);
+        $(this).parents('.order').find('.p_final').text(sum);
+        //计算实收金额，累加所有的小计，并减去优惠金额
+        var deal_sum = 0;
+        $(this).parents('.order').find('.p_sum').each(function(index,item){
+          deal_sum = accAdd(deal_sum, $(item).text());
+        });
+        deal_sum = accSub(deal_sum, minus);
+        $(this).parents('.order').find('.p_deal').val(deal_sum);
+    });
+    $('.p_sum').on('input',function(){
+        var minus = $(this).parents('.order').find('.p_minus').text();
+        //计算实收金额，累加所有的小计，并减去优惠金额
+        var deal_sum = 0;
+        $(this).parents('.order').find('.p_sum').each(function(index,item){
+          deal_sum = accAdd(deal_sum, $(item).text());
+        });
+        deal_sum = accSub(deal_sum, minus);
+        $(this).parents('.order').find('.p_deal').val(deal_sum);
+    });
+
+    $('.btn-sign').on('click',function(){
+        var params = $(this).closest('form.order').serialize();
+        var addr = "{:U('sign')}";
+        
+        $.ajax({
+          url:addr,
+          type:'post',
+          cache : false,
+          dataType:'json',
+          data:params,
+          success: function(msg){
+            if(msg.status=='0'){
+              if(typeof HostApp == "undefined") {
+                alert(msg.msg);
+              }
+              else {
+                HostApp.toast(msg.msg);
+              }
+              location.reload();
+            }
+            else{
+              alert_error(msg.msg); 
+            }
+          }
+        });
+    });
+
+    $('.btn-reject').on('click',function(){
+        var params = $(this).closest('form.order').serialize();
+        var addr = "{:U('reject')}";
+        
+        $.ajax({
+          url:addr,
+          type:'post',
+          cache : false,
+          dataType:'json',
+          data:params,
+          success: function(msg){
+            if(msg.status=='0'){
+              if(typeof HostApp == "undefined") {
+                alert(msg.msg);
+              }
+              else {
+                HostApp.toast(msg.msg);
+              }
+              
+              location.reload();
+            }
+            else{
+              alert_error(msg.msg); 
+            }
+          }
+        });
+    });
+  });
+
+
+</script>

@@ -10,9 +10,13 @@
             <notempty name="auth['delete']">
                 <a data-href="{:U('StockOut/delete')}" data-value="{$data.id}" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-remove"></i> 删除</a>
             </notempty>
+
+            <if condition="($data['type'] eq '8') OR ($data['type'] eq '9')">
             <notempty name="auth['stockOut']">
-            <a href="#" id="stock_out" data-title="出库" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon"></i> 出库</a>
+            <a href="javascript:void(0);" id="stock_out" data-title="出库" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon"></i> 出库</a>
             </notempty>
+            </if>
+
             </if>
             <input type="hidden" id="stock_out_id" value="{$data.id}">
             </div>

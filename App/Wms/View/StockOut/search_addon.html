@@ -1,16 +1,18 @@
 <notempty name="auth['stockOut']">
 <div class="form-group  col-lg-1">
-<a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>
+<!--<a href="#" id='stock_out' class="btn btn-sm btn-default btn-tool">出库</a>-->
 </div>
 <div class="form-group  col-lg-1" style="margin-left: 15px;">
-<a href="#" id='create_wave' class="btn btn-sm btn-default btn-tool">创建波次</a>
+<a href="#" id='create_waves' class="btn btn-sm btn-default btn-tool">创建波次</a>
 </div>
 <include file="dialog_create" />
+<include file="dialog_msg" />
 <script type="text/javascript">
 var alert_dialog = {
 	
 	close:function(){
 		this.hide();
+		window.location.reload();
 	},
 	show:function(title, content){
 		title  = title?title:'提示框';
@@ -23,9 +25,39 @@ var alert_dialog = {
 	hide:function(){
 		$('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
 		$('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+		$('[aria-labelledby = gridSystemModalLabeldialog]').remove();
 	}
 };
+
 $(function(){
+
+	var paramArr = {
+
+		requestParam:function(){
+			var ids = getChecked();
+			var param = {};
+			param.ids = ids;
+			param.code = $("[name = 'query[stock_bill_out.code]']").val();
+			param.wave_id = $("[name = 'query[stock_bill_out.wave_id]']").val();
+			param.type = $("[name = 'query[stock_bill_out.type]']").val();
+			param.refused_type = $("[name = 'query[stock_bill_out.refused_type]']").val();
+			param.line_id = $("[name = 'query[stock_bill_out.line_id]']").val();
+			param.process_type = $("[name = 'query[stock_bill_out.process_type]']").val();
+			param.created_time = $("[name = 'query[stock_bill_out.created_time]']").val();
+			param.created_time_1 = $("[name = 'query[stock_bill_out.created_time_1]']").val();
+			/*param.customer_realname = $("[name = 'query[stock_bill_out.customer_realname]']").val();
+			param.delivery_address = $("[name = 'query[stock_bill_out.delivery_address]']").val();*/
+			param.delivery_date = $("[name = 'query[stock_bill_out.delivery_date]']").val();
+			param.delivery_ampm = $("[name = 'query[stock_bill_out.delivery_ampm]']").val();
+			param.company_id = $("[name = 'query[stock_bill_out.company_id]']").val();
+			param.status = $("[name = 'query[stock_bill_out.status]']").val();
+
+			return param;
+
+		}
+
+	};
+
 	$('#stock_out').on('click',function(){
 		var ids = getChecked();
 		$.ajax({
@@ -46,24 +78,36 @@ $(function(){
 			}
 		});
 		return true;
-	})
-	$(document).on('click','#create_wave',function(res){
+	});
+
+	//提交前提示
+	$(document).on('click','#create_waves',function(res){
+
+		var param = paramArr.requestParam();
 		var ids = getChecked();
-		var param = {};
-		param.ids = ids;
-		param.code = $("[name = 'query[stock_bill_out.code]']").val();
-		param.wave_id = $("[name = 'query[stock_bill_out.wave_id]']").val();
-		param.type = $("[name = 'query[stock_bill_out.type]']").val();
-		param.refused_type = $("[name = 'query[stock_bill_out.refused_type]']").val();
-		param.line_id = $("[name = 'query[stock_bill_out.line_id]']").val();
-		param.process_type = $("[name = 'query[stock_bill_out.process_type]']").val();
-		param.created_time = $("[name = 'query[stock_bill_out.created_time]']").val();
-		param.created_time_1 = $("[name = 'query[stock_bill_out.created_time_1]']").val();
-		/*param.customer_realname = $("[name = 'query[stock_bill_out.customer_realname]']").val();
-		param.delivery_address = $("[name = 'query[stock_bill_out.delivery_address]']").val();*/
-		param.delivery_date = $("[name = 'query[stock_bill_out.delivery_date]']").val();
-		param.delivery_ampm = $("[name = 'query[stock_bill_out.delivery_ampm]']").val();
-		param.company_id = $("[name = 'query[stock_bill_out.company_id]']").val();
+		var url = "/StockOut/hasCreate";
+		var callback = function(json){
+			if(json.status == 2){
+				alert(json.msg);
+				return true;
+			}else if(json.status == 1){
+				json.data.type = 1;
+				if(ids){
+					json.data.type = 0;
+				}
+				json.data.title = '是否确定创建波次？';
+				var html = template('dialog_msg',json.data);
+			    $('body').append(html);
+			}
+		}
+		$.post(url,param,callback,'json');
+
+	});
+
+
+	$(document).on('click','#create_wave',function(res){
+		alert_dialog.hide();
+		var param = paramArr.requestParam();
 		
 		$.ajax({
 			url:'/StockOut/createWave',
@@ -79,10 +123,9 @@ $(function(){
 						$('body').append(html);
 					}else{
 						alert(json.msg);
+						window.location.reload();
 					}
 					
-            
-                    window.location.reload();
                     refresh_list();
 				}
 				if(json.status=='0'){
@@ -93,6 +136,6 @@ $(function(){
 		});
 	});
 	
-})
+});
 </script>
 </notempty>
