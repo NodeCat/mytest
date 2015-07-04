@@ -52,7 +52,6 @@ class PurchasesController extends CommonController {
             if($categoryChild){
                 //获取sku_code
                 $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
-                //dump($result);die;
                 //帅选sku_code
                 if($result){
                     $pro_codeArr = $purchasesLogic->getSkuInfoByWhId($result, $wh_id, $delivery_date, $delivery_ampm);
@@ -84,7 +83,7 @@ class PurchasesController extends CommonController {
     }
 
     /**
-     * 进销存导出
+     * 采购需求数据存导出
      */
     public function exportPurchases() {
         
