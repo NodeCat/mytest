@@ -859,6 +859,8 @@ class DistributionController extends CommonController {
         //更新出库单状态为波次中
         $map['id'] = array('in', $ids);
         $data['status'] = 3; //波此中
+        $data['wave_id'] = $back;
+        $data['refused_type'] = 1;
         if ($stock_out->create($data)) {
            $affect = $stock_out->where($map)->save();
            if (!affect) {

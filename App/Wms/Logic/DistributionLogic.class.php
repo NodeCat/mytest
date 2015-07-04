@@ -507,7 +507,7 @@ class DistributionLogic {
      * )
      */
     public function create_wave($data = array()) {
-        $return = false;
+        $return = 0;
         
         if (empty($data)) {
             return $return;
@@ -550,7 +550,7 @@ class DistributionLogic {
             }
         }
         
-        $return = true;
+        $return = $pid;
         return $return;
     }
     
