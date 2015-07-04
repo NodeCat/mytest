@@ -285,6 +285,9 @@ function getStockQtyByWpcode($pro_code,$wh_id){
     $where['status'] = 'qualified';
     $res = $m->where($where)->sum('stock_qty');
 
+    if(!$res){
+        return 0;
+    }
     return $res;
 }
 /**
@@ -324,7 +327,7 @@ function getPurchaseNum($pro_code,$wh_id){
     return $res;
 }
 /**
- * getDownOrderNum 根据物料清单sku和子sku仓库id汇总原理采购量
+ * getProcessByCode 根据物料清单sku和子sku仓库id汇总原理采购量
  * @param String $pro_code sku code
  * @param Int $wh_id 仓库id
  * @author liuguangping@dachuwang.com
@@ -344,7 +347,7 @@ function getProcessByCode($pro_code,$wh_id,$c_pro_code){
     if(!$ratio){
         return 0;
     }else{
-        $order_num = getDownOrderNum($pro_code,$wh_id)*$ratio;
+        $order_num = getPurchaseNum($pro_code,$wh_id)*$ratio-getStockQtyByWpcode($c_pro_code,$wh_id);
     }
     return $order_num;
 }

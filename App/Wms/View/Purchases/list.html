@@ -10,6 +10,7 @@
      <col style="width: 5%;" />
      <col style="width: 10%;" />
      <col style="width: 10%;" />
+     <col style="width: 10%;" />
      <col style="width: 5%;" />
     <!--   <col style="width: 4.6%;" />
      <col style="width: 4.6%;" />
@@ -27,21 +28,21 @@
       <th id="wh_name" data-column="1" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         产品编号 
+         父SKU货号 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
       <th id="area" data-column="2" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         产品名称 
+         父SKU名称 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
       <th id="pro_code" data-column="3" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         规格 
+         父SKU规格 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
@@ -55,42 +56,49 @@
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         在库存量 
+         父SKU在库存量 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         下单量 
+         父SKU下单量 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
         <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         产品采购量 
+         父SKU采购量 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         原料货号 
+         子SKU货号 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         原料名称 
+         子SKU名称 
+         <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
+        </div>
+       </div></th>
+       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
+       <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
+        <div class="tablesorter-header-inner">
+         子SKU在库存量
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
-         原料采购量 
+         子SKU采购量 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
@@ -108,6 +116,7 @@
       <td>{$vo.wh_id|getPurchaseNum=$vo['pro_code'],###}</td>
       <td>{$vo.c_pro_code}</td>
       <td>{$vo.c_pro_code|getPronameByCode='name',###}</td>
+      <td>{$vo.wh_id|getStockQtyByWpcode=$vo['c_pro_code'],###}</td>
       <td>{$vo.c_pro_code|getProcessByCode=$vo['pro_code'],$vo['wh_id'],###}</td>
      </tr>
     </volist>
