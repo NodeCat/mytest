@@ -17,11 +17,12 @@ class InsalesController extends CommonController {
 
         $p           = I("p",1);
         $page_size   = C('PAGE_SIZE');
-        $offset       = ($p-1)*$page_size;
+        $offset      = ($p-1)*$page_size;
         $wh_id       = (I('wh_id')== '全部')?'':I('wh_id');
         $cat_1       = I('cat_1');
         $cat_2       = I('cat_2');
         $cat_3       = I('cat_3');
+        $pro_code    = I('pro_code');
 
         //获取sku 第三级分类id
         $param = array();
@@ -33,7 +34,7 @@ class InsalesController extends CommonController {
 
         //优化代码如果没选择分类则查本地库
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
-            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id, $offset, $page_size);
+            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id,$pro_code, $offset, $page_size);
 
             if($pro_codeArr){
 
@@ -52,7 +53,7 @@ class InsalesController extends CommonController {
                 $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
                 //帅选sku_code
                 if($result){
-                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id,$pro_code);
                 }
             }
             
@@ -91,6 +92,7 @@ class InsalesController extends CommonController {
         $cat_1       = I('cat_1');
         $cat_2       = I('cat_2');
         $cat_3       = I('cat_3');
+        $pro_code    = I('pro_code');
 
         //获取sku 第三级分类id
         $param = array();
@@ -100,7 +102,7 @@ class InsalesController extends CommonController {
 
         $insalesLogic = A('Insales','Logic');
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
-            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id);
+            $pro_codeArr = $insalesLogic->getSkuInfoByWhIdUp($wh_id,$pro_code);
         }else{
             $categoryLogic = A('Category', 'Logic');
             $categoryChild = $categoryLogic->getPidBySecondChild($param);
@@ -110,7 +112,7 @@ class InsalesController extends CommonController {
                 $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
                 //帅选sku_code
                 if($result){
-                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id);
+                    $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id,$pro_code);
                 }
             }
         }
@@ -133,6 +135,7 @@ class InsalesController extends CommonController {
         $sheet->setCellValue('D1', '仓库');
         $sheet->setCellValue('E1', '在库存量');
         $i = 1;
+        
         foreach ($pro_codeArr as $value){
             $i++;
             $sheet->setCellValue('A'.$i, $value['pro_code']);

@@ -301,13 +301,17 @@ function getDownOrderNum($pro_code,$wh_id){
 
     $m = M('stock_bill_out_detail');
     if(!$pro_code || !$wh_id){
-
         return 0;
     }
     $where = array();
-    $where['wh_id'] = $wh_id;
-    $where['pro_code'] = $pro_code;
-    $res = $m->where($where)->sum('order_qty');
+    $where['d.wh_id'] = $wh_id;
+    $where['d.pro_code'] = $pro_code;
+    $where['d.is_deleted'] = 0;
+    $where['b.is_deleted'] = 0;
+    $where['b.status'] = 1;
+    $where['b.type'] = 1;
+
+    $res = $m->table('stock_bill_out_detail as d')->join('left join stock_bill_out as b on d.pid=b.id')->where($where)->sum('order_qty');
     if(!$res){
         return 0;
     }
