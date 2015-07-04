@@ -5,35 +5,70 @@ use Think\Controller;
 /**
  * 配送单接口
  */
-class BillOutApi extends Controller {
+class BillOutApi extends CommApi {
 
-	protected $model;
+    protected $model;
 
-	protected function _initialize () {
-		$this->model = M('stock_bill_out');
-	}
+    protected function _initialize () {
+        $this->model = M('stock_bill_out');
+    }
 
-	/**
-	 * [printBill 打印小票接口]
-	 * @param  [integer] $bill_out_id [出库单ID]
-	 * @return [json]                 [打印指令与数据组合的json串]
-	 */
-	public function printBill($bill_out_id = 0) {
+    /**
+     * [printBill 打印小票接口]
+     * @param  [integer] $bill_out_id [出库单ID]
+     * @return [json]                 [打印指令与数据组合的json串]
+     */
+    public function printBill($bill_out_id = 258) {
+        $map['id'] = $bill_out_id;
+        //该出库单信息
+        $bill = $this->model->field('refer_code')->where($map)->find();
+        if(!$bill) {
+            $arr = array(
+                'code' => -1,
+                'msg'  => '出库单ID错误或出库单不存在'
+            );
+            return $arr;
+        }
+        unset($map);
+        //对应订单信息
+        $map['suborder_id'] = $bill['refer_code'];
+        $cA = A('Common/Order', 'Logic');
+        $bill['order_info'] = $cA->oneOrder($map);
+        if(!$bill['order_info']) {
+            $arr = array(
+                'code' => -1,
+                'msg'  => '订单信息不存在'
+            );
+            return $arr;
+        }
+        unset($map);
+        //签收数据
+        $sM = M('tms_sign_in');
+        $map['bill_out_id'] = $bill_out_id;
+        $signin = $sM->alias('si')
+            ->join('tms_sign_in_detail as sid on si.id=sid.pid')
+            ->where($map)
+            ->select();
+        if(!$signin) {
+            $arr = array(
+                'code' => -1,
+                'msg'  => '签收数据不完整，无法打印'
+            );
+            return $arr;
+        }
+        $bill['signin'] = $signin;
+        unset($map);
         $data = array(
+            array(0x1B, 0x57, 0x01),
+            '小票打印               小票打印',
+            '小票打印               小票打印',
+            '小票打印               小票打印',
+            '小票打印               小票打印',
             array(0x0A),
-            '打印小票                打印小票',
-            '打印小票                打印小票',
-            '打印小票                打印小票',
-            '打印小票                打印小票',
-            array(0x0A),
-            '打印小票                打印小票',
-            array(0x0A),
-            'aaaaaaaaaaaafvdgnd', 
-            'aaaaaaaaaaaafvdgnd', 
-            array(0x0A),
+            array(0x1B, 0x40),
         );
         foreach ($data as &$value) {
-            $value = is_array($value) ? $this->byteToStr($value) : iconv('UTF-8', 'UTF-8', $value);
+            $value = is_array($value) ? $this->byteToStr($value) : $value;
         }
         return json_encode($data);
     }
@@ -44,6 +79,7 @@ class BillOutApi extends Controller {
      * @return [type]      [description]
      */
     public function getPrintCommand($key) {
+
         $commands = array(
             'reset'            => array(0x1B, 0x40),//复位打印机
             'print'            => array(0x0A),//打印并换行
@@ -56,6 +92,14 @@ class BillOutApi extends Controller {
         }
         $command = $this->byteToStr();
         return $command;
+    }
+
+    /**
+     * [getHead 小票头]
+     * @return [type] [description]
+     */
+    public function getHead() {
+
     }
 
     /**
@@ -111,15 +155,15 @@ class BillOutApi extends Controller {
         return $res;
     }
 
-	/**
-	 * [byteToStr Byte数组转字符串]
-	 * @param  [array] $bytes  [byte数组]
-	 * @return [string]        [转换后的字符串]
-	 */
-	public function byteToStr($bytes) { 
+    /**
+     * [byteToStr Byte数组转字符串]
+     * @param  [array] $bytes  [byte数组]
+     * @return [string]        [转换后的字符串]
+     */
+    public function byteToStr($bytes) { 
         $bytes = array_map('chr',$bytes);  
-    	$str   = implode('',$bytes);  
-    	return $str; 
+        $str   = implode('',$bytes);  
+        return $str; 
     }
     
 }

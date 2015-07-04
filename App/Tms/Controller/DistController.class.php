@@ -150,19 +150,33 @@ class DistController extends Controller {
                 $val['user_id']      = $val['order_info']['user_id'];
 
                 $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
+                //出库单对应的签收数据
                 $sign_in = $M->table('tms_sign_in')->where(array('bill_out_id' => $val['id']))->find();
-
+                //将签收实际数据对应到出库单详情
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
-                        //该出库单详情对应的签收数据
-                        $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
-                        $val['final_price'] = $sign_in['receivable_sum'];
-                        $val['deal_price']  = $sign_in['real_sum'];
-                        $v['quantity']  = $sign_in_detail['real_sign_qty'];
-                        $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
-                        if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
-                            $v['weight'] = $sign_in_detail['real_sign_wgt'];
-                            $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+                        if($sign_in) {
+                            //该出库单详情对应的签收详情数据
+                            $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
+                            $val['final_price'] = $sign_in['receivable_sum'];
+                            $val['deal_price']  = $sign_in['real_sum'];
+                            $v['quantity']  = $sign_in_detail['real_sign_qty'];
+                            $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
+                            if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
+                                $v['weight'] = $sign_in_detail['real_sign_wgt'];
+                                $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+                            }
+                            unset($map);
+                            //客退入库数据，打印小票用
+                            // $rM = M('stock_bill_in');
+                            // $map['stock_bill_in.type'] = 3;
+                            // $map['stock_bill_in.refer_code'] = $val['id'];
+                            // $refuse = $rM->alias('bi')
+                            //     ->join('stock_bill_in_detail as bid on bid.pid=bi.id')
+                            //     ->where($map)
+                            //     ->select();
+                            // $val['refuse_bill'] = $refuse;
+                            //获取打印小票要用的数据
                         }
                     }
                     else {
@@ -181,6 +195,7 @@ class DistController extends Controller {
                 }
             }
             $this->dist_id = $res['dist_id'];
+            dump($orders);
             $this->data = $orders;
 
         }

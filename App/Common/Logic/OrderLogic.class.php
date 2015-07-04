@@ -15,6 +15,13 @@ class OrderLogic{
 		$res = $this->get($url,$map);
 		return $res['orderlist'];
 	}
+	//获取一条订单信息
+	public function oneOrder($map=''){
+		$url = '/suborder/info';
+		$res = $this->get($url,$map);
+		return $res['info'];
+	}
+
 	//根据客户id获取客户信息
 	public function customer($map=''){
 		$url = '/customer/view';
