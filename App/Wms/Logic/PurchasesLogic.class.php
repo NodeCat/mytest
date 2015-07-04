@@ -39,6 +39,8 @@ class PurchasesLogic{
         }
         $page_size = C('PAGE_SIZE');
         $where['s.status'] = 'qualified';
+        $where['bo.status'] = 1;//待生产
+        $where['bo.type'] = 1;//销售订单
         $returnRes = array();
         $total = count($pro_codeArr);
         $totalPage = ceil($total/$page_size);
@@ -72,6 +74,8 @@ class PurchasesLogic{
         $m               = M();
         $where           = array();
         $where['s.status'] = 'qualified';
+        $where['bo.status'] = 1;//待生产
+        $where['bo.type'] = 1;//销售订单
         if($wh_id){
             $where['s.wh_id'] = $wh_id;
         }
