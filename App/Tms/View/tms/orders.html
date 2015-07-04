@@ -316,7 +316,8 @@
   </style>
   <script type="text/javascript">
 
-    function print(printStr){
+    function ticketPrint(printStr){
+      alert(printStr);
       if(typeof HostApp == "undefined") {
         alert('使用打印功能请您先下载大厨网配送app.');
       }
@@ -324,7 +325,7 @@
         if(!printStr) {
             HostApp.toast('打印内容不能为空');
             return;
-          }
+        }
         HostApp.printTicket(printStr);
       }
     }
@@ -477,7 +478,8 @@
     
     $('.js-btn-print').on('click',function(){
         var printStr = {$printStr};
-        print(printStr);
+        printStr = JSON.stringify(printStr);
+        ticketPrint(printStr);
     })
 
     function check(x) {
