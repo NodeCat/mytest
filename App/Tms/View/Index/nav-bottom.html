@@ -46,12 +46,8 @@
           async:true,
 		      data:{"id":para.user_id,"type":para.type},
           success: function(msg){
-            if(msg.status == 1) {
-            	HostApp.toast(msg.msg);
-            }
-            else {
-            	HostApp.toast(msg.msg);
-         }
+            HostApp.toast(msg.msg);
+          }
     	});
     }
 
