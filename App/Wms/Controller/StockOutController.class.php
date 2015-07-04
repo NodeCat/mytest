@@ -71,19 +71,20 @@ class StockOutController extends CommonController {
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                        '1'=>'空',
-                        '2'=>'缺货'
-                        ),   
+                '1'=>'空',
+                '2'=>'缺货'
+            ),   
     	),
         'stock_bill_out.order_type' =>    array (     
             'title' => '订单类型',     
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                        '1' => '普通订单',
-                        '2' => '冻品订单',
-                        '3' => '爆款订单',
-                        ),   
+                '1' => '普通订单',
+                '2' => '冻品订单',
+                '3' => '水果爆款订单',
+                '4' => '水果订单',    
+            ),   
         ), 
     	
     	'stock_bill_out.line_id' => array (     
