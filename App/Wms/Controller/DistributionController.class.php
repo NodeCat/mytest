@@ -475,6 +475,7 @@ class DistributionController extends CommonController {
         $M = M('stock_wave_distribution');
         $det = M('stock_wave_distribution_detail');
         $stock = M('stock_bill_out');
+        $stock_detail = M('stock_bill_out_detail');
         $D = D('Distribution', 'Logic');
         $stockOut = D('Stock', 'Logic');
         //获取配送单
@@ -615,13 +616,16 @@ class DistributionController extends CommonController {
         }
         unset($map);
         unset($data);
-        //更新出库单状态
+        //更新出库单状态 AND 出库单出库量
         $map['id'] = array('in', $pass_ids);
         $data['status'] = 2; //已出库
         $data['dis_mark'] = 1; //已分拨
         if ($stock->create($data)) {
             $stock->where($map)->save();
         }
+        //更新发货量
+        $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN $pass_ids";
+        M()->execute($sql);
         unset($map);
 
         //通知实时库存接口 需要遍历出库单详情
@@ -753,13 +757,14 @@ class DistributionController extends CommonController {
         $det = M('stock_wave_distribution_detail');
         $wave_det = M('stock_wave_detail');
         $stock_out = M('stock_bill_out');
+        $stock_out_detail = M('stock_bill_out_detail');
         $stockout_logic = D('StockOut', 'Logic');
         //获取配送单信息
         $map['id'] = array('in', $idarr);
         $map['is_deleted'] = 0;
-        $res = $M->where($map)->find();
+        $res = $M->where($map)->select();
         //是否发运
-        if (empty($res)/* || $res['status'] == 2*/) {
+        if (empty($res)) {
             $this->msgReturn(false, '不存在的配送单');
         }
         unset($map);
@@ -771,7 +776,7 @@ class DistributionController extends CommonController {
         //获取详情
         $map['pid'] = array('in', $idarr);
         $map['is_deleted'] = 0;
-        $detail = $det->field('bill_out_id')->where($map)->select();
+        $detail = $det->where($map)->select();
         if (empty($detail)) {
             $this->msgReturn(false, '空的配送单');
         }
@@ -789,7 +794,6 @@ class DistributionController extends CommonController {
             }
             $bill_out_id[] = $value['bill_out_id'];
         }
-        
         //订单库存是否充足
         //查找你选择的出库单无缺货出库单数据id
         $idsArr = $stockout_logic->enoughaResult(implode(',', $bill_out_id));
@@ -818,17 +822,37 @@ class DistributionController extends CommonController {
                 unset($detail[$key]);
             }
         }
+        //获取库存充足的订单详情
+        $map['pid'] = array('in', $ids);
+        $stock_detail = $stock_out_detail->where($map)->select();
         //创建波次和配送单关联数据
+        $wave_info = array();
+        $assist = array();
+        $wave_info['status'] = 200; //待运行
+        $wave_info['wave_type'] = 2; //手动创建
+        $wave_info['order_count'] = count($ids);
+        foreach ($stock_detail as $sku_info) {
+            $assist[$sku_info['pro_code']] = null; //统计sku种类
+            $wave_info['sku_count'] += $sku_info['order_qty']; //总种类
+        }
+        $wave_info['line_count'] = count($assist); //总行数
+        $i = 0;
         foreach ($res as $v) {
+            if ($i <= 0) { 
+                $wave_info['company_id'] = $v['company_id'];
+                $wave_info['wh_id'] = $v['wh_id'];
+            }
+            //创建出库单好关联的配送单号数据
             foreach ($detail as &$det_info) {
                 if ($det_info['pid'] == $v['id']) {
-                    $detail['refer_code'] = $v['dist_code'];
+                    $det_info['refer_code'] = $v['dist_code'];
                 }
             }
+            $i++;
         }
-        //创建波此
-        $res['detail'] = $detail;
-        $back = $D->create_wave($res);
+        //创建波次
+        $wave_info['detail'] = $detail;
+        $back = $D->create_wave($wave_info);
         if (!$back) {
             $this->msgReturn(false, '创建波次失败');
         }
