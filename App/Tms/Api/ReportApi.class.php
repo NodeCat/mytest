@@ -20,10 +20,11 @@ public function report_error(){
 		    }else{
 		    	//保存报错信息到数据库
 			    $M = M('tms_report_error');
-			    $report['type'] = $type;
+			    $report['type'] = implode(',', $type);
 			    $report['customer_id'] = $id;
 			    $report['customer_name'] = $res['name'];
 			    $report['customer_address'] = $res['address'];
+			    $report['customer_mobile'] = $res['mobile'];
 			    $report['company_id'] = $res['site_id'];
 			    $report['company_name'] = $this->getCompany($res['site_id']);
 			    $report['line_id'] = $res['line_id'];
@@ -32,8 +33,8 @@ public function report_error(){
 			    $report['current_bd_id'] = $res['sale']['id'];
 			    $report['current_bd'] = $res['sale']['name'];
 			    $report['develop_bd'] = $res['invite_bd'];
-			    $report['driver_name'] = I('session.user');
-			    $report['driver_mobile'] = I('session.mobile');
+			    $report['driver_name'] = I('session.user.username');
+			    $report['driver_mobile'] = I('session.user.mobile');
 			    $report['report_time'] = get_time();
 			    $report['created_time'] = get_time();
 			    $report['created_user'] = UID;
