@@ -25,13 +25,15 @@ class BillOutApi extends Controller {
             '打印小票                打印小票',
             '打印小票                打印小票',
             '打印小票                打印小票',
+            array(0x0A),
             '打印小票                打印小票',
+            array(0x0A),
             'aaaaaaaaaaaafvdgnd', 
             'aaaaaaaaaaaafvdgnd', 
             array(0x0A),
         );
         foreach ($data as &$value) {
-            $value = is_array($value) ? $this->byteToStr($value) : $value;
+            $value = is_array($value) ? $this->byteToStr($value) : iconv('UTF-8', 'UTF-8', $value);
         }
         return json_encode($data);
     }
