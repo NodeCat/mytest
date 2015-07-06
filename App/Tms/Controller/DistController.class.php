@@ -167,17 +167,20 @@ class DistController extends Controller {
                                 $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
                             }
                             unset($map);
-                            //客退入库数据，打印小票用
-                            // $rM = M('stock_bill_in');
-                            // $map['stock_bill_in.type'] = 3;
-                            // $map['stock_bill_in.refer_code'] = $val['id'];
-                            // $refuse = $rM->alias('bi')
-                            //     ->join('stock_bill_in_detail as bid on bid.pid=bi.id')
-                            //     ->where($map)
-                            //     ->select();
-                            // $val['refuse_bill'] = $refuse;
-                            //获取打印小票要用的数据
+                            // 客退入库数据，打印小票用
+                            $rM = M('stock_bill_in');
+                            $map['bi.type'] = 3;
+                            // $map['bi.refer_code'] = $val['id'];
+                            $map['bi.refer_code'] = 334;
+                            $refuse = $rM->alias('bi')
+                                ->join('stock_bill_in_detail as bid on bid.pid=bi.id')
+                                ->where($map)
+                                ->select();
+                            $val['refuse_bill'] = $refuse;
+                            // 获取打印小票要用的数据
+                            $printStr = A('Tms/billOut', 'Api')->printBill($val);
                         }
+                            $printStr = A('Tms/billOut', 'Api')->printBill($val);
                     }
                     else {
                         $v['quantity'] = $v['delivery_qty'];
@@ -195,7 +198,6 @@ class DistController extends Controller {
                 }
             }
             $this->dist_id = $res['dist_id'];
-            dump($orders);
             $this->data = $orders;
 
         }

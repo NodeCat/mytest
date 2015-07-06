@@ -18,52 +18,16 @@ class BillOutApi extends CommApi {
      * @param  [integer] $bill_out_id [出库单ID]
      * @return [json]                 [打印指令与数据组合的json串]
      */
-    public function printBill($bill_out_id = 258) {
-        $map['id'] = $bill_out_id;
-        //该出库单信息
-        $bill = $this->model->field('refer_code')->where($map)->find();
-        if(!$bill) {
-            $arr = array(
-                'code' => -1,
-                'msg'  => '出库单ID错误或出库单不存在'
-            );
-            return $arr;
-        }
-        unset($map);
-        //对应订单信息
-        $map['suborder_id'] = $bill['refer_code'];
-        $cA = A('Common/Order', 'Logic');
-        $bill['order_info'] = $cA->oneOrder($map);
-        if(!$bill['order_info']) {
-            $arr = array(
-                'code' => -1,
-                'msg'  => '订单信息不存在'
-            );
-            return $arr;
-        }
-        unset($map);
-        //签收数据
-        $sM = M('tms_sign_in');
-        $map['bill_out_id'] = $bill_out_id;
-        $signin = $sM->alias('si')
-            ->join('tms_sign_in_detail as sid on si.id=sid.pid')
-            ->where($map)
-            ->select();
-        if(!$signin) {
-            $arr = array(
-                'code' => -1,
-                'msg'  => '签收数据不完整，无法打印'
-            );
-            return $arr;
-        }
-        $bill['signin'] = $signin;
-        unset($map);
+    public function printBill($bill) {
+
         $data = array(
             array(0x1B, 0x57, 0x01),
             '小票打印               小票打印',
             '小票打印               小票打印',
-            '小票打印               小票打印',
-            '小票打印               小票打印',
+            array(0x1b, 0x61, 0x01),
+            '小票打印',
+            array(0x1b, 0x61, 0x01),
+            '小票打印小票打印',
             array(0x0A),
             array(0x1B, 0x40),
         );
@@ -113,7 +77,6 @@ class BillOutApi extends CommApi {
      * [formateLine 根据参数，返回一行处理好间隔的字符串用作打印]
      * @param  string $left   [左边字符]
      * @param  string $right  [右边字符]
-     * @param  string $center [中间字符]
      */
     public function formateLine($left = '', $right = '') {
         $max  = 32;
