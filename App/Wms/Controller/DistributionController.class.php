@@ -436,6 +436,7 @@ class DistributionController extends CommonController {
             }
             $items = array();
             $items['dist_code'] = $dis['dist_code'];
+            $items['id'] = $dis['id'];
             //组合线路片区
             $dis['line_id'] = explode(',', $dis['line_id']);
             foreach ($dis['line_id'] as $line_id) {
