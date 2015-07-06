@@ -598,9 +598,7 @@ class IndexController extends Controller {
                                 $this->success("交货申请已收到");
                             }
                         }
-                        //
-                    }else{
-                        $this->error("该车单没有拒收，无需交货");
+                        
                     }
                 }
             }else{
