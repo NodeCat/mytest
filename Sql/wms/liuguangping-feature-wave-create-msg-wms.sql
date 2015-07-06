@@ -1,0 +1,1 @@
+insert into `wms`.`auth_authority` ( `title`, `url`, `action`, `name`, `group`, `type`, `show`, `pid`, `module`, `app`) values ( '创建波次提醒', 'Wms/StockOut/hasCreate', 'hasCreate', 'hasCreate', 'Wms', '4', '1', '19', 'StockOut', 'Wms')

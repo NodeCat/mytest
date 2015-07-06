@@ -51,7 +51,7 @@
     <label for="batch" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">移动数量</label>
     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
       <input type="hidden" name="origin_qty" value="{$variable_qty}" id="origin_qty">
-      <input type="text" class="form-control input-lg" name="variable_qty" id="variable_qty" value="{$variable_qty}">
+      <input type="text" class="form-control input-lg" name="variable_qty" id="variable_qty" placeholder="请输数量">
     </div>
   </div>
   <br>
@@ -81,6 +81,14 @@ $(function(){
     var _variable_qty = $('#variable_qty').val();
     if(parseInt(_origin_qty) < parseInt(_variable_qty)) {
         alert_error('移动数量不得大于可移动数量');
+        return false;
+    }
+    if(parseInt(_variable_qty) <= 0) {
+        alert_error('移动数量必须大于0');
+        return false;
+    }
+    if(!_variable_qty){
+        alert_error('请输入移动数量移动数量');
         return false;
     }
     
