@@ -81,7 +81,7 @@ class InsalesLogic{
                 
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 $where['pro_code'] = array('in',$pro_code);
-                $result = $m->where($where)->select();
+                $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
                 if($result){
                     //$pro_codes = getSubByKey($result, 'pro_code');
                     $returnRes = array_merge($returnRes,$result);

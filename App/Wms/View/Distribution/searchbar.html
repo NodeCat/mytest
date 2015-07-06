@@ -90,6 +90,7 @@
    <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="print-page">打印</a>
    <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="export-dis">导出三联单</a>
    <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="delete_dist">删除配送单</a>
+   <a href="javascript:void(0)"  class="btn btn-default btn-sm" id="create_wave">创建波次</a>
 </div>
 </div>
    <eq name="search_addon" value="TRUE">
@@ -97,10 +98,31 @@
    </eq>
 </div>
 <div class="clearfix"></div>
+<include file="create-wave" />
 </form>
 </notempty>
 
 <script>
+var alert_dialog = {
+		
+		close:function(){
+			this.hide();
+			window.location.reload();
+		},
+		show:function(title, content){
+			title  = title?title:'提示框';
+			content = content?content:"<div class='row'>content</div>";
+			$('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+			$('[aria-labelledby = gridSystemModalLabeldialog]').show();
+			$("#gridSystemModalLabelalert").html(title);
+			$(".lgo").html(content);
+		},
+		hide:function(){
+			$('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+			$('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+			$('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+		}
+	};
 	$(function() {
 		$('.form-ajax-only button[type=submit]').on('click',function(){
 			var addr,params;
@@ -153,5 +175,46 @@
 			 var url = "/Distribution/delete_dist?id="+ids;
 			 location.href = url;
 		 });
+		 $(document).on('click','#confirm',function(){
+			 
+			 var url = "/Distribution/create_wave";
+			 var form_ajax = $('#form-alert-only').serialize();
+			 alert_dialog.hide();
+			 $.ajax({
+					url:url,
+					type:'get',
+					cache : false,
+					async:true,
+					data:form_ajax,
+					success: function(msg){
+						if (msg.data == '') {
+							alert(msg.msg);
+							return false;
+						}
+					}
+				});
+		 });
+		 $(document).on('click','#create_wave',function(){
+			 var ids = getChecked();
+			 var url = "/Distribution/create_wave";
+			 $.ajax({
+					url:url,
+					type:'get',
+					cache : false,
+					async:true,
+					data:'id='+ids,
+					success: function(msg){
+						if (msg.data == '') {
+							alert(msg.msg);
+							return false;
+						}
+						msg.data.title = '是否确定创建波次?';
+						var html = template('dialog_create', msg.data);
+						$('body').append(html);
+					},
+				});
+		 });
+		 
+		
 	});
 </script>

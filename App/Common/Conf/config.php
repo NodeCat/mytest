@@ -48,4 +48,5 @@ return array(
     'URL_404_REDIRECT'    => '',
 
     'DACHUWANG_API_PATH'  => 'http://api.dachuwang.com',
+    'BARCODE_PATH' => 'http://api.pda.dachuwang.com/barcode/get?text=',
 );

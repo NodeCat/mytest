@@ -204,6 +204,7 @@ class ProcessOutController extends CommonController {
                         if ($val['pro_code'] == $key) {
                             $val['pro_name'] = $v['name'];
                             $val['pro_attrs'] = $v['pro_attrs_str'];
+                            $val['uom_name'] = $v['uom_name'];
                             break;
                         }
                     }

@@ -71,18 +71,20 @@ class StockOutController extends CommonController {
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                        '1'=>'空',
-                        '2'=>'缺货'
-                        ),   
+                '1'=>'空',
+                '2'=>'缺货'
+            ),   
     	),
-        'stock_bill_out.company_id' =>    array (     
-            'title' => '所属系统',     
+        'stock_bill_out.order_type' =>    array (     
+            'title' => '订单类型',     
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                        '1'=>'大厨',
-                        '2'=>'大果'
-                        ),   
+                '1' => '普通订单',
+                '2' => '冻品订单',
+                '3' => '水果爆款订单',
+                '4' => '水果订单',    
+            ),   
         ), 
     	
     	'stock_bill_out.line_id' => array (     
@@ -315,6 +317,9 @@ class StockOutController extends CommonController {
         foreach ($pros as $key => $val) {
             $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
         }
+
+        //添加pro_name字段
+        $pros = A('Pms','Logic')->add_fields($pros,'pro_name');
             
         unset($map);
         $map['id'] = $data['wh_id'];
@@ -332,7 +337,7 @@ class StockOutController extends CommonController {
         $this->filter_list($data, 0, $filter);
         $filter = array('status'=>array('1'=>'待出库', '2'=>'已出库'));
         $this->filter_list($pros, 0, $filter);
-       
+        
         $this->pros = $pros;
     }
     public function stockOut() {

@@ -150,6 +150,7 @@ class PmsLogic{
 						//如果$SKUs['pro_code']结果存在
 						if(isset($SKUs[$value['pro_code']])){
 							$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
+							$prepare_data[$key]['uom_name'] = $SKUs[$value['pro_code']]['uom_name'];
 						}
 					}
 
@@ -166,6 +167,7 @@ class PmsLogic{
 					//如果$SKUs['pro_code']结果存在
 					if(isset($SKUs[$value['pro_code']])){
 						$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
+						$prepare_data[$key]['uom_name'] = $SKUs[$value['pro_code']]['uom_name'];
 					}
 				}
 			}
@@ -202,6 +204,7 @@ class PmsLogic{
 			$return_data[$value['sku_number']]['pro_code'] = $value['sku_number'];
 			$return_data[$value['sku_number']]['pro_attrs_str'] = $value['spec'][0]['name'].':'.$value['spec'][0]['val'].','.$value['spec'][1]['name'].':'.$value['spec'][1]['val'];
 			$return_data[$value['sku_number']]['pro_attrs'] = $value['spec'];
+			$return_data[$value['sku_number']]['uom_name'] = $value['unit_name'];
 		}
 
 		return $return_data;
