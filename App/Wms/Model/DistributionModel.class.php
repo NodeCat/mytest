@@ -32,7 +32,7 @@ class DistributionModel extends Model {
                     'where'=>array('stock_wave_distribution.is_deleted'=>'0'),
                     'order'=>'stock_wave_distribution.id DESC',
                     'join' => array('inner join warehouse on stock_wave_distribution.wh_id=warehouse.id'),
-
+                    'field' => 'stock_wave_distribution.*,warehouse.id as wid',
             ),
             'latest'=>array(
                     'where'=>array('stock_wave_distribution.is_deleted'=>'0'),
