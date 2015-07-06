@@ -183,7 +183,7 @@ class DistController extends Controller {
                 }
                 $lists[$val['user_id']][] = $val;
             }
-            $this->dist_id = $id;
+            $this->dist_id = $res['dist_id'];
             $this->data = $lists;
 
         }
