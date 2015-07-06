@@ -42,7 +42,8 @@ class WaveModel extends Model {
             'field'=>'stock_wave.id as wave_id,stock_wave.*',
             'where'=>array('stock_wave.is_deleted'=>'0'),
             'order'=>'stock_wave.id DESC',
-            
+            'join'=>array('inner join user u1 on stock_wave.created_user = u1.id',),
+            'field'=>"stock_wave.*,u1.nickname as created_user_nickname",
         ),
         'latest'=>array(
             'where'=>array('stock_wave.is_deleted'=>'0'),
