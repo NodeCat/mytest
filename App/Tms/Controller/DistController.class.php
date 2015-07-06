@@ -94,7 +94,7 @@ class DistController extends Controller {
         // dump($map);die();
         $this->data = M('tms_delivery')->where($map)->select();
         $this->title = '提货扫码';
-        $this->display('tms:sdelivery');  
+        $this->display('tms:delivery');  
 
     }
 
@@ -115,11 +115,14 @@ class DistController extends Controller {
                 $this->display('tms:sorders');
                 exit();
             }
+            $this->dist = $res;
             //查询出库单列表
             $map['dist_id'] = $res['dist_id'];
             $map['order'] = array('created_time' => 'DESC');
             $A = A('Tms/Dist','Logic');
-            $orders = $A->billOut($map);
+            $bills = $A->billOut($map);
+            $orders = $bills['orders'];
+            $this->orderCount = $bills['orderCount'];
             foreach ($orders as &$val) {
                 switch ($val['order_info']['pay_status']) {
                     case -1:
@@ -139,7 +142,7 @@ class DistController extends Controller {
                 $val['shop_name']    = $val['order_info']['shop_name'];
                 $val['mobile']       = $val['order_info']['mobile'];
                 $val['remarks']      = $val['order_info']['remarks'];
-                // $val['status_cn']    = '已签收';
+                // $val['status_cn']    = '已装车';
                 $val['status_cn']    = $val['order_info']['status_cn'];
                 $val['total_price']  = $val['order_info']['total_price'];
                 $val['minus_amount'] = $val['order_info']['minus_amount'];
@@ -169,7 +172,7 @@ class DistController extends Controller {
                     }
                     //从订单详情获取SKU信息
                     foreach ($val['order_info']['detail'] as $value) {
-                        if($v['pro_code'] == $value['sku_number']){
+                        if($v['pro_code'] == $value['sku_number']) {
                             $v['single_price']    = $value['single_price'];
                             $v['close_unit']      = $value['close_unit'];
                             $v['unit_id']         = $value['unit_id'];
@@ -178,9 +181,10 @@ class DistController extends Controller {
                         }
                     }
                 }
+                $lists[$val['user_id']][] = $val;
             }
-            $this->dist_id = $res['dist_id'];
-            $this->data = $orders;
+            $this->dist_id = $id;
+            $this->data = $lists;
 
         }
         $this->title = "客户签收";
@@ -191,7 +195,7 @@ class DistController extends Controller {
     public function sign() {
         //签收表主表数据
         $fdata['dist_id']        = I('get.dist_id/d');
-        $fdata['bill_out_id']    = I('post.id/d');
+        $fdata['bill_out_id']    = I('post.bid/d');
         $fdata['receivable_sum'] = I('post.final_price/d',0);
         $fdata['real_sum']       = I('post.deal_price/d',0);
         $fdata['sign_msg']       = I('post.sign_msg', '' ,'trim');
@@ -200,7 +204,7 @@ class DistController extends Controller {
         $fdata['created_time']   = get_time();
         $fdata['updated_time']   = get_time();
         //签收详情表数据
-        $refer_code  = I('post.refer_code/d',0);
+        $refer_code  = I('post.id/d',0);
         $detail_id   = I('post.pro_id');
         $quantity    = I('post.quantity');
         $weight      = I('post.weight', 0);
@@ -290,4 +294,5 @@ class DistController extends Controller {
         $res = $cA->set_status($map);
         return  $res;
     }
+
 }
