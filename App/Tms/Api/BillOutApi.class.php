@@ -24,6 +24,8 @@ class BillOutApi extends CommApi {
             array(0x1b, 0x61, 0x01),
             '大厨配送',
             array(0x0A),
+            array(0x0A),
+            array(0x0A),
             array(0x1b, 0x61, 0x00),
             '点名：XXXX',
             array(0x1b, 0x61, 0x00),
