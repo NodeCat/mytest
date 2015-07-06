@@ -12,7 +12,7 @@ class DispatchController extends Controller{
         'warehouse'    => '签到仓库',
         'created_time' => '第一次签到时间',
         'updated_time' => '最后签到时间',
-        'line'         => '线路',
+        'line_name'    => '线路',
         'mark'         => '备注',
          
     );
@@ -40,19 +40,30 @@ class DispatchController extends Controller{
                 }
             }
             if($id){
-            $map['userid'] = array('in',$id1);
-            
+            $map['userid'] = array('in',$id1);            
             }else{
-            $map['userid']=NULL;
+            $map['userid'] = NULL;
             }
         }
         $this->assign('car',$this->car);
         $list=$D->relation('TmsUser')->where($map)->group('userid')->order('updated_time DESC')->select();
-        //把仓库id变成名字
-        foreach ($list as $key => &$value) {
-            $value['warehouse']=$this->car['warehouse'][$value['warehouse']];
-            
+        $M = M('tms_delivery');
+        unset($map);
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        foreach ($list as $key => &$value2) {
+            $value2['warehouse']=$this->car['warehouse'][$value2['warehouse']];//把仓库id变成名字            
+            $map['mobile'] = $value2['mobile'];
+            $data = $M->where($map)->order('created_time DESC')->select();
+            foreach ($data as $value3) {
+                $lines .= '［'. $value3['line_name'].'］';
+            }
+            if($lines==NULL){
+                $lines='无';
+            }
+            $value2['line_name'] = $lines;
+            $lines=NULL;    
         }
+        
         $this->assign('list',$list);
         $this->display('tms:driverlist'); 
     }
@@ -96,11 +107,24 @@ class DispatchController extends Controller{
         }
 
         $result = $M->relation(TRUE)->where($map)->group('userid')->order('updated_time DESC')->select();
-        //把仓库id变成名字
-        foreach ($result as &$values) {
-            $values['warehouse']=$this->car['warehouse'][$values['warehouse']];
-            
+        //把仓库id变成名字 
+        $M = M('tms_delivery');
+        unset($map);
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        foreach ($result as $key => &$value2) {
+            $value2['warehouse']=$this->car['warehouse'][$value2['warehouse']];//把仓库id变成名字            
+            $map['mobile'] = $value2['mobile'];
+            $data = $M->where($map)->order('created_time DESC')->select();
+            foreach ($data as $value3) {
+                $lines .= '［'. $value3['line_name'].'］';
+            }
+            if($lines==NULL){
+                $lines='无';
+            }
+            $value2['line_name'] = $lines;
+            $lines=NULL;    
         }
+
         $this->filter_list($result);
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;

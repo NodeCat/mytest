@@ -4,6 +4,7 @@ use Think\Controller;
 class DistDetailController extends CommonController {
 	protected $columns = array (
             'order_id' => '订单ID',
+	        'code' => '出库单号',
             'line' => '订单线路',
             'address' => '送货地址',
             'deliver_date' => '送货时间',
@@ -12,12 +13,12 @@ class DistDetailController extends CommonController {
             'quantity' => '数量',
     );
     protected $query   = array (
-            'company_id' => array(
+            /*'company_id' => array(
                     'title' => '所属系统',
                     'query_type' => 'eq',
                     'control_type' => 'getField',
                     'value' => 'Company.id,name',
-            ),
+            ),*/
             'type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',
@@ -25,7 +26,8 @@ class DistDetailController extends CommonController {
                     'value' => array(
                             '1' => '普通订单',
                             '2' => '冻品订单',
-                            '3' => '爆款订单',
+                            '3' => '水果爆款订单',
+                            '4' => '水果订单',
                     ),
             ),
             'line' => array(
@@ -92,34 +94,9 @@ class DistDetailController extends CommonController {
         else {
             $this->assign('query',$this->query);
         }
-        //$map = $this->search($this->query);//获取界面上传过来的查询条件
 
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
-        $M->scope('default');//默认查询，default中定义了一些预置的查询条件
-        $controllers = array(
-            'Warehouse',
-            'StockIn',
-            'StockOut',
-            'Inventory',
-            'Stock',
-            'StockMoveDetail',
-            'Adjustment',
-            //'Purchase',
-            'LocationArea',
-            'Location'
-        );
-
-        $controllers_muilt = array(
-            'Purchase'
-        );
-        if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
-            $map['warehouse.id'] = array('eq',session('user.wh_id'));
-        }
-        
-        if(in_array(CONTROLLER_NAME, $controllers_muilt) && empty($map['warehouse.id'])) {
-            $map['warehouse.id'] = array('in',session('user.rule'));
-        }
         
         if(!empty($map)) {
             $M->where($map);//用界面上的查询条件覆盖scope中定义的
@@ -127,11 +104,6 @@ class DistDetailController extends CommonController {
         $this->before($M,'lists');//列表显示前的业务处理
 
         $M2 = clone $M;//深度拷贝，M2用来统计数量, M 用来select数据。
-        //$M->page($p.','.$page_size);//设置分页
-        
-        //$data = $M->select();//真正的数据查询在这里生效
-        //echo $M->getLastSql();die;
-        //$count  = $M2->page()->limit()->count();//获取查询总数
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换
         $Dis = D('Distribution', 'Logic');

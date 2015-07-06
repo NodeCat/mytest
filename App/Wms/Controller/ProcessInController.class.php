@@ -203,7 +203,7 @@ class ProcessInController extends CommonController {
                         if ($val['pro_code'] == $key) {
                             $val['pro_name'] = $v['name'];
                             $val['pro_attrs'] = $v['pro_attrs_str'];
-                            $val['pro_uom'] = '件';
+                            $val['pro_uom'] = $v['uom_name'];
                             $val['prepare_qty'] = 0; //带上架量
                             break;
                         }
