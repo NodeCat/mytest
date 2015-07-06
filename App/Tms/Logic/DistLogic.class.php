@@ -65,8 +65,11 @@ class DistLogic{
 			$M = M('stock_wave_distribution_detail');
 			$data['status'] = 1;//配送单详情状态：已签收
 			//更新配送单详情状态
-			$re = $M->where($map)->save($data);
-			$code = $re ? 1 : -1;
+			$sign_detail = $M->field('status')->where($map)->find();
+			if($sign_detail['status'] != 1) {
+				$re = $M->where($map)->save($data);
+				$code = $re ? 1 : -1;
+			}
 			$pid = $map['pid'];
 			unset($map);
 			unset($data);
@@ -82,11 +85,15 @@ class DistLogic{
 				}
 			}
 			if($flag) {
+				$dM = M('stock_wave_distribution');
 				//更新配送单状态
 				$map['id'] = $pid;
 				$data['status'] = 3;//配送单状态：已签收
-				$re = $M->table('stock_wave_distribution')->where($map)->save($data);
-				$code = $re ? 2 : $code;
+				$sign_dist = $dM->field('status')->where($map)->find();
+				if($sign_dist['status'] != 3) {
+					$re = $dM->where($map)->save($data);
+					$code = $re ? 2 : $code;
+				}
 			}
 		}
 		else {
