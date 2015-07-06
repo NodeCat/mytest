@@ -329,9 +329,9 @@ function getDownOrderNum($pro_code,$delivery_date='',$delivery_ampm='',$wh_id=''
  * @author liuguangping@dachuwang.com
  * @since 2015-06-13
  */
-function getPurchaseNum($pro_code,$wh_id){
+function getPurchaseNum($pro_code,$delivery_date='',$delivery_ampm='',$wh_id=''){
 
-    $res = getDownOrderNum($pro_code,$wh_id)-getStockQtyByWpcode($pro_code,$wh_id);
+    $res = getDownOrderNum($pro_code,$delivery_date,$delivery_ampm,$wh_id)-getStockQtyByWpcode($pro_code,$wh_id);
     
     return $res;
 }
@@ -342,7 +342,7 @@ function getPurchaseNum($pro_code,$wh_id){
  * @author liuguangping@dachuwang.com
  * @since 2015-06-13
  */
-function getProcessByCode($pro_code,$wh_id,$c_pro_code){
+function getProcessByCode($pro_code,$wh_id,$delivery_date='',$delivery_ampm='',$c_pro_code){
 
     $m = M('erp_process_sku_relation');
     if(!$pro_code || !$c_pro_code){
@@ -356,7 +356,7 @@ function getProcessByCode($pro_code,$wh_id,$c_pro_code){
     if(!$ratio){
         return 0;
     }else{
-        $order_num = getPurchaseNum($pro_code,$wh_id)*$ratio-getStockQtyByWpcode($c_pro_code,$wh_id);
+        $order_num = getPurchaseNum($pro_code,$delivery_date,$delivery_ampm,$wh_id)*$ratio-getStockQtyByWpcode($c_pro_code,$wh_id);
     }
     return $order_num;
 }
