@@ -594,9 +594,7 @@ class IndexController extends Controller {
                             $bill['detail'][] = $v;
                         }                   
                             $res = $Min->relation('detail')->add($bill); //写入客退入库单详情
-                            if($res){
-                                $this->success("交货申请已收到");
-                            }
+                            
                         }
                         
                     }
@@ -608,6 +606,7 @@ class IndexController extends Controller {
         }else{
             $this->error("没有找到相应的车单");
         }
+        $this->success("交货申请已收到");
     }
 
 
