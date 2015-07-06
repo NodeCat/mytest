@@ -4,7 +4,7 @@ use Think\Controller;
 class IndexController extends Controller {
     protected $car=array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
-        'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台'),
+        'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
         'warehouse'=>array(7=>'北京白盆窑仓库',6=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
     );
 
@@ -13,7 +13,6 @@ class IndexController extends Controller {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
             }
-            
         }
     }
 
@@ -26,6 +25,7 @@ class IndexController extends Controller {
         if(IS_GET) {
             if(session('?user')) {
                 $this->redirect('delivery');
+                exit;
             }
             else {
                 $this->title = '请您签到';
@@ -35,13 +35,13 @@ class IndexController extends Controller {
         if(IS_POST) {
             if(session('?user')) {
                 $this->redirect('delivery');
-                exit();
+                exit;
             }
             $code = I('post.code',0);
             if(!preg_match('/^0?1[34587]{1}\d{9}$/',$code)){
                 $this->error = "您输入的手机号码格式不正确！";
                 $this->display('Index:login');
-                exit();
+                exit;
 
             }
             $name   = I('post.name');
@@ -50,26 +50,26 @@ class IndexController extends Controller {
                 $this->display('Index:login');
             }
             else {
-                $user = array('mobile'=> $code);
+                // $user = array('mobile'=> $code);
+                $user['mobile'] = $code;
                 $M1=M('TmsUser');
-                $data=$M1->where($user)->find();
+                $data=$M1->field('id')->where($user)->order('created_time DESC')->find();
                 $user['username'] = $name;                 
-                if($data){
+                if($data['id']){
                     $date = date('Y-m-d H:i:s',NOW_TIME);
                     $userid['userid']=$data['id'];
                     $userid['updated_time']=$date;
                     $userid['created_time']=$date;
                     $start_date = date('Y-m-d',NOW_TIME);
-
                     $end_date = date('Y-m-d',strtotime('+1 Days'));
                     unset($map);
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']=$data['id'];
                     unset($M);
-                    $M=M('TmsSignList');
-                    $id=$M->field('id')->where($map)->find();
+                    $M = M('TmsSignList');
+                    $id = $M->field('id')->where($map)->find();
                     //如果已经签到过了那就改成最新的签到时间
-                    if($id){
+                    if($id['id']){
                         $userid['id']=$id['id'];
                         unset($userid['created_time']);
                         $M->save($userid);
@@ -135,15 +135,13 @@ class IndexController extends Controller {
 
         if(IS_GET){
             //仓库列表
-            $storge=A('List','Logic');
-            $storge=$storge->storge();
             $this->assign('warehouse',$storge);
             $this->assign('car',$this->car);
             $this->person();
             exit();  
         }
         if(IS_POST){
-            $code = I('post.mobile/d',0);
+            $code = I('post.mobile','');
             $name = I('post.username');
             $num  = I('post.car_num');
             $storge=I('post.warehouse');
@@ -157,12 +155,12 @@ class IndexController extends Controller {
             $data['updated_time'] = $date;
             unset($M);
             $M = M('TmsUser');
-            $user=session('user.mobile');
-            $id=$M->field('id')->where($user)->find();
-            unset($user);
+            unset($map);
+            $map['mobile']=session('user.mobile');
+            $id=$M->field('id')->where($map)->order('updated_time')->find();
             $data['id']=$id['id'];
-            $data = $M->create($data);
-            if($M->save($data)){
+            $savedata = $M->create($data);
+            if($M->save($savedata)){
 
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
@@ -181,8 +179,9 @@ class IndexController extends Controller {
     public function person(){
         unset($M);
         $M = M('TmsUser');
-        $user['mobile']=session('user.mobile');
-        $data= $M->where($user)->find();
+        unset($map);
+        $map['mobile']=session('user.mobile');
+        $data= $M->where($map)->order('updated_time')->find();
         $this->title='个人信息';
         $this->assign('car',$this->car);
         $data['warehouse']=$this->car['warehouse'][$data['warehouse']];
@@ -197,6 +196,7 @@ class IndexController extends Controller {
             
             if(session('?user')) {
                  $this->redirect('delivery');
+                 exit;
             }
             else{
             $this->title = '请填写完整的签到信息';
@@ -275,6 +275,7 @@ class IndexController extends Controller {
             }
             $this->dist = $res;
             $map['dist_id'] = $res['dist_id'];
+            $map['itemsPerPage'] = $res['order_count'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
             $orderList = $A->order($map);
@@ -354,11 +355,11 @@ class IndexController extends Controller {
         $id = I('post.code/d',0);
         if(IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
-            $map['mobile'] = session('user.mobile');
+            //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
+            //$map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
             $dist = $M->field('id,mobile')->where($map)->find();
             unset($map);
@@ -367,7 +368,7 @@ class IndexController extends Controller {
                     $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
-                    $map['id'] = $dist['id'];
+                    $map['dist_id'] = $id;
                     $data['status'] = '0';
                     $M->where($map)->save($data);
                 }
@@ -435,6 +436,7 @@ class IndexController extends Controller {
 
         //只显示当天的记录
         $map['mobile'] = session('user.mobile');
+        $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
