@@ -270,11 +270,11 @@ class DistController extends Controller {
     }
 
     //司机签收后订单回调
-    public function set_order_status($refer_code, $deal_price, $quantity, $price_unit, $sign_msg) {
+    protected function set_order_status($refer_code, $deal_price, $quantity, $price_unit, $sign_msg) {
         $map['suborder_id'] = $refer_code;
         $map['status']   = '6';
         $map['deal_price'] = $deal_price;
-        $map['remark'] = $sign_msg;
+        $map['sign_msg'] = $sign_msg;
         $detail_ids = I('post.order_detail_id');
         foreach ($detail_ids as $key => $val) {
             if(intval($val) > 0) {
@@ -289,16 +289,5 @@ class DistController extends Controller {
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
         return  $res;
-    }
-
-    //客户退货
-    public function reject() {
-        $map['suborder_id'] = I('post.refer_code/d',0);
-        $map['status'] = '7';
-        $map['remark'] = I('post.sign_msg');
-        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
-        $cA = A('Common/Order','Logic');
-        $res = $cA->set_status($map);
-        $this->ajaxReturn($res);
     }
 }
