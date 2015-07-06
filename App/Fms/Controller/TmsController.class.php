@@ -18,6 +18,7 @@ class TmsController extends \Common\Controller\AuthController{
             
             unset($map);
             $map['dist_id'] = $dist['id'];
+            $map['itemsPerPage'] = $dist['order_count'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);

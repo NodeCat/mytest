@@ -4,6 +4,7 @@ use Think\Controller;
 class DistDetailController extends CommonController {
 	protected $columns = array (
             'order_id' => '订单ID',
+	        'code' => '出库单号',
             'line' => '订单线路',
             'address' => '送货地址',
             'deliver_date' => '送货时间',
@@ -12,12 +13,12 @@ class DistDetailController extends CommonController {
             'quantity' => '数量',
     );
     protected $query   = array (
-            'company_id' => array(
+            /*'company_id' => array(
                     'title' => '所属系统',
                     'query_type' => 'eq',
                     'control_type' => 'getField',
                     'value' => 'Company.id,name',
-            ),
+            ),*/
             'type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',
@@ -25,7 +26,8 @@ class DistDetailController extends CommonController {
                     'value' => array(
                             '1' => '普通订单',
                             '2' => '冻品订单',
-                            '3' => '爆款订单',
+                            '3' => '水果爆款订单',
+                            '4' => '水果订单',
                     ),
             ),
             'line' => array(

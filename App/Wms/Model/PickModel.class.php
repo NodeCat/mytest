@@ -42,7 +42,8 @@ class PickModel extends Model {
             'field'=>'stock_wave_picking.id as pick_id,stock_wave_picking.*',
             'where'=>array('stock_wave_picking.is_deleted'=>'0'),
             'order'=>'stock_wave_picking.id DESC',
-            
+            'join'=>array('inner join user u1 on stock_wave_picking.created_user = u1.id',),
+            'field'=>"stock_wave_picking.*,u1.nickname as created_user_nickname",
         ),
         'latest'=>array(
             'where'=>array('stock_wave_picking.is_deleted'=>'0'),
