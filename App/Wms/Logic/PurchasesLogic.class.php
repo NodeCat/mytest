@@ -54,7 +54,7 @@ class PurchasesLogic{
                             ->join('left join stock_bill_out as b on b.id=d.pid
                                     left join stock as s on d.pro_code=s.pro_code 
                                     left join erp_process_sku_relation as r on d.pro_code = r.p_pro_code ')
-                            ->field("b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
+                            ->field("b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
                             ->where($where)
                             ->group('b.wh_id,d.pro_code,r.c_pro_code')
                             ->buildSql();
@@ -97,7 +97,7 @@ class PurchasesLogic{
         ->join('left join stock_bill_out as b on b.id=d.pid
                 left join stock as s on d.pro_code=s.pro_code 
                 left join erp_process_sku_relation as r on d.pro_code = r.p_pro_code ')
-        ->field("b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
+        ->field("b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
         ->where($where)
         ->group('b.wh_id,d.pro_code,r.c_pro_code')->buildSql();
 

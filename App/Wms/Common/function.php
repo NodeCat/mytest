@@ -296,7 +296,7 @@ function getStockQtyByWpcode($pro_code,$wh_id){
  * @author liuguangping@dachuwang.com
  * @since 2015-06-13
  */
-function getDownOrderNum($pro_code,$wh_id){
+function getDownOrderNum($pro_code,$delivery_date='',$delivery_ampm='',$wh_id=''){
 
     $m = M('stock_bill_out_detail');
     if(!$pro_code || !$wh_id){
@@ -309,6 +309,12 @@ function getDownOrderNum($pro_code,$wh_id){
     $where['b.is_deleted'] = 0;
     $where['b.status'] = 1;
     $where['b.type'] = 1;
+    if($delivery_date){
+        $where['b.delivery_date'] = $delivery_date;
+    }
+    if($delivery_ampm){
+        $where['b.delivery_ampm'] = $delivery_ampm; 
+    }
 
     $res = $m->table('stock_bill_out_detail as d')->join('left join stock_bill_out as b on d.pid=b.id')->where($where)->sum('order_qty');
     if(!$res){
@@ -317,7 +323,7 @@ function getDownOrderNum($pro_code,$wh_id){
     return $res;
 }
 /**
- * getDownOrderNum 根据sku和仓库id得到需要采购的量
+ * getPurchaseNum 根据sku和仓库id得到需要采购的量
  * @param String $pro_code sku code
  * @param Int $wh_id 仓库id
  * @author liuguangping@dachuwang.com
