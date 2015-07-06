@@ -275,7 +275,6 @@ function getStockQtyByWpcode($pro_code,$wh_id){
 
     $m = M('Stock');
     if(!$pro_code || !$wh_id){
-
         return 0;
     }
 

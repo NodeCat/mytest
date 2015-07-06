@@ -59,7 +59,7 @@ class PurchasesLogic{
                             ->group('b.wh_id,d.pro_code,r.c_pro_code')
                             ->buildSql();
 
-                $map['a.types'] = array('not in',array('unqualified','freeze'));
+                //$map['a.types'] = array('not in',array('unqualified','freeze'));
                 $result = $m->table($subQuery.' a')->where($map)->select();
                 
                 if($result){
@@ -101,7 +101,7 @@ class PurchasesLogic{
         ->where($where)
         ->group('b.wh_id,d.pro_code,r.c_pro_code')->buildSql();
 
-        $map['a.types'] = array('not in',array('unqualified','freeze'));
+        //$map['a.types'] = array('not in',array('unqualified','freeze'));
         $m->table($subQuery.' a')->where($map);
 
 
