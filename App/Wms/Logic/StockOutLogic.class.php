@@ -81,7 +81,7 @@ class StockOutLogic{
             $total += $val['order_qty'];
             $res = M('stock_bill_out_detail')->add($detail);
 
-            $total_amount = $val['order_qty'] * $val['price'];
+            $total_amount += $val['order_qty'] * $val['price'];
         }
         
         $stock_out_data['total_qty'] = $total;
