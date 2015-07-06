@@ -14,6 +14,15 @@ class IndexController extends Controller {
                 $this->redirect('logout');
             }
         }
+
+        if(defined('VERSION')) {
+            $this->ver = '2.0';
+            $action2 = array('delivery','orders','sign');
+            if(in_array(ACTION_NAME, $action2)) {
+                R('Dist/'.ACTION_NAME);
+                exit();
+            }
+        }
     }
 
     public function index(){
@@ -307,6 +316,7 @@ class IndexController extends Controller {
     
     //配送单详情
     public function orders(){
+
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {

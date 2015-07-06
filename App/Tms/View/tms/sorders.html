@@ -43,7 +43,7 @@
         <div class="list-group-item list-group-item-inf">
           <h4 class="list-group-item-heading">
             <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
-              【{$vo.shop_name}】{$vo.deliver_addr}
+              【{$vo.shop_name}】{$vo.delivery_address}
               <i class="glyphicon glyphicon-map-marker">
               </i>
               <span>
@@ -55,7 +55,7 @@
           </h4>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
-          {$vo.realname} &nbsp;&nbsp;
+          {$vo.customer_realname} &nbsp;&nbsp;
           <i class="glyphicon glyphicon-phone"></i>
           <a href="tel:{$vo.mobile}" class="user-mobile">
             {$vo.mobile} &nbsp;
@@ -127,71 +127,39 @@
         </a>
         <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.id}">
           <form class="order">
-            <input type="hidden" name="id" value="{$vo.id}" />
+            <input type="hidden" name="id" value="{$vo.refer_code}" />
+    		<input type="hidden" name="bid" value="{$vo.id}" />
+
             <ul class="list-group">
               <volist name="vo['detail']" id="v">
-                <li class="list-group-item">
-                  {$v.sku_number} {$v.name}
-                  <foreach name="v['spec']" item="spec">
-                    {$spec['name']}:{$spec['val']};
-                  </foreach>
-                  <br />
-                  <label class="label label-info">
-                    请在下面录入实际收货数量：
-                  </label>
-                </li>
-                <li class="list-group-item">
-                  <div class="input-group row">
-                    <input type="hidden" name="pro_id[]" value="{$v.id}" />
-                    <!-- <input type="hidden" name="price_unit[]" value="{$v.price}" />
-                    -->
-                    <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}"
-                    />
-                    <span class="input-group-addon">
-                      ¥{$v.single_price}元/{$v.close_unit}
-                    </span>
-                    <eq name="v['close_unit']" value="斤">
-                      <switch name="vo['status_cn']">
-                        <case value="已签收" break="0">
-                        </case>
-                        <case value="已完成" break="0">
-                        </case>
-                        <case value="已回款" break="1">
-                          <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
-                          placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
-                        </case>
-                        <case value="已退货" break="0">
-                        </case>
-                        <case value="已发运" break="0">
-                        </case>
-                        <case value="已出库" break="0">
-                        </case>
-                        <case value="已装车" break="0">
-                        </case>
-                        <case value="待收货" break="0">
-                          <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
-                          placeholder="输入数量" value="" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
-                        </case>
-                      </switch>
-                      <else/>
-                      <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
-                      placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
-                    </eq>
-                    <span class="input-group-addon">
-                      {$v.close_unit}
-                    </span>
-                    <!-- <input type="number" name="price_sum[]" min="0" class="form-control
-                    p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
-                    -->
-                    <span class="input-group-addon">
-                      ¥
-                      <span class="p_sum">
-                        {$v.sum_price}
-                      </span>
-                      元
-                    </span>
-                  </div>
-                </li>
+                  <li class="list-group-item">
+                    {$v.pro_code} {$v.pro_name} {$vo.pro_attrs} <label class="label label-info">请在下面录入实际收货数量：</label>
+                  </li>
+                  <li class="list-group-item">
+                    <div class="input-group row">
+                    <input type="hidden" name="pro_id[{$v.id}]" value="{$v.id}" />
+                    <input type="hidden" name="order_detail_id[{$v.id}]" value="{$v.order_detail_id}" />
+                    
+                      <input type="hidden" name="close_unit[{$v.id}]" value="{$v.close_unit}" />
+                      <input type="hidden" name="unit_id[{$v.id}]" value="{$v.unit_id}" />
+                    
+                      <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.single_price}" />
+                      <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
+                       
+                      <input type="number" name="quantity[{$v.id}]" min="0" class="form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
+                      <span class="input-group-addon">{$v.unit_id}</span>
+
+                	    <neq name="v['close_unit']" value="$v['unit_id']">
+                      <input type="number" name="weight[{$v.id}]" min="0" class="form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
+                      <span class="input-group-addon">{$v.close_unit}</span>
+                  	  </neq>
+
+                      <!--
+                      <input type="number" name="price_sum[]" min="0" class="form-control p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
+                      -->
+                      <span class="input-group-addon">¥<span class="p_sum">{$v.sum_price}</span>元</span>
+                    </div>
+                  </li>
               </volist>
             </ul>
             <div class="panel-footer summary">
@@ -228,8 +196,7 @@
                   </span>
                   元
                 </span>
-                <input type="hidden" class="form-control p_final" placeholder="{$vo.final_price}"
-                value="{$vo.final_price}" readonly>
+                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
                 <span class="input-group-addon">
                   实收
                 </span>
