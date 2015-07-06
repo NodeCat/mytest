@@ -23,9 +23,12 @@ class BillOutApi extends CommApi {
         $data = array(
             array(0x1B, 0x57, 0x01),
             '小票打印               小票打印',
+            array(0x0A),
             '小票打印               小票打印',
+            array(0x0A),
             array(0x1b, 0x61, 0x01),
             '小票打印',
+            array(0x0A),
             array(0x1b, 0x61, 0x01),
             '小票打印小票打印',
             array(0x0A),
