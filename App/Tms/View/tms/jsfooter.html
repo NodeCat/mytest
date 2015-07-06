@@ -11,6 +11,10 @@
       }
     }
     $(function() {
+      $('input[type=number]').on('click',function(){
+        $(this).select();
+      });
+
       $('#btn-clear').on('click',
       function() {
         $('#code').val('');

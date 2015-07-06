@@ -196,8 +196,8 @@ class DistController extends Controller {
         //签收表主表数据
         $fdata['dist_id']        = I('get.dist_id/d');
         $fdata['bill_out_id']    = I('post.bid/d');
-        $fdata['receivable_sum'] = I('post.final_price/d',0);
-        $fdata['real_sum']       = I('post.deal_price/d',0);
+        $fdata['receivable_sum'] = I('post.final_price/f',0);
+        $fdata['real_sum']       = I('post.deal_price/f',0);
         $fdata['sign_msg']       = I('post.sign_msg', '' ,'trim');
         $fdata['sign_time']      = get_time();
         $fdata['sign_driver']    = session('user.mobile');
@@ -211,8 +211,9 @@ class DistController extends Controller {
         $unit_id     = I('post.unit_id');
         $close_unit  = I('post.close_unit');
         $price_unit  = I('post.price_unit');
+        $deal_price  = $fdata['real_sum'];
         //更新订单状态
-        $re = $this->set_order_status($refer_code, $deal_price, $quantity, $price_unit);
+        $re = $this->set_order_status($refer_code, $deal_price, $quantity,$weight ,$price_unit);
         $re = array('status' => 0);
         if($re['status'] === 0) {
             $M = M('tms_sign_in');
@@ -274,7 +275,7 @@ class DistController extends Controller {
     }
 
     //司机签收后订单回调
-    protected function set_order_status($refer_code, $deal_price, $quantity, $price_unit, $sign_msg) {
+    protected function set_order_status($refer_code, $deal_price, $quantity,$weight, $price_unit, $sign_msg) {
         $map['suborder_id'] = $refer_code;
         $map['status']   = '6';
         $map['deal_price'] = $deal_price;
@@ -284,7 +285,7 @@ class DistController extends Controller {
             if(intval($val) > 0) {
                 $row['id']= $val;
                 $row['actual_price'] = $price_unit[$key];
-                $row['actual_quantity'] = $quantity[$key];
+                $row['actual_quantity'] = empty($weight[$key])?$quantity[$key]:$weight[$key];
                 $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
                 $map['order_details'][] = $row;
             }
