@@ -120,7 +120,9 @@ class DistController extends Controller {
             $map['dist_id'] = $res['dist_id'];
             $map['order'] = array('created_time' => 'DESC');
             $A = A('Tms/Dist','Logic');
-            $orders = $A->billOut($map);
+            $bills = $A->billOut($map);
+            $orders = $bills['orders'];
+            $this->orderCount = $bills['orderCount'];
             foreach ($orders as &$val) {
                 switch ($val['order_info']['pay_status']) {
                     case -1:

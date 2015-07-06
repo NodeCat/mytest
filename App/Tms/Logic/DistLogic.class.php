@@ -46,6 +46,10 @@ class DistLogic{
 					}
 				}
 			}
+			$res = array(
+				'orders'     => $res,
+				'orderCount' => count($orders),
+				);
 		}
 		return $res;
 	}
