@@ -99,6 +99,7 @@ class DistDetailController extends CommonController {
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
         $M->scope('default');//默认查询，default中定义了一些预置的查询条件
+        $M->join('inner join warehouse on stock_wave_distribution.wh_id=warehouse.id');
         $controllers = array(
             'Warehouse',
             'StockIn',
@@ -109,7 +110,8 @@ class DistDetailController extends CommonController {
             'Adjustment',
             //'Purchase',
             'LocationArea',
-            'Location'
+            'Location',
+            'Distribution',
         );
 
         $controllers_muilt = array(
