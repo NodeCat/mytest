@@ -51,6 +51,7 @@ class StockOutLogic{
         $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
         unset($pro_codes);
         $total = 0;//计算一个出库单的总出库数量
+        $total_amount = 0; //总金额
         //添加明细
         foreach($params['detail'] as $val) {
             $detail = array();
@@ -81,7 +82,7 @@ class StockOutLogic{
             $total += $val['order_qty'];
             $res = M('stock_bill_out_detail')->add($detail);
 
-            $total_amount = $val['order_qty'] * $val['price'];
+            $total_amount += $val['order_qty'] * $val['price'];
         }
         
         $stock_out_data['total_qty'] = $total;
