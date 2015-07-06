@@ -51,7 +51,6 @@ class InsalesController extends CommonController {
             if($categoryChild){
                 //获取sku_code
                 $result = $insalesLogic->getSkuInfoByCategory($categoryChild);
-                //dump($result);die;
                 //帅选sku_code
                 if($result){
                     $pro_codeArr = $insalesLogic->getSkuInfoByWhId($result,$wh_id,$pro_code);

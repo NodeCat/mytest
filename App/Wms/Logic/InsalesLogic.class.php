@@ -24,7 +24,6 @@ class InsalesLogic{
         
         $returnRes = array();
         $pmsLogic = A('Pms','Logic');
-        //dump($pmsLogic->get_SKU_by_pro_codes(array('1000395')));die;
         $page_size   = C('PAGE_SIZE');
         if($categoryIds){
             $result = $pmsLogic->get_SKU_by_category_id($categoryIds, 1, $page_size);
