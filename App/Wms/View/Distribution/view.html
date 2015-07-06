@@ -55,7 +55,7 @@
               <td>店铺名称</td>
               <td>收件人</td>
               <td>订单id</td>
-              <td>订单编号</td>
+              <td>出库单号</td>
               <td>货品</td>
               <td>产品名称</td>
               <td>规格</td>
@@ -70,7 +70,7 @@
 	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}<p>{$order.deliver_addr}</p></td>
 	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.username}</td>
 	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
-	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.order_number}</td>
+	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.stock_bill_out_code}</td>
 	              <td>{$detail.pro_code}</td>
 	              <td>{$detail.pro_name}</td>
 	              <td>{$detail.pro_attrs}</td>
