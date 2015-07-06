@@ -317,6 +317,9 @@ class StockOutController extends CommonController {
         foreach ($pros as $key => $val) {
             $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
         }
+
+        //添加pro_name字段
+        $pros = A('Pms','Logic')->add_fields($pros,'pro_name');
             
         unset($map);
         $map['id'] = $data['wh_id'];
@@ -334,7 +337,7 @@ class StockOutController extends CommonController {
         $this->filter_list($data, 0, $filter);
         $filter = array('status'=>array('1'=>'待出库', '2'=>'已出库'));
         $this->filter_list($pros, 0, $filter);
-       
+        
         $this->pros = $pros;
     }
     public function stockOut() {
