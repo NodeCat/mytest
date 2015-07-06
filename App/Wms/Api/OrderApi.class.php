@@ -15,9 +15,10 @@ class OrderApi extends CommApi{
         }
 
         $order_id_list = explode(',', $order_ids);
-
-        foreach($order_id_list as $order_id){
-            $order_info = A('Common/Order','Logic')->getOrderInfoByOrderId($order_id);
+        $map = array('order_ids' => $order_id_list, 'itemsPerPage' => count($order_id_list));
+        $order_lists = A('Common/Order','Logic')->order($map);
+        foreach($order_lists as $order){
+            $order_info['info'] = $order;
             if(empty($order_info['info'])){
                 $return = array('error_code' => '201', 'error_message' => 'order info is empty' );
                 $this->ajaxReturn($return);
