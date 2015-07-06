@@ -201,6 +201,9 @@ class DistributionController extends CommonController {
         if (empty($get)) {
             $this->msgReturn(false, '请选择配送单');
         }
+        if (count(explode(',', $get)) > 1) {
+            $this->msgReturn(false, '只能选择一个配送单');
+        }
         //获取配送单信息
         $M = M('stock_wave_distribution');
         $map['id'] = $get;
@@ -209,7 +212,7 @@ class DistributionController extends CommonController {
         
         //获取订单
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
+        $order_ids = $D->get_order_ids_by_dis_id(array($get));
         $order = D('Common/Order', 'Logic');
         $result = $order->getOrderInfoByOrderIdArr($order_ids);
         if (empty($result)) {
@@ -337,7 +340,7 @@ class DistributionController extends CommonController {
         
         //获取订单id
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
+        $order_ids = $D->get_order_ids_by_dis_id(array($get));
         //拉取订单
         $Order = D('Common/Order', 'Logic');
         $result = $Order->getOrderInfoByOrderIdArr($order_ids);

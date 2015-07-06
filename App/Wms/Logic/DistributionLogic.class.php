@@ -127,6 +127,7 @@ class DistributionLogic {
             $map['pid'] = $info['id'];
             $result = $det->where($map)->select();
             $value['detail'] = $result;
+            $value['stock_bill_out_code'] = $info['code'];
         }
         $return = $data;
         return $return;
