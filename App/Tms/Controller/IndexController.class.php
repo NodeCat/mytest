@@ -2,6 +2,7 @@
 namespace Tms\Controller;
 use Think\Controller;
 class IndexController extends Controller {
+    protected $ver = null;
     protected $car=array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台'),
@@ -12,6 +13,15 @@ class IndexController extends Controller {
         if(!session('?user')) {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
+            }
+        }
+
+        if(defined('VERSION')) {
+            $this->ver = '2.0';
+            $action2 = array('delivery','orders','sign','reject')
+            if(in_array(ACTION_NAME, $action2)) {
+                R('Dist/'.ACTION_NAME);
+                exit();
             }
         }
     }
@@ -307,6 +317,7 @@ class IndexController extends Controller {
     
     //配送单详情
     public function orders(){
+
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
