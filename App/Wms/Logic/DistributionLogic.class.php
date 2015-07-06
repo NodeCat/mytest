@@ -59,22 +59,13 @@ class DistributionLogic {
             return $return;
         }
         foreach ($order_info['list'] as $key => $val) {
-            /*if ($val['order_type'] != $search['type']) {
-                //不属于所选择订单类型则去除
-                foreach ($result as $k => $v) {
-                    if ($v['refer_code'] == $val['id']) {
-                        unset($result[$k]);
-                    }
+            //增加客服id 创建配送单使用
+            foreach ($result as $k => $v) {
+                if ($v['refer_code'] == $val['id']) {
+                    $result[$k]['user_id'] = $val['user_id'];
                 }
-            } else {*/
-                //增加客服id 创建配送单使用
-                foreach ($result as $k => $v) {
-                    if ($v['refer_code'] == $val['id']) {
-                        $result[$k]['user_id'] = $val['user_id'];
-                    }
-                }
+            }
                 
-           // }
         }
         //result 中为全部复合搜索条件的出库单
         //取出库单ID获取详情信息
@@ -166,22 +157,10 @@ class DistributionLogic {
     public function order_lists($post) {
         $return = array('status' => false, 'msg' => '');
 
-        /*if (empty($post['company_id'])) {
-            $return['msg'] = '请选择系统';
-            return $return;
-        }*/     
-        /*if (empty($post['wh_id'])) {
-            $return['msg'] = '请选择仓库';
-            return $return;
-        }*/
         if (empty($post['type'])) {
             $return['msg'] = '请选择订单类型';
             return $return;
         }
-        /*if (empty($post['line'])) {
-            $return['msg'] = '请选择线路';
-            //return $return;
-        }*/
         if (empty($post['time'])) {
             $return['msg'] = '请选择时段';
             return $return;
