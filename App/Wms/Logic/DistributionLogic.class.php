@@ -22,7 +22,7 @@ class DistributionLogic {
         
         $map['dis_mark'] = 0; //未加入分配单的
         $map['wh_id'] = session('user.wh_id');
-        $map['company_id'] = $search['company_id'];
+        //$map['company_id'] = $search['company_id'];
         $map['order_type'] = $search['type']; //订单类型
         if (!empty($search['line'])) {
             $map['line_id'] = $search['line'];
@@ -165,10 +165,10 @@ class DistributionLogic {
     public function order_lists($post) {
         $return = array('status' => false, 'msg' => '');
 
-        if (empty($post['company_id'])) {
+        /*if (empty($post['company_id'])) {
             $return['msg'] = '请选择系统';
             return $return;
-        }     
+        }*/     
         /*if (empty($post['wh_id'])) {
             $return['msg'] = '请选择仓库';
             return $return;
@@ -221,6 +221,7 @@ class DistributionLogic {
         foreach ($out as $key => $value) {
             $return[$key]['id'] = $value['id'];
             $return[$key]['out_id'] = $value['id']; //出库单id
+            $return[$key]['code'] = $value['code']; //出库单号
             $return[$key]['user_id'] = $value['user_id']; //客服名称
             $return[$key]['order_id'] = $value['refer_code'];//订单id
             $return[$key]['line'] = $this->format_line($value['line_id']); //线路名称
