@@ -33,8 +33,8 @@ public function report_error(){
 			    $report['current_bd_id'] = $res['sale']['id'];
 			    $report['current_bd'] = $res['sale']['name'];
 			    $report['develop_bd'] = $res['invite_bd'];
-			    $report['driver_name'] = I('session.user.username');
-			    $report['driver_mobile'] = I('session.user.mobile');
+			    $report['driver_name'] = session('user.username');
+			    $report['driver_mobile'] = session('user.mobile');
 			    $report['report_time'] = get_time();
 			    $report['created_time'] = get_time();
 			    $report['created_user'] = UID;

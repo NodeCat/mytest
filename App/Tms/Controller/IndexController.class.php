@@ -508,6 +508,119 @@ class IndexController extends Controller {
 
     }
 
+    /*
+     * 功能：根据配送单id 生成相应的客退入库单
+     * @para：$dist_id,配送单id
+     * $return: null
+    */
+    public function deliver_goods(){
+        //配送单id
+        $dist_id = I('get.dist_id/d',0);
+        if(!empty($dist_id)){
+            //判断是否已经创建过客退入库单
+            $L = A('Tms/List','Logic');
+            $status = $L->view_return_goods_status($dist_id);
+            if($status){ 
+                $this->error("交货申请已收到");
+            }
+        }else{
+            $this->error("没有找到相应的车单");
+        }
+        unset($map);
+        //查询条件为配送单id
+        $map['stock_wave_distribution_detail.pid'] = $dist_id;
+        //根据配送单id查配送详情单里与出库单相关联的出库单id
+        $bill_out_id = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
+        //若查出的出库单id非空
+        if(!empty($bill_out_id)){   
+            $bill_out_id = array_column($bill_out_id,'bill_out_id');
+            unset($map);
+            //查询条件为出库单的id
+            $map['id'] = array('in',$bill_out_id);
+            //根据出库单id查出出库单的所有信息
+            $stock_bill_out = M('stock_bill_out')->where($map)->select();
+            //若查出的出库单信息非空
+            if(!empty($stock_bill_out)){
+                for($n = 0; $n < count($stock_bill_out); $n++){
+                    $bill_out_qty = 0;  //配送数量
+                    $real_sign_qty = 0; //实收数量
+                    unset($map);
+                    $map['pid'] = $stock_bill_out[$n]['id'];
+                    //根据出库单id查询出所有出库单详情信息
+                    $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
+                    if(!empty($bill_out_detail)){
+                        for($i = 0; $i < count($bill_out_detail); $i++){
+                            $bill_out_qty += $bill_out_detail[$i]['delivery_qty'];  //累加出库单详情的配送数量  
+                        }
+                        $detail_id = array_column($bill_out_detail,'id');
+                        unset($map);
+                        //根据出库单详情表的id查询签收表的签收情况
+                        $map['bill_out_detail_id'] = array('in', $detail_id);
+                        $sign_data = M('tms_sign_in_detail')->where($map)->select();
+                        if(!empty($sign_data)){
+                            for($j = 0; $j < count($sign_data); $j++){  
+                                $real_sign_qty += $sign_data[$j]['real_sign_qty'];  //累加签收表里的实际签收数量
+                            }
+                        }else{
+                            $this->error("没有找到相应的签收单");
+                        }
+
+                    }else{
+                        $this->error("没有找到相应的订单");
+                    }
+                    //比较配送数量和实收数量
+                    $diff = $bill_out_qty - $real_sign_qty;
+                    if($diff > 0){
+                        //创建客退入库单
+                        $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
+                                            
+                        //$bill = $Min->create();
+                        $bill['refer_code'] = $stock_bill_out[$n]['id'];//关联单据为出库id
+                        $bill['code'] = get_sn('wms_back_in');   //生成客退入库单号
+                        $bill['type'] = '3';    //入库类型为客退入库单
+                        $bill['status'] = '21';     //待收货状态
+                        $bill['batch_code'] = get_batch($bill['code']); //获得批次
+                        $bill['wh_id'] = $stock_bill_out[$n]['wh_id'];  //仓库id
+                        $bill['company_id'] = $stock_bill_out[$n]['company_id'];   //
+                        $bill['partner_id'] = '';   //供应商
+                        $bill['type'] = 3;  //入库类型为客退入库单
+                        $bill['created_user'] = 2;   //uid默认为2
+                        $bill['created_time'] = get_time();
+                        
+                        if(!empty($bill_out_detail)){
+                        foreach ($bill_out_detail as $key => $val) {
+                            $v['pro_code'] = $val['pro_code'];
+                            $v['pro_name'] = $val['pro_name'];
+                            $v['pro_attrs'] = $val['pro_attrs'];
+                            $v['pro_uom'] = '';     //计量单位留空　
+                            $v['expected_qty'] = $diff; //写入预期入库数量
+                            $v['prepare_qty'] = 0;
+                            $v['done_qty'] = 0;
+                            $v['wh_id'] = $bill['wh_id'];
+                            //$v['type'] = 'in';
+                            $v['refer_code'] = $val['pid']; //写入相关联的出库单id
+                            $v['pid'] = $bill['id'];
+                            $v['price_unit'] = '';  //计价单位留空
+                            $bill['detail'][] = $v;
+                        }                   
+                            $res = $Min->relation('detail')->add($bill); //写入客退入库单详情
+                            
+                        }
+                        
+                    }
+                }
+            }else{
+                $this->error("没有找到相应的订单");
+            }
+            
+        }else{
+            $this->error("没有找到相应的车单");
+        }
+        $this->success("交货申请已收到");
+    }
+
+
+
     // 地图模式
     public function navigation() {
         if(!IS_AJAX){
