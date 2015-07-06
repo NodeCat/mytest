@@ -213,7 +213,8 @@ class CommonController extends AuthController {
             'Adjustment',
             //'Purchase',
             'LocationArea',
-            'Location'
+            'Location',
+            'Distribution',
         );
 
         $controllers_muilt = array(
@@ -235,7 +236,6 @@ class CommonController extends AuthController {
         $M->page($p.','.$page_size);//设置分页
         
         $data = $M->select();//真正的数据查询在这里生效
-        //echo $M->getLastSql();die;
         $count  = $M2->page()->limit()->count();//获取查询总数
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换

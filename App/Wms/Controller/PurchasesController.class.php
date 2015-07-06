@@ -153,12 +153,12 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('C'.$i, getSkuInfoByCode('pro_attrs_str',$value['pro_code']));
             $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
             $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
-            $sheet->setCellValue('F'.$i, getDownOrderNum($value['pro_code'], $value['wh_id']));
-            $sheet->setCellValue('G'.$i, getPurchaseNum($value['pro_code'], $value['wh_id']));
+            $sheet->setCellValue('F'.$i, getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id']));
+            $sheet->setCellValue('G'.$i, getPurchaseNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id']));
             $sheet->setCellValue('H'.$i, $value['c_pro_code']);
             $sheet->setCellValue('I'.$i, getPronameByCode('name', $value['c_pro_code']));
             $sheet->setCellValue('J'.$i, getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']));
-            $sheet->setCellValue('K'.$i, getProcessByCode($value['pro_code'], $value['wh_id'], $value['c_pro_code']));
+            $sheet->setCellValue('K'.$i, getProcessByCode($value['pro_code'], $value['wh_id'],$value['delivery_date'], $value['delivery_ampm'], $value['c_pro_code']));
 
         }
         

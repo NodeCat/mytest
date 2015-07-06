@@ -383,7 +383,7 @@ class StockInController extends CommonController {
 		$map['pid'] = $id;
 		$bill_in_detail_list = M('stock_bill_in_detail')->where($map)->select();
 		
-		$this->pros = $bill_in_detail_list;
+		$this->pros = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
 		//已上架量
 		foreach($this->pros as $pro){
 			$data['qtyForIn'] += $pro['done_qty'];

@@ -201,6 +201,9 @@ class DistributionController extends CommonController {
         if (empty($get)) {
             $this->msgReturn(false, '请选择配送单');
         }
+        if (count(explode(',', $get)) > 1) {
+            $this->msgReturn(false, '只能选择一个配送单');
+        }
         //获取配送单信息
         $M = M('stock_wave_distribution');
         $map['id'] = $get;
@@ -209,7 +212,7 @@ class DistributionController extends CommonController {
         
         //获取订单
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
+        $order_ids = $D->get_order_ids_by_dis_id(array($get));
         $order = D('Common/Order', 'Logic');
         $result = $order->getOrderInfoByOrderIdArr($order_ids);
         if (empty($result)) {
@@ -337,7 +340,7 @@ class DistributionController extends CommonController {
         
         //获取订单id
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id($get);
+        $order_ids = $D->get_order_ids_by_dis_id(array($get));
         //拉取订单
         $Order = D('Common/Order', 'Logic');
         $result = $Order->getOrderInfoByOrderIdArr($order_ids);
@@ -627,7 +630,7 @@ class DistributionController extends CommonController {
             if (!isset($merg[$v['pro_code']])) {
                 $merg[$v['pro_code']] = $v;
             } else {
-                $merg['order_qty'] += $v['order_qty']; 
+                $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
         //获取去拣货区库位
@@ -644,7 +647,11 @@ class DistributionController extends CommonController {
         unset($map);
         //扣减库存
         foreach ($merg as $sku) {
-            $stockOut->outStockBySkuFIFO(array('wh_id'=>session('user.wh_id'), 'pro_code'=>$sku['pro_code'], 'pro_qty'=>$sku['order_qty'], 'refer_code'=>$post, 'location_ids'=>$location_id['id']));
+            $stockOut->outStockBySkuFIFO(array('wh_id'=>session('user.wh_id'), 
+                                               'pro_code'=>$sku['pro_code'], 
+                                               'pro_qty'=>$sku['order_qty'], 
+                                               'refer_code'=>$post, 
+                                               'location_ids'=>array($location_id['id'])));
         }
 
         $map['dist_code'] = $post;
@@ -672,7 +679,8 @@ class DistributionController extends CommonController {
             $stock->where($map)->save();
         }
         //更新发货量
-        $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN $pass_ids";
+        $pass_ids_string = implode(',', $pass_ids);
+        $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
         M()->execute($sql);
         unset($map);
 
