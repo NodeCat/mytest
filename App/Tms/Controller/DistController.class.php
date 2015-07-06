@@ -183,7 +183,7 @@ class DistController extends Controller {
                 }
                 $lists[$val['user_id']][] = $val;
             }
-            $this->dist_id = $id;
+            $this->dist_id = $res['dist_id'];
             $this->data = $lists;
 
         }
@@ -213,7 +213,6 @@ class DistController extends Controller {
         $price_unit  = I('post.price_unit');
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity, $price_unit);
-        $re = array('status' => 0);
         if($re['status'] === 0) {
             $M = M('tms_sign_in');
             //该出库单签收状态
