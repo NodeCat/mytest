@@ -56,13 +56,14 @@ class DispatchController extends Controller{
         $M = M('tms_delivery');
         unset($map);
         $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['status'] = '1';
         unset($value);
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
-            $value['warehouse']=$this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
-            $map['mobile'] = $value['mobile'];
-            //获取司机配送单的线路和id信息取出来
+            $value['warehouse'] = $this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
+            $map['mobile']      = $value['mobile'];
+            //获取司机配送单的线路和id信息
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
             $value['unsign_orders'] = 0;// 以退货
@@ -71,10 +72,10 @@ class DispatchController extends Controller{
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
                 $delivery = $A->deliveryCount($val['dist_id']);
-                $value['sign_orders'] += $delivery['delivery_count']['sign_orders'];
+                $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
                 $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
                 $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                $value['delivering'] += $delivery['delivery_count']['delivering'];        
+                $value['delivering']    += $delivery['delivery_count']['delivering'];        
                 if(empty($val['line_name'])){// 配送路线为空就跳过
                     continue;
                 }
@@ -136,6 +137,7 @@ class DispatchController extends Controller{
         $M = M('tms_delivery');
         unset($map);
         $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['status'] = '1';
         unset($value);
         unset($val);
         $A = A('Tms/List','Logic');
@@ -150,17 +152,19 @@ class DispatchController extends Controller{
             $value['delivering']    = 0;// 配送中  
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
-                 //dump($val);exit;
+                 // dump($val);exit;
                 $delivery = $A->deliveryCount($val['dist_id']);
                 $value['sign_orders'] += $delivery['delivery_count']['sign_orders'];
                 $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
                 $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
                 $value['delivering'] += $delivery['delivery_count']['delivering'];        
-                if($val['line_name']){// 配送路线为空就跳过
+                if(empty($val['line_name'])){// 配送路线为空就跳过
+
                     continue;
                 }
                 $lines .= '［'. $val['line_name'].'］';// 把路线加在一起
-            }
+
+                }
             if($lines == NULL){
                 $lines = '无';
             }

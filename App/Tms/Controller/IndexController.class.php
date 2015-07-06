@@ -95,6 +95,7 @@ class IndexController extends Controller {
     public function report() {
 
         $map['mobile'] = session('user.mobile');
+        $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
@@ -122,10 +123,10 @@ class IndexController extends Controller {
                 exit();
             }
             $A = A('Tms/List','Logic');
-            $delivery=$A->deliveryCount($res['dist_id']);
-            $this->list  = $delivery['delivery_count'];
+            $delivery         = $A->deliveryCount($res['dist_id']);
+            $this->list       = $delivery['delivery_count'];
             $this->back_lists = $delivery['back_lists']; 
-            $this->title =$res['dist_code'].'车单详情';    
+            $this->title      = $res['dist_code'].'车单详情';    
         }
         $this->display('tms:orderlist');
     }
@@ -359,7 +360,7 @@ class IndexController extends Controller {
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            //$map['created_time'] = array('between',$start_date.','.$end_date);
+            $map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
             $dist = $M->field('id,mobile')->where($map)->find();
             unset($map);
@@ -415,6 +416,7 @@ class IndexController extends Controller {
                 unset($map);
                 $map['dist_id'] = $dist['id'];
                 $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                $map['itemsPerPage'] = $dist['order_count'];
                 $orders = $A->order($map);
                 unset($map);
                 $map['status']  = '8';//已装车
@@ -458,6 +460,7 @@ class IndexController extends Controller {
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['status'] = '1';
         unset($M);
         $M = M('tms_delivery');
         $data = $M ->where($map)->select();
@@ -468,6 +471,7 @@ class IndexController extends Controller {
         foreach ($data as $key => $value) {
             // dump($value['dist_id']);
             $map['dist_id'] = $value['dist_id'];
+            $map['itemsPerPage'] = $value['order_count'];
             $orders = $A->order($map);
             foreach ($orders as $keys => $values) {
                 $values['geo'] = json_decode($values['geo'],TRUE);

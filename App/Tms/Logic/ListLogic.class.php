@@ -15,8 +15,15 @@ class ListLogic{
 		if($dist_id == '') {
 			return FALSE;
 		}
+            $M = M('tms_delivery');
 			$map['dist_id'] = $dist_id;
-            $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+            $start_date = date('Y-m-d',NOW_TIME);
+            $end_date = date('Y-m-d',strtotime('+1 Days'));
+            $map['created_time'] = array('between',$start_date.','.$end_date);
+            $res = $M->where($map)->find();
+            unset($map['created_time']);
+            $map['itemsPerPage'] = $res['order_count'];//传递页数
+            $map['order_by'] = array('user_id' => 'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);
             $this->data = $orders;
