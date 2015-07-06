@@ -511,7 +511,7 @@ class IndexController extends Controller {
             $L = A('Tms/List','Logic');
             $status = $L->view_return_goods_status($dist_id);
             if($status){ 
-                $this->error("已交货");
+                $this->error("交货申请已收到");
             }
         }else{
             $this->error("没有找到相应的车单");
@@ -595,7 +595,7 @@ class IndexController extends Controller {
                         }                   
                             $res = $Min->relation('detail')->add($bill); //写入客退入库单详情
                             if($res){
-                                $this->success("已交货");
+                                $this->success("交货申请已收到");
                             }
                         }
                         //
