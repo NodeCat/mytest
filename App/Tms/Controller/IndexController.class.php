@@ -452,7 +452,7 @@ class IndexController extends Controller {
             }
             $ctime = strtotime($dist['created_time']);
             if($ctime < strtotime($start_date) || $ctime > strtotime($end_date)) {
-                //$this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
 
 
