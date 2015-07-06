@@ -21,8 +21,8 @@ class BillOutApi extends CommApi {
     public function printBill($bill) {
 
         $data = array(
-            array(0x1B, 0x57, 0x01),
             array(0x1b, 0x61, 0x01),
+            array(0x1B, 0x57, 0x01),
             '大厨配送',
             array(0x0A),
             array(0x1b, 0x61, 0x00),
