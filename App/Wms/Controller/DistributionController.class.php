@@ -21,11 +21,16 @@ class DistributionController extends CommonController {
             'status' => '状态',
     );
     protected $query   = array (
-            'stock_wave_distribution.company_id' => array(
-                    'title' => '所属系统',
+            'stock_wave_distribution.order_type' => array(
+                    'title' => '订单类型',
                     'query_type' => 'eq',
-                    'control_type' => 'getField',
-                    'value' => 'Company.id,name',
+                    'control_type' => 'select',
+                    'value' => array(
+            	            '1' => '普通订单',
+                        '2' => '冻品订单',
+                        '3' => '水果爆款订单',
+                        '4' => '水果订单',
+                    ),
             ),
             'stock_wave_distribution.status' => array(
                     'title' => '状态',
@@ -87,10 +92,10 @@ class DistributionController extends CommonController {
     }
     
     public function after_search(&$map) {
+        $M = M('stock_wave_distribution_detail');
         if (key_exists('stock_wave_distribution.order_id', $map)) {
             //订单ID搜索处理
             $order_id = $map['stock_wave_distribution.order_id'][1];
-            $M = M('stock_wave_distribution_detail');
             if (!intval($order_id)) {
                 $map['stock_wave_distribution.id'] = array('eq', null);
                 unset($map['stock_wave_distribution.order_id']);
@@ -109,6 +114,36 @@ class DistributionController extends CommonController {
             }
             $map['stock_wave_distribution.id'] = array('in', $pids);
             unset($map['stock_wave_distribution.order_id']);
+        }
+        if (key_exists('stock_wave_distribution.order_type', $map)) {
+            //订单类型搜索处理
+            $order_type = $map['stock_wave_distribution.order_type'][1];
+            $stock_detail = M('stock_bill_out');
+            unset($where);
+            $where['order_type'] = $order_type;
+            $res = $stock_detail->where($where)->select();
+            $pids = array();
+            if (empty($res)) {
+                $map['stock_wave_distribution.id'] = array('eq', null);
+                unset($map['stock_wave_distribution.order_type']);
+            }
+            foreach ($res as $val) {
+                $pids[] = $val['id'];
+            }
+            unset($where);
+            $where['bill_out_id'] = array('in', $pids);
+            $dist = $M->where($where)->select();
+            if (empty($dist)) {
+                $map['stock_wave_distribution.id'] = array('eq', null);
+                unset($map['stock_wave_distribution.order_type']);
+            }
+            $dist_ids = array();
+            foreach ($dist as $dist_id) {
+                $dist_ids[] = $dist_id['pid'];
+            }
+            $dist_ids = array_unique($dist_ids);
+            $map['stock_wave_distribution.id'] = array('in', $dist_ids);
+            unset($map['stock_wave_distribution.order_type']);
         }
     }
     
@@ -373,7 +408,12 @@ class DistributionController extends CommonController {
                 }
             }
             //筛选sku
+            $stock_bill_out = M('stock_bill_out');
+            $stock_out_code = array();
             foreach ($out_ids as $sku_id => $order_id) {
+                //获取出库单号
+                $map['id'] = $sku_id;
+                $stock_out_code[] = $stock_bill_out->where($map)->find();
                 $sku_info = $D->get_out_detail_by_pids($sku_id);
                 $sku_info = $sku_info['list'];
                 foreach ($sku_info as $sku) {
@@ -381,8 +421,15 @@ class DistributionController extends CommonController {
                 }
             }
             foreach ($result as $kk => &$vv) {
+                //获取出库单号
+                foreach ($stock_out_code as $stock_bill_out_code) {
+                    if ($stock_bill_out_code['refer_code'] == $vv['id']) {
+                        $vv['stock_bill_out_code'] = $stock_bill_out_code['code'];
+                    }
+                }
                 foreach ($vv['detail'] as $key => $detail_info) {
                     if (!in_array($detail_info['sku_number'], $skucodearr)) {
+                        //去除不在出库单中的sku 
                         unset($vv['detail'][$key]);
                     }
                 }

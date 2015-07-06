@@ -30,9 +30,10 @@
         <thead>
           <tr>
             <td width="5%">订单id</td>
+            <td width="7%">出库单号</td>
             <td width="8%">线路</td>
-            <td width="10%">店铺名称</td>
-            <td width="15%">送货地址</td>
+            <td width="8%">店铺名称</td>
+            <td width="10%">送货地址</td>
             <td width="7%">联系电话</td>
             <td width="8%">客户备注</td>
             <td width="5%">货品号</td>
@@ -47,6 +48,7 @@
           <volist name="order['detail']" id="detail" key="k">
           	<tr class="order_list">
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.stock_bill_out_code}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.line_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.deliver_addr}</td>
