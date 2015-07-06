@@ -30,6 +30,8 @@ class WaveController extends CommonController {
 	       'line_count'        => '总行数',
          'total_count'       => '总件数',
          'status' 				    => '波次状态',
+         'created_user_nickname'=> '创建人',
+         'created_time'      => '创建时间',
          'start_time'        => '开始时间',
          'end_time'          => '结束时间',
 		);

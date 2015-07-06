@@ -38,6 +38,7 @@ class PickController extends CommonController {
   		'pro_type_sum'      => '总行数',
   		'pro_qty_sum'       => '总件数',
       /*'is_print'          => '是否打印',*/
+      'created_user_nickname' => '创建人',
   		'created_time'      => '开始时间',
   		'updated_time'      => '结束时间',
   );
