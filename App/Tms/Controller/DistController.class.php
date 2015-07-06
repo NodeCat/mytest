@@ -140,8 +140,8 @@ class DistController extends Controller {
                 $val['shop_name']    = $val['order_info']['shop_name'];
                 $val['mobile']       = $val['order_info']['mobile'];
                 $val['remarks']      = $val['order_info']['remarks'];
-                $val['status_cn']    = '已装车';
-                // $val['status_cn']    = $val['order_info']['status_cn'];
+                // $val['status_cn']    = '已装车';
+                $val['status_cn']    = $val['order_info']['status_cn'];
                 $val['total_price']  = $val['order_info']['total_price'];
                 $val['minus_amount'] = $val['order_info']['minus_amount'];
                 $val['deliver_fee']  = $val['order_info']['deliver_fee'];
@@ -274,7 +274,7 @@ class DistController extends Controller {
     //司机签收后订单回调
     protected function set_order_status($refer_code, $deal_price, $quantity, $price_unit, $sign_msg) {
         $map['suborder_id'] = $refer_code;
-        $map['status']   = '5';
+        $map['status']   = '6';
         $map['deal_price'] = $deal_price;
         $map['sign_msg'] = $sign_msg;
         $detail_ids = I('post.order_detail_id');
