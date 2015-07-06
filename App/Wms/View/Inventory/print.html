@@ -61,7 +61,7 @@
 <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
   <thead>
   	<tr>
-  		<td>库位</td><td>货品标识</td><td>货品名称</td><td>原数量</td><td>实盘量单位</td><td>差异量</td>
+  		<td>库位</td><td>货品标识</td><td>货品名称</td><td>原数量</td><td>实盘量单位</td><td>差异量</td><td>计量单位</td>
   	</tr>
   </thead>
 
@@ -74,6 +74,7 @@
             <td>{$inventory_detail.theoretical_qty}</td>
             <td></td>
             <td></td>
+            <td>{$inventory_detail.uom_name}</td>
 	  	</tr>
   	</volist>
   </tbody>
