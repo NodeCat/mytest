@@ -93,7 +93,6 @@ class DistributionController extends CommonController {
     
     public function after_search(&$map) {
         $M = M('stock_wave_distribution_detail');
-        
         if (key_exists('stock_wave_distribution.order_id', $map)) {
             //订单ID搜索处理
             $order_id = $map['stock_wave_distribution.order_id'][1];
@@ -119,24 +118,31 @@ class DistributionController extends CommonController {
         if (key_exists('stock_wave_distribution.order_type', $map)) {
             //订单类型搜索处理
             $order_type = $map['stock_wave_distribution.order_type'][1];
-            $stock_detail = M('stock_bill_out_detail');
+            $stock_detail = M('stock_bill_out');
             unset($where);
             $where['order_type'] = $order_type;
             $res = $stock_detail->where($where)->select();
             $pids = array();
-            foreach ($res as $val) {
-                $pids = $val['pid'];
+            if (empty($res)) {
+                $map['stock_wave_distribution.id'] = array('eq', null);
+                unset($map['stock_wave_distribution.order_type']);
             }
-            $pids = array_unique($pids);
+            foreach ($res as $val) {
+                $pids[] = $val['id'];
+            }
             unset($where);
             $where['bill_out_id'] = array('in', $pids);
             $dist = $M->where($where)->select();
+            if (empty($dist)) {
+                $map['stock_wave_distribution.id'] = array('eq', null);
+                unset($map['stock_wave_distribution.order_type']);
+            }
             $dist_ids = array();
             foreach ($dist as $dist_id) {
                 $dist_ids[] = $dist_id['pid'];
             }
             $dist_ids = array_unique($dist_ids);
-            $map['stock_wave_distribution.id'] = array('in', $dist_id);
+            $map['stock_wave_distribution.id'] = array('in', $dist_ids);
             unset($map['stock_wave_distribution.order_type']);
         }
     }
