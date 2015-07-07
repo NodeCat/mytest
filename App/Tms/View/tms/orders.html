@@ -123,7 +123,7 @@
           </case>
           <default />
         </switch>
-        <span id="show" style="color:red;"> 详情</span>
+        <span id="show" style="color:red;">点击展开</span>
         </a>
         <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.id}">
           <form class="order">
@@ -451,5 +451,14 @@
           }
         });
       });
+      
     });
+  function check(x) {
+      var val = $(x).children('#show').text();
+      if (val == '点击展开') {
+        $(x).children('#show').text('点击收回');
+      } else {
+        $(x).children('#show').text('点击展开');
+      }
+    }
   </script>

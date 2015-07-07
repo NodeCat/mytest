@@ -79,7 +79,7 @@ class DispatchController extends Controller{
                 if(empty($val['line_name'])){// 配送路线为空就跳过
                     continue;
                 }
-                $lines .= '［'. $val['line_name'].'］';// 把路线加在一起
+                $lines .= '［'. $val['line_name'].'］<br/>';// 把路线加在一起
             }
             if($lines == NULL){
                 $lines = '无';
