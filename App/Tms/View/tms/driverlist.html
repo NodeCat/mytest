@@ -26,6 +26,10 @@
             <th>第一次签到时间</th>
             <th>最后签到时间</th>
             <th>线路</th>
+            <th>已签收</th>
+            <th>已退货</th>
+            <th>配送中</th>
+            <th>已完成</th>
             <th>备注</th>
           </tr>
         <!--</thead>-->
@@ -41,7 +45,11 @@
             <td>{$k.warehouse}</td>
             <td>{$k.created_time}</td>
             <td>{$k.updated_time}</td>
-            <td width="15%">{$k.line_name}</td>
+            <td>{$k.line_name}</td>               
+            <td>{$k.sign_orders}</td>
+            <td>{$k.unsign_orders}</td>
+            <td>{$k.delivering}</td>
+            <td>{$k.sign_finished}</td>    
             <td></td>
 
           </tr>
