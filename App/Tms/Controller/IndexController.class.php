@@ -5,7 +5,7 @@ class IndexController extends Controller {
     protected $car=array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
-        'warehouse'=>array(7=>'北京白盆窑仓库',6=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
+        'warehouse'=>array(0=>'请选择签到仓库',7=>'北京白盆窑仓库',6=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
     );
 
     protected function _initialize() {
@@ -44,18 +44,12 @@ class IndexController extends Controller {
                 exit;
 
             }
-            $name   = I('post.name');
-            if(empty($name)){
-                $this->error = "请输入您的身份信息";
-                $this->display('Index:login');
-            }
             else {
-                // $user = array('mobile'=> $code);
                 $user['mobile'] = $code;
                 $M1=M('TmsUser');
-                $data=$M1->field('id')->where($user)->order('created_time DESC')->find();
-                $user['username'] = $name;                 
-                if($data['id']){
+                $data=$M1->field('id,username')->where($user)->order('created_time DESC')->find();          
+                if($data['id']){ // 如果以前签到过
+                    $user['username'] = $data['username'];// 把用户名写入session
                     $date = date('Y-m-d H:i:s',NOW_TIME);
                     $userid['userid']=$data['id'];
                     $userid['updated_time']=$date;
@@ -68,7 +62,7 @@ class IndexController extends Controller {
                     unset($M);
                     $M = M('TmsSignList');
                     $id = $M->field('id')->where($map)->find();
-                    //如果已经签到过了那就改成最新的签到时间
+                    //如果今天已经签到过了那就改成最新的签到时间
                     if($id['id']){
                         $userid['id']=$id['id'];
                         unset($userid['created_time']);
@@ -84,7 +78,7 @@ class IndexController extends Controller {
                     $this->user=$user;
                     $this->title='信息登记';
                     $this->assign('car',$this->car);
-                    $this->register();
+                    $this->display('tms:register');
                 }
                     
             }
@@ -194,7 +188,6 @@ class IndexController extends Controller {
     public function register(){
 
         if(IS_GET){
-            
             if(session('?user')) {
                  $this->redirect('delivery');
                  exit;
@@ -207,16 +200,29 @@ class IndexController extends Controller {
             }   
         }
         if(IS_POST){
-            $code = I('post.mobile/d',0);
-            $name = I('post.username');
-            $num  = I('post.car_num');
-            $storge=I('post.warehouse');
-            if(empty($code) || empty($name) || empty($num)|| empty($storge)){
-                $this->title ='请填写完整的签到信息';
+            $code   = I('post.mobile/d',0);
+            $name   = I('post.username');
+            $num    = I('post.car_num');
+            $storge = I('post.warehouse');
+            $user['mobile']   = $code;
+            $user['username'] = $name;
+            $user['car_num']  = $num;
+            if(empty($code) || empty($name) || empty($num)|| empty($storge)) {
                 $this->error ='请补全你的签到信息';
+                if(empty($name)) {
+                    $this->error ='请输入你的姓名';
+                }
+                elseif(empty($num)) {
+                    $this->error ='请输入你的车牌号';                
+                }
+                elseif(empty($storge)) {
+                    $this->error ='请选择你的签到仓库';
+                }
+                $this->user=$user;
+                $this->title ='请填写完整的签到信息';
                 $this->assign('car',$this->car);
                 $this->display('tms:register');
-                exit();
+                exit;
             }
             $date = date('Y-m-d H:i:s',NOW_TIME);
             $data = I('post.');
