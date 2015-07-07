@@ -211,6 +211,97 @@ class DispatchController extends Controller{
             }
         }
     }
+
+    
+    // 车单纬度统计
+    public function orderList(){
+
+        $id = I('get.id',0);
+        if(empty($id)){
+            $this->error = '未找到该提货纪录。';
+        }
+        $M = M('tms_delivery');
+        $res = $M->find($id);
+            
+        if(empty($res)) {
+            $this->error = '未找到该提货纪录。';
+        }elseif($res['mobile'] != session('user.mobile')) {
+            $this->error ='不能查看该配送单，您的手机号码与提货人不符合。';
+        }
+        if(!empty($this->error)) {
+            $this->title = "客户签收";
+            $this->display('tms:orders');
+            exit();
+        }
+
+        $all_orders     = 0;  //总订单统计
+        $sign_orders    = 0;  //签收单统计
+        $unsign_orders  = 0;  //拒收单统计
+        $delivering     = 0;  //派送中订单数统计
+        $arrays=array();    //回仓列表的数组
+        unset($map);
+        //查询条件为配送单id
+        $map['stock_wave_distribution_detail.pid'] = $res['dist_id'];
+        //根据配送单id查配送详情单里与出库单相关联的出库单id
+        $bill_out_id = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
+        //若查出的出库单id非空
+        if(!empty($bill_out_id)){   
+            $bill_out_id = array_column($bill_out_id,'bill_out_id');
+            unset($map);
+            //查询条件为出库单的id
+            $map['id'] = array('in',$bill_out_id);
+            //根据出库单id查出出库单的所有信息
+            $stock_bill_out = M('stock_bill_out')->where($map)->select();
+            //若查出的出库单信息非空
+            if(!empty($stock_bill_out)){
+                for($n = 0; $n < count($stock_bill_out); $n++){
+                    unset($map);
+                    $map['pid'] = $stock_bill_out[$n]['id'];
+                    //根据出库单id查询出所有出库单详情信息
+                    $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
+                    if(!empty($bill_out_detail)){
+                        $all_orders = count($bill_out_detail);  //总订单数
+                        for($i = 0; $i < count($bill_out_detail); $i++){
+                            unset($map);
+                            $map['bill_out_detail_id'] =  $bill_out_detail[$i]['id'];
+                            $sign_qty = M('tms_sign_in_detail')->field('real_sign_qty')->where($map)->find();
+                            if(empty($sign_qty)){
+                                $delivering++;  //派送中数量加1
+                                continue;   //若没有签收信息，不计算仓数量
+                            }
+                            if($sign_qty == 0){
+                                $unsign_orders++;   //拒收单数加1
+                            }
+                            $sign_orders++; //已签收单数加1
+                            $bill_out_qty = $bill_out_detail[$i]['delivery_qty'];  //配送数量
+                            $arrays[]]['return_num'] = $bill_out_qty - $sign_qty;   //回仓数量
+                            $arrays[]['pro_code'] =  $bill_out_detail[$i]['pro_code'];
+                            $arrays[]['pro_name'] =  $bill_out_detail[$i]['pro_name'];
+                        }
+                        
+                    }else{
+                        $this->error("没有找到相应的订单");
+                    }
+                    
+                }
+            }else{
+                $this->error("没有找到相应的订单");
+            }
+            
+        }else{
+            $this->error("没有找到相应的车单");
+        }
+            
+        $list['dist_id'] = $res['dist_id'];
+        $list['values']  = $values;//回款数
+        $list['sign_orders'] = $sign_orders;//已签收
+        $list['unsign_orders'] = $unsign_orders;//未签收
+        $list['delivering'] = $delivering;//派送中
+        $this->list = $list;
+        $this->back_lists = $arrays;
+        $this->title =$res['dist_code'].'车单详情';
+        $this->display('tms:orderlist');
+    }
    
 }
 
