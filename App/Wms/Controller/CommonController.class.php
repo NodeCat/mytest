@@ -49,12 +49,12 @@ class CommonController extends AuthController {
         $condition = I('query'); //列表页查询框都是动态生成的，名字都是query['abc']
         $condition = queryFilter($condition); //去空处理
         $table = get_tablename(CONTROLLER_NAME);
-        $get = I('get.');unset($get['p']);//获取链接中附加的查询条件，状态栏中的按钮url被附带了查询参数
+        $get = I('path.');unset($get['p']);//获取链接中附加的查询条件，状态栏中的按钮url被附带了查询参数
         //将参数并入$condition
-        foreach ($get as $key => $value) {
-            $param[$table.'.'.$key] = $value;
-            if(!array_key_exists($key, $condition)) {
-                $condition[$table.'.'.$key] = $value;
+        $get_len = count($get);
+        for ($i = 0;$i < $get_len;++$i) {
+            if(array_key_exists($get[$i], $query) && !array_key_exists($get[$i], $condition)) {
+                $condition[$get[$i]] = $get[++$i];
             }
         }
         $this->condition = $condition;
