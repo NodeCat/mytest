@@ -154,10 +154,10 @@ class DispatchController extends Controller{
             foreach ($delivery_msg as $val) {
                  // dump($val);exit;
                 $delivery = $A->deliveryCount($val['dist_id']);
-                $value['sign_orders'] += $delivery['delivery_count']['sign_orders'];
+                $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
                 $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
                 $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                $value['delivering'] += $delivery['delivery_count']['delivering'];        
+                $value['delivering']    += $delivery['delivery_count']['delivering'];        
                 if(empty($val['line_name'])){// 配送路线为空就跳过
 
                     continue;
