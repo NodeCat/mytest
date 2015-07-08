@@ -198,10 +198,10 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         //合计
-        $tmp[] = $this->getPrintCommand('center');
         $tmp[] = $this->formateLine('合计', $bill['deal_price'] . ' 元');
         $tmp[] = $this->getPrintCommand('print');
         //确认信息
+        $tmp[] = $this->getPrintCommand('left');
         $tmp[] = '本人确认以上交易，已完成签收';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
@@ -265,7 +265,7 @@ class BillOutApi extends CommApi {
      */
     public function formateLine($left = '', $right = '') {
         $llen = mb_strwidth($left, 'utf-8');
-        $rlen = mb_strwidth($left, 'utf-8');
+        $rlen = mb_strwidth($right, 'utf-8');
         $space_len = $this->max_len - $llen - $rlen;
         $sapce = '';
         for ($i = 0; $i < $space_len; $i++) { 
