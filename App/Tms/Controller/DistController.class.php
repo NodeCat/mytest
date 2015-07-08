@@ -99,7 +99,7 @@ class DistController extends Controller {
     }
 
     //出库单列表
-    public function orders(){
+    public function orders() {
         $id = I('get.id',0);
         if(!empty($id)) {
             $M = M('tms_delivery');
@@ -194,15 +194,18 @@ class DistController extends Controller {
     //司机签收
     public function sign() {
         //签收表主表数据
-        $fdata['dist_id']        = I('get.dist_id/d');
-        $fdata['bill_out_id']    = I('post.bid/d');
-        $fdata['receivable_sum'] = I('post.final_price/f',0);
-        $fdata['real_sum']       = I('post.deal_price/f',0);
-        $fdata['sign_msg']       = I('post.sign_msg', '' ,'trim');
-        $fdata['sign_time']      = get_time();
-        $fdata['sign_driver']    = session('user.mobile');
-        $fdata['created_time']   = get_time();
-        $fdata['updated_time']   = get_time();
+        $fdata = array(
+            'dist_id'        => I('post.dist_id/d'),
+            'bill_out_id'    => I('post.bid/d'),
+            'receivable_sum' => I('post.final_price/f',0),
+            'real_sum'       => I('post.deal_price/f',0),
+            'sign_msg'       => I('post.sign_msg', '' ,'trim'),
+            'status'         => 1,
+            'sign_time'      => get_time(),
+            'sign_driver'    => session('user.mobile'),
+            'created_time'   => get_time(),
+            'updated_time'   => get_time(),
+        );
         //签收详情表数据
         $refer_code  = I('post.id/d',0);
         $detail_id   = I('post.pro_id');
@@ -245,13 +248,8 @@ class DistController extends Controller {
                     unset($tmp);
                 }
                 if(!$sign_status) {
+                    //添加签收数据
                     M('tms_sign_in_detail')->addAll($cdata);
-                    //更新配送单详情－>配送单状态
-                    $A = A('Tms/Dist','Logic');
-                    $map['pid'] = $fdata['dist_id'];
-                    $map['bill_out_id'] = $fdata['bill_out_id'];
-                    $code = $A->set_dist_status($map);
-                    $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
                 }
                 else {
                     //更新签收数据
@@ -261,9 +259,14 @@ class DistController extends Controller {
                         ->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))
                         ->save($value);
                     }
-                    $code = 0;
-                    $msg = '更新成功';
                 }
+                //更新配送单详情－>配送单状态
+                $A = A('Tms/Dist','Logic');
+                $map['pid'] = $fdata['dist_id'];
+                $map['bill_out_id'] = $fdata['bill_out_id'];
+                $map['status'] = 1;
+                $code = $A->set_dist_status($map);
+                $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
             
             $status = ($code === -1) ? -1 : 0;
@@ -294,6 +297,143 @@ class DistController extends Controller {
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
         return  $res;
+    }
+
+    //客户退货
+    public function reject() {
+        $map['suborder_id'] = I('post.id/d',0);
+        $map['status'] = '7';
+        $map['sign_msg'] = I('post.sign_msg');
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+        $cA = A('Common/Order','Logic');
+        $res = $cA->set_status($map);
+        if($res['status'] === 0) {
+            unset($map);
+            //签收表主表数据
+            $fdata = array(
+                'dist_id'      => I('post.dist_id/d'),
+                'bill_out_id'  => I('post.bid/d'),
+                'sign_msg'     => I('post.sign_msg', '' ,'trim'),
+                'status'       => 2,
+                'sign_time'    => get_time(),
+                'sign_driver'  => session('user.mobile'),
+                'created_time' => get_time(),
+                'updated_time' => get_time()
+            );
+            $M = M('tms_sign_in');
+            //签收表中是否有拒收纪录
+            $signin = $M->field('id')
+            ->where(array('bill_out_id' => $fdata['bill_out_id']))
+            ->find();
+            //向签收表添加或更新一条记录，status为0
+            if($signin) {
+                $M->where(array('id' => $signin['id']))->save($fdata);
+            }
+            else {
+                $M->add($fdata);
+            }
+            //更新配送单详情－>配送单状态
+            $A = A('Tms/Dist','Logic');
+            $map['pid'] = $fdata['dist_id'];
+            $map['bill_out_id'] = $fdata['bill_out_id'];
+            $map['status'] = 2;
+            $code = $A->set_dist_status($map);
+        }
+        $this->ajaxReturn($res);
+
+    // 车单纬度统计
+    public function orderList(){
+
+        $id = I('get.id',0);
+        if(empty($id)){
+            $this->error = '未找到该提货纪录。';
+        }
+        $M = M('tms_delivery');
+        $res = $M->find($id);
+            
+        if(empty($res)) {
+            $this->error = '未找到该提货纪录。';
+        }elseif($res['mobile'] != session('user.mobile')) {
+            $this->error ='不能查看该配送单，您的手机号码与提货人不符合。';
+        }
+        if(!empty($this->error)) {
+            $this->title = "客户签收";
+            $this->display('tms:orders');
+            exit();
+        }
+
+        $all_orders     = 0;  //总订单统计
+        $sign_orders    = 0;  //签收单统计
+        $unsign_orders  = 0;  //拒收单统计
+        $delivering     = 0;  //派送中订单数统计
+        $sum_deal_price  = 0;   //回款数
+        $arrays=array();    //回仓列表的数组
+        unset($map);
+        $map['id'] = $res['dist_id'];
+        //总订单数
+        $order_count = M('stock_wave_distribution')->field('order_count')->where($map)->find();
+        if(empty($order_count)){
+            $this->error('没有找到该配送单');
+        }
+        $all_orders = $order_count['order_count'];
+        unset($map);
+        //查询条件为配送单id
+        $map['dist_id'] = $res['dist_id'];
+        //根据配送单id查询签收表
+        $sign_data = M('tms_sign_in')->where($map)->select();
+        //若查出的签收信息非空
+        if(!empty($sign_data)){   
+                for($n = 0; $n < count($sign_data); $n++){
+                    if($sign_data[$n]['status'] == 2){
+                        $unsign_orders++;   //拒收单数加1
+                    }elseif($sign_data[$n]['status'] == 1){
+                        $sign_orders++; //已签收单数加1
+                    }
+                    unset($map);
+                    $map['pid'] = $sign_data[$n]['id'];
+                    //根据出库单id查询出所有出库单详情信息
+                    $sign_in_detail = M('tms_sign_in_detail')->where($map)->select();
+                    if(!empty($sign_in_detail)){
+                        
+                        for($i = 0; $i < count($sign_in_detail); $i++){
+                            unset($map);
+                            $map['id'] =  $sign_in_detail[$i]['bill_out_detail_id'];
+                            //配送数量
+                            $delivery = M('stock_bill_out_detail')->where($map)->find();
+                            $delivery_qty = $delivery['delivery_qty']; 
+                            //如果计量单位和计价单位相等就取签收数量
+                            if($sign_in_detail[$i]['measure_unit'] == $sign_in_detail[$i]['charge_unit']){
+                                $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
+                                $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
+                            //如果计量单位和计价单位不相等就取签收重量
+                            }else{
+                                $sign_qty = $sign_in_detail[$i]['real_sign_wgt']; //签收重量
+                                $unit = $sign_in_detail[$i]['charge_unit']; //计价单位
+                            }
+                            $quantity = $delivery_qty - $sign_qty; //回仓数量
+                            if($quantity > 0){
+                                $key  = $delivery['pro_code'];    //sku号
+                                $arrays[$key]['quantity'] =  $quantity; //回仓数量
+                                $arrays[$key]['name'] =  $delivery['pro_name'];   //sku名称
+                                $arrays[$key]['unit_id'] = $unit;   //单位
+                            }
+                            $sum_deal_price += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
+                        }
+                        
+                    }
+                    
+                }  
+        }
+            
+        $list['dist_id'] = $res['dist_id'];
+        $list['sum_deal_price']  = $sum_deal_price;//回款数
+        $list['sign_orders'] = $sign_orders;//已签收
+        $list['unsign_orders'] = $unsign_orders;//未签收
+        $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
+        $this->list = $list;
+        $this->back_lists = $arrays;
+        $this->title =$res['dist_code'].'车单详情';
+        $this->display('tms:orderlist');
     }
 
 }
