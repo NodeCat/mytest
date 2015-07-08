@@ -441,8 +441,8 @@ class IndexController extends Controller {
                 //$this->error = '提货失败，该单据已发运';
             }
             $ctime = strtotime($dist['created_time']);
-            $end_date = date('Y-m-d',NOW_TIME);
             $start_date = date('Y-m-d',strtotime('-1 Days'));
+            $end_date = date('Y-m-d',strtotime('+1 Days'));
 
             if($ctime < strtotime($start_date) || $ctime > strtotime($end_date)) {
                 $this->error = '提货失败，该配送单已过期';
