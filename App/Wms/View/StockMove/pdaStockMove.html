@@ -18,7 +18,7 @@
   <div class="form-group">
     <label for="location" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">从库位</label>
     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-      <input type="text" class="form-control input-lg" id="location_code" name="location_code" placeholder="请输入源库位">
+      <input type="text" class="form-control input-lg input-place" id="location_code" name="location_code" placeholder="请输入源库位">
     </div>
   </div>
   <br>
@@ -26,7 +26,7 @@
   <div class="form-group">
     <label for="pro_code" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label">货品号</label>
     <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-      <input type="text" class="form-control input-lg" name="pro_code" id="pro_code" placeholder="请输入货品号">
+      <input type="text" class="form-control input-lg input-num" name="pro_code" id="pro_code" placeholder="请输入货品号">
     </div>
   </div>
   <br>
@@ -46,6 +46,20 @@
 
 <script type="text/javascript">
 $(function(){
+   $('.input-place').focus();
+    $('.input-place').on('keydown' , function(e){
+       if(e.keyCode == 13){
+        $('.input-num').focus();
+        return false ;
+       }
+     })
+    $('.input-num').on('keydown' , function(e){
+       if(e.keyCode == 13){
+        return false ;
+       }
+     })
+
+
   $('#submit_search').click(function(){
     var _location_code = $('#location_code').val();
     var _pro_code = $('#pro_code').val();
