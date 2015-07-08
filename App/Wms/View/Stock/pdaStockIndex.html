@@ -14,28 +14,28 @@
   <div class="form-group">
     <label for="code" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品号</label>
     <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-      <input type="text" class="form-control input-lg" id="pro_code" name="pro_code" placeholder="请输入货品号">
+      <input type="text" class="form-control input-lg input-num" id="pro_code" name="pro_code" placeholder="请输入货品号">
     </div>
   </div>
   <br>
   <div class="form-group">
     <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">货品名称</label>
     <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-      <input type="text" class="form-control input-lg" name="pro_name" id="pro_name" placeholder="请输入货品名称">
+      <input type="text" class="form-control input-lg input-name" name="pro_name" id="pro_name" placeholder="请输入货品名称">
     </div>
   </div>
   <br>
   <div class="form-group">
     <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">库位编号</label>
     <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-      <input type="text" class="form-control input-lg" name="location_code" id="location_code" placeholder="请输入库位编号">
+      <input type="text" class="form-control input-lg input-place" name="location_code" id="location_code" placeholder="请输入库位编号">
     </div>
   </div>
   <br>
   <div class="form-group">
     <label for="name" class="col-lg-2 col-md-2 col-sm-2 col-xs-2 control-label">库存状态</label>
     <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-      <select name="status" id="status" class="form-control input-lg">
+      <select name="status" id="status" class="form-control input-lg input-status">
         <option value="qualified">合格</option>
         <option value="unqualified">残次</option>
         <option value ="freeze">冻结</option>
@@ -58,11 +58,38 @@
 
 <script type="text/javascript">
 $(function(){
-  $('#submit_search').click(function(){
+    $('.input-num').focus();
+    $('.input-num').on('keydown' , function(e){
+       if(e.keyCode == 13){
+        $('.input-name').focus();
+        return false ;
+       }
+     })
+    $('.input-name').on('keydown' , function(e){
+       if(e.keyCode == 13){
+        $('.input-place').focus();
+        return false ;
+       }
+     })
+    $('.input-place').on('keydown' , function(e){
+       if(e.keyCode == 13){
+        $('.input-status').focus();
+        return false ;
+       }
+     })
+    $('.input-status').on('keydown' , function(e){
+       if(e.keyCode == 13){
+        $('.input-num').focus();
+        return false ;
+       }
+     })
+
+  $('form-horizontal').on('click',function(){
     var _pro_code = $('#pro_code').val();
     var _pro_name = $('#pro_name').val();
     var _location_code = $('#location_code').val();
     var _status = $('#status').val();
+    
     if(_pro_name == "" && _pro_code == "" && _location_code == ""){
       alert_error('请至少输入货品号，货品名称，库位编号其中一个查询条件');
       return false;
