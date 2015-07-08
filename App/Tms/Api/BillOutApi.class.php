@@ -104,15 +104,16 @@ class BillOutApi extends CommApi {
         //头部信息
         $title = '大厨配送';
         $tmp[] = $this->getPrintCommand('center');
-        $tmp[] = $this->getPrintCommand('text_big_size');
         $tmp[] = $title;
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('right');
         $order_id = 'ID：' . $bill['order_id'];
+        $tmp[] = $order_id;
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('left');
         $shop_name = '店名：' . $bill['shop_name'];
+        $tmp[] = $this->formateName($shop_name);
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
         $tmp[] = $this->getPrintCommand('print');
@@ -140,6 +141,7 @@ class BillOutApi extends CommApi {
      */
     public function getList($bill) {
         $tmp = array();
+        $tmp[] = $this->getPrintCommand('left');
         $tmp[] = $this->formateLine('商品名称', '单价  数量  小计  ');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getLineText('签收商品');
@@ -150,7 +152,8 @@ class BillOutApi extends CommApi {
             $tmp[] = $this->formateName($val['name']);
             $tmp[] = $this->getPrintCommand('print');
             $tmp[] = $this->getPrintCommand('right');
-            $tmp[] = $val['actual_price'] . '  ' .$val['actual_quantity'] . $val['actual_sum_price'] . '  ';
+            $tmp[] = $val['actual_price'] . '  ' .$val['actual_quantity'] .'  ' . $val['actual_sum_price'] . '  ';
+            $tmp[] = $this->getPrintCommand('print');
         }
         //退货列表
         if(is_array($bill['refuse'])) {
@@ -161,7 +164,8 @@ class BillOutApi extends CommApi {
                 $tmp[] = $this->formateName($val['name']);
                 $tmp[] = $this->getPrintCommand('print');
                 $tmp[] = $this->getPrintCommand('right');
-                $tmp[] = $val['price'] . '  ' .$val['quantity'] . $val['sum_price'] . '  ';
+                $tmp[] = $val['price'] . '  ' .$val['quantity'] . '  ' . $val['sum_price'] . '  ';
+                $tmp[] = $this->getPrintCommand('print');
             }
         }
         $tmp[] = $this->getPrintCommand('center');
@@ -194,8 +198,8 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         //合计
-        $tmp[] = $this->getPrintCommand('left');
-        $tmp[] = $this->formateLine('合计', $bill['deal_price'] . '元');
+        $tmp[] = $this->getPrintCommand('center');
+        $tmp[] = $this->formateLine('合计', $bill['deal_price'] . ' 元');
         $tmp[] = $this->getPrintCommand('print');
         //确认信息
         $tmp[] = '本人确认以上交易，已完成签收';
@@ -210,6 +214,7 @@ class BillOutApi extends CommApi {
         //售后电话
         $tmp[] = $this->getPrintCommand('right');
         $tmp[] = '售后电话：401-xxxxxxx';
+        $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
@@ -231,7 +236,9 @@ class BillOutApi extends CommApi {
      * [getUnderLine 返回一行中间包含文字的横线]
      */
     public function getLineText($text) {
-        $len = mb_strwidth($text);
+        $len = mb_strwidth($text, 'utf-8');
+        dump($len);
+        die();
         $lines = $this->max_len - $len;
         $mid = $lines/2;
         if(is_int($mid)) {
