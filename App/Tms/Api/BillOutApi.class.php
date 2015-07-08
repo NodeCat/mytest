@@ -20,26 +20,9 @@ class BillOutApi extends CommApi {
      */
     public function printBill($bill) {
 
-        $data = array(
-            array(0x1b, 0x61, 0x01),
-            '大厨配送',
-            array(0x0A),
-            array(0x0A),
-            array(0x0A),
-            array(0x1b, 0x61, 0x00),
-            '点名：XXXX',
-            array(0x1b, 0x61, 0x00),
-            'ID:999999',
-            array(0x0A),
-            array(0x1b, 0x61, 0x01),
-            '小票打印小票打印',
-            array(0x0A),
-            array(0x1B, 0x40),
-        );
-        foreach ($data as &$value) {
-            $value = is_array($value) ? $this->byteToStr($value) : $value;
-        }
-        return json_encode($data);
+        $head = $this->getHead($bill);
+        $res = array_merge($head);
+        return json_encode($res);
     }
 
     /**
@@ -52,6 +35,7 @@ class BillOutApi extends CommApi {
         $commands = array(
             'reset'            => array(0x1B, 0x40),//复位打印机
             'print'            => array(0x0A),//打印并换行
+            'center'           => array(0x1b, 0x61, 0x01),//居中
             'text_big_size'    => array(0x1B, 0x57, 0x01),//宽高加倍
             'text_normal_size' => array(0x1B, 0x57, 0x00),//普通字号
             'no_hightlight'    => array(0x1B, 0x69, 0x00),//禁止反白打印
@@ -59,7 +43,7 @@ class BillOutApi extends CommApi {
         if(!$key || !isset($commands[$key])){
             return '';
         }
-        $command = $this->byteToStr();
+        $command = $this->byteToStr($commands[$key]);
         return $command;
     }
 
@@ -67,8 +51,34 @@ class BillOutApi extends CommApi {
      * [getHead 小票头]
      * @return [type] [description]
      */
-    public function getHead() {
-
+    public function getHead($bill) {
+        $tmp = array();
+        //头部信息
+        $title = '大厨配送';
+        $tmp[] = $this->getPrintCommand('center');
+        $tmp[] = $title;
+        $tmp[] = $this->getPrintCommand('print');
+        $tmp[] = $this->getPrintCommand('print');
+        $shop_name = '店名：' . $bill['shop_name'];
+        $order_id = 'ID：' . $bill['id'];
+        $tmp[] = $this->formateLine($shop_name,$order_id);
+        $tmp[] = $this->getUnderLine();
+        $tmp[] = $this->getPrintCommand('print');
+        //下单时间：
+        $created_time = '下单时间：' . $bill['created_time'];
+        $tmp[] = $created_time;
+        $tmp[] = $this->getPrintCommand('print');
+        //支付方式
+        $pay_status = '支付方式：' . $bill['pay_status'];
+        $tmp[] = $pay_status;
+        $tmp[] = $this->getPrintCommand('print');
+        //订单金额
+        $final_price = '订单金额：' . $bill['final_price'];
+        $tmp[] = $final_price;
+        $tmp[] = $this->getPrintCommand('print');
+        $tmp[] = $this->getUnderLine();
+        $tmp[] = $this->getPrintCommand('print');
+        return $tmp;
     }
 
     /**

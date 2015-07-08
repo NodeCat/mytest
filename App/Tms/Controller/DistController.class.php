@@ -99,7 +99,7 @@ class DistController extends Controller {
     }
 
     //出库单列表
-    public function orders(){
+    public function orders() {
         $id = I('get.id',0);
         if(!empty($id)) {
             $M = M('tms_delivery');
@@ -178,9 +178,8 @@ class DistController extends Controller {
                                 ->select();
                             $val['refuse_bill'] = $refuse;
                             // 获取打印小票要用的数据
-                            $printStr = A('Tms/billOut', 'Api')->printBill($val);
+                            // $printStr = A('Tms/billOut', 'Api')->printBill($val);
                         }
-                            $printStr = A('Tms/billOut', 'Api')->printBill($val);
                     }
                     else {
                         $v['quantity'] = $v['delivery_qty'];
@@ -199,6 +198,7 @@ class DistController extends Controller {
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $orders;
+            dump($orders);
 
         }
         //小票数据

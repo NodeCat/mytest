@@ -359,6 +359,7 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;

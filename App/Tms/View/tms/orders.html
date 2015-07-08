@@ -300,7 +300,7 @@
             <div class="panel-footer">
                 <div class="input-group">
                         <div class="col-xs-12">
-                                <a class="btn btn-primary btn-block js-btn-print">打印小票</a>
+                                <a class="btn btn-primary btn-block js-btn-print" data-str='{$vo.printStr}'>打印小票</a>
                         </div>
                 </div>
             </div>
@@ -317,7 +317,6 @@
   <script type="text/javascript">
 
     function ticketPrint(printStr){
-      alert(printStr);
       if(typeof HostApp == "undefined") {
         alert('使用打印功能请您先下载大厨网配送app.');
       }
@@ -477,7 +476,7 @@
     });
     
     $('.js-btn-print').on('click',function(){
-        var printStr = {$printStr};
+        var printStr = $(this).data('str');
         printStr = JSON.stringify(printStr);
         ticketPrint(printStr);
     })
