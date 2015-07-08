@@ -66,7 +66,7 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
         $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('center');
+        $tmp[] = $this->getPrintCommand('left');
         //下单时间：
         $created_time = '下单时间：' . $bill['created_time'];
         $tmp[] = $created_time;
