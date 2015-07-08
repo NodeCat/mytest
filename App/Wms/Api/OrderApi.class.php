@@ -47,7 +47,14 @@ class OrderApi extends CommApi{
             $params['refer_code'] = $order_info['info']['id'];
             $params['delivery_date'] = str_replace('/', '-', $order_info['info']['deliver_date']);
             $params['delivery_time'] = $order_info['info']['deliver_time'];
-            $params['delivery_ampm'] = 'am';
+            if (empty($order_info['info']['deliver_time_real'])) {
+                $deliver_time_real = '';
+            } elseif ($order_info['info']['deliver_time_real'] == 1) {
+                $deliver_time_real = 'am';
+            } else {
+                $deliver_time_real = 'pm';
+            }
+            $params['delivery_ampm'] = $deliver_time_real;
             $params['customer_realname'] = $order_info['info']['realname'];
             $params['delivery_address'] = $order_info['info']['deliver_addr'];
             $params['company_id'] = $order_info['info']['site_src'];
