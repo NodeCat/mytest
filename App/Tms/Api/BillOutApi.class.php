@@ -9,22 +9,67 @@ class BillOutApi extends CommApi {
 
     protected $model;
 
-    protected function _initialize () {
-        $this->model = M('stock_bill_out');
-    }
+    protected function _initialize () {}
 
     /**
      * [printBill 打印小票接口]
-     * @param  [integer] $bill_out_id [出库单ID]
-     * @return [json]                 [打印指令与数据组合的json串]
+     * @param  [array]   $bill [订单数据]
+     * @param  [integer] $ver  [WMS版本]
+     * @return [json]          [打印指令与数据组合的json串]
      */
-    public function printBill($bill) {
-
-        $head = $this->getHead($bill);
+    public function printBill($bill, $ver = 1) {
+        //获取有效的打印数据
+        if($ver === 1){
+            $pdata = $this->getPrintDataByOrder($bill);
+        }
+        else {
+           $pdata = $this->getPrintDataByBill($bill); 
+        }
+        $head = $this->getHead($pdata);
+        $list = $this->getList($pdata);
         $res = array_merge($head);
         return json_encode($res);
     }
 
+    public function getPrintDataByOrder($order) {
+        $data = array(
+            'shop_name'    => $order['shop_name'],
+            'order_id'     => $order['id'],
+            'created_time' => $order['created_time'],
+            'pay_status'   => $order['pay_status'],
+            'final_price'  => $order['final_price'],
+            'minus_amount' => $order['minus_amount'],
+            'deliver_fee'  => $order['deliver_fee'],
+            'deal_price'   => $order['deal_price'],
+        );
+        //获取签收商品列表和拒收商品列表
+        foreach($order['detail'] as $val) {
+            //一个签收商品数据
+            $tmp_sign = array(
+                'name'             => $val['name'],
+                'actual_price'     => $val['single_price'],
+                'actual_quantity'  => $val['actual_quantity'],
+                'actual_sum_price' => $val['actual_sum_price'],
+            );
+            //一个拒收商品数据
+            if($val['actual_quantity'] < $val['quantity']) {
+                $tmp_refuse = array(
+                    'name'      => $val['name'],
+                    'price'     => $val['price'],
+                    'quantity'  => $val['quantity'] - $val['actual_quantity'],
+                    'sum_price' => 0,
+                );
+            }
+            $sign[] = $tmp_sign;
+            if(is_array($tmp_refuse)) {
+                $refuse[] = $tmp_refuse;
+            }
+        }
+        $data['sign']   = $sign;
+        $data['refuse'] = $refuse;
+        return $data;
+
+    }
     /**
      * [getPrintCommand 获取一条打印指令]
      * @param  [type] $key [指令对应key]
@@ -84,6 +129,14 @@ class BillOutApi extends CommApi {
         return $tmp;
     }
 
+    /**
+     * [getList 收退商品列表]
+     * @param  [type] $bill [description]
+     * @return [type]       [description]
+     */
+    public function getList($bill) {
+        
+    }
     /**
      * [getUnderLine 返回一行横线]
      */
