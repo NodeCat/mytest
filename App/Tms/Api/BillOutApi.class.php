@@ -237,8 +237,6 @@ class BillOutApi extends CommApi {
      */
     public function getLineText($text) {
         $len = mb_strwidth($text, 'utf-8');
-        dump($len);
-        die();
         $lines = $this->max_len - $len;
         $mid = $lines/2;
         if(is_int($mid)) {
