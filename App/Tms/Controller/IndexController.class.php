@@ -3,8 +3,8 @@ namespace Tms\Controller;
 use Think\Controller;
 class IndexController extends Controller {
     protected $car=array(
-        'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
-        'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
+        'car_type' =>array(0=>'请选择你的车型','平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
+        'car_from' =>array(0=>'请选择派车平台','速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
         'warehouse'=>array(0=>'请选择签到仓库',7=>'北京白盆窑仓库',6=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
     );
 
@@ -145,11 +145,14 @@ class IndexController extends Controller {
             exit();  
         }
         if(IS_POST){
-            $code = I('post.mobile','');
-            $name = I('post.username');
-            $num  = I('post.car_num');
-            $storge=I('post.warehouse');
-            if(empty($code) || empty($name) || empty($num)|| empty($storge)){
+            $code     = I('post.mobile','');
+            $name     = I('post.username');
+            $num      = I('post.car_num');
+            $car_type = I('post.car_type');
+            $car_from = I('post.car_from');
+            $storge   = I('post.warehouse');
+
+            if(empty($code) || empty($name) || empty($num) || $car_type=='请选择你的车型' || $car_from=='请选择派车平台' || empty($storge)) {
                 $this->error ='请正确的填写修改信息';
                 $this->person();
                 exit();
@@ -212,17 +215,28 @@ class IndexController extends Controller {
             $code   = I('post.mobile/d',0);
             $name   = I('post.username');
             $num    = I('post.car_num');
-            $storge = I('post.warehouse');
+            $car_type = I('post.car_type');
+            $car_from = I('post.car_from');
+            $warehouse = I('post.warehouse');
             $user['mobile']   = $code;
             $user['username'] = $name;
             $user['car_num']  = $num;
-            if(empty($code) || empty($name) || empty($num)|| empty($storge)) {
+            $user['car_type'] = $car_type;
+            $user['car_from'] = $car_from;
+            $user['warehouse']= $this->car['warehouse'][$warehouse];
+            if(empty($code) || empty($name) || empty($num)|| $car_type=='请选择你的车型' || $car_from=='请选择派车平台' || empty($warehouse)) {
                 $this->error ='请补全你的签到信息';
                 if(empty($name)) {
                     $this->error ='请输入你的姓名';
                 }
                 elseif(empty($num)) {
                     $this->error ='请输入你的车牌号';                
+                }
+                elseif($car_type=='请选择你的车型') {
+                    $this->error ='请选择你的车型';
+                }
+                elseif($car_from=='请选择派车平台') {
+                    $this->error ='请选择派车平台';
                 }
                 elseif(empty($storge)) {
                     $this->error ='请选择你的签到仓库';
@@ -241,7 +255,7 @@ class IndexController extends Controller {
             $M = M('TmsUser');
             $data = $M->create($data);
             if($M->add($data)){
-
+                unset($user);
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
                 session('user',$user);
@@ -378,16 +392,36 @@ class IndexController extends Controller {
             $end_date = date('Y-m-d',strtotime('+1 Days'));
             $map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
-            $dist = $M->field('id,mobile')->where($map)->find();
+            $dist = $M->field('id,mobile,order_count')->where($map)->find();
             unset($map);
             if(!empty($dist)) {//若该配送单已被认领
                 if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                     $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
-                    $map['dist_id'] = $id;
-                    $data['status'] = '0';
-                    $M->where($map)->save($data);
+                    $map['dist_id']      = $id;
+                    $map['order_by']     = array('user_id'=>'ASC','created_time' => 'DESC');
+                    $map['itemsPerPage'] = $dist['order_count'];
+                    $A   = A('Common/Order','Logic');
+                    $ord = $A->order($map);
+                    unset($map);
+                    foreach ($ord as $key => $value) {
+                        if($value['status_cn'] != "已装车") {
+                            $status = '1';//只要一单不是以装车,就停止
+                            break;
+                        }
+                        else {
+                            $status = '2';
+                        }
+                    }
+                    if($status == '2') {//如果别人提的还是已装车，那就还可以提
+                        $map['dist_id'] = $id;
+                        $data['status'] = '0';
+                        $M->where($map)->save($data);
+                    }
+                    else {// 如果别人提了，并且只要一单不是以装车，就不能提了
+                        $this->error="该配送单已被他人提走并且在配送中,不能被认领";
+                    }
                 }
                 unset($map);
             }
@@ -397,7 +431,7 @@ class IndexController extends Controller {
             $map['id'] = $id;
             $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
-            
+            unset($map);
             //if($id != $dist['dist_number']) {
             if(empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
@@ -407,11 +441,18 @@ class IndexController extends Controller {
                 //$this->error = '提货失败，该单据已发运';
             }
             $ctime = strtotime($dist['created_time']);
+            $end_date = date('Y-m-d',NOW_TIME);
+            $start_date = date('Y-m-d',strtotime('-1 Days'));
+
             if($ctime < strtotime($start_date) || $ctime > strtotime($end_date)) {
-                //$this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
-
-
+            // 用配送单id获取订单详情
+            $map['dist_id'] = $id;
+            $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+            $map['itemsPerPage'] = $dist['order_count'];
+            $orders = $A->order($map);
+            unset($map);
             if(empty($this->error)){
                 $data['dist_id'] = $dist['id'];
                 $data['dist_code'] = $dist['dist_number'];
@@ -424,17 +465,27 @@ class IndexController extends Controller {
                 $data['created_time'] = get_time();
                 $data['updated_time'] = get_time();
                 $data['status'] = '1';
-                $lines = $A->line(array('line_ids'=>array($dist['line_id'])));
-                $data['line_name'] = $lines[0]['name'];
+                //遍历每个订单的取出路线id
+                foreach ($orders as $v) {
+                    $line_id[] = $v['line_id'];
+                # code...
+                }
+                $line_id = array_unique($line_id);//重复的去掉
+                $lines = $A->line(array('line_ids'=>$line_id));//取出所有路线
+                // 把路线连接起来
+                foreach ($lines as $key => $val) {
+                    if($key==0) {
+                        $line_names = $val['name'];
+                    }
+                    else{
+                        $line_names .='/'.$val['name'];
+                    }
+                }
+                $data['line_name'] = $line_names;//写入devilery
                 $citys = $A->city();
                 $data['city_id'] = $citys[$dist['city_id']];
                 $res = $M->add($data);
-                unset($map);
-                $map['dist_id'] = $dist['id'];
-                $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-                $map['itemsPerPage'] = $dist['order_count'];
-                $orders = $A->order($map);
-                unset($map);
+                // 设置订单状态
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
