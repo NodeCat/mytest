@@ -8,7 +8,7 @@ use Think\Controller;
 class BillOutApi extends CommApi {
 
     protected $model;
-
+    protected $max_len = 32;//打印机单行最大宽度
     protected function _initialize () {}
 
     /**
@@ -82,6 +82,7 @@ class BillOutApi extends CommApi {
             'print'            => array(0x0A),//打印并换行
             'center'           => array(0x1b, 0x61, 0x01),//居中
             'left'             => array(0x1b, 0x61, 0x00),//居左
+            'right'            => array(0x1b, 0x61, 0x02),//居右
             'text_big_size'    => array(0x1B, 0x57, 0x01),//宽高加倍
             'text_normal_size' => array(0x1B, 0x57, 0x00),//普通字号
             'no_hightlight'    => array(0x1B, 0x69, 0x00),//禁止反白打印
@@ -107,7 +108,7 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $shop_name = '店名：' . $bill['shop_name'];
-        $order_id = 'ID：' . $bill['id'];
+        $order_id = 'ID：' . $bill['order_id'];
         $tmp[] = $this->formateLine($shop_name,$order_id);
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
@@ -118,6 +119,7 @@ class BillOutApi extends CommApi {
         $tmp[] = $created_time;
         $tmp[] = $this->getPrintCommand('print');
         //支付方式
+        $tmp[] = $this->getPrintCommand('right');
         $pay_status = '支付方式：' . $bill['pay_status'];
         $tmp[] = $pay_status;
         $tmp[] = $this->getPrintCommand('print');
@@ -136,13 +138,33 @@ class BillOutApi extends CommApi {
      * @return [type]       [description]
      */
     public function getList($bill) {
-        
+        $tmp = array();
+        $tmp[] = $this->formateLine('商品名称', '单价  数量  小计  ');
+        $tmp[] = $this->getPrintCommand('print');
+        $tmp[] = $this->getPrintCommand('print');
+
     }
     /**
      * [getUnderLine 返回一行横线]
      */
     public function getUnderLine() {
-        return '--------------------------------';
+        $line = '';
+        for($i=0; $i < $this->max_len; $i++) { 
+            $line .= '-';
+        }
+        return $line;
+    }
+
+    /**
+     * [getUnderLine 返回一行中间包含文字的横线]
+     */
+    public function getLineText($text) {
+        $len = mb_strwidth($text);
+        $lines = $this->max_len - $len;
+        for($i=0; $i < $this->max_len; $i++) { 
+            $line .= '-';
+        }
+        return $line;
     }
 
     /**
@@ -151,10 +173,9 @@ class BillOutApi extends CommApi {
      * @param  string $right  [右边字符]
      */
     public function formateLine($left = '', $right = '') {
-        $max  = 32;
         $llen = mb_strwidth($left, 'utf-8');
         $rlen = mb_strwidth($left, 'utf-8');
-        $space_len = $max - $llen - $rlen;
+        $space_len = $this->max_len - $llen - $rlen;
         $sapce = '';
         for ($i = 0; $i < $space_len; $i++) { 
             $space .= ' ';
