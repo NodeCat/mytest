@@ -285,45 +285,50 @@ class DispatchController extends Controller{
         $sign_orders    = 0;  //签收单统计
         $unsign_orders  = 0;  //拒收单统计
         $delivering     = 0;  //派送中订单数统计
+        $values  = 0;   //回款数
         $arrays=array();    //回仓列表的数组
         unset($map);
+        $map['id'] = $res['dist_id'];
+        //总订单数
+        $all_orders = M('stock_wave_distribution')->field('order_count')->where($map)->find();
+        unset($map);
         //查询条件为配送单id
-        $map['stock_wave_distribution_detail.pid'] = $res['dist_id'];
-        //根据配送单id查配送详情单里与出库单相关联的出库单id
-        $bill_out_id = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
-        //若查出的出库单id非空
-        if(!empty($bill_out_id)){   
-            $bill_out_id = array_column($bill_out_id,'bill_out_id');
-            unset($map);
-            //查询条件为出库单的id
-            $map['id'] = array('in',$bill_out_id);
-            //根据出库单id查出出库单的所有信息
-            $stock_bill_out = M('stock_bill_out')->where($map)->select();
-            //若查出的出库单信息非空
-            if(!empty($stock_bill_out)){
-                for($n = 0; $n < count($stock_bill_out); $n++){
+        $map['dist_id'] = $res['dist_id'];
+        //根据配送单id查询签收表
+        $sign_data = M('tms_sign_in')->where($map)->select();
+        //若查出的签收信息非空
+        if(!empty($sign_data)){   
+                for($n = 0; $n < count($sign_data); $n++){
+                    if($sign_data[$n]['status'] == 2){
+                        $unsign_orders++;   //拒收单数加1
+                    }elseif($sign_data[$n]['status'] == 1){
+                        $sign_orders++; //已签收单数加1
+                    }
                     unset($map);
-                    $map['pid'] = $stock_bill_out[$n]['id'];
+                    $map['pid'] = $sign_data[$n]['id'];
                     //根据出库单id查询出所有出库单详情信息
-                    $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
-                    if(!empty($bill_out_detail)){
-                        $all_orders = count($bill_out_detail);  //总订单数
-                        for($i = 0; $i < count($bill_out_detail); $i++){
+                    $sign_in_detail = M('tms_sign_in_detail')->where($map)->select();
+                    if(!empty($sign_in_detail)){
+                        
+                        for($i = 0; $i < count($sign_in_detail); $i++){
                             unset($map);
-                            $map['bill_out_detail_id'] =  $bill_out_detail[$i]['id'];
-                            $sign_qty = M('tms_sign_in_detail')->field('real_sign_qty')->where($map)->find();
-                            if(empty($sign_qty)){
-                                $delivering++;  //派送中数量加1
-                                continue;   //若没有签收信息，不计算仓数量
+                            $map['id'] =  $sign_in_detail[$i]['bill_out_detail_id'];
+                            //配送数量
+                            $delivery_qty = M('stock_bill_out_detail')->field('delivery_qty')->where($map)->find();
+                            //如果计量单位和计价单位相等就取签收数量
+                            if($sign_in_detail[$i]['measure_unit'] == $sign_in_detail[$i]['charge_unit']){
+                                $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
+                                $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
+                            //如果计量单位和计价单位不相等就取签收重量
+                            }else{
+                                $sign_qty = $sign_in_detail[$i]['real_sign_wgt']; //签收重量
+                                $unit = $sign_in_detail[$i]['charge_unit']; //计价单位
                             }
-                            if($sign_qty == 0){
-                                $unsign_orders++;   //拒收单数加1
-                            }
-                            $sign_orders++; //已签收单数加1
-                            $bill_out_qty = $bill_out_detail[$i]['delivery_qty'];  //配送数量
-                            $arrays[]]['return_num'] = $bill_out_qty - $sign_qty;   //回仓数量
-                            $arrays[]['pro_code'] =  $bill_out_detail[$i]['pro_code'];
-                            $arrays[]['pro_name'] =  $bill_out_detail[$i]['pro_name'];
+                            $key  = $sign_in_detail[$i]['pro_code'];    //sku号
+                            $arrays[$key]['quantity'] = $delivery_qty - $sign_qty;   //回仓数量
+                            $arrays[$key]['pro_name'] =  $sign_in_detail[$i]['pro_name'];   //sku名称
+                            $arrays[$key]['unit_id'] = $unit;   //单位
+                            $values += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
                         }
                         
                     }else{
@@ -331,9 +336,6 @@ class DispatchController extends Controller{
                     }
                     
                 }
-            }else{
-                $this->error("没有找到相应的订单");
-            }
             
         }else{
             $this->error("没有找到相应的车单");
