@@ -365,11 +365,13 @@ class DistController extends Controller {
                                 $sign_qty = $sign_in_detail[$i]['real_sign_wgt']; //签收重量
                                 $unit = $sign_in_detail[$i]['charge_unit']; //计价单位
                             }
-            
-                            $key  = $delivery['pro_code'];    //sku号
-                            $arrays[$key]['quantity'] = $delivery_qty - $sign_qty;   //回仓数量
-                            $arrays[$key]['name'] =  $delivery['pro_name'];   //sku名称
-                            $arrays[$key]['unit_id'] = $unit;   //单位
+                            $quantity = $delivery_qty - $sign_qty; //回仓数量
+                            if($quantity > 0){
+                                $key  = $delivery['pro_code'];    //sku号
+                                $arrays[$key]['quantity'] =  $quantity; //回仓数量
+                                $arrays[$key]['name'] =  $delivery['pro_name'];   //sku名称
+                                $arrays[$key]['unit_id'] = $unit;   //单位
+                            }
                             $sum_deal_price += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
                         }
                         
