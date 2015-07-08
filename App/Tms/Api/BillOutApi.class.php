@@ -36,6 +36,7 @@ class BillOutApi extends CommApi {
             'reset'            => array(0x1B, 0x40),//复位打印机
             'print'            => array(0x0A),//打印并换行
             'center'           => array(0x1b, 0x61, 0x01),//居中
+            'left'             => array(0x1b, 0x61, 0x00),//居左
             'text_big_size'    => array(0x1B, 0x57, 0x01),//宽高加倍
             'text_normal_size' => array(0x1B, 0x57, 0x00),//普通字号
             'no_hightlight'    => array(0x1B, 0x69, 0x00),//禁止反白打印
@@ -57,14 +58,15 @@ class BillOutApi extends CommApi {
         $title = '大厨配送';
         $tmp[] = $this->getPrintCommand('center');
         $tmp[] = $title;
-        $tmp[] = '1234567890123456789012345678901234567890';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $shop_name = '店名：' . $bill['shop_name'];
         $order_id = 'ID：' . $bill['id'];
         $tmp[] = $this->formateLine($shop_name,$order_id);
+        $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
         $tmp[] = $this->getPrintCommand('print');
+        $tmp[] = $this->getPrintCommand('center');
         //下单时间：
         $created_time = '下单时间：' . $bill['created_time'];
         $tmp[] = $created_time;
