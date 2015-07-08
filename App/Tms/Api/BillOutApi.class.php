@@ -57,6 +57,7 @@ class BillOutApi extends CommApi {
         $title = '大厨配送';
         $tmp[] = $this->getPrintCommand('center');
         $tmp[] = $title;
+        $tmp[] = '1234567890123456789012345678901234567890';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $shop_name = '店名：' . $bill['shop_name'];
