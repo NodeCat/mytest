@@ -91,13 +91,16 @@ class StockLogic{
         foreach($stock_list as $key=>$stock){
             //可用量
             $stock_available = $stock['stock_qty'] - $stock['assign_qty'];
+            if($stock_available <= 0){
+                continue;
+            }
             if($diff_qty > 0){
                 //可用量小于等于差异量
                 if($stock_available <= $diff_qty){
                     //获取此次销库存的相关信息
                     $return['stock_info'][$key]['location_id'] = $stock['location_id'];
                     $return['stock_info'][$key]['batch'] = $stock['batch'];
-                    $return['stock_info'][$key]['qty'] = $stock['stock_qty'];
+                    $return['stock_info'][$key]['qty'] = $stock_available;
 
                     $map['id'] = $stock['id'];
                     $data['assign_qty'] = $stock['assign_qty'] + $stock_available;

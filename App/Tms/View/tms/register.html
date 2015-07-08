@@ -1,7 +1,7 @@
 <include file="Index:nav-cur" />
 <br/>
 <div class="col-xs-12">
-<form class="form-horizontal form-pda form-scan" action="{:U('register')}" method="POST">
+<form id="f" class="form-horizontal form-pda form-scan" action="{:U('register')}" method="POST">
   <!--<input type="hidden" name="t" value="login" />-->
   <div class="row-fluid">
   <div class="col-xs-12">
@@ -15,14 +15,14 @@
   <br />
   <div class="input-group">
     <span class="input-group-addon">姓名</span>
-    <input autocomplete="off" value="{$user.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名" readonly />
+    <input autocomplete="off" value="{$user.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名" />
 
   </div>
   <br />
 
   <div class="input-group">
     <span class="input-group-addon">车牌</span>
-    <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
+    <input autocomplete="off" value="{$user.car_num}" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
 
   </div>
   <br />
@@ -49,9 +49,9 @@
 
   <div class="input-group">
     <span class="input-group-addon">仓库</span>
-    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库">
+    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库" onchange="check()" style="color:gray" >
       <volist name='car.warehouse' id='storge'> 
-        <option value="{$key}">{$storge}</option>
+        <option  value="{$key}">{$storge}</option>
       </volist>
     </select>
   </div>
@@ -82,5 +82,19 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
-car_num.focus();
+  if($("#username").val()=='') {
+    username.focus();
+  }
+  else if($("#car_num").val()=='') {
+    car_num.focus();
+  }
+  function check(){
+    x=document.getElementById('f');
+      if(x.warehouse.options[0].selected==true){
+      x.warehouse.style.color="gray";
+    }
+    else{
+      x.warehouse.style.color="black";
+    }
+  }
 </script>
