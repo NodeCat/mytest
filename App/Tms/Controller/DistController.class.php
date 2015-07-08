@@ -99,7 +99,7 @@ class DistController extends Controller {
     }
 
     //出库单列表
-    public function orders(){
+    public function orders() {
         $id = I('get.id',0);
         if(!empty($id)) {
             $M = M('tms_delivery');
@@ -195,7 +195,7 @@ class DistController extends Controller {
     public function sign() {
         //签收表主表数据
         $fdata = array(
-            'dist_id'        => I('get.dist_id/d'),
+            'dist_id'        => I('post.dist_id/d'),
             'bill_out_id'    => I('post.bid/d'),
             'receivable_sum' => I('post.final_price/f',0),
             'real_sum'       => I('post.deal_price/f',0),
@@ -301,43 +301,44 @@ class DistController extends Controller {
 
     //客户退货
     public function reject() {
-
-        //签收表主表数据
-        $fdata = array(
-            'dist_id'      => I('get.dist_id/d'),
-            'bill_out_id'  => I('post.bid/d'),
-            'sign_msg'     => I('post.sign_msg', '' ,'trim'),
-            'status'       => 0,
-            'sign_time'    => get_time(),
-            'sign_driver'  => session('user.mobile'),
-            'created_time' => get_time(),
-            'updated_time' => get_time()
-        );
-        $M = M('tms_sign_in');
-        //签收表中是否有拒收纪录
-        $signin = $M->field('id')
-        ->where(array('bill_out_id' => $fdata['bill_out_id']))
-        ->find();
-        //向签收表添加或更新一条记录，status为0
-        if($signin) {
-            $M->where(array('id' => $signin['id']))->save($fdata);
-        }
-        else {
-            $M->add($fdata);
-        }
-        //更新配送单详情－>配送单状态
-        $A = A('Tms/Dist','Logic');
-        $map['pid'] = $fdata['dist_id'];
-        $map['bill_out_id'] = $fdata['bill_out_id'];
-        $map['status'] = 0;
-        $code = $A->set_dist_status($map);
-        unset($map);
         $map['suborder_id'] = I('post.id/d',0);
         $map['status'] = '7';
         $map['sign_msg'] = I('post.sign_msg');
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
+        if($res['status'] === 0) {
+            unset($map);
+            //签收表主表数据
+            $fdata = array(
+                'dist_id'      => I('post.dist_id/d'),
+                'bill_out_id'  => I('post.bid/d'),
+                'sign_msg'     => I('post.sign_msg', '' ,'trim'),
+                'status'       => 2,
+                'sign_time'    => get_time(),
+                'sign_driver'  => session('user.mobile'),
+                'created_time' => get_time(),
+                'updated_time' => get_time()
+            );
+            $M = M('tms_sign_in');
+            //签收表中是否有拒收纪录
+            $signin = $M->field('id')
+            ->where(array('bill_out_id' => $fdata['bill_out_id']))
+            ->find();
+            //向签收表添加或更新一条记录，status为0
+            if($signin) {
+                $M->where(array('id' => $signin['id']))->save($fdata);
+            }
+            else {
+                $M->add($fdata);
+            }
+            //更新配送单详情－>配送单状态
+            $A = A('Tms/Dist','Logic');
+            $map['pid'] = $fdata['dist_id'];
+            $map['bill_out_id'] = $fdata['bill_out_id'];
+            $map['status'] = 2;
+            $code = $A->set_dist_status($map);
+        }
         $this->ajaxReturn($res);
     }
 

@@ -66,6 +66,7 @@ class DistLogic{
 	//签收后修改配送单详情－>配送单状态
 	public function set_dist_status($map = array()) {
 		if(!empty($map)) {
+			$code = 0;
 			$M = M('stock_wave_distribution_detail');
 			$data['status'] = $map['status'];
 			unset($map['status']);
