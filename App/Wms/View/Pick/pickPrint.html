@@ -58,9 +58,11 @@
             <td>规格</td>
             <!-- <td>结算单价</td> -->
             <td>订货数量</td>
+            <td>计量单位</td>
             <!-- <td>批次</td> -->
             <td>库位</td>
             <!-- <td>重量</td> -->
+            
           </tr>
         </thead>
         <tbody>
@@ -71,9 +73,11 @@
               <td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$vos.pro_code|getSkuInfoByCode='pro_attrs_str',###}<br></small></td>
               <!-- <td>{$vos.name}/{$vos.name}</td> -->
               <td>{$vos.pro_qty}</td>
+              <td>{$vos.uom_name}</td>
               <!-- <td>{$vos.batch}</td> -->
               <td>{$vos.src_location_id|getLocationNameById='code',###}</td>
               <!-- <td></td> -->
+              
             </tr>
           </volist>
           <tr>
