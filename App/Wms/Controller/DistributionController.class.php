@@ -966,6 +966,7 @@ class DistributionController extends CommonController {
         $msg = array();
         $msg['order_count'] = count($ids);
         $msg['type'] = 'success';
+        $msg['wave_id'] = $back;
         $this->msgReturn(true, '创建波次成功', $msg, U('index'));
     }
 }
