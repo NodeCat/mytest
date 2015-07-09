@@ -15,9 +15,10 @@ class OrderApi extends CommApi{
         }
 
         $order_id_list = explode(',', $order_ids);
-
-        foreach($order_id_list as $order_id){
-            $order_info = A('Common/Order','Logic')->getOrderInfoByOrderId($order_id);
+        $map = array('order_ids' => $order_id_list, 'itemsPerPage' => count($order_id_list));
+        $order_lists = A('Common/Order','Logic')->order($map);
+        foreach($order_lists as $order){
+            $order_info['info'] = $order;
             if(empty($order_info['info'])){
                 $return = array('error_code' => '201', 'error_message' => 'order info is empty' );
                 $this->ajaxReturn($return);
@@ -46,7 +47,14 @@ class OrderApi extends CommApi{
             $params['refer_code'] = $order_info['info']['id'];
             $params['delivery_date'] = str_replace('/', '-', $order_info['info']['deliver_date']);
             $params['delivery_time'] = $order_info['info']['deliver_time'];
-            $params['delivery_ampm'] = 'am';
+            if (empty($order_info['info']['deliver_time_real'])) {
+                $deliver_time_real = '';
+            } elseif ($order_info['info']['deliver_time_real'] == 1) {
+                $deliver_time_real = 'am';
+            } else {
+                $deliver_time_real = 'pm';
+            }
+            $params['delivery_ampm'] = $deliver_time_real;
             $params['customer_realname'] = $order_info['info']['realname'];
             $params['delivery_address'] = $order_info['info']['deliver_addr'];
             $params['company_id'] = $order_info['info']['site_src'];

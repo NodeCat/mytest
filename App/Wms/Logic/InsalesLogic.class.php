@@ -65,7 +65,7 @@ class InsalesLogic{
      * @return Array $returnRes;
      * 
      */
-    public function getSkuInfoByWhId($pro_codeArr = array(),$wh_id){
+    public function getSkuInfoByWhId($pro_codeArr = array(),$wh_id,$sku_number=''){
 
         if($wh_id){
             $where['wh_id'] = $wh_id;
@@ -78,10 +78,17 @@ class InsalesLogic{
         if(intval($total)>0){
             $m = M('stock');
             for($j=1; $j<=$totalPage;$j++){
-                
+                //加入sku_number检索条件
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
-                $where['pro_code'] = array('in',$pro_code);
-                $result = $m->where($where)->select();
+                if($sku_number && in_array($sku_number, $pro_code)){
+                    $where['pro_code'] = $sku_number;
+                    $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
+                }
+                if(!$sku_number){
+                    $where['pro_code'] = array('in',$pro_code);
+                    $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
+                }
+                
                 if($result){
                     //$pro_codes = getSubByKey($result, 'pro_code');
                     $returnRes = array_merge($returnRes,$result);
@@ -109,12 +116,15 @@ class InsalesLogic{
     }
 
     //进销存没有选择分类时做逻辑操作
-    public function getSkuInfoByWhIdUp($wh_id,$offset='',$limit=''){
+    public function getSkuInfoByWhIdUp($wh_id,$pro_code='',$offset='',$limit=''){
         $m               = M('stock');
         $where           = array();
         $where['status'] = 'qualified';
         if($wh_id){
             $where['wh_id'] = $wh_id;
+        }
+        if($pro_code){
+            $where['pro_code'] = $pro_code;
         }
         $result = array();
         $m->field('wh_id,pro_code,sum(stock_qty) as pro_qty')->where($where)->group('wh_id,pro_code');

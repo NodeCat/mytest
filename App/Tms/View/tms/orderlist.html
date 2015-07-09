@@ -3,7 +3,7 @@
 
 	<div>
 		<span>
-			<h4 class="list-group-item-heading">提货码{$list['dist_id']}</h4>
+			<h4 class="list-group-item-heading">提货码:{$list['dist_id']|default='无'}</h4>
 		</span>
 		<span>
 			<h4 class="list-group-item-heading">已签收{$list['sign_orders']|default='0'}单</h4>
@@ -11,17 +11,22 @@
 	</div>
 	<div>
 		<span>
-			<h4>拒收{$list['unsign_orders']}单</h4>
+			<h4>拒收{$list['unsign_orders']|default='0'}单</h4>
 		</span> 
 	</div>
 	<div>
 		<span>
-			<h4>派送中{$list['delivering']}单</h4>
+			<h4>派送中{$list['delivering']|default='0'}单</h4>
+		</span> 
+	</div>
+	<div>
+		<span>
+			<h4>已完成{$list['sign_finished']|default='0'}单</h4>
 		</span> 
 	</div>
 	<div >
 		<span>
-			<h4>交货款{$list['values']|sprintf="%1.2f",###}元</h4>
+			<h4>交货款{$list['sum_deal_price']|sprintf="%1.2f",###}元</h4>
 		</span>
 	</div
 <div class="table-responsive">
@@ -46,6 +51,7 @@
 			</volist>
 		</tbody>
 	</table>
+	<a class='btn btn-primary hidden' href="{:U('Index/deliver_goods?dist_id='.$list['dist_id'])}" >交货</a>
 </div>
 
 </div>

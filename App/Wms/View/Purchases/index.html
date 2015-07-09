@@ -1,5 +1,5 @@
 <block name ="searchbar">
-<form class="form-horizontal ajax table-search" action="{:U('Insales/index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
+<form class="form-horizontal ajax table-search" action="{:U('Purchases/index')}" method="POST" id="table-searchbar" style="margin-bottom:0;border-bottom:none">
 <div class="row">
 	<div class="col-md-12">
 		<div class="row">
@@ -46,9 +46,21 @@
 		</div>
 
         <div class="form-group  col-lg-3">
-        <label class="control-label col-lg-4 col-sm-4 col-xs-4">产品编号</label>
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">配送日期</label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
-        <input type="txt" rel="datepicker" name="pro_code" class="form-control input-sm"/>
+        <input type="txt" rel="datepicker" name="delivery_date" class="form-control input-sm form_datetime" data-date-format="yyyy-mm-dd" readonly>
+        </div>
+        </div>
+
+        <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">配送时间</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+        <select class="form-control" name="delivery_ampm" id="delivery_ampm">
+            <option value="">全天</option>
+            <option value="am">上午</option>
+            <option value="pm">下午</option>
+            
+        </select>
         </div>
         </div>
 
@@ -56,27 +68,38 @@
 	
 	<div class="form-group  col-lg-3">
 		<div class="col-lg-10 col-lg-offset-2">
-		   <button type="submit" data-href="{:U('Insales/index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
-		   <a href="{:U('Insales/index')}" id="allshow" class="btn btn-default btn-sm">显示全部</a>
+		   <button type="submit" data-href="{:U('Purchases/index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
+		   <a href="{:U('Purchases/index')}" id="allshow" class="btn btn-default btn-sm">显示全部</a>
 		</div>
 	</div>
 
     <notempty name="auth['export']">
         <div class="form-group  col-lg-1">
-            <a href="#" id='exportInsales' class="btn btn-sm btn-default btn-tool">导出</a>
+            <a href="#" id='exportPurchases' class="btn btn-sm btn-default btn-tool">导出</a>
         </div>
         <script type="text/javascript">
         $(function(){
             $("#allshow").removeClass('active');
-            $(document).on('click','#exportInsales',function(msg){
+            $(document).on('click','#exportPurchases',function(msg){
+
                 var wh_id = ($('#wh_ids').val() == '全部')?'':$('#wh_ids').val();
+
                 var cat_1 = ($('#cat_1').val() == '全部')?'':$('#cat_1').val();
+
                 var cat_2 = ($('#cat_2').val() == '全部')?'':$('#cat_2').val();
+
                 var cat_3 = ($('#cat_3').val() == '全部')?'':$('#cat_3').val();
-                var pro_code = $('[name = pro_code]').val()?$('[name = pro_code]').val():'';
+
+                var delivery_date = $('[name = delivery_date]').val();
+
+                var delivery_ampm = ($('[name = delivery_ampm]').val() == '全天')?'':$('[name = delivery_ampm]').val();
+
                 var d = new Date();
+
                 var time = d.getTime();
-                var url   = "{:U('Insales/exportInsales')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+"&pro_code="+pro_code+"&time="+time;
+
+                var url   = "{:U('Purchases/exportPurchases')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+'&delivery_date='+delivery_date+"&delivery_ampm="+delivery_ampm+"&time="+time;
+
                 window.location.href = url;
             });
             
@@ -91,7 +114,7 @@
 
 <block name ="list">
 <div class="table-content col-lg-12 col-sm-12 col-xs-12" id="table-content">
-  <include file="Insales:list"/>
+  <include file="Purchases:list"/>
 </div>
 </block>
 

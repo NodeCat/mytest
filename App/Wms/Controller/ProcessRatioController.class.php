@@ -96,15 +96,17 @@ class ProcessRatioController extends CommonController {
 	        if ($key == $data['p_pro_code']) {
 	            $data['p_name'] = $value['name'];
 	            $data['p_attrs'] = $value['pro_attrs_str'];
+	            $data['uom_name'] = $value['uom_name'];
 	        } else {
 	            //查询所有子sku
 	            foreach ($ratio as $v) {
 	                if ($key == $v['c_pro_code']) {
 	                    $data['c_pros'][] = array(
-	                    	    'c_code' => $v['c_pro_code'],
+	                    	'c_code' => $v['c_pro_code'],
 	                        'c_name' => $value['name'],
 	                        'c_attrs' => $value['pro_attrs_str'],
 	                        'c_ratio' => $v['ratio'],
+	                        'c_uom_name' => $value['uom_name'],
 	                    );
 	                }
 	            }

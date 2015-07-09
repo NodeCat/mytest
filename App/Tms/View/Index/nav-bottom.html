@@ -1,12 +1,17 @@
-<neq name="Think.const.ACTION_NAME" value="login">
+ <neq name="Think.const.ACTION_NAME" value="login">
 <nav class="navbar navbar-default navbar-fixed-bottom">
   <div class="container-fluid">
   <div class="row">
-    <div class="btn-group" role="group" aria-label="..." style="width:100%;">
-      <a href="{:U('Index/delivery')}" class="btn btn-lg btn-default" style="width:25%"><i class="glyphicon glyphicon-object-align-bottom"></i> 提货</a>
-      <a href="{:U('Index/person')}" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-user"></i> 个人</a>
-      <a href="{:U('Index/report')}" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-th-list"></i> 统计</a>
-      <a id="navigation" class="btn btn-lg btn-default"   style="width:25%"><i class="glyphicon glyphicon-send"></i> 地图模式</a>
+    <div class="btn-group btn-group-justified" role="group" aria-label="..." style="width:100%;">
+    <empty name="ver">
+      <a href="{:U('Index/delivery')}" class="btn btn-lg btn-default"><i class="glyphicon glyphicon-object-align-bottom"></i> 提货</a>
+      <a href="{:U('Index/person')}" class="btn btn-lg btn-default"><i class="glyphicon glyphicon-user"></i> 个人</a>
+      <a href="{:U('Index/report')}" class="btn btn-lg btn-default"><i class="glyphicon glyphicon-th-list"></i> 统计</a>
+      <a id="navigation" class="btn btn-lg btn-default"><i class="glyphicon glyphicon-send"></i> 路线</a>
+    <else/>
+    <a href="{:U('Index/delivery')}" class="btn btn-lg btn-default"><i class="glyphicon glyphicon-object-align-bottom"></i> 提货</a>
+      <a href="{:U('Index/person')}" class="btn btn-lg btn-default"><i class="glyphicon glyphicon-user"></i> 个人</a>
+    </empty>
     </div>
   </div>
   </div>
@@ -16,19 +21,16 @@
 
     $('#navigation').on('click',function(){
       if(typeof HostApp == "undefined") {
-          alert('使用导航功能请您先下载大厨网配送app.');
+          alert('使用路线功能请您先下载大厨网配送app.');
           return false;
         }
         var addr = "{:U('Index/navigation')}";
-        //var params=null;
         $.ajax({
           url:addr,
           type:'post',
           cache : false,
           dataType:'json',
           async:true,
-
-         // data:params,
           success: function(msg){
             
             HostApp.allNavigation(msg);
@@ -49,14 +51,8 @@
           async:true,
 		      data:{"id":para.user_id,"type":para.type},
           success: function(msg){
-            if(msg.status == 1) {
-            	alert(msg);
-            	HostApp.reportAddressWrongingSuccess(1);
-            }
-            else {
-            	HostApp.toast(msg.msg);
-            }
-         }
+              HostApp.toast(msg.msg);
+        }
     	});
     }
 

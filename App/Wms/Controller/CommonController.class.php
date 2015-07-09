@@ -49,12 +49,12 @@ class CommonController extends AuthController {
         $condition = I('query'); //列表页查询框都是动态生成的，名字都是query['abc']
         $condition = queryFilter($condition); //去空处理
         $table = get_tablename(CONTROLLER_NAME);
-        $get = I('get.');unset($get['p']);//获取链接中附加的查询条件，状态栏中的按钮url被附带了查询参数
+        $get = I('path.');unset($get['p']);//获取链接中附加的查询条件，状态栏中的按钮url被附带了查询参数
         //将参数并入$condition
-        foreach ($get as $key => $value) {
-            $param[$table.'.'.$key] = $value;
-            if(!array_key_exists($key, $condition)) {
-                $condition[$table.'.'.$key] = $value;
+        $get_len = count($get);
+        for ($i = 0;$i < $get_len;++$i) {
+            if(array_key_exists($get[$i], $query) && !array_key_exists($get[$i], $condition)) {
+                $condition[$get[$i]] = $get[++$i];
             }
         }
         $this->condition = $condition;
@@ -213,7 +213,8 @@ class CommonController extends AuthController {
             'Adjustment',
             //'Purchase',
             'LocationArea',
-            'Location'
+            'Location',
+            'Distribution',
         );
 
         $controllers_muilt = array(
@@ -235,7 +236,6 @@ class CommonController extends AuthController {
         $M->page($p.','.$page_size);//设置分页
         
         $data = $M->select();//真正的数据查询在这里生效
-        //echo $M->getLastSql();die;
         $count  = $M2->page()->limit()->count();//获取查询总数
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换

@@ -9,6 +9,7 @@ class InventoryDetailController extends CommonController {
             'theoretical_qty' => '原数量',
             'pro_qty' => '实盘量（点击修改）',
             'diff_qty' => '差异量',
+            'uom_name' => '计量单位',
             );
 	//设置列表页选项
 	protected function before_index() {

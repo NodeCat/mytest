@@ -19,10 +19,15 @@ class StockLogic{
         //判断每条sku是否够用
         $is_enough = true;
 
+        //获取 收货区 发货区 降级存储区 加工损耗区 加工区 库内报损区 下的库位信息
+        $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+        $not_in_location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
+
         foreach($bill_out_detail_infos as $bill_out_detail_info){
             $data['wh_id'] = session('user.wh_id');
             $data['pro_code'] = $bill_out_detail_info['pro_code'];
             $data['pro_qty'] = $bill_out_detail_info['order_qty'];
+            $data['not_in_location_ids'] = $not_in_location_ids;
             $check_re = $this->outStockBySkuFIFOCheck($data);
             if($check_re['status'] != 1){
                 $is_enough = false;
@@ -86,13 +91,16 @@ class StockLogic{
         foreach($stock_list as $key=>$stock){
             //可用量
             $stock_available = $stock['stock_qty'] - $stock['assign_qty'];
+            if($stock_available <= 0){
+                continue;
+            }
             if($diff_qty > 0){
                 //可用量小于等于差异量
                 if($stock_available <= $diff_qty){
                     //获取此次销库存的相关信息
                     $return['stock_info'][$key]['location_id'] = $stock['location_id'];
                     $return['stock_info'][$key]['batch'] = $stock['batch'];
-                    $return['stock_info'][$key]['qty'] = $stock['stock_qty'];
+                    $return['stock_info'][$key]['qty'] = $stock_available;
 
                     $map['id'] = $stock['id'];
                     $data['assign_qty'] = $stock['assign_qty'] + $stock_available;
@@ -138,6 +146,7 @@ class StockLogic{
      * $pro_qty 产品数量
      * $refer_code 出库单号
      * $location_ids 指定从哪个库位上检查
+     * $not_in_location_ids 过过滤掉哪个库位
      * )
      */
     public function outStockBySkuFIFOCheck($params = array()){
@@ -151,6 +160,12 @@ class StockLogic{
         $map['pro_code'] = $params['pro_code'];
         $map['wh_id'] = $params['wh_id'];
         $map['stock.status'] = 'qualified';
+
+        //过滤某些仓库id
+        if(!empty($params['not_in_location_ids'])){
+            $map['location_id'] = array('not in',$params['not_in_location_ids']);
+        }
+
         //指定从哪个库位上检查
         if($params['location_ids']){
             $map['location_id'] = array('in',$params['location_ids']);
