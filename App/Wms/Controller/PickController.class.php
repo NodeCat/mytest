@@ -117,7 +117,8 @@ class PickController extends CommonController {
       $m = M('stock_wave_picking_detail');
       $map['pid'] = $pid;
       $result = array();
-      $result = $m->where($map)->select();
+      $result = $m->where($map)->order('src_location_id')->select();
+      $result = A('Pms','Logic')->add_fields($result,'pro_name');
       $this->assign('pickDetail',$result);
       parent::view();
   }
@@ -156,7 +157,7 @@ class PickController extends CommonController {
               $map['pid'] = $value['id'];
               $map['is_deleted'] = 0;
 
-              $child = $detail->where($map)->select();
+              $child = $detail->where($map)->order('src_location_id')->select();
               
               if($child){
                 $items[$key]['detail'] = $child;

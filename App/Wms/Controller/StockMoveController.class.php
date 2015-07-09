@@ -125,6 +125,13 @@ class StockMoveController extends CommonController {
         $list['pro_code'] = $data['pro_code'];
         $list['status'] = $dest_location['status'];
 
+        if($list['src_location_id'] == $list['dest_location_id']){
+            $this->error_msg = '原库位和目标库位不能相同，请重新输入';
+            C('LAYOUT_NAME','pda');
+            $this->display('/StockMove/pdaStockMove'); 
+            return;
+        }
+
         $res = A('Stock', 'Logic')->checkLocationMixedProOrBatch($list);
 
         if($res['status'] == 0) {

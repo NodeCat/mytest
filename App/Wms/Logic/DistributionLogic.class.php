@@ -117,6 +117,7 @@ class DistributionLogic {
             unset($map);
             $map['pid'] = $info['id'];
             $result = $det->where($map)->select();
+            $result = A('Pms','Logic')->add_fields($result,'pro_name');
             $value['detail'] = $result;
             $value['stock_bill_out_code'] = $info['code'];
         }
