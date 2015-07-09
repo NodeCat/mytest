@@ -178,8 +178,8 @@ class BillOutApi extends CommApi {
         $tmp[] = $created_time;
         $tmp[] = $this->getPrintCommand('print');
         //支付方式
-        $pay_status = '支付方式：' . $bill['pay_status'];
-        $tmp[] = $pay_status;
+        $pay_status = ($bill['pay_status'] === '已付款') ? '微信支付，已支付' : $bill['pay_status'];
+        $tmp[] = '支付方式：' . $pay_status;
         $tmp[] = $this->getPrintCommand('print');
         //订单金额
         $final_price = '订单金额：' . $bill['final_price'];
@@ -248,8 +248,6 @@ class BillOutApi extends CommApi {
         //优惠
         $tmp[] = $this->getPrintCommand('left');
         $tmp[] = $this->formateLine('活动优惠', '-' . $bill['minus_amount']);
-        $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->formateLine('微信支付', '-' . 0);
         $tmp[] = $this->getPrintCommand('print');
         //运费
         $tmp[] = $this->formateLine('运费', '+' . $bill['deliver_fee']);

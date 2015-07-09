@@ -138,6 +138,7 @@ class DistController extends Controller {
                         break;
                 };
                 $val['pay_status'] = $s;
+                $val['order_info']['pay_status'] = $s;
                 //从订单获取字段到出库单
                 $val['shop_name']    = $val['order_info']['shop_name'];
                 $val['mobile']       = $val['order_info']['mobile'];
@@ -169,18 +170,6 @@ class DistController extends Controller {
                                 $v['weight'] = $sign_in_detail['real_sign_wgt'];
                                 $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
                             }
-                            unset($map);
-                            // 客退入库数据，打印小票用
-                            $rM = M('stock_bill_in');
-                            $map['bi.type'] = 3;
-                            // $map['bi.refer_code'] = $val['id'];
-                            $map['bi.refer_code'] = 334;
-                            $refuse = $rM->alias('bi')
-                                ->join('stock_bill_in_detail as bid on bid.pid=bi.id')
-                                ->where($map)
-                                ->select();
-                            $val['refuse_bill'] = $refuse;
-                            
                         }
                     }
                     else {
@@ -198,7 +187,7 @@ class DistController extends Controller {
                     }
                 }
                 // 获取打印小票要用的数据
-                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val, 2);
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val['order_info']);
                 $lists[$val['user_id']][] = $val;
             }
             $this->dist_id = $res['dist_id'];
