@@ -38,6 +38,42 @@ class ListLogic{
         return $status;
     }
 
+    public function str2int($string) {
+        $length = strlen($string); 
+        $int = '';   
+        for ($i = 0;  $i < $length; $i++) {
+            if (is_numeric($string[$i])) {
+                $int .= $string[$i];
+            }     
+        }
+    
+        return (int) $int;
+    }
+    /*
+     *功   能：根据配送单号和sku号获得最久远的批次
+     *输入参数：$dist_code配送单号;$sku_number,SKU号
+     *@return: 最久远的批次
+    */
+    public function get_long_batch($dist_code,$sku_number){
+        unset($map);
+        $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
+        $m = M('stock_bill_out_container');
+        $batch = $m->distinct(true)->field('batch')->where($map)->select();
+        if(count($batch) > 1){
+            $min_batch = $batch[0]['batch'];
+            $min = $this->str2int($batch[0]['batch']);
+            foreach($batch as $val){
+                if($this->str2int($val) < $min){
+                    $min = $this->str2int($val);
+                    $min_batch = $val['batch'];
+                }
+            }
+            return $min_batch;
+        }else{
+            return $batch['batch'];
+        }
+    }
+
 	public function deliveryCount($dist_id = '') {
 		if($dist_id == '') {
 			return FALSE;
