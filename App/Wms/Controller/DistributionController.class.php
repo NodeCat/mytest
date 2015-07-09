@@ -220,7 +220,27 @@ class DistributionController extends CommonController {
         }
         $result = $result['list'];
         $data = array();
-        foreach ($result as $value) {
+        $ids = array();
+        foreach ($result as $key => $value) {
+            switch ($value['pay_type']) {
+            	    case 0:
+            	        $value['pay_type_cn'] = '货到付款';
+            	        break;
+            	    case 1:
+            	        $value['pay_status_cn'] = '微信支付';
+            	        break;
+            }
+            switch ($value['pay_status']) {
+            	    case -1:
+            	        $value['pay_status_cn'] = '支付失败';
+            	        break;
+            	    case 0:
+            	        $value['pay_status_cn'] = '未支付';
+            	        break;
+            	    case 1:
+            	        $value['pay_status_cn'] = '支付成功';
+            	        break;
+            }
             //筛选sku
             foreach ($order_ids as $sku_id => $order_id) {
                 $sku_info = $D->get_out_detail_by_pids($sku_id);
@@ -236,12 +256,19 @@ class DistributionController extends CommonController {
                     } 
                 }
             }
+            //execl头
+            $ids[$key] = $value['id'];
             //创建数据
-            $data[] = $D->format_export_data($value);
+            $data[$key] = $D->format_export_data($value);
         }
         $i = 0;
-        foreach ($data as $value){
+        foreach ($data as $k => $value){
            $sheet = $Excel->createSheet($i);
+           foreach ($ids as $index => $id) {
+               if ($k == $index) {
+                   $sheet->setTitle($id);
+               }
+           }
            $j = 0;
     	       foreach ($value as $val){
     	           $k = 0;
@@ -260,7 +287,7 @@ class DistributionController extends CommonController {
         header("Content-Transfer-Encoding: binary");
         header('Accept-Ranges: bytes');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition:attachment;filename = ".time().".xlsx");
+        header("Content-Disposition:attachment;filename = " . $dis['dist_code'] . ".xlsx");
         header('Cache-Control: max-age=0');
         header("Pragma:no-cache");
         header("Expires:0");
@@ -854,6 +881,7 @@ class DistributionController extends CommonController {
         //查找你选择的出库单无缺货出库单数据id
         $idsArr = $stockout_logic->enoughaResult(implode(',', $bill_out_id));
         $ids = $idsArr['tureResult'];
+        $unids = $idsArr['falseResult'];
         if(!$ids){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
@@ -864,9 +892,21 @@ class DistributionController extends CommonController {
             $confirm = I('get.confirm');
             //确认之后将继续向下执行
             if (empty($confirm)) {
+                unset($map);
+                //获取被驳回的出库单号
+                $bill_out_code = '';
+                if (!empty($unids)) {
+                    $map['id'] = array('in', $unids);
+                    $bill_out_codes = $stock_out->where($map)->select();
+                    unset($map);
+                    foreach ($bill_out_codes as $val) {
+                        $bill_out_code .= $val['code'] . ',';
+                    }
+                }
                 $msg['pup_count'] = $count;
                 $msg['order_count'] = count($bill_out_id);
                 $msg['dist_id'] = $get;
+                $msg['out_code'] = $bill_out_code;
                 $this->msgReturn(true, '', $msg);
                 return;
             }
@@ -923,6 +963,9 @@ class DistributionController extends CommonController {
                $this->msgReturn(false, '出库单状态更新失败');
            }
         }
-        $this->msgReturn(true, '创建波次成功', '', U('index'));
+        $msg = array();
+        $msg['order_count'] = count($ids);
+        $msg['type'] = 'success';
+        $this->msgReturn(true, '创建波次成功', $msg, U('index'));
     }
 }

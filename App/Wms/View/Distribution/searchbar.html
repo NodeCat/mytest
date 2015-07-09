@@ -99,6 +99,7 @@
 </div>
 <div class="clearfix"></div>
 <include file="create-wave" />
+<include file="confirm-wave" />
 </form>
 </notempty>
 
@@ -134,7 +135,7 @@ var alert_dialog = {
 				cache : false,
 				async:true,
 				data:params,
-				success: function(msg){
+				success: function(msg){alert('tttttt');
 			        $('.table-content').html(msg);
 				},
 			}); 
@@ -175,6 +176,10 @@ var alert_dialog = {
 			 var url = "/Distribution/delete_dist?id="+ids;
 			 location.href = url;
 		 });
+		$(document).on('click','#confirm-over',function(){
+			 var url = "/Distribution/index";
+			 location.href = url;
+		 });
 		 $(document).on('click','#confirm',function(){
 			 
 			 var url = "/Distribution/create_wave";
@@ -191,6 +196,9 @@ var alert_dialog = {
 							alert(msg.msg);
 							return false;
 						}
+						msg.data.title = '创建波次成功';
+						var html = template('dialog_confirm', msg.data);
+						$('body').append(html);
 					}
 				});
 		 });
@@ -208,9 +216,15 @@ var alert_dialog = {
 							alert(msg.msg);
 							return false;
 						}
-						msg.data.title = '是否确定创建波次?';
-						var html = template('dialog_create', msg.data);
-						$('body').append(html);
+						if (typeof(msg.data.type) != 'undefined' && msg.data.type == 'success') {
+							msg.data.title = '创建波次成功';
+							var html = template('dialog_confirm', msg.data);
+							$('body').append(html);
+						} else {
+							msg.data.title = '是否确定创建波次?';
+							var html = template('dialog_create', msg.data);
+							$('body').append(html);
+					    }
 					},
 				});
 		 });
