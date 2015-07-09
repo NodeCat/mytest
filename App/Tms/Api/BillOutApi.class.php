@@ -155,9 +155,8 @@ class BillOutApi extends CommApi {
     public function getHead($bill) {
         $tmp = array();
         //头部信息
-        $title = '-大厨配送-';
+        $title = '大厨配送';
         $tmp[] = $this->getPrintCommand('center');
-        $tmp[] = $this->getPrintCommand('bold');
         $tmp[] = $title;
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
