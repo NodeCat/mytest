@@ -12,6 +12,7 @@ class DistributionController extends CommonController {
     );
     protected $columns = array (
             'dist_code' => '配送单号',
+            'line_name' => '线路',
             'total_price' => '应收总金额',
             'order_count' => '总单数',
             'line_count' => '总行数',
@@ -101,7 +102,15 @@ class DistributionController extends CommonController {
                 unset($map['stock_wave_distribution.order_id']);
                 return;
             }
-            $where['bill_out_id'] = $order_id;
+            $stock_bill_out = M('stock_bill_out');
+            $where['refer_code'] = $order_id;
+            $bill_out_ids = $stock_bill_out->where($where)->select();
+            $bill_out_id = array();
+            foreach ($bill_out_ids as $value) {
+                $bill_out_id[] = $value['id'];
+            }
+            unset($where);
+            $where['bill_out_id'] = array('in', $bill_out_id);
             $result = $M->field('pid')->where($where)->select();
             if (empty($result)) {
                 $map['stock_wave_distribution.id'] = array('eq', null);
@@ -148,16 +157,25 @@ class DistributionController extends CommonController {
     }
     
     /**
-     * leibiao
-     * @param unknown $data
+     * 列表处理
      */
     public function after_lists(&$data) {
         $M = M('user');
+        $D = D('Distribution', 'Logic');
         foreach ($data as &$value) {
+            
             //格式化创建者昵称
             $map['id'] = $value['created_user'];
             $result = $M->field('nickname')->where($map)->find();
             $value['created_user'] = $result['nickname'];
+            //组合线路片区
+            $line_id = array();
+            $line_id = explode(',', $value['line_id']);
+            $line_id = array_unique($line_id);
+            foreach ($line_id as $val) {
+                $value['line_name'] .= $D->format_line($val) . '/';
+            }
+            $value['line_name'] = rtrim($value['line_name'], '/');
         }
     }
 
@@ -442,6 +460,7 @@ class DistributionController extends CommonController {
             $items['id'] = $dis['id'];
             //组合线路片区
             $dis['line_id'] = explode(',', $dis['line_id']);
+            $dis['line_id'] = array_unique($dis['line_id']);
             foreach ($dis['line_id'] as $line_id) {
                 $items['line_name'] .= $D->format_line($line_id) . '/';
             }
