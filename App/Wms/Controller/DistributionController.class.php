@@ -350,6 +350,7 @@ class DistributionController extends CommonController {
         $result = $result['list'];
         //替换sku
         $result = $D->replace_sku_info($result, $get);
+        $total_price = 0;
         foreach($result as $val){
             $total_price += $val['total_price'];
         }

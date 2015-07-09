@@ -24,7 +24,7 @@
               <td class="text-center"><h5>总单数</h5></td>
               <td class="text-center"><h5>{$data.order_count}</h5></td>
               <td class="text-center"><h5>总金额</h5></td>
-              <td class="text-center"><h5>{$data.total_price|sprintf="%1.2f",###}</h5></td>
+              <td class="text-center"><h5>{$data.total_price|sprintf="%.2f",###}</h5></td>
             </tr>
             <tr>
               <td class="text-center"><h5>总行数</h5></td>
@@ -81,7 +81,7 @@
 	              <td>{$detail.order_qty}</td>
                 <td>{$detail.uom_name}</td>
 	              <td>{$detail.price}</td>
-                <td>{$detail['order_qty'] * $detail['price']|sprintf="%1.2f",###}</td>
+                <td>{$detail['order_qty'] * $detail['price']|sprintf="%.2f",###}</td>
 	              <td></td>
 	            </tr>
             </volist>
