@@ -368,6 +368,10 @@ class DistributionController extends CommonController {
         $result = $result['list'];
         //替换sku
         $result = $D->replace_sku_info($result, $get);
+        $total_price = 0;
+        foreach($result as $val){
+            $total_price += $val['total_price'];
+        }
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
         $data['is_printed'] = $dis['is_printed']; //是否打印
@@ -379,7 +383,7 @@ class DistributionController extends CommonController {
         $data['created_time'] = $dis['created_time']; //创建时间
         $data['order_count'] = $dis['order_count']; //总单数
         $data['sku_count'] = $dis['sku_count']; //sku总数
-        $data['total_price'] = $dis['total_price']; //总价格
+        $data['total_price'] = $total_price; //总价格
         $data['line_count'] = $dis['line_count']; //总行数
         $this->assign('data', $data);
         $this->assign('orderList', $result);
@@ -489,6 +493,7 @@ class DistributionController extends CommonController {
             $merge = array();
             foreach ($result as $val) {
                 $merge = array_merge($merge, $val['detail']);
+                $items['price_amount'] += $val['total_price'];
             }
             foreach ($merge as $key=>$v) {
                 if (!isset($merge[$v['product_id']])) {
@@ -509,6 +514,7 @@ class DistributionController extends CommonController {
                 }
             }
             $list[] = $items;
+            unset($items['price_amount']);
         }
         $this->assign('list', $list);
         
