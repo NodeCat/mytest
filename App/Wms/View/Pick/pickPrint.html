@@ -61,6 +61,7 @@
             <!-- <td>批次</td> -->
             <td>库位</td>
             <!-- <td>重量</td> -->
+            <td>计量单位</td>
           </tr>
         </thead>
         <tbody>
@@ -74,6 +75,7 @@
               <!-- <td>{$vos.batch}</td> -->
               <td>{$vos.src_location_id|getLocationNameById='code',###}</td>
               <!-- <td></td> -->
+              <td>{$vos.uom_name}</td>
             </tr>
           </volist>
           <tr>

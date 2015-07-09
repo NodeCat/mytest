@@ -168,6 +168,7 @@ class PickController extends CommonController {
               ->where($map)
               ->order('location.code')->select();
               
+              $child = A('Pms','Logic')->add_fields($child,'pro_name');
               if($child){
                 $items[$key]['detail'] = $child;
               }
