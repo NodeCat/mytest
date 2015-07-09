@@ -177,8 +177,7 @@ class DistController extends Controller {
                                 ->where($map)
                                 ->select();
                             $val['refuse_bill'] = $refuse;
-                            // 获取打印小票要用的数据
-                            // $printStr = A('Tms/billOut', 'Api')->printBill($val);
+                            
                         }
                     }
                     else {
@@ -195,14 +194,14 @@ class DistController extends Controller {
                         }
                     }
                 }
+                // 获取打印小票要用的数据
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val, 2);
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $orders;
-            dump($orders);
 
         }
         //小票数据
-        $this->printStr = A('Tms/billOut', 'Api')->printBill();
         $this->title = "客户签收";
         $this->display('tms:sorders');
     }

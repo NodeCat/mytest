@@ -32,6 +32,11 @@ class BillOutApi extends CommApi {
         return json_encode($res);
     }
 
+    /**
+     * [getPrintDataByOrder 根据订单组合一组打印数据]
+     * @param  [type] $order [description]
+     * @return [type]        [description]
+     */
     public function getPrintDataByOrder($order) {
         $data = array(
             'shop_name'    => $order['shop_name'],
@@ -71,6 +76,25 @@ class BillOutApi extends CommApi {
         return $data;
 
     }
+
+    /**
+     * [getPrintDataByBill 根据出库单组合一组打印数据]
+     * @param  [type] $bill [description]
+     * @return [type]       [description]
+     */
+    public function getPrintDataByBill($bill) {
+        $data = array(
+            'shop_name'    => $bill['shop_name'],
+            'order_id'     => $bill['refer_code'],
+            'created_time' => $bill['order_info']['created_time'],
+            'pay_status'   => $bill['pay_status'],
+            'final_price'  => $bill['order_info']['final_price'],
+            'minus_amount' => $bill['minus_amount'],
+            'deliver_fee'  => $bill['deliver_fee'],
+            'deal_price'   => $bill['deal_price'],
+        );
+    }
+
     /**
      * [getPrintCommand 获取一条打印指令]
      * @param  [type] $key [指令对应key]
