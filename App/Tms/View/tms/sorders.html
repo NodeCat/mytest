@@ -172,9 +172,10 @@
                   </span>
                   元
                 </span>
-                <!-- <input type="hidden" class="form-control" placeholder="{$vo.total_price}"
-                value="{$vo.total_price}" readonly>
-                -->
+                <input type="hidden" name="minus_amount" class="form-control" value="{$vo.minus_amount}">
+                <input type="hidden" name="pay_reduce" class="form-control" value="{$vo.pay_reduce}">
+                <input type="hidden" name="deliver_fee" class="form-control" value="{$vo.deliver_fee}">
+               
                 <span class="input-group-addon">
                   优惠 ¥
                   <span class="p_minus">
