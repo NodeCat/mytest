@@ -136,7 +136,8 @@ class BillOutApi extends CommApi {
             'center'           => array(0x1b, 0x61, 0x01),//居中
             'left'             => array(0x1b, 0x61, 0x00),//居左
             'right'            => array(0x1b, 0x61, 0x02),//居右
-            'text_big_size'    => array(ESC, 0x45, 0x01),//宽高加倍
+            'text_big_size'    => array(0x1B, 0x57, 0x01),//宽高加倍
+            'bold'             => array(ESC, 0x45, 0x01),//字体加粗
             'text_normal_size' => array(0x1B, 0x57, 0x00),//普通字号
             'no_hightlight'    => array(0x1B, 0x69, 0x00),//禁止反白打印
         );
@@ -154,9 +155,9 @@ class BillOutApi extends CommApi {
     public function getHead($bill) {
         $tmp = array();
         //头部信息
-        $title = '大厨配送';
-        // $tmp[] = $this->getPrintCommand('center');
-        $tmp[] = $this->getPrintCommand('text_big_size');
+        $title = '-大厨配送-';
+        $tmp[] = $this->getPrintCommand('center');
+        $tmp[] = $this->getPrintCommand('bold');
         $tmp[] = $title;
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
