@@ -47,8 +47,9 @@ class DistApi extends CommApi {
             }
         }
         //查询条件
-        if(is_array($detail_ids)) {
+        if(!empty($detail_ids)) {
             $map['id'] = array('in', $detail_ids);
+            $limit = count($detail_ids);
         }
         $map['is_deleted'] = 0;
         $order_conditions = $map['order'];

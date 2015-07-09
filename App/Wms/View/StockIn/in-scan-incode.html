@@ -28,6 +28,11 @@ $(function(){
     $(this).select();
   });
   $('.input-pda').focus();
+   $('.input-pda').on('keydown' , function(e){
+     if(e.keyCode == 13){
+      return false ;
+     }
+   })
   $('.form-pda button[type=submit]').on('click',function(){
     $(this).prop('disabled', true);
     var addr,params;
