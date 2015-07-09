@@ -204,7 +204,10 @@ class BillOutApi extends CommApi {
             $tmp[] = $this->formateName($val['name']);
             $tmp[] = $this->getPrintCommand('print');
             $tmp[] = $this->getPrintCommand('right');
-            $tmp[] = $val['actual_price'] . '  ' .$val['actual_quantity'] .'  ' . $val['actual_sum_price'] . '  ';
+            $pqs   = $val['actual_price'] . '   ';
+            $pqs  .= $val['actual_quantity'] .'   ';
+            $pqs  .= $val['actual_sum_price'] . '  ';
+            $tmp[] = $pqs;
             $tmp[] = $this->getPrintCommand('print');
         }
         //退货列表
@@ -216,7 +219,10 @@ class BillOutApi extends CommApi {
                 $tmp[] = $this->formateName($val['name']);
                 $tmp[] = $this->getPrintCommand('print');
                 $tmp[] = $this->getPrintCommand('right');
-                $tmp[] = $val['price'] . '  ' .$val['quantity'] . '  ' . $val['sum_price'] . '  ';
+                $pqs   = $val['price'] . '   ';
+                $pqs  .= $val['quantity'] .'   ';
+                $pqs  .= $val['sum_price'] . '  ';
+                $tmp[] = $pqs;
                 $tmp[] = $this->getPrintCommand('print');
             }
         }
