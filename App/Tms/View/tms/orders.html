@@ -241,7 +241,7 @@
                   <case value="已回款" break="1">
                     <if condition="$vo.pay_status eq '已付款'">
                       <span class="form-control p_deal">
-                        该订单已付款
+                        该订单已网上付款
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.deal_price}" readonly>
@@ -253,7 +253,7 @@
                   <case value="已退货" break="1">
                     <if condition="$vo.pay_status eq '已付款'">
                       <span class="form-control p_deal">
-                        该订单已支付
+                        该订单已网上支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
                     value="0" readonly>
@@ -265,7 +265,7 @@
                   <default />
                     <if condition="$vo.pay_status eq '已付款'">
                       <span class="form-control p_deal">
-                        该订单已付款
+                        该订单已网上支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
                   value="{$vo.final_price}" readonly>
