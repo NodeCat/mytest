@@ -19,6 +19,12 @@ class PurchaseInDetailController extends CommonController {
         'updated_time' => '付款时间'
     );
     protected $query   = array (
+        'erp_purchase_in_detail.partner_name' => array (
+            'title' => '供应商',
+            'query_type' => 'eq',
+            'control_type' => 'text',
+            'value' => '',
+        ),
 		'erp_purchase_in_detail.purchase_code' => array (
 		    'title' => '采购单号',
 		    'query_type' => 'like',
@@ -77,14 +83,14 @@ class PurchaseInDetailController extends CommonController {
     protected function after_search(&$map){
         if(IS_AJAX){
             //按照供应商查询
-            $partner_name = I('partner_name');
-            if(!empty($partner_name)){
-                $purchase_codes = $this->getPurchaseCodeMapByPartnerName($partner_name);
+            if(!empty($map['erp_purchase_in_detail.partner_name'])){
+                $purchase_codes = $this->getPurchaseCodeMapByPartnerName($map['erp_purchase_in_detail.partner_name'][1]);
                 if($purchase_codes){
                     $map['purchase_code'] = array('in',$purchase_codes);
                 }else{
                     $map['purchase_code'] = '';
                 }
+                unset($map['erp_purchase_in_detail.partner_name']);
             }
         }
     }
