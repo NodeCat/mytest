@@ -24,7 +24,7 @@
               <td class="text-center"><h5>总单数</h5></td>
               <td class="text-center"><h5>{$data.order_count}</h5></td>
               <td class="text-center"><h5>总金额</h5></td>
-              <td class="text-center"><h5>{$data.total_price}</h5></td>
+              <td class="text-center"><h5>{$data.total_price|sprintf="%1.2f",###}</h5></td>
             </tr>
             <tr>
               <td class="text-center"><h5>总行数</h5></td>
@@ -47,9 +47,11 @@
               <col class="col-xs-1">
               <col class="col-xs-1">
               <col class="col-xs-1">
+              <col class="col-xs-1">
+              <col class="col-xs-1">
             </colgroup>
             <tr>
-              <td class="text-center" colspan="10"><h5>订单列表</h5></td>
+              <td class="text-center" colspan="12"><h5>订单列表</h5></td>
             </tr>
             <tr>
               <td>店铺名称</td>
@@ -60,8 +62,9 @@
               <td>产品名称</td>
               <td>规格</td>
               <td>订货数量</td>
-              <td>单价</td>
               <td>计量单位</td>
+              <td>单价</td>
+              <td>小计</td>
               <td>备注</td>
             </tr>
           </thead>
@@ -76,8 +79,9 @@
 	              <td>{$detail.pro_name}</td>
 	              <td>{$detail.pro_attrs}</td>
 	              <td>{$detail.order_qty}</td>
-	              <td>{$detail.price}</td>
                 <td>{$detail.uom_name}</td>
+	              <td>{$detail.price}</td>
+                <td>{$detail['order_qty'] * $detail['price']|sprintf="%1.2f",###}</td>
 	              <td></td>
 	            </tr>
             </volist>

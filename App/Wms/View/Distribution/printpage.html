@@ -12,7 +12,7 @@
       <div class="col-xs-4">
         <p>配送线路单号:{$attrs.dist_code}</p>
         <p class="">线路（片区）:{$attrs.line_name}</p>
-        <p>客户数：{$attrs.user_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单数：{$attrs.orders_length} &nbsp;&nbsp;&nbsp;&nbsp; 总件数：{$attrs.sku_count}</p>
+        <p>客户数：{$attrs.user_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单数：{$attrs.orders_length} &nbsp;&nbsp;&nbsp;&nbsp; 总件数：{$attrs.sku_count} &nbsp;&nbsp;&nbsp;&nbsp; 总金额：{$attrs.price_amount|sprintf="%1.2f",###}</p>
       </div>
       <div class="col-xs-4">
           <p> 配送线路单</p>
@@ -39,9 +39,10 @@
             <td width="8%">客户备注</td>
             <td width="5%">货品号</td>
             <td width="10%">产品名称</td>
-            <td width="17%">规格</td>
+            <td width="12%">规格</td>
             <td width="5%">单价</td>
             <td width="5%">订货数量</td>
+            <td width="5%">小计</td>
             <td width="5%">重量</td>
           </tr>
         </thead>
@@ -62,8 +63,9 @@
 	            		<foreach name="detail['spec']" item="spec">{$spec.name}：{$spec.val}</foreach>
 	            		</small>
 	            	</td>
-	            <td>{$detail.single_price}/{$detail.close_unit}</td>
+	            <td>{$detail.single_price}元/{$detail.close_unit}</td>
 	            <td>{$detail.quantity}{$detail.unit_id}</td>
+	            <td>{$detail['single_price'] * $detail['quantity']|sprintf="%1.2f",###}</td>
 	            <td></td>
             </tr>
           </volist>
@@ -75,7 +77,9 @@
           <td></td>
           <td></td>
           <td></td>
+          <td></td>
           <td>{$attrs.sku_count}</td>
+          <td>{$attrs.price_amount|sprintf="%1.2f",###}</td>
           <td></td>
         </tr>
       </table>
