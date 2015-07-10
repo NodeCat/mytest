@@ -113,6 +113,31 @@
           </tbody>
         </table>
       </div>
+      	
+      	<div class="col-xs-6">
+      		<p>司机领用物品登记栏</p>
+      	<table class="table table-condensed table-bordered table-striped">
+          <thead>
+            <tr>
+            <td></td>
+      		<td>保温箱</td>
+      		<td>蔬菜中转筐</td>
+      		<td>手推车</td>
+      		<td>电子称</td>
+			</tr>	
+      		</thead>
+      		<tbody>
+      			<tr>
+      				<td>数量</td>
+      				<td></td>
+      				<td></td>
+      				<td></td>
+      				<td></td>
+      			</tr>
+      		</tbody>
+      	</table>
+      </div>
+      <br>
       <div class="col-xs-6 sign">
         <p class="">仓库操作人员签字：</p>
         <p class="">司机操作人员签字：</p>
@@ -123,7 +148,10 @@
       <a href="javascript:;" onclick="window.print()" class="hidden-print btn btn-success">打印全部</a>
     </div>
 </div>
-<div style="height:600px;width:900px;margin-bottom:50px;" class="mapContainer" id="mapContainer{$kk}"></div>
+<div style="height:600px;width:900px;margin-bottom:50px; display:none" class="mapContainer" id="mapContainer{$kk}"></div>
+<div class="staticMap">
+	<img src="" alt="" class="staticImg">
+</div>
 <div class="hidden" id="map_pos{$kk}" >{$attrs.map_pos}</div>
 </div>
 </div>
@@ -274,6 +302,7 @@
 
 <script>
 $(function() {
+	var markerPoint;
 	var td =  $('.order_list').children('td[rowspan]');
 	  td.each(function(i) {
 		  //alert($(this).attr('index'));
@@ -282,14 +311,15 @@ $(function() {
 		  }
 	  });
 	$('#hidden-map').click(function() {
-		if ($('.mapContainer').css('display') == "block") {
-			$('.mapContainer').css('display',"none");
+		if ($('.staticMap').css('display') == "block") {
+			$('.staticMap').css('display',"none");
 			$(this).html('显示地图');
 		} else if ($('.mapContainer').css('display') == "none") {
-			$('.mapContainer').css('display', "block");
+			$('.staticMap').css('display', "block");
 			$(this).html('隐藏地图');
 		}
 	});
+
 	$(".mapContainer").each(function(i){
 		var mapObj, marker, markers = [];
 		var num = i + 1;
@@ -316,13 +346,27 @@ $(function() {
 						}),
 					//在地图上添加点
 					position:new AMap.LngLat({$pos.lng},{$pos.lat})
+
+					 
+
 					
 				});
 				marker.setMap(mapObj);
 			 </volist>
 		  }
 		</volist>
+		<volist name='list' id='attrs1' key="kk">
+		  if (num == {$kk}) {
+			<volist name="attrs['map_pos']" id="pos">
+				markerPoint += "mid,,"+{$i}+":"+{$pos.lng}+","+{$pos.lat}+"|";
+			</volist>
+		  }
+		</volist>  
 	});	
+    markerPoint = markerPoint.slice(9,-1)
+	var Imgsrc = "http://restapi.amap.com/v3/staticmap?size=900*600&key=ee95e52bf08006f63fd29bcfbcf21df0&markers="
+	Imgsrc = Imgsrc + markerPoint;
+	$('.staticImg').attr("src",Imgsrc);
 })
 
 
