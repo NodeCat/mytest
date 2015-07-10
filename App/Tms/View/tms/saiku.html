@@ -1,0 +1,21 @@
+<eq name="login" value="0">
+<div>
+	<form action="http://saiku.dachuwang.com/saiku/rest/saiku/session" method="post" id="saiku_login" target="login">
+      <input type="hidden" name="username" value="dachubi"/>
+      <input type="hidden" name="password" value="bi_api"/>
+    </form>
+    <script>
+    	$("#saiku_login").submit();
+      	var  url   = "{:U('Statis/index',array('login'=>1))}";
+    	  window.location.href = url;
+    </script>
+</div>
+</eq>
+<volist name="data" id="vo">
+<div class="row col-lg-12 col-md-12 col-sm-12">
+  <div class="col-lg-10 col-md-10 col-sm-10 col-lg-offset-1 col-md-offset-1 col-sm-offset-1">
+    <h2 class="text-center">{$key}</h2>
+    <iframe width="100%" height="600" src="{$vo}"></iframe>
+  </div>
+</div>
+</volist>
