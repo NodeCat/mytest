@@ -688,7 +688,7 @@ class DistributionController extends CommonController {
                     $M->where($map)->save();
                 }
             } else {
-                $unpass_ids .= implode(',', $make_ids) . '|' . implode(',', $pick_ids) . '|' . $post;
+                $unpass_ids .= implode(',', $make_ids) . '|' . implode(',', $reduce_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
             }
         }
