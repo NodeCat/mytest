@@ -8,6 +8,8 @@ class StockController extends CommonController {
             'pro_code' => '货品号',
             'pro_name' => '货品名称',
             'uom_name' => '计量单位',
+            'guarantee_period' => '保质期',
+            'product_date' => '入库日期',
             'location_code' => '库位',
             'batch' => '批次',
             'stock_qty' => '在库数量',
@@ -17,6 +19,34 @@ class StockController extends CommonController {
             'status' => '库存状态',
             );
 	protected $query   = array (
+        'stock.area' => array(
+            'title' => '区域',
+            'query_type' => 'eq',
+            'control_type' => 'select',
+            'value' => '',
+        ),
+        'stock.status' => array(
+            'title' => '库存状态',
+            'query_type' => 'eq',
+            'control_type' => 'select',
+            'value' => array(
+                'qualified' => '合格',
+                'unqualified' => '残次',
+                'freeze' => '冻结',
+            ),
+        ),
+        'stock.location_code'=>array(
+            'title' => '库位',
+            'query_type' => 'like',
+            'control_type' => 'text',
+            'value' => '',
+        ),
+        'stock.pro_name'=>array(
+            'title' => '产品名称',
+            'query_type' => 'eq',
+            'control_type' => 'text',
+            'value' => '',
+        ),
 		'stock.pro_code' => array (
 		    'title' => '货品号',
 		    'query_type' => 'like',
@@ -99,6 +129,12 @@ class StockController extends CommonController {
 		unset($map);
 		$this->area_info = $location_info;
 
+        //模板赋值
+        foreach($location_info as $locationVal){
+            $this->query['stock.area']['value'][$locationVal['name']] =  $locationVal['name'];
+        }
+        $this->assign('query', $this->query);
+
 		//如果包含空库位 查询location表
 		if($this->in_empty_location){
 			$map['type'] = 2;
@@ -124,9 +160,8 @@ class StockController extends CommonController {
 		if(IS_AJAX){
 			//用于重新整理查询条件
 			//根据区域name location.name 查询对应库位id location.id
-			$location_name = I('area');
-			if(!empty($location_name)){
-				$map_tmp['name'] = $location_name;
+			if(!empty($map['stock.area'])){
+				$map_tmp['name'] = $map['stock.area'][1];
 				$map_tmp['wh_id'] = session('user.wh_id');
 				$location_id_by_area = M('Location')->where($map_tmp)->getField('id');
 				unset($map_tmp);
@@ -134,17 +169,18 @@ class StockController extends CommonController {
 				$map_tmp['pid'] = $location_id_by_area;
 				$location_ids_by_location_name = M('Location')->where($map_tmp)->getField('id',true);
 				unset($map_tmp);
+                unset($map['stock.area']);
 			}
 			//根据库位code location.code 查询对应库位id location.id
-			$location_code = I('location_code');
-			if(!empty($location_code)){
+			if(!empty($map['stock.location_code'])){
 				//根据location.code 查询对应的库位id
-				$location_map['code'] = array('LIKE',$location_code.'%');
+				$location_map['code'] = array($map['stock.location_code'][0], $map['stock.location_code'][1]);
 				$location_map['wh_id'] = session('user.wh_id');
 				$location_ids_by_code = M('Location')->where($location_map)->getField('id',true);
 				if(empty($location_ids_by_code)){
 					$location_ids_by_code = array(-1);
 				}
+                unset($map['stock.location_code']);
 			}
 			if(empty($location_ids_by_location_name)){
 				$location_ids_by_location_name = $location_ids_by_code;
@@ -161,17 +197,9 @@ class StockController extends CommonController {
 				//$map['stock.location_id'] = array('eq',-1);
 			//}
 
-			//根据stock.status 查询对应stock记录
-			//添加map
-			$stock_status = I('status');
-			if(!empty($stock_status)){
-				$map['stock.status'] = array('eq',$stock_status);
-			}
-
 			//根据pro_name 查询对应的pro_code
-			$pro_name = I('pro_name');
-			if(!empty($pro_name) && empty($map['stock.pro_code'])){
-				$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($pro_name);
+			if(!empty($map['stock.pro_name']) && empty($map['stock.pro_code'])){
+				$SKUs = A('Pms','Logic')->get_SKU_by_pro_name($map['stock.pro_name'][1]);
 				foreach($SKUs['list'] as $SKU){
 					$pro_codes[] = $SKU['sku_number'];
 				}
@@ -179,6 +207,7 @@ class StockController extends CommonController {
 					$pro_codes = array(0);
 				}
 				$map['stock.pro_code'] = array('in',$pro_codes);
+                unset($map['stock.pro_name']);
 			}
 
 			//是否包含空库位

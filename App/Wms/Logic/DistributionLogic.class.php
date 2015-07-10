@@ -117,6 +117,7 @@ class DistributionLogic {
             unset($map);
             $map['pid'] = $info['id'];
             $result = $det->where($map)->select();
+            $result = A('Pms','Logic')->add_fields($result,'pro_name');
             $value['detail'] = $result;
             $value['stock_bill_out_code'] = $info['code'];
         }
@@ -564,8 +565,8 @@ class DistributionLogic {
             $val['quantity'],
             //$val['unit_id'],
             $val['unit_id'] == 0 ? $this->_unit_dict[1] : $this->_unit_dict[$val['unit_id']],
-            $val['single_price'] . '元',
-            $val['close_unit'] == 0 ? '/' . $this->_unit_dict[1] : '/' . $this->_unit_dict[$val['close_unit']],
+            sprintf("%.2f", $val['single_price']) . '元',
+            $val['close_unit'],
             '',
             ''
                     ];
@@ -585,15 +586,15 @@ class DistributionLogic {
     
         //尾部内容
         //湖南大厦ka客户的临时需求
-        $line_need_pay = ['应付总价', $item['final_price']];
+        $line_need_pay = ['应付总价', sprintf("%.2f", $item['final_price'])];
         if($item['mobile'] == '15084783678' || $item['mobile'] == '18618142363' || $item['mobile'] == '18612118635' || $item['mobile'] == '13520205658') {
-            $line_need_pay = ['应付总价', $item['final_price'], 'ka客户月结，司机不用收款'];
+            $line_need_pay = ['应付总价', sprintf("%.2f", $item['final_price']), 'ka客户月结，司机不用收款'];
         }
     
         $tail_arr = [
         ['订单备注', $item['remarks']],
         ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-        ['订单总价', $item['total_price'], '', '', '', '', '', '', '',  '实收总金额'],
+        ['订单总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
         ['活动优惠', '-' . $item['minus_amount']],
         ['微信支付优惠', '-' . $item['pay_reduce']],
         ['运费', '+' . $item['deliver_fee']],
@@ -609,12 +610,12 @@ class DistributionLogic {
             $tail_arr = [
             ['订单备注', $item['remarks']],
             ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-            ['预估总价', $item['total_price'], '', '', '', '', '', '', '',  '实收总金额'],
+            ['预估总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
             ['活动优惠', '- ' . $item['minus_amount']],
             ['微信支付优惠', '-' . $item['pay_reduce']],
             ['运费', '+' . $item['deliver_fee']],
-            ['应付总价', $item['final_price'], '', '', '', '', '', '', '', '以实际称重为准'],
-            ['支付状态：' . $item['pay_status'] . ', 支付方式：' . $item['pay_type']],
+            ['应付总价', sprintf("%.2f", $item['final_price']), '', '', '', '', '', '', '', '以实际称重为准'],
+            ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
             ['客户签字'],
             [],
             ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
@@ -622,7 +623,7 @@ class DistributionLogic {
         }
     
         $csv_data = array_merge($csv_data, $tail_arr);
-            return $csv_data;
+        return $csv_data;
     }
     
     /**

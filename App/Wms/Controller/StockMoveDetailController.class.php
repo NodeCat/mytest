@@ -22,6 +22,12 @@ class StockMoveDetailController extends CommonController {
             );
 
     protected $query   = array (
+        'stock_move.location_code'=>array(
+            'title' => '库位',
+            'query_type' => 'like',
+            'control_type' => 'text',
+            'value' => '',
+        ),
         'stock_move.refer_code' => array (
             'title' => '关联单据',
             'query_type' => 'like',
@@ -102,14 +108,14 @@ class StockMoveDetailController extends CommonController {
     protected function after_search(&$map){
         if(IS_AJAX){
             //根据库位code location.code 查询对应库位id location.id
-            $location_code = I('location_code');
-            if(!empty($location_code)){
+            if(!empty($map['stock_move.location_code'])){
                 //根据location.code 查询对应的库位id
-                $location_map['code'] = array('LIKE',$location_code.'%');
+                $location_map['code'] = array($map['stock_move.location_code'][0], $map['stock_move.location_code'][1]);
                 $location_ids_by_code = M('Location')->where($location_map)->getField('id',true);
                 if(empty($location_ids_by_code)){
                     $location_ids_by_code = array(-1);
                 }
+                unset($map['stock_move.location_code']);
             }
 
             //添加map

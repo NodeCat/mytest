@@ -12,6 +12,7 @@ class DistributionController extends CommonController {
     );
     protected $columns = array (
             'dist_code' => '配送单号',
+            'line_name' => '线路',
             'total_price' => '应收总金额',
             'order_count' => '总单数',
             'line_count' => '总行数',
@@ -101,7 +102,15 @@ class DistributionController extends CommonController {
                 unset($map['stock_wave_distribution.order_id']);
                 return;
             }
-            $where['bill_out_id'] = $order_id;
+            $stock_bill_out = M('stock_bill_out');
+            $where['refer_code'] = $order_id;
+            $bill_out_ids = $stock_bill_out->where($where)->select();
+            $bill_out_id = array();
+            foreach ($bill_out_ids as $value) {
+                $bill_out_id[] = $value['id'];
+            }
+            unset($where);
+            $where['bill_out_id'] = array('in', $bill_out_id);
             $result = $M->field('pid')->where($where)->select();
             if (empty($result)) {
                 $map['stock_wave_distribution.id'] = array('eq', null);
@@ -148,16 +157,25 @@ class DistributionController extends CommonController {
     }
     
     /**
-     * leibiao
-     * @param unknown $data
+     * 列表处理
      */
     public function after_lists(&$data) {
         $M = M('user');
+        $D = D('Distribution', 'Logic');
         foreach ($data as &$value) {
+            
             //格式化创建者昵称
             $map['id'] = $value['created_user'];
             $result = $M->field('nickname')->where($map)->find();
             $value['created_user'] = $result['nickname'];
+            //组合线路片区
+            $line_id = array();
+            $line_id = explode(',', $value['line_id']);
+            $line_id = array_unique($line_id);
+            foreach ($line_id as $val) {
+                $value['line_name'] .= $D->format_line($val) . '/';
+            }
+            $value['line_name'] = rtrim($value['line_name'], '/');
         }
     }
 
@@ -220,7 +238,27 @@ class DistributionController extends CommonController {
         }
         $result = $result['list'];
         $data = array();
-        foreach ($result as $value) {
+        $ids = array();
+        foreach ($result as $key => $value) {
+            switch ($value['pay_type']) {
+            	    case 0:
+            	        $value['pay_type_cn'] = '货到付款';
+            	        break;
+            	    case 1:
+            	        $value['pay_status_cn'] = '微信支付';
+            	        break;
+            }
+            switch ($value['pay_status']) {
+            	    case -1:
+            	        $value['pay_status_cn'] = '支付失败';
+            	        break;
+            	    case 0:
+            	        $value['pay_status_cn'] = '未支付';
+            	        break;
+            	    case 1:
+            	        $value['pay_status_cn'] = '支付成功';
+            	        break;
+            }
             //筛选sku
             foreach ($order_ids as $sku_id => $order_id) {
                 $sku_info = $D->get_out_detail_by_pids($sku_id);
@@ -236,12 +274,19 @@ class DistributionController extends CommonController {
                     } 
                 }
             }
+            //execl头
+            $ids[$key] = $value['id'];
             //创建数据
-            $data[] = $D->format_export_data($value);
+            $data[$key] = $D->format_export_data($value);
         }
         $i = 0;
-        foreach ($data as $value){
+        foreach ($data as $k => $value){
            $sheet = $Excel->createSheet($i);
+           foreach ($ids as $index => $id) {
+               if ($k == $index) {
+                   $sheet->setTitle($id);
+               }
+           }
            $j = 0;
     	       foreach ($value as $val){
     	           $k = 0;
@@ -260,7 +305,7 @@ class DistributionController extends CommonController {
         header("Content-Transfer-Encoding: binary");
         header('Accept-Ranges: bytes');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition:attachment;filename = ".time().".xlsx");
+        header("Content-Disposition:attachment;filename = " . $dis['dist_code'] . ".xlsx");
         header('Cache-Control: max-age=0');
         header("Pragma:no-cache");
         header("Expires:0");
@@ -350,6 +395,10 @@ class DistributionController extends CommonController {
         $result = $result['list'];
         //替换sku
         $result = $D->replace_sku_info($result, $get);
+        $total_price = 0;
+        foreach($result as $val){
+            $total_price += $val['total_price'];
+        }
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
         $data['is_printed'] = $dis['is_printed']; //是否打印
@@ -361,7 +410,7 @@ class DistributionController extends CommonController {
         $data['created_time'] = $dis['created_time']; //创建时间
         $data['order_count'] = $dis['order_count']; //总单数
         $data['sku_count'] = $dis['sku_count']; //sku总数
-        $data['total_price'] = $dis['total_price']; //总价格
+        $data['total_price'] = $total_price; //总价格
         $data['line_count'] = $dis['line_count']; //总行数
         $this->assign('data', $data);
         $this->assign('orderList', $result);
@@ -442,6 +491,7 @@ class DistributionController extends CommonController {
             $items['id'] = $dis['id'];
             //组合线路片区
             $dis['line_id'] = explode(',', $dis['line_id']);
+            $dis['line_id'] = array_unique($dis['line_id']);
             foreach ($dis['line_id'] as $line_id) {
                 $items['line_name'] .= $D->format_line($line_id) . '/';
             }
@@ -470,6 +520,7 @@ class DistributionController extends CommonController {
             $merge = array();
             foreach ($result as $val) {
                 $merge = array_merge($merge, $val['detail']);
+                $items['price_amount'] += $val['total_price'];
             }
             foreach ($merge as $key=>$v) {
                 if (!isset($merge[$v['product_id']])) {
@@ -490,6 +541,7 @@ class DistributionController extends CommonController {
                 }
             }
             $list[] = $items;
+            unset($items['price_amount']);
         }
         $this->assign('list', $list);
         
@@ -854,6 +906,7 @@ class DistributionController extends CommonController {
         //查找你选择的出库单无缺货出库单数据id
         $idsArr = $stockout_logic->enoughaResult(implode(',', $bill_out_id));
         $ids = $idsArr['tureResult'];
+        $unids = $idsArr['falseResult'];
         if(!$ids){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
@@ -864,9 +917,21 @@ class DistributionController extends CommonController {
             $confirm = I('get.confirm');
             //确认之后将继续向下执行
             if (empty($confirm)) {
+                unset($map);
+                //获取被驳回的出库单号
+                $bill_out_code = '';
+                if (!empty($unids)) {
+                    $map['id'] = array('in', $unids);
+                    $bill_out_codes = $stock_out->where($map)->select();
+                    unset($map);
+                    foreach ($bill_out_codes as $val) {
+                        $bill_out_code .= $val['code'] . ',';
+                    }
+                }
                 $msg['pup_count'] = $count;
                 $msg['order_count'] = count($bill_out_id);
                 $msg['dist_id'] = $get;
+                $msg['out_code'] = $bill_out_code;
                 $this->msgReturn(true, '', $msg);
                 return;
             }
@@ -923,6 +988,10 @@ class DistributionController extends CommonController {
                $this->msgReturn(false, '出库单状态更新失败');
            }
         }
-        $this->msgReturn(true, '创建波次成功', '', U('index'));
+        $msg = array();
+        $msg['order_count'] = count($ids);
+        $msg['type'] = 'success';
+        $msg['wave_id'] = $back;
+        $this->msgReturn(true, '创建波次成功', $msg, U('index'));
     }
 }

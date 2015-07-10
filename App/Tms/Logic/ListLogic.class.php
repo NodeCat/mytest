@@ -38,6 +38,11 @@ class ListLogic{
         return $status;
     }
 
+    /**
+     * 统计配送单的订单状态
+     * @param  string  $dist_id  配送单id
+     * @return array   $data     返回统计信息
+     */
 	public function deliveryCount($dist_id = '') {
 		if($dist_id == '') {
 			return FALSE;

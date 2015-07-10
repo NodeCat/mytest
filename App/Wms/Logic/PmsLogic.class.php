@@ -151,6 +151,8 @@ class PmsLogic{
 						if(isset($SKUs[$value['pro_code']])){
 							$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
 							$prepare_data[$key]['uom_name'] = $SKUs[$value['pro_code']]['uom_name'];
+							$prepare_data[$key]['guarantee_period'] = $SKUs[$value['pro_code']]['guarantee_period'];
+							$prepare_data[$key]['pro_attrs_str'] = $SKUs[$value['pro_code']]['pro_attrs_str'];
 						}
 					}
 
@@ -168,6 +170,8 @@ class PmsLogic{
 					if(isset($SKUs[$value['pro_code']])){
 						$prepare_data[$key]['pro_name'] = $SKUs[$value['pro_code']]['wms_name'];
 						$prepare_data[$key]['uom_name'] = $SKUs[$value['pro_code']]['uom_name'];
+						$prepare_data[$key]['guarantee_period'] = $SKUs[$value['pro_code']]['guarantee_period'];
+						$prepare_data[$key]['pro_attrs_str'] = $SKUs[$value['pro_code']]['pro_attrs_str'];
 					}
 				}
 			}
@@ -205,6 +209,7 @@ class PmsLogic{
 			$return_data[$value['sku_number']]['pro_attrs_str'] = $value['spec'][0]['name'].':'.$value['spec'][0]['val'].','.$value['spec'][1]['name'].':'.$value['spec'][1]['val'];
 			$return_data[$value['sku_number']]['pro_attrs'] = $value['spec'];
 			$return_data[$value['sku_number']]['uom_name'] = $value['unit_name'];
+			$return_data[$value['sku_number']]['guarantee_period'] = $value['guarantee_period'];
 		}
 
 		return $return_data;

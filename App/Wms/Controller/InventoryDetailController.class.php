@@ -65,7 +65,7 @@ class InventoryDetailController extends CommonController {
 		$inventory_code = M('stock_inventory')->where($map)->getField('code');
         unset($map);
 		$map['inventory_code'] = $inventory_code;
-		$M->where($map);
+		$M->where($map)->order('stock_inventory_detail.id');
     }
 
     //lists方法执行后，执行该方法
