@@ -151,6 +151,34 @@ class DistributionLogic {
     }
     
     /**
+     * 根据出库单ID判断PACK区库存是否充足
+     * @param int $id 出库单ID
+     */
+    public function checkout_stock_eg($id = 0) {
+        $return = false;
+        
+        if (empty($id)) {
+            return $return;
+        }
+        $detail = $this->get_out_detail(array($id));
+        $area_name = array('PACK');
+        $location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
+        foreach ($detail as $value) {
+            $info = array();
+            $info['wh_id'] = session('user.wh_id');
+            $info['pro_code'] = $value['pro_code'];
+            $info['pro_qty'] = $value['order_qty'];
+            $info['location_ids'] = $location_ids;
+            $result = A('Stock', 'Logic')->outStockBySkuFIFOCheck($info);
+            if ($result['status'] <= 0) {
+                return $return;
+            }
+        }
+        $return = true;
+        return $return;
+    }
+    
+    /**
      * 订单筛选字段验证
      * @param array $post 筛选条件
      * @return array
