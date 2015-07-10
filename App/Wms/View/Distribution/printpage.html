@@ -311,11 +311,11 @@ $(function() {
 		  }
 	  });
 	$('#hidden-map').click(function() {
-		if ($('.mapContainer').css('display') == "block") {
-			$('.mapContainer').css('display',"none");
+		if ($('.staticMap').css('display') == "block") {
+			$('.staticMap').css('display',"none");
 			$(this).html('显示地图');
 		} else if ($('.mapContainer').css('display') == "none") {
-			$('.mapContainer').css('display', "block");
+			$('.staticMap').css('display', "block");
 			$(this).html('隐藏地图');
 		}
 	});
