@@ -273,7 +273,7 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         //售后电话
         $tmp[] = $this->getPrintCommand('right');
-        $tmp[] = '售后电话：401-xxxxxxx';
+        $tmp[] = '售后电话：400-8199-491';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
