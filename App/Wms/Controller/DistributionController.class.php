@@ -816,7 +816,7 @@ class DistributionController extends CommonController {
                     $data[$key]['out_code'][] = $value['code'];
                 }
                 $data[$key]['count'] = count($res);
-                if (i <= 0) {
+                if ($i <= 0) {
                     $data[$key]['type'] = 'make';
                 } else {
                     $data[$key]['type'] = 'reduce';
