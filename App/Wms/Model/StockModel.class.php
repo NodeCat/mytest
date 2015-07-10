@@ -35,7 +35,7 @@ class StockModel extends Model {
                 "inner join warehouse on stock.wh_id=warehouse.id ",
                 "inner join user u1 on stock.created_user = u1.id",
                 "inner join user u2 on stock.updated_user = u2.id",
-                "inner join stock_batch on stock.batch=stock_batch.code",),
+                "left join stock_batch on stock.batch=stock_batch.code",),
 "field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.code as wh_code, warehouse.name as wh_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname,stock_batch.product_date",
         ),
         'latest'=>array(
