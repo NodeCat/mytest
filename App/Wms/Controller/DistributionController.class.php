@@ -662,7 +662,8 @@ class DistributionController extends CommonController {
                 unset($data);
             
                 //驳回不符合条件的订单
-                $map['id'] = array('in', $merge);
+                $map['id'] = array('in', $merge);   
+                $data['status'] = 1; //状态 1 带生产
                 $data['dis_mark'] = 0; //未加入出库单
                 if ($stock->create($data)) {
                     $stock->where($map)->save();
