@@ -137,6 +137,7 @@ class DistController extends Controller {
                         # code...
                         break;
                 };
+                $val['pay_status_code'] = $val['order_info']['pay_status'];
                 $val['pay_status'] = $s;
                 //从订单获取字段到出库单
                 $val['shop_name']    = $val['order_info']['shop_name'];
@@ -203,6 +204,7 @@ class DistController extends Controller {
             'minus_amount'   => I('post.minus_amount/f',0),
             'pay_reduce'     => I('post.pay_reduce/f',0),
             'deliver_fee'    => I('post.deliver_fee/f',0),
+            'pay_status'     => I('post.pay_status/d',0),
             'sign_msg'       => I('post.sign_msg', '' ,'trim'),
             'status'         => 1,
             'sign_time'      => get_time(),
