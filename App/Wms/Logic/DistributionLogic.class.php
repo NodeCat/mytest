@@ -489,6 +489,7 @@ class DistributionLogic {
         if (empty($detail)) {
             return $return;
         }
+        unset($map);
         foreach ($detail as $value) {
             $map['bill_out_id'] = $value['bill_out_id'];
             $map['is_deleted'] = 0;
@@ -522,7 +523,7 @@ class DistributionLogic {
             } else {
                 $idsArr = $stockout_logic->enoughaResult(implode(',', $v));
             }
-            $trueArr = array_merge($trueArr, explode(',', $idsArr['trueResult']));
+            $trueArr = array_merge($trueArr, explode(',', $idsArr['tureResult']));
             $falseArr = array_merge($falseArr, $idsArr['falseResult']);
         }
         $return['trueResult'] = $trueArr;

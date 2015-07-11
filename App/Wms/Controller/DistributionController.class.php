@@ -505,16 +505,17 @@ class DistributionController extends CommonController {
                 //待生产
                 $make_ids[] = $val['id'];
             } elseif ($val['status'] == 5) {
+                $pass_ids[] = $val['id'];
                 //分拣完成
                 //判断分拣完成的库存够不够  防止发生损毁
-                $result_detail = $D->checkout_stock_eg($val['id']);
+                /*$result_detail = $D->checkout_stock_eg($val['id']);
                 if ($result_detail) {
                     //库存充足
                     $pass_ids[] = $val['id'];
                 } else {
                     //库存不足
                     $reduce_ids[] = $val['id'];
-                }
+                }*/
             }
         }
         if (empty($pass_ids)) {
@@ -651,18 +652,19 @@ class DistributionController extends CommonController {
             }
         }
         unset($map);
-
-        $map['pid'] = array('in', $synch_hop_bill_out_ids);
-        $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
-        foreach($bill_out_detail_infos as $bill_out_detail_info){
-            $notice_params['wh_id'] = session('user.wh_id');
-            $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
-            $notice_params['type'] = 'outgoing';
-            $notice_params['qty'] = $bill_out_detail_info['order_qty'];
-            A('Dachuwang','Logic')->notice_stock_update($notice_params);
-            unset($notice_params);
+        if (!empty($synch_hop_bill_out_ids)) {
+            $map['pid'] = array('in', $synch_hop_bill_out_ids);
+            $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+            foreach($bill_out_detail_infos as $bill_out_detail_info){
+                $notice_params['wh_id'] = session('user.wh_id');
+                $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
+                $notice_params['type'] = 'outgoing';
+                $notice_params['qty'] = $bill_out_detail_info['order_qty'];
+                A('Dachuwang','Logic')->notice_stock_update($notice_params);
+                unset($notice_params);
+            }
+            unset($map);
         }
-        unset($map);
 
         $this->msgReturn(true, '已完成', '', U('over'));
     }
@@ -823,7 +825,6 @@ class DistributionController extends CommonController {
                 $this->msgReturn(false, '请选择未发运的配送单');
             }
         }
-        
         //是否已加入波此
         //订单库存是否充足
         //查找你选择的出库单无缺货出库单数据id
@@ -831,12 +832,12 @@ class DistributionController extends CommonController {
         if (empty($idsArr)) {
             $this->msgReturn(false, '所有出库单已全部加入波次不可重复创建');
         }
-        $ids = $idsArr['tureResult'];
+        $ids = $idsArr['trueResult'];
         $unids = $idsArr['falseResult'];
         if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
-        $count = count($bill_out_id) - count($ids); //库存不足的订单数量
+        $count = count($idarr) - count($ids); //库存不足的订单数量
         if ($count > 0) {
             //弹出确认框
             $confirm = I('get.confirm');
@@ -863,10 +864,10 @@ class DistributionController extends CommonController {
         }
         unset($map);
         //剔除库存不足的订单
-        foreach ($detail as $key => $val) {
-            if (!in_array($val['bill_out_id'], $ids)) {
-                unset($detail[$key]);
-            }
+        $map['bill_out_id'] = array('in', $ids);
+        $detail = M('stock_wave_distribution_detail')->where($map)->select();
+        if (empty($detail)) {
+            $this->msgReturn(false, '库存不足');
         }
         //获取库存充足的订单详情
         $map['pid'] = array('in', $ids);
