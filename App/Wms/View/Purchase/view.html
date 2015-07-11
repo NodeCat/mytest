@@ -20,6 +20,14 @@
   <a href="{:U('close',array($pk => $data[$pk]))}" data-title="作废单据" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-ban-circle"></i> 作废</a>
   </in>
 
+  <notempty name="auth['out']">
+    <notempty name="purchase_in_code">
+    <in name="data['state']" value="$toolbar_tr['out']['domain']">
+    <a data-href="$data[$pk]" data-key="$pk" herf='javascript:void(0)' attr='out' data-title="退货" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-minus"></i> 退货</a>
+    </in>
+    </notempty>
+  </notempty>
+
   <in name="data['state']" value="$toolbar_tr['refund']['domain']">
     <eq name='data.invoice_method_code' value='0'>
   <a href="{:U('refund',array($pk => $data[$pk]))}" data-title="生成冲红单" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-repeat"></i> 生成冲红单</a>
@@ -155,3 +163,38 @@
   </div>
 </div>
 </form>
+<include file="dialog_out" />
+<script type="text/javascript">
+
+  var alert_dialog = {
+  
+      close:function(){
+        this.hide();
+        //window.location.reload();
+      },
+      show:function(title, content){
+        title  = title?title:'提示框';
+        content = content?content:"<div class='row'>content</div>";
+        $('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').show();
+        $("#gridSystemModalLabelalert").html(title);
+        $(".lgo").html(content);
+      },
+      hide:function(){
+        $('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+        $('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+      }
+  };
+  //退货弹框
+  $(document).on('click','[attr = out]',function(){
+      var json = {};
+      json.title = "创建采购退货单";
+      json.successhref = "{:U('out',array($pk => $data[$pk],'flg'=>'success'))}";
+      json.errorhref = "{:U('out',array($pk => $data[$pk],'flg'=>'error'))}";
+
+      var html = template('dialog_out',json);
+      $('body').append(html);
+      return false;
+  });
+</script>
