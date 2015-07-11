@@ -505,17 +505,16 @@ class DistributionController extends CommonController {
                 //待生产
                 $make_ids[] = $val['id'];
             } elseif ($val['status'] == 5) {
-                $pass_ids[] = $val['id'];
                 //分拣完成
                 //判断分拣完成的库存够不够  防止发生损毁
-                /*$result_detail = $D->checkout_stock_eg($val['id']);
+                $result_detail = $D->checkout_stock_eg($val['id']);
                 if ($result_detail) {
                     //库存充足
                     $pass_ids[] = $val['id'];
                 } else {
                     //库存不足
                     $reduce_ids[] = $val['id'];
-                }*/
+                }
             }
         }
         if (empty($pass_ids)) {
