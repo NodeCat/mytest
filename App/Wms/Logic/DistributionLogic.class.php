@@ -314,7 +314,7 @@ class DistributionLogic {
      * @param number $line_id
      * @return string|Ambigous <string, unknown>
      */
-    public function format_line($line_id = 0) {
+    public function format_line($line_id = -1) {
         $return = '';
         
         if ($line_id == 0) {
@@ -327,7 +327,7 @@ class DistributionLogic {
             $this->line = $result;
         }
         
-        if (empty($line_id)) {
+        if ($line_id == -1) {
             //不指定线路id则返回所有
             $return = array();
             $return = $this->line;
