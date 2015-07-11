@@ -836,8 +836,8 @@ class DistributionController extends CommonController {
         if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
-        $count = count($idarr) - count($ids); //库存不足的订单数量
-        if ($count > 0) {
+        $count = count($ids) + count($unids); //库存不足的订单数量
+        if (count($unids) > 0) {
             //弹出确认框
             $confirm = I('get.confirm');
             //确认之后将继续向下执行
@@ -853,8 +853,8 @@ class DistributionController extends CommonController {
                         $bill_out_code .= $val['code'] . ',';
                     }
                 }
-                $msg['pup_count'] = $count;
-                $msg['order_count'] = count($idarr);
+                $msg['pup_count'] = count($unids);
+                $msg['order_count'] = $count;
                 $msg['dist_id'] = $get;
                 $msg['out_code'] = $bill_out_code;
                 $this->msgReturn(true, '', $msg);
@@ -862,8 +862,9 @@ class DistributionController extends CommonController {
             }
         }
         unset($map);
-        //剔除库存不足的订单
+        //获取配送单详情中符合条件的出库单
         $map['bill_out_id'] = array('in', $ids);
+        $map['is_deleted'] = 0;
         $detail = M('stock_wave_distribution_detail')->where($map)->select();
         if (empty($detail)) {
             $this->msgReturn(false, '库存不足');
