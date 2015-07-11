@@ -854,7 +854,7 @@ class DistributionController extends CommonController {
                     }
                 }
                 $msg['pup_count'] = $count;
-                $msg['order_count'] = count($bill_out_id);
+                $msg['order_count'] = count($idarr);
                 $msg['dist_id'] = $get;
                 $msg['out_code'] = $bill_out_code;
                 $this->msgReturn(true, '', $msg);
