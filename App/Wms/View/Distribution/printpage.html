@@ -50,22 +50,18 @@
           <volist name="order['detail']" id="detail" key="k">
           	<tr class="order_list">
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
-	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.stock_bill_out_code}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.code}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.line_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.deliver_addr}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.mobile}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.remarks}</td>
-	            <td>{$detail.sku_number}</td>
-	            <td>{$detail.name}</td>
-	            <td>            		
-	            		<small>
-	            		<foreach name="detail['spec']" item="spec">{$spec.name}：{$spec.val}</foreach>
-	            		</small>
-	            	</td>
-	            <td>{$detail.single_price}元/{$detail.close_unit}</td>
-	            <td>{$detail.quantity}{$detail.unit_id}</td>
-	            <td>{$detail['single_price'] * $detail['quantity']|sprintf="%.2f",###}</td>
+	            <td>{$detail.pro_code}</td>
+	            <td>{$detail.pro_name}</td>
+	            <td>{$detail.pro_attrs}</td>         		
+	            <td>{$detail.price}元/{$detail.close_unit}</td>
+	            <td>{$detail.order_qty}{$detail.unit_id}</td>
+	            <td>{$detail['price'] * $detail['order_qty']|sprintf="%.2f",###}</td>
 	            <td></td>
             </tr>
           </volist>
@@ -99,10 +95,10 @@
           <tbody>
             <volist name="attrs['sku_list']" id="detail">
               <tr>
-                <td>{$detail.sku_number}</td>
-                <td>{$detail.name}</td>
+                <td>{$detail.pro_code}</td>
+                <td>{$detail.pro_name}</td>
                 <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
-                <td>{$detail.quantity}{$detail.unit_id}</td>
+                <td>{$detail.order_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
               </tr>
             </volist>
             <tr>

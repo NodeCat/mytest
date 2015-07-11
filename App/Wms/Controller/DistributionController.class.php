@@ -222,21 +222,16 @@ class DistributionController extends CommonController {
         if (count(explode(',', $get)) > 1) {
             $this->msgReturn(false, '只能选择一个配送单');
         }
+        
         //获取配送单信息
         $M = M('stock_wave_distribution');
         $map['id'] = $get;
         $dis = $M->where($map)->find();
         unset($map);
         
-        //获取订单
+        //SKU信息
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id(array($get));
-        $order = D('Common/Order', 'Logic');
-        $result = $order->getOrderInfoByOrderIdArr($order_ids);
-        if (empty($result)) {
-            $this->msgReturn(false, '获取订单失败');
-        }
-        $result = $result['list'];
+        $result = $D->replace_sku_info($get);
         $data = array();
         $ids = array();
         foreach ($result as $key => $value) {
@@ -259,32 +254,21 @@ class DistributionController extends CommonController {
             	        $value['pay_status_cn'] = '支付成功';
             	        break;
             }
-            //筛选sku
-            foreach ($order_ids as $sku_id => $order_id) {
-                $sku_info = $D->get_out_detail_by_pids($sku_id);
-                $sku_info = $sku_info['list'];
-                foreach ($sku_info as $sku) {
-                    $skucodearr[] = $sku['pro_code'];
-                }
-                foreach ($value as $kk => &$vv) {
-                    foreach ($vv['detail'] as $key => $detail_info) {
-                        if (!in_array($detail_info['sku_number'], $skucodearr)) {
-                            unset($vv['detail'][$key]);
-                        }
-                    } 
-                }
-            }
             //execl头
-            $ids[$key] = $value['id'];
+            if (isset($value['id'])) {
+                $ids[$key] = $value['id'];
+            }
             //创建数据
             $data[$key] = $D->format_export_data($value);
         }
         $i = 0;
         foreach ($data as $k => $value){
            $sheet = $Excel->createSheet($i);
-           foreach ($ids as $index => $id) {
-               if ($k == $index) {
-                   $sheet->setTitle($id);
+           if (!empty($ids)) {
+               foreach ($ids as $index => $id) {
+                   if ($k == $index) {
+                       $sheet->setTitle($id);
+                   }
                }
            }
            $j = 0;
@@ -316,56 +300,6 @@ class DistributionController extends CommonController {
     }
     
     /**
-     * 导出配送单
-     */
-    public function export_distribution() {
-        if (!IS_GET) {
-            $this->msgReturn(false, '未知错误');
-        }
-        $get = I('get.id');
-        if (empty($get)) {
-            $this->msgReturn(false, '参数有误');
-        }
-        
-        import("Common.Lib.PHPExcel");
-        import("Common.Lib.PHPExcel.IOFactory");
-        $Excel = new \PHPExcel();
-        
-        $ary  =  array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
-        $ids = explode(',', $get);
-        $D = D('Distribution', 'Logic');
-        $data = $D->format_distribution($ids);
-        
-        $i = 0;
-        foreach ($data['xls_list'] as $value){
-           $sheet = $Excel->createSheet($i);
-           $j = 0;
-    	       foreach ($value as $val){
-    	           $k = 0;
-    	           foreach ($val as $v) {
-    	               $sheet->setCellValue($ary[$k%27].($j+1), $v);
-    	               $k ++;
-    	           }
-    	           $j ++;
-    	       }
-        	   $i++;
-        }        
-        date_default_timezone_set("Asia/Shanghai");
-        header("Content-Type: application/force-download");
-        header("Content-Type: application/download");
-        header("Content-Transfer-Encoding: binary");
-        header('Accept-Ranges: bytes');
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition:attachment;filename = ".time().".xlsx");
-        header('Cache-Control: max-age=0');
-        header("Pragma:no-cache");
-        header("Expires:0");
-        header("Content-Length: ");
-        $objWriter  =  \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007');
-        $objWriter->save('php://output');
-        
-    }
-    /**
      * 配送单详情
      */
     public function view() {
@@ -383,22 +317,9 @@ class DistributionController extends CommonController {
         $dis = $M->where($map)->find();
         unset($map);
         
-        //获取订单id
+        //SKU信息
         $D = D('Distribution', 'Logic');
-        $order_ids = $D->get_order_ids_by_dis_id(array($get));
-        //拉取订单
-        $Order = D('Common/Order', 'Logic');
-        $result = $Order->getOrderInfoByOrderIdArr($order_ids);
-        if ($result['status'] == false) {
-            $this->msgReturn(false, $result['msg']);
-        }
-        $result = $result['list'];
-        //替换sku
-        $result = $D->replace_sku_info($result, $get);
-        $total_price = 0;
-        foreach($result as $val){
-            $total_price += $val['total_price'];
-        }
+        $result = $D->replace_sku_info($get);
         $data = array();
         $data['dist_code'] = $dis['dist_code']; //编号
         $data['is_printed'] = $dis['is_printed']; //是否打印
@@ -410,7 +331,7 @@ class DistributionController extends CommonController {
         $data['created_time'] = $dis['created_time']; //创建时间
         $data['order_count'] = $dis['order_count']; //总单数
         $data['sku_count'] = $dis['sku_count']; //sku总数
-        $data['total_price'] = $total_price; //总价格
+        $data['total_price'] = $dis['total_price']; //总价格
         $data['line_count'] = $dis['line_count']; //总行数
         $this->assign('data', $data);
         $this->assign('orderList', $result);
@@ -431,61 +352,16 @@ class DistributionController extends CommonController {
         }
         
         $M = M('stock_wave_distribution');
-        //$detail = M('stock_wave_distribution_detail');
         $ware = M('warehouse');
         $D = D('Distribution', 'Logic');
-        //获取所有配送单下的订单id
-        $order_ids = $D->get_order_ids_by_dis_id($idarr);
-        //拉取订单
-        $Order = D('Common/Order', 'Logic');
-        $res = $Order->getOrderInfoByOrderIdArr($order_ids);
-        if ($res['status'] == false) {
-            $this->msgReturn(false, $res['msg']);
-        }
-        $res = $res['list'];
-        $list = array();
+        //SKU信息
+        $result = $D->replace_sku_info($get);
         foreach ($idarr as $get) {
             $map['id'] = $get;
             $dis = $M->where($map)->find();
-            //获取此配送单下的订单ID
-            $out_ids = $D->get_order_ids_by_dis_id(array($get));
-            unset($map);
-            //筛选此配送单下的订单
-            $result = array();
-            foreach ($res as $key => $value) {
-                //获取此配送单下的订单
-                if (in_array($value['id'], $out_ids)) {
-                    $result[] = $value;
-                    unset($res[$key]);
-                }
-            }
-            //筛选sku
-            $stock_bill_out = M('stock_bill_out');
-            $stock_out_code = array();
-            foreach ($out_ids as $sku_id => $order_id) {
-                //获取出库单号
-                $map['id'] = $sku_id;
-                $stock_out_code[] = $stock_bill_out->where($map)->find();
-                $sku_info = $D->get_out_detail_by_pids($sku_id);
-                $sku_info = $sku_info['list'];
-                foreach ($sku_info as $sku) {
-                    $skucodearr[] = $sku['pro_code'];
-                }
-            }
-            foreach ($result as $kk => &$vv) {
-                //获取出库单号
-                foreach ($stock_out_code as $stock_bill_out_code) {
-                    if ($stock_bill_out_code['refer_code'] == $vv['id']) {
-                        $vv['stock_bill_out_code'] = $stock_bill_out_code['code'];
-                    }
-                }
-                foreach ($vv['detail'] as $key => $detail_info) {
-                    if (!in_array($detail_info['sku_number'], $skucodearr)) {
-                        //去除不在出库单中的sku 
-                        unset($vv['detail'][$key]);
-                    }
-                }
-            }
+            //SKU信息
+            $result = $D->replace_sku_info($get);
+            
             $items = array();
             $items['dist_code'] = $dis['dist_code'];
             $items['id'] = $dis['id'];
@@ -518,15 +394,18 @@ class DistributionController extends CommonController {
             $items['map_pos'] = $map_pos;
             $items['barcode'] = C('BARCODE_PATH') . $dis['dist_code']; //条码
             $merge = array();
+            //汇总信息 
             foreach ($result as $val) {
                 $merge = array_merge($merge, $val['detail']);
-                $items['price_amount'] += $val['total_price'];
+                //纪录总价格
+                $items['price_amount'] += $val['total_amount'];
             }
             foreach ($merge as $key=>$v) {
-                if (!isset($merge[$v['product_id']])) {
-                    $merge[$v['product_id']] = $v;
+                //叠加相同sku信息
+                if (!isset($merge[$v['pro_code']])) {
+                    $merge[$v['pro_code']] = $v;
                 } else {
-                    $merge[$v['product_id']]['quantity'] += $v['quantity'];
+                    $merge[$v['pro_code']]['order_qty'] += $v['order_qty'];
                 }
                 unset($merge[$key]);
             }
@@ -541,7 +420,7 @@ class DistributionController extends CommonController {
                 }
             }
             $list[] = $items;
-            unset($items['price_amount']);
+            //unset($items['price_amount']);
         }
         $this->assign('list', $list);
         
@@ -578,7 +457,6 @@ class DistributionController extends CommonController {
         $M = M('stock_wave_distribution');
         $det = M('stock_wave_distribution_detail');
         $stock = M('stock_bill_out');
-        $stock_detail = M('stock_bill_out_detail');
         $D = D('Distribution', 'Logic');
         $stockOut = D('Stock', 'Logic');
         //获取配送单
@@ -930,6 +808,7 @@ class DistributionController extends CommonController {
         $stock_out = M('stock_bill_out');
         $stock_out_detail = M('stock_bill_out_detail');
         $stockout_logic = D('StockOut', 'Logic');
+        $D = D('Distribution', 'Logic');
         //获取配送单信息
         $map['id'] = array('in', $idarr);
         $map['is_deleted'] = 0;
@@ -944,38 +823,19 @@ class DistributionController extends CommonController {
                 $this->msgReturn(false, '请选择未发运的配送单');
             }
         }
-        //获取详情
-        $map['pid'] = array('in', $idarr);
-        $map['is_deleted'] = 0;
-        $detail = $det->where($map)->select();
-        if (empty($detail)) {
-            $this->msgReturn(false, '空的配送单');
-        }
-        unset($map);
+        
         //是否已加入波此
-        $D = D('Distribution', 'Logic');
-        $bill_out_id = array(); //出库单id
-        foreach ($detail as $value) {
-            $map['bill_out_id'] = $value['bill_out_id'];
-            $map['is_deleted'] = 0;
-            $result = $wave_det->where($map)->find();
-            if (empty($result)) {
-                //只加入带生产状态的出库单（没有加入波次）
-                $bill_out_id[] = $value['bill_out_id'];
-            }
-        }
-        if (empty($bill_out_id)) {
-            $this->msgReturn(false, '次配送单下所有出库单都已加入波次');
-        }
         //订单库存是否充足
         //查找你选择的出库单无缺货出库单数据id
-        $idsArr = $stockout_logic->enoughaResult(implode(',', $bill_out_id));
+        $idsArr = $D->checkout_stock_by_type($idarr);
+        if (empty($idsArr)) {
+            $this->msgReturn(false, '所有出库单已全部加入波次不可重复创建');
+        }
         $ids = $idsArr['tureResult'];
         $unids = $idsArr['falseResult'];
-        if(!$ids){
+        if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
-        $ids = explode(',', $ids);
         $count = count($bill_out_id) - count($ids); //库存不足的订单数量
         if ($count > 0) {
             //弹出确认框
