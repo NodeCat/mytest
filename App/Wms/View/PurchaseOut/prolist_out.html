@@ -91,135 +91,74 @@
 
 $(function(){
   var jsObj = {
-
           'checkAll':function(){
-
             var aInput = $('table tbody input[type=checkbox]');
-
             var arr = [];
-
             aInput.each(function(i){
-
               var inputVal = aInput.eq(i).val();
-
               if(aInput.eq(i).prop("checked")){
-
                 arr.push(inputVal);
-
               }
-
             });
-
             return arr;
-
           },
-
           'chilChecked':function(vb){
-
             var isAll = $(vb).prop('checked');
-
             var aInput = $('table tbody input[type=checkbox]');
-
             aInput.each(function(i){
-
               aInput.eq(i).prop('checked',isAll);
-
             });
-
           },
-
           'chilCheckClick':function(){
-
             var _this = this;
-
             $(document).on('click','table tbody input[type=checkbox]',function(){
-
               var isFalse = _this.isNotChilCkecked();
-
               $("#inlineCheckboxAll").prop('checked',isFalse);
-
             });
-
           },
           'isNotChilCkecked':function(){
-
             var aInput = $('table tbody input[type=checkbox]');
-
             var isFalse = true;
-
             aInput.each(function(i){
-
               if(!aInput.eq(i).prop('checked')) isFalse = false;
-            
             });
-
             return isFalse;
-
           },
           'checkboxAll':function(){
-
             var _this = this;
-
             $(document).on('click','#inlineCheckboxAll',function(){
-
               _this.chilChecked(this);
-
             });
-
           },
-
           'dellAll':function(){
-
             var _this = this;
-
             $(document).on('click','[data-rel = all]',function(){
-
                 var allVal = _this.checkAll();
-
                 var len = allVal.length;
-
                 _this.delConstroller(len,allVal);
-
-
             });
-
           },
           'delConstroller':function(len,allVal){
-
             if(parseInt(len,10)>0){
-
                   if(confirm('你确定要删除这'+len+"行数据！")){
                     for(var i=0;i<len;i++){
                       $("#tr_"+allVal[i]).remove();
                     }
                   }
-
                 }else{
-
                   alert('请选择要删除数据！');
-
                 }
           },
           'deleteOne':function(){
-
             var _this = this;
-
             $(document).on('click','[data-rel = delOne]',function(){
-
                 var allVal = $(this).attr('data-value');
-
                 var len = allVal.length;
-
                 _this.delConstroller(len,allVal);
-
-
             });
-
           },
           'post':function(url,param,callBack){
-
             $.post(url,param,callBack,'json');
-
           }
     };
   $(document).on('keyup','[attr = out_qty]',function(){
@@ -235,20 +174,12 @@ $(function(){
       $(this).val(pro_qty);
     }
   });
-
   jsObj.deleteOne();
-
   jsObj.dellAll();
-
   jsObj.checkboxAll();//全部中
-
   jsObj.chilCheckClick();//子集选中
-
 });
-
-    
 </script>
-
 <style type="text/css">
 #table-pro input[type=text]{
   padding: 0px 10px;

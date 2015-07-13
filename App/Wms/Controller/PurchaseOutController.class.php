@@ -39,80 +39,80 @@ class PurchaseOutController extends CommonController {
 
         );
     protected $columns = array (
-         'id'                => '',
-         'rtsg_code'         => '采退单号',
-         'wh_name'             => '仓库',
-         'partnername'       => '供应商',
-         'out_type'        => '退货类型',
-         'out_remark'       => '退货原因',
-         'created_user_nickname'=> '创建人',
-         'created_time'      => '创建时间',
-         'status'        => '单据状态',
-         'receivables_state' => '收款状态',
+       'id'                => '',
+       'rtsg_code'         => '采退单号',
+       'wh_name'             => '仓库',
+       'partnername'       => '供应商',
+       'out_type'        => '退货类型',
+       'out_remark'       => '退货原因',
+       'created_user_nickname'=> '创建人',
+       'created_time'      => '创建时间',
+       'status'        => '单据状态',
+       'receivables_state' => '收款状态',
         );
     protected $query   = array (
-            'stock_purchase_out.rtsg_code'         =>    array ( 
-                    'title'               => '采退单号', 
-                    'query_type'        => 'eq', 
-                    'control_type'    => 'text', 
-                    'value'               => 'rtsg_code',
-            ),
-            'stock_purchase_out.refer_code'         =>    array ( 
-                    'title'               => '采购单号', 
-                    'query_type'        => 'eq', 
-                    'control_type'    => 'text', 
-                    'value'               => 'refer_code',
-            ),
-            'stock_purchase_out.wh_id'      => array (     
-                'title'                 => '仓库',     
-                'query_type'            => 'eq',     
-                'control_type'          => 'getField',     
-                'value'                 => 'warehouse.id,name',
-            ),
-            'stock_purchase_out.out_type'     =>    array ( 
-                'title'             => '退货类型', 
+        'stock_purchase_out.rtsg_code'         =>    array ( 
+                'title'               => '采退单号', 
                 'query_type'        => 'eq', 
-                'control_type'      => 'select', 
-                'value'             => array( 
-                  'genuine'   =>'正品退货',
-                  'defective' =>'残次退货'
-                 ),
-            ),
-            'stock_purchase_out.status'     =>    array ( 
-                'title'             => '单据状态', 
+                'control_type'    => 'text', 
+                'value'               => 'rtsg_code',
+        ),
+        'stock_purchase_out.refer_code'         =>    array ( 
+                'title'               => '采购单号', 
                 'query_type'        => 'eq', 
-                'control_type'      => 'select', 
-                'value'             => array( 
-                  'draft' => '草稿',
-                  'audit'=>'待审核',
-                  'tbr'=>'待出库',
-                  'refunded'=>'已出库',
-                  'cancelled' => '已作废',
-                  'rejected' => '已驳回'
-                 ),
+                'control_type'    => 'text', 
+                'value'               => 'refer_code',
+        ),
+        'stock_purchase_out.wh_id'      => array (     
+            'title'                 => '仓库',     
+            'query_type'            => 'eq',     
+            'control_type'          => 'getField',     
+            'value'                 => 'warehouse.id,name',
+        ),
+        'stock_purchase_out.out_type'     =>    array ( 
+            'title'             => '退货类型', 
+            'query_type'        => 'eq', 
+            'control_type'      => 'select', 
+            'value'             => array( 
+              'genuine'   =>'正品退货',
+              'defective' =>'残次退货'
+             ),
+        ),
+        'stock_purchase_out.status'     =>    array ( 
+            'title'             => '单据状态', 
+            'query_type'        => 'eq', 
+            'control_type'      => 'select', 
+            'value'             => array( 
+              'draft' => '草稿',
+              'audit'=>'待审核',
+              'tbr'=>'待出库',
+              'refunded'=>'已出库',
+              'cancelled' => '已作废',
+              'rejected' => '已驳回'
+             ),
+        ),
+        'stock_purchase_out.receivables_state'     =>    array ( 
+            'title'             => '收款状态', 
+            'query_type'        => 'eq', 
+            'control_type'      => 'select', 
+            'value'             => array( 
+              'wait'=>'待收款',
+              'ok'=>'已收款'
+             ),
             ),
-            'stock_purchase_out.receivables_state'     =>    array ( 
-                'title'             => '收款状态', 
-                'query_type'        => 'eq', 
-                'control_type'      => 'select', 
-                'value'             => array( 
-                  'wait'=>'待收款',
-                  'ok'=>'已收款'
-                 ),
-                ),
-            'stock_purchase_out.out_remark'     =>    array ( 
-                'title'             => '退货原因', 
-                'query_type'        => 'eq', 
-                'control_type'      => 'select', 
-                'value'             => array( 
-                   'quality'=>'质量问题',
-                   'wrong'=>'收错货物',
-                   'replace'=>'替代销售',
-                   'unsalable'=>'滞销退货',
-                   'overdue'=>'过期退货',
-                   'other'=>'其他问题'
-                 ),
-            ),
+        'stock_purchase_out.out_remark'     =>    array ( 
+            'title'             => '退货原因', 
+            'query_type'        => 'eq', 
+            'control_type'      => 'select', 
+            'value'             => array( 
+               'quality'=>'质量问题',
+               'wrong'=>'收错货物',
+               'replace'=>'替代销售',
+               'unsalable'=>'滞销退货',
+               'overdue'=>'过期退货',
+               'other'=>'其他问题'
+             ),
+        ),
 
     );
     protected function before_index() {
@@ -132,7 +132,6 @@ class PurchaseOutController extends CommonController {
             //'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"audit,rejected")//作废
         );
         $this->search_addon = true;
-        //dump($this->);
     }
 
     public function view(){
@@ -196,82 +195,82 @@ class PurchaseOutController extends CommonController {
 
   public function edit(){
 
-    $id = I('id');
-    $m = M('stock_purchase_out');
-    $pm = M('stock_purchase_out_detail');
-    $map['id'] = $id;
-    $pmap['pid'] = $id;
-    $this->mresult = $m->where($map)->find();
-    $this->presult = $pm->where($pmap)->select();
-    if(!$this->presult || !$this->mresult || !$id){
-      $this->msgReturn('请正确操作');
-    }
-    $this->p_code = $this->mresult['refer_code'];
-    $this->out_remarks = $this->mresult['out_remark'];
-    $this->pids = $id;
-    $this->wh_id = $this->mresult['wh_id'];
-    $this->partner_id = $this->mresult['partner_id'];
-    $this->remark = $this->mresult['remark'];
-    $this->out_remark = C('OUTREMARK');
-    if($this->mresult['out_type'] == 'genuine'){
-        $flg = 'success';
-    }elseif($this->mresult['out_type'] == 'defective'){
-        $flg = 'error';
-    }
-    $this->flg = $flg;
-    parent::edit();
+      $id = I('id');
+      $m = M('stock_purchase_out');
+      $pm = M('stock_purchase_out_detail');
+      $map['id'] = $id;
+      $pmap['pid'] = $id;
+      $this->mresult = $m->where($map)->find();
+      $this->presult = $pm->where($pmap)->select();
+      if(!$this->presult || !$this->mresult || !$id){
+        $this->msgReturn('请正确操作');
+      }
+      $this->p_code = $this->mresult['refer_code'];
+      $this->out_remarks = $this->mresult['out_remark'];
+      $this->pids = $id;
+      $this->wh_id = $this->mresult['wh_id'];
+      $this->partner_id = $this->mresult['partner_id'];
+      $this->remark = $this->mresult['remark'];
+      $this->out_remark = C('OUTREMARK');
+      if($this->mresult['out_type'] == 'genuine'){
+          $flg = 'success';
+      }elseif($this->mresult['out_type'] == 'defective'){
+          $flg = 'error';
+      }
+      $this->flg = $flg;
+      parent::edit();
   }
 
   public function doEdit(){
-    //修改退货单
-    $pid = I('pid');
-    $out_remark = I('out_remark');
-    $remark = I('remark');
-    $pros = I('pros');
-    if(!$pros || !$pid){
-      $this->msgReturn('1','请正确修改！');
-    }
-    $pm = M('stock_purchase_out');
-    $m = M('stock_purchase_out_detail');
-    $pmap  = array();
-    $psave = array();
-    $pmap['id'] = $pid;
-    if($out_remark){
-      $psave['out_remark'] = $out_remark;
-    }
-    $psave['remark'] = $remark;
-    $psave['updated_time'] = get_time();
-    $psave['status'] = 'audit';
-    $psave['updated_user'] = UID;
-    if($pm->where($pmap)->save($psave)){
-      foreach ($pros['id'] as $key => $value) {
-        $map = array();
-        $save = array();
-        $map['id'] = $value;
-        $save['plan_return_qty'] = intval($pros['plan_return_qty'][$key]);
-        //如果计划量为零的话则删除
-        if($save['plan_return_qty']<=0){
-            $datau['is_deleted'] = 1;
-            $m->where($map)->save($datau);
-        }else{
-            $save['updated_time'] = get_time();
-            $save['updated_user'] = UID;
-            $m->where($map)->save($save);
-        }
+      //修改退货单
+      $pid = I('pid');
+      $out_remark = I('out_remark');
+      $remark = I('remark');
+      $pros = I('pros');
+      if(!$pros || !$pid){
+        $this->msgReturn('1','请正确修改！');
+      }
+      $pm = M('stock_purchase_out');
+      $m = M('stock_purchase_out_detail');
+      $pmap  = array();
+      $psave = array();
+      $pmap['id'] = $pid;
+      if($out_remark){
+        $psave['out_remark'] = $out_remark;
+      }
+      $psave['remark'] = $remark;
+      $psave['updated_time'] = get_time();
+      $psave['status'] = 'audit';
+      $psave['updated_user'] = UID;
+      if($pm->where($pmap)->save($psave)){
+        foreach ($pros['id'] as $key => $value) {
+          $map = array();
+          $save = array();
+          $map['id'] = $value;
+          $save['plan_return_qty'] = intval($pros['plan_return_qty'][$key]);
+          //如果计划量为零的话则删除
+          if($save['plan_return_qty']<=0){
+              $datau['is_deleted'] = 1;
+              $m->where($map)->save($datau);
+          }else{
+              $save['updated_time'] = get_time();
+              $save['updated_user'] = UID;
+              $m->where($map)->save($save);
+          }
 
+        }
+        //判断是否子集还有有数据没有把父也删除
+        $pwhere = array();
+        $pwhere['pid'] = $pid;
+        $pwhere['is_deleted'] = 0;
+        $pdata['is_deleted'] = 1;
+        if(!$m->where($pwhere)->find()){
+          $pm->where($pmap)->save($pdata);
+        }
+        $this->msgReturn('1','修改成功！','',U('index'));
+      }else{
+          $this->msgReturn('0','修改错误！');
       }
-      //判断是否子集还有有数据没有把父也删除
-      $pwhere = array();
-      $pwhere['pid'] = $pid;
-      $pwhere['is_deleted'] = 0;
-      $pdata['is_deleted'] = 1;
-      if(!$m->where($pwhere)->find()){
-        $pm->where($pmap)->save($pdata);
-      }
-      $this->msgReturn('1','修改成功！','',U('index'));
-    }else{
-        $this->msgReturn('0','修改错误！');
-    }
 
   }
 
@@ -311,14 +310,14 @@ class PurchaseOutController extends CommonController {
 
   //驳回
   public function reject(){
-    $id = I('id');
-    $this->editStatus($id,'rejected');
+      $id = I('id');
+      $this->editStatus($id,'rejected');
   }
 
   //作废
   public function close(){
-    $id = I('id');
-    $this->editStatus($id,'cancelled');
+      $id = I('id');
+      $this->editStatus($id,'cancelled');
   }
 
   //编辑状态
