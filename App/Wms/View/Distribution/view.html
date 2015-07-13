@@ -74,12 +74,12 @@
 	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}<p>{$order.deliver_addr}</p></td>
 	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.username}</td>
 	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
-	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.stock_bill_out_code}</td>
+	              <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.code}</td>
 	              <td>{$detail.pro_code}</td>
 	              <td>{$detail.pro_name}</td>
 	              <td>{$detail.pro_attrs}</td>
 	              <td>{$detail.order_qty}</td>
-                <td>{$detail.uom_name}</td>
+                  <td>{$detail.uom_name}</td>
 	              <td>{$detail.price}</td>
                 <td>{$detail['order_qty'] * $detail['price']|sprintf="%.2f",###}</td>
 	              <td></td>

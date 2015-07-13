@@ -4,7 +4,7 @@ use Think\Controller;
 class StockController extends CommonController {
 	protected $columns = array('id' => '',
 			'wh_name' => '仓库',
-            'area' => '区域标识',
+            'area_name' => '区域名称',
             'pro_code' => '货品号',
             'pro_name' => '货品名称',
             'uom_name' => '计量单位',
@@ -112,7 +112,7 @@ class StockController extends CommonController {
 			$data[$key]['available_qty'] = $data_detail['stock_qty'] - $data_detail['assign_qty'];
 			//区域标识
 			$location_info = A('Location','Logic')->getParentById($data_detail['location_id']);
-			$data[$key]['area'] = $location_info['code'];
+			$data[$key]['area_name'] = $location_info['name'];
 			unset($location_info);
 			//库位
 			$data[$key]['location_code'] = $data_detail['location_code'];
