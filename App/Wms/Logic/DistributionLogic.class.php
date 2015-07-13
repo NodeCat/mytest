@@ -624,7 +624,7 @@ class DistributionLogic {
         $param['is_deleted'] = 0;
         if ($main->create($param)) {
             $pid = $main->add();
-            if (!pid) {
+            if (!$pid) {
                 return $return;
             }
         } 
