@@ -588,6 +588,9 @@ class StockLogic{
                     //增加目标库存量 减少原库存量
                     $param['variable_qty'] = $diff_qty;
                     $this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
+                
+                    //diff应该归零，没有再需要移动的数量了
+                    $diff_qty = 0;
                 }
 
                 //库存量等于剩余移动量
@@ -600,6 +603,9 @@ class StockLogic{
                     $map['id'] = $src_stock['id'];
                     M('Stock')->where($map)->delete();
                     unset($map);
+
+                    //diff应该归零，没有再需要移动的数量了
+                    $diff_qty = 0;
                 }
 
                 //库存量小于剩余移动量
