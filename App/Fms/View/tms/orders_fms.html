@@ -29,7 +29,7 @@
   <div class="panel-heading">配送单信息</div>
   <div class="panel-body">
   <div class="col-md-3">
-    <h4>配送单号：{$dist['dist_number']}</h4>
+    <h4>配送单号：{$dist['dist_code']}</h4>
   </div>
   <div class="col-md-3">
     <h4>司机提货码：{$dist['id']}</h4>
@@ -63,7 +63,7 @@
 <tbody>
 <volist name="data" id="vo">
 <tr>
-  <td>{$vo.id}</td>
+  <td>{$vo.refer_code}</td>
   <td>{$vo.status_cn}</td>
   <td>{$vo.pay_status}</td>
   <td>{$vo.pay_for_price}</td>
@@ -73,16 +73,16 @@
   </td>
   -->
   <td>
-  <a href="#" class="collapsed" data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}">
+  <a href="#" class="collapsed" data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}">
   查看详情
   </a>
   </td>
 </tr>
-<tr class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.id}">
+<tr class="panel-collapse collapse" aria-expanded="true"  id="info_{$vo.refer_code}">
 <td colspan="5">
   <div >
   <form class="order">
-    <input type="hidden" name="id" value="{$vo.id}" />
+    <input type="hidden" name="id" value="{$vo.refer_code}" />
     <div class="table-responsive">
       <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
       <caption><span class="panel-info"><div class="panel-heading info">收货详情</></span></caption>
@@ -109,20 +109,20 @@
         </tfoot>
         <volist name="vo['detail']" id="v">
           <tr>
-          <td>{$v.sku_number} {$v.name}
+          <td>{$v.pro_code} {$v.pro_name}
           <!-- <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach>-->
           </td>
-          <td>{$v.quantity}{$v.unit_id}</td>
+          <td>{$v.delivery_qty}{$v.unit_id}</td>
           <!--
           <td class="warnin">{$v.quantity}{$v.unit_id}</td>
           -->
 
-          <td class="dange">{$v.actual_quantity}{$v.close_unit}</td>
+          <td class="dange">{$v.real_sign_qty}{$v.unit_id}</td>
           <!--
           <td>{$v.actual_quantity}</td>
           <td>{$v.actual_quantity}</td>
 -->
-          <td>{$v.single_price}/{$v.close_unit}</td>
+          <td>{$v.price}<notempty name='v.unit_id'>/{$v.unit_id}</notempty></td>
            <!-- <td>{$v.sum_price}</td>-->
           <td>{$v.actual_sum_price}</td>
           </tr>
@@ -138,7 +138,6 @@
               <td>优惠金额</td>
               <td>减免金额</td>
               <td>运费</td>
-              <td>服务费</td>
               <td>应收总计</td>
               <td>司机实收金额</td>
             </tr>
@@ -149,7 +148,6 @@
               <td>{$vo.minus_amount}</td>
               <td>{$vo.pay_reduce}</td>
               <td>{$vo.deliver_fee}</td>
-              <td>{$vo.service_fee}</td>
               <td class="dange">{$vo.pay_for_price}</td>
               <td class="dange">{$vo.deal_price}</td>
             </tr>
