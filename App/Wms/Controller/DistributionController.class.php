@@ -869,6 +869,7 @@ class DistributionController extends CommonController {
         if (empty($detail)) {
             $this->msgReturn(false, '库存不足');
         }
+        unset($map);
         //获取库存充足的订单详情
         $map['pid'] = array('in', $ids);
         $stock_detail = $stock_out_detail->where($map)->select();
@@ -897,6 +898,7 @@ class DistributionController extends CommonController {
             }
             $i++;
         }
+        
         //创建波次
         $wave_info['detail'] = $detail;
         $back = $D->create_wave($wave_info);
@@ -910,7 +912,7 @@ class DistributionController extends CommonController {
         $data['refused_type'] = 1;
         if ($stock_out->create($data)) {
            $affect = $stock_out->where($map)->save();
-           if (!affect) {
+           if (!$affect) {
                $this->msgReturn(false, '出库单状态更新失败');
            }
         }
