@@ -11,7 +11,7 @@ use Think\Controller;
 
 class StatisController extends Controller
 {
-	protected $charts = array(
+	private $charts = array(
 		'总平台数据'                   => 'pingtaishuju.saiku',
 		'今天各城市各个派车平台的车次比例' => 'jintianpingtaishuju.saiku',
 		'昨天各城市各个派车平台的车次比例' => 'zuotianpingtaishuju.saiku',
@@ -20,7 +20,7 @@ class StatisController extends Controller
 		'天津每日订单数'                => 'tianjinmeiridanshu.saiku',
 		'上海每日订单数'                => 'shanghaimeiridanshu.saiku',
 	);
-	protected $saiku_tms = 'http://saiku.dachuwang.com/api.html?#query/open/tms/';
+	private $saiku_tms = 'http://saiku.dachuwang.com/api.html?#query/open/tms/';
 
 	protected function _initialize() {}
 
