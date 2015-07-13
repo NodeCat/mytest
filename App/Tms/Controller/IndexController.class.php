@@ -14,7 +14,6 @@ class IndexController extends Controller {
                 $this->redirect('logout');
             }
         }
-        define('VERSION', '2.0');
         if(defined('VERSION')) {
             $this->ver = '2.0';
             $action2 = array('delivery','orders','sign','reject');
