@@ -328,7 +328,7 @@ $(function() {
 		  //zoomEnable:false
 		});
 		<volist name='list' id='attrs' key="kk">
-		<php>if (!empty($attrs['map_pos'][0])) { </php>
+		<php>if (!empty($attrs['map_pos'][$key])) { </php>
 		  if (num == {$kk}) {
 			 <volist name="attrs['map_pos']" id="pos">
 				var marker = new AMap.Marker({	
@@ -349,7 +349,7 @@ $(function() {
 		<php>}</php>
 		</volist>
 		<volist name='list' id='attrs' key="kk">
-		<php>if (!empty($attrs['map_pos'][0])) { </php>
+		<php>if (!empty($attrs['map_pos'][$key])) { </php>
 		  if (num == {$kk}) {
 			<volist name="attrs['map_pos']" id="pos">
 				markerPoint += "mid,,"+{$i}+":"+{$pos.lng}+","+{$pos.lat}+"|";
