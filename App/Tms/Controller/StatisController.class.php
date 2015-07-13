@@ -24,6 +24,10 @@ class StatisController extends Controller
 
 	protected function _initialize() {}
 
+	/**
+	 * [index 统计结果]
+	 * @return [type] [description]
+	 */
 	public function index() {
 		$login = I('get.login/d',0);
 		if($login) {
@@ -34,5 +38,13 @@ class StatisController extends Controller
 		}
 		$this->login = $login;
 		$this->display('tms:saiku');
+	}
+
+	/**
+	 * [login 模拟登陆]
+	 * @return [type] [description]
+	 */
+	public function login() {
+		$this->display('tms:saiku-login');
 	}
 }
