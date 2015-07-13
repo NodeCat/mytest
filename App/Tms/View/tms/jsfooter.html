@@ -5,6 +5,10 @@
         alert('使用打印功能请您先下载大厨网配送app.');
       }
       else {
+        if(!HostApp.isBondPrinter()) {
+          alert('请先去个人中心绑定打印机型号.');
+          return;
+        }
         if(!printStr) {
             HostApp.toast('打印内容不能为空');
             return;
