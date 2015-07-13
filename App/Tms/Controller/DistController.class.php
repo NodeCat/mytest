@@ -340,6 +340,7 @@ class DistController extends Controller {
             $code = $A->set_dist_status($map);
         }
         $this->ajaxReturn($res);
+    }
 
     // 车单纬度统计
     public function orderList(){
