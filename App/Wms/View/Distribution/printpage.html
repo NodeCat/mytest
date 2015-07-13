@@ -328,7 +328,6 @@ $(function() {
 		  //zoomEnable:false
 		});
 		<volist name='list' id='attrs' key="kk">
-		<php>if (!empty($attrs['map_pos'][($kk-1)])) { </php>
 		  if (num == {$kk}) {
 			 <volist name="attrs['map_pos']" id="pos">
 				var marker = new AMap.Marker({	
@@ -341,25 +340,22 @@ $(function() {
 							imageOffset:new AMap.Pixel(-28,0)
 						}),
 					//在地图上添加点
-					<php>if (!empty($pos['lng']) && !empty($pos['lat']) {</php>
+					<php>if (!empty($pos['lng']) && !empty($pos['lat'])) {</php>
 						position:new AMap.LngLat({$pos.lng},{$pos.lat})
-					<php>}</php
+					<php>}</php>
 				});
 				marker.setMap(mapObj);
 			 </volist>
 		  }
-		<php>}</php>
 		</volist>
 		<volist name='list' id='attrs' key="kk">
-		<php>if (!empty($attrs['map_pos'][($kk-1)])) { </php>
 		  if (num == {$kk}) {
 			<volist name="attrs['map_pos']" id="pos">
-			<php>if (!empty($pos['lng']) && !empty($pos['lat']) {</php>
+			<php>if (!empty($pos['lng']) && !empty($pos['lat'])) {</php>
 				markerPoint += "mid,,"+{$i}+":"+{$pos.lng}+","+{$pos.lat}+"|";
-			<php>}</php
+			<php>}</php>
 			</volist>
 		  }
-		<php>}</php>
 		</volist>
 	});	
 	if (markerPoint != undefined) {
