@@ -182,7 +182,7 @@ class BillOutApi extends CommApi {
         $tmp[] = '支付方式：' . $pay_status;
         $tmp[] = $this->getPrintCommand('print');
         //订单金额
-        $final_price = '订单金额：' . $bill['final_price'];
+        $final_price = '订单金额：' . $bill['final_price'] . '元';
         $tmp[] = $final_price;
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
