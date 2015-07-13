@@ -75,6 +75,7 @@ class DistributionLogic {
         $map['wh_id'] = session('user.wh_id');
         $map['status'] = 1; //状态 1带生产
         $map['type'] = $search['stype']; //出库单类型
+        $map['is_deleted'] = 0;
         if (!empty($search['type'])) {
             $map['order_type'] = $search['type']; //订单类型
         }
@@ -174,6 +175,7 @@ class DistributionLogic {
     
     /**
      * 替换订单sku信息
+     * @param int $dis 配送单ID
      */
     public function replace_sku_info($dis = 0) {
         $return = array();
@@ -185,12 +187,14 @@ class DistributionLogic {
         $det = M('stock_bill_out_detail');
         $distri = M('stock_wave_distribution_detail');
         $map['pid'] = $dis;
+        $map['is_deleted'] = 0;
         $detail = $distri->where($map)->select();
         unset($map);
         $result = array();
         $order_ids = array();
         foreach ($detail as $key => $value) {
             $map['id'] = $value['bill_out_id'];
+            $map['is_deleted'] = 0;
             $result[$key] = $M->where($map)->find();
             unset($result[$key]['id']);
             $result[$key]['detail'] = $this->get_out_detail($value['bill_out_id']);
@@ -365,7 +369,9 @@ class DistributionLogic {
         $det = M('stock_wave_distribution_detail');
         $M = M('stock_bill_out');
         foreach ($nid as $value) {
+            $map = array();
             $map['id'] = array('in', $value);
+            $map['is_deleted'] = 0;
             $stock_out = $M->where($map)->select();
             if (empty($stock_out)) {
                 $return['msg'] = '不存在的出库单';
@@ -411,13 +417,17 @@ class DistributionLogic {
             $data['order_count'] = count($value); //订单数
             $data['status'] = 1; //状态 未发运
             $data['is_printed'] = 0; //未打印
+            $data['line_count'] = 0; //总种类
+            $data['line_id'] = ''; //路线
+            $data['sku_count'] = 0; //sku总数量
+            $data['total_price'] = 0;  //总价格
             $i = 0;
             foreach ($stock_out as $val) {
                 $data['line_count'] += count($val['detail']); //总种类
                 $data['line_id'] .= $val['line_id'] . ','; //路线
+                $data['total_price'] += $val['total_amount']; //总价格
                 foreach ($val['detail'] as $v) {
                     $data['sku_count'] += $v['order_qty']; //sku总数量
-                    $data['total_price'] += $v['price'] * $v['order_qty']; //总价格
                 } 
                 if ($i < 1) {
                     //重复数据  取一次即可
@@ -461,6 +471,8 @@ class DistributionLogic {
             if ($M->create($data)) {
                 $M->where($map)->save();
             }
+            unset($map);
+            unset($data);
         }
        
         $return['status'] = true;

@@ -354,8 +354,6 @@ class DistributionController extends CommonController {
         $M = M('stock_wave_distribution');
         $ware = M('warehouse');
         $D = D('Distribution', 'Logic');
-        //SKU信息
-        $result = $D->replace_sku_info($get);
         foreach ($idarr as $get) {
             $map['id'] = $get;
             $dis = $M->where($map)->find();
@@ -383,6 +381,8 @@ class DistributionController extends CommonController {
             $items['user_count'] = count($user_ids); //总客户数量
             $items['orders_length'] = $dis['order_count'];  //总订单数
             $items['sku_count'] = $dis['sku_count']; //sku总数
+            //纪录总价格
+            $items['price_amount'] = $dis['total_price'];
             //获取仓库名称
             
             $map['id'] = $dis['wh_id'];
@@ -397,8 +397,6 @@ class DistributionController extends CommonController {
             //汇总信息 
             foreach ($result as $val) {
                 $merge = array_merge($merge, $val['detail']);
-                //纪录总价格
-                $items['price_amount'] += $val['total_amount'];
             }
             foreach ($merge as $key=>$v) {
                 //叠加相同sku信息
@@ -549,16 +547,24 @@ class DistributionController extends CommonController {
                 unset($map);
                 unset($data);
                 //更新配送单中总件数 总条数 总行数 总金额
+                $map['id'] = array('in', $pass_ids);
+                //获取出库单
+                $sur_info = $stock->where($map)->select();
+                unset($map);
                 $sur_detail = $D->get_out_detail($pass_ids); //通过审核的sku详情
                 $total['order_count'] = count($pass_ids); //总单数
                 $total['sku_count'] = 0; //总件数
                 $total['line_count'] = 0; //总行数
                 $total['total_price'] = 0; //总金额
                 $det_merge = array();
+                foreach ($sur_info as $surmain) {
+                    //总价格
+                    $total['total_price'] += $surmain['total_amount'];
+                }
                 foreach ($sur_detail as $sur) {
+                    //总数量
                     $total['sku_count'] += $sur['order_qty'];
-                    $total['total_price'] += $sur['order_qty'] * $sur['price'];
-                    $det_merge[$sur['pro_code']] = null;
+                    $det_merge[$sur['pro_code']] = null; //总行数
                 }
                 $total['line_count'] = count($det_merge);
                 if ($M->create($total)) {
@@ -753,31 +759,44 @@ class DistributionController extends CommonController {
         	$M = M('stock_wave_distribution');
         	$detail = M('stock_wave_distribution_detail');
         	$stock = M('stock_bill_out');
-        	
+        
         //判断是否发运
         	$map['id'] = $id;
         	$result = $M->where($map)->find();
         	if ($result['status'] != 1) {
         	    $this->msgReturn(false, '不能删除已经发运的配送单');
         	}
-        	//删除出库单
+        	unset($map);
+        	//获取出库单ID
+        	$map['pid'] = $id;
+        	$res = $detail->where($map)->select();
+        	$bill_out_id = array();
+        	foreach ($res as $value) {
+        	    $bill_out_id[] = $value['bill_out_id'];
+        	}
+        	unset($map);
+        	//判断配送单下出库单是否全部时待生产
+        	$map['id'] = array('in', $bill_out_id);
+        	$result = $stock->where($map)->select();
+        	foreach ($result as $val) {
+        	    if ($val['status'] != 1) {
+        	        $this->msgReturn(false, '此配送单下有非待生产出库单，不能删除');
+        	    }
+        	}
+        	unset($map);
+        	//删除配送单
+        	$map['id'] = $id;
         	$data['is_deleted'] = 1;
         	if ($M->create($data)) {
         	    $M->where($map)->save();
         	}
         unset($map);
         unset($data);
-        	//删除出库单详情
+        	//删除配送单详情
         	$map['pid'] = $id;
         	$data['is_deleted'] = 1;
         	if ($detail->create($data)) {
         	    $detail->where($map)->save();
-        	}
-        	//获取出库单ID
-        	$res = $detail->where($map)->select();
-        	$bill_out_id = array();
-        	foreach ($res as $value) {
-        	    $bill_out_id[] = $value['bill_out_id'];
         	}
         	unset($map);
         	unset($data);
