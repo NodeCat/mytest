@@ -129,7 +129,8 @@
           <form class="order">
             <input type="hidden" name="id" value="{$vo.refer_code}" />
             <input type="hidden" name="dist_id" value="{$dist_id}" />
-    		    <input type="hidden" name="bid" value="{$vo.id}" />
+            <input type="hidden" name="bid" value="{$vo.id}" />
+    		    <input type="hidden" name="pay_status" value="{$vo.pay_status_code}" />
 
             <ul class="list-group">
               <volist name="vo['detail']" id="v">
@@ -172,9 +173,10 @@
                   </span>
                   元
                 </span>
-                <!-- <input type="hidden" class="form-control" placeholder="{$vo.total_price}"
-                value="{$vo.total_price}" readonly>
-                -->
+                <input type="hidden" name="minus_amount" class="form-control" value="{$vo.minus_amount}">
+                <input type="hidden" name="pay_reduce" class="form-control" value="{$vo.pay_reduce}">
+                <input type="hidden" name="deliver_fee" class="form-control" value="{$vo.deliver_fee}">
+               
                 <span class="input-group-addon">
                   优惠 ¥
                   <span class="p_minus">
