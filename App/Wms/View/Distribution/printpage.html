@@ -341,7 +341,9 @@ $(function() {
 							imageOffset:new AMap.Pixel(-28,0)
 						}),
 					//在地图上添加点
-					position:new AMap.LngLat({$pos.lng},{$pos.lat})
+					<php>if (!empty$pos['lng'] && !empty($pos['lat']) {</php>
+						position:new AMap.LngLat({$pos.lng},{$pos.lat})
+					<php>}</php
 				});
 				marker.setMap(mapObj);
 			 </volist>
@@ -352,7 +354,9 @@ $(function() {
 		<php>if (!empty($attrs['map_pos'][($kk-1)])) { </php>
 		  if (num == {$kk}) {
 			<volist name="attrs['map_pos']" id="pos">
+			<php>if (!empty$pos['lng'] && !empty($pos['lat']) {</php>
 				markerPoint += "mid,,"+{$i}+":"+{$pos.lng}+","+{$pos.lat}+"|";
+			<php>}</php
 			</volist>
 		  }
 		<php>}</php>
