@@ -22,9 +22,9 @@ class DistributionLogic {
             $return['msg'] = '请选择出库单类型';
             return $return;
         }
-        if ($post['stype'] != 1 && $post['stype'] != 4 && $post['stype'] != 5) {
+        if ($post['stype'] != 1 && $post['stype'] != 4 && $post['stype'] != 5 && $post['stype'] != 3) {
             //1 销售出库 5调拨出库
-            $return['msg'] = '目前只能选择销售出库,调拨出库,领用出库';
+            $return['msg'] = '目前只能选择销售出库,调拨出库,领用出库,采购正品出库';
             return $return;
         }
         if ($post['stype'] == 1) {
@@ -529,17 +529,39 @@ class DistributionLogic {
         foreach ($merge as $key => $v) {
             //用于多种类型出库单库存判断扩展
             $type = $this->get_stock_bill_out_type($key);
-            if ($type == 'MNO') {
-                //假如是加工出库单 可以这样指定加工出库区库位
-                $idsArr = $stockout_logic->enoughaResult(implode(',', $v), 'WORK-01');
+            if ($type[$key] == 'RTSG') {
+                //采购正品退货单 可以不指定库位，指定批次出库 liuguangping
+                //$v = array(233,344,55);
+                $idsArr = array();
+                $idsArr['tureResult'] = array();
+                $idsArr['falseResult'] = array();
+                foreach ($v as $outId) {
+                    $batch_codeArr = M('stock_bill_out_detail')->field('batch_code')->where(array('pid'=>$outId))->find();
+                    if($batch_codeArr){
+                        $idsPurchaseArr = $stockout_logic->enoughaResult( $outId , null, $batch_codeArr['batch_code']);
+                        if($idsPurchaseArr['tureResult']){
+                            $idsArr['tureResult'] = array_merge($idsArr['tureResult'], explode(',', $idsPurchaseArr['tureResult']));
+                        }
+                        if($idsPurchaseArr['falseResult']){
+                            $idsArr['falseResult'] = array_merge($idsArr['falseResult'],$idsPurchaseArr['falseResult']);
+                        }
+                    }
+                    
+                }
+                if($idsArr['tureResult']){
+                    $idsArr['tureResult'] = implode(',', $idsArr['tureResult']);
+                }
+                //$idsArr = $stockout_logic->enoughaResult(implode(',', $v), 'WORK-01');
             } else {
                 $idsArr = $stockout_logic->enoughaResult(implode(',', $v));
             }
+
             $trueArr = array_merge($trueArr, explode(',', $idsArr['tureResult']));
             $falseArr = array_merge($falseArr, $idsArr['falseResult']);
         }
         $return['trueResult'] = $trueArr;
         $return['falseResult'] = $falseArr;
+
         return $return;
     }
     
@@ -572,7 +594,7 @@ class DistributionLogic {
         $return = array('status' => false, 'msg' => '');
         
         $M = M('stock_bill_out');
-        $map['type'] = array('in', array(1, 4, 5)); //类型 1销售出库 4领用出库 5调拨出库
+        $map['type'] = array('in', array(1, 3, 4, 5)); //类型 1销售出库 3 采购正品出库 4领用出库 5调拨出库
         $map['status'] = 1; //状态 1带生产
         $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');

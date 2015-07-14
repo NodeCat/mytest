@@ -7,7 +7,7 @@ class StockLogic{
     * @param
     * $order_id
     **/
-    public function checkStockIsEnoughByOrderId($order_id, $loc_type = null){
+    public function checkStockIsEnoughByOrderId($order_id, $loc_type = null, $batch_code = null){
         if(empty($order_id)){
             return false;
         }
@@ -36,6 +36,8 @@ class StockLogic{
                 //指定库位检查
                 $data['location_ids'] = $location_ids;
             }
+            //加入批次条件满足采购退货 liuguangping
+            $data['batch_code'] = $batch_code;
             $check_re = $this->outStockBySkuFIFOCheck($data);
             if($check_re['status'] != 1){
                 $is_enough = false;
@@ -74,6 +76,11 @@ class StockLogic{
         //过滤某些仓库id
         if(!empty($params['not_in_location_ids'])){
             $map['location_id'] = array('not in',$params['not_in_location_ids']);
+        }
+
+        //加入批次条件满足采购退货 liuguangping
+        if($params['batch_code']){
+            $map['stock.batch'] = $params['batch_code'];
         }
 
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
@@ -182,6 +189,10 @@ class StockLogic{
             $location_status = M('Location')->where($location_map)->find();
             $map['stock.status'] = $location_status['status'];
             unset($location_map);
+        }
+        //加入批次条件满足采购退货 liuguangping
+        if($params['batch_code']){
+            $map['stock.batch'] = $params['batch_code'];
         }
         $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
         unset($map);

@@ -734,9 +734,7 @@ class PurchaseController extends CommonController {
 	    		}
 	    	
 	        	if(M('stock_purchase_out_detail')->addAll($addAll)){
-	        		//dump($addAll);die;
 	        		//@todo插入出库单表 出库单详细表 已经迁了退货出库单的审核批准方法下面
-	        		//dump($addAll,I());die;
 	        		$this->msgReturn('0','添加成功！','',U('index'));
 	        		/*if($purchaseOutLogic->addStockOut($addAll,I())){
 	        			$this->msgReturn('0','添加成功！','',U('index'));
