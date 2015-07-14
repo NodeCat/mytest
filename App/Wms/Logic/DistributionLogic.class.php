@@ -710,15 +710,15 @@ class DistributionLogic {
         $tail_arr = [
         ['订单备注', $item['remarks']],
         ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-        ['订单总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
-        ['活动优惠', '-' . $item['minus_amount']],
-        ['微信支付优惠', '-' . $item['pay_reduce']],
-        ['运费', '+' . $item['deliver_fee']],
+        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '实收总金额' ,''],
+        ['活动优惠', '', '-' . $item['minus_amount'], '', '', '', '', '',  '应收总金额', '', $item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']],
+        ['微信支付优惠', '', '-' . $item['pay_reduce']],
+        ['运费', '', '+' . $item['deliver_fee']],
         $line_need_pay,
         ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
         ['客户签字'],
         [],
-        ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
+        ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491'] ,''
         ];
     
         //大果定制需求
