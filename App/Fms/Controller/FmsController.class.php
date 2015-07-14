@@ -200,7 +200,6 @@ class FmsController extends \Common\Controller\AuthController{
         $data['status'] = 4; //已结算
         $res = M('stock_wave_distribution')->where($map)->save($data);
 
-        /*
         //回写订单状态
         $order_ids = array_column($bill_outs,'refer_code');
         $A = A('Common/Order','Logic');
@@ -208,7 +207,7 @@ class FmsController extends \Common\Controller\AuthController{
         $order_list = $A->getOrderInfoByOrderIdArr($order_ids);
         $orders = $order_list['list'];
         if(empty($orders)) {
-            $this->msgReturn('0','结算失败，未找到该配送单中的订单。');
+            $this->msgReturn('0','结算失败，未找到该配送单中的hop的订单。');
         }
         
         unset($map);
@@ -237,7 +236,7 @@ class FmsController extends \Common\Controller\AuthController{
             $map['cur']['name'] = session('user.username');
             $res = $A->set_status($map);
             unset($map);
-        }*/
+        }
         $this->msgReturn('1','结算成功。','',U('Fms/orders',array('id'=>$id)));
     }
 
