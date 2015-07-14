@@ -672,7 +672,7 @@ class DistributionLogic {
         [$item['city_name'], $item['address']],
         [$item['shop_name'], '', $item['realname'], "tel:{$item['mobile']}", '', '下单时间', $item['created_time']],
         ['销售', $item['bd']['name'], '销售电话', "tel:{$item['bd']['mobile']}", '',  '配送时间', "{$item['deliver_date']} {$item['deliver_time']}"],
-        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
         ['货号', '产品名称', '', '', '', '订货数量', '订货单位', '结算单价', '结算单位', '实收数量', '实收金额'],
         ];
     
@@ -697,7 +697,7 @@ class DistributionLogic {
         }
         //为了让尾部内容可以吸底，需要补充一些空行
         $detail_cnt = count($details);
-        while($detail_cnt < 12) {
+        while($detail_cnt < 8) {
             $details[] = [];
             $detail_cnt ++;
         }
@@ -709,9 +709,9 @@ class DistributionLogic {
         //尾部内容
         $tail_arr = [
         ['订单备注', $item['remarks']],
-        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '实收总金额' ,''],
-        ['活动优惠', '', '-' . $item['minus_amount'], '', '', '', '', '',  '应收总金额', '', $item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']],
+        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '应收总金额' , '', $item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']],
+        ['活动优惠', '', '-' . $item['minus_amount'], '', '', '', '', '',  '实收总金额', ''],
         ['微信支付优惠', '', '-' . $item['pay_reduce']],
         ['运费', '', '+' . $item['deliver_fee']],
         $line_need_pay,
@@ -725,7 +725,7 @@ class DistributionLogic {
         if($item['site_name'] == '大果') {
             $tail_arr = [
             ['订单备注', $item['remarks']],
-            ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+            ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
             ['预估总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
             ['活动优惠', '- ' . $item['minus_amount']],
             ['微信支付优惠', '-' . $item['pay_reduce']],
