@@ -49,7 +49,7 @@ class DistLogic{
 			$res = array(
 				'orders'     => $res,
 				'orderCount' => count($orders),
-				);
+			);
 		}
 		return $res;
 	}
@@ -115,7 +115,7 @@ class DistLogic{
 				'msg'  => '出库单ID或状态不能为空'
 			);
 		}
-
+		
 		return $res;
 	}
 
@@ -140,9 +140,10 @@ class DistLogic{
 			else {
 				//该配送单所有配送单详情状态
 				$detail_status = $M->table('stock_wave_distribution')
-				->field('status')
-				->where(array('pid' => $params['dist_id']))
-				->select();
+				    ->field('status')
+				    ->where(array('pid' => $params['dist_id']))
+				    ->select();
+				//所有配送单详情均为该状态时，修改配送单主表状态
 				$flag = 1;
 				foreach ($detail_status as $value) {
 					if($value['status'] != $params['status']) {
@@ -156,7 +157,7 @@ class DistLogic{
 					$map['id'] = $params['dist_id'];
 					switch($params['status']) {
 						case '1'://已装车对应配送单状态2:已发运
-							$status = 2;
+						    $status = 2;
 							break;
 						case '2'://已签收对应配送单状态3:已配送
 							$status = 3;
@@ -199,6 +200,5 @@ class DistLogic{
 		}
 		return $res;
 	}
-
 
 }

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `tms_sign_in_detail` (
 
 -- 修改配送单 状态字段 增加已签收状态
 
-ALTER TABLE  `stock_wave_distribution` CHANGE  `status`  `status` TINYINT( 3 ) UNSIGNED NOT NULL DEFAULT  '1' COMMENT '状态1未发运2已发运3已配送4已结算';
+ALTER TABLE  `stock_wave_distribution` CHANGE  `status`  `status` VARCHAR( 45 ) NOT NULL DEFAULT  '1' COMMENT '状态1未发运2已发运3已配送4已结算';
 
 -- 配送单详情增加签收数据字段
 
