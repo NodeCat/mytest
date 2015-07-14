@@ -705,12 +705,20 @@ class DistributionLogic {
         //合并表头和列表
         $csv_data = array_merge($csv_data, $details);
     
-    
+        $should_total_amount = 0.00;
+        //应收总金额
+        if($item['pay_status'] == 0){
+            $should_total_amount = sprintf("%.2f",$item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']);
+        }
+        
+        $item['site_name'] = '大果';
+        //订单备注
+        $remarks = (empty($item['remarks'])) ? '' : substr($item['remarks'],0,120);
         //尾部内容
         $tail_arr = [
-        ['订单备注', $item['remarks']],
+        ['订单备注', $remarks],
         ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '应收总金额' , '', $item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']],
+        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '应收总金额' , '', $should_total_amount],
         ['活动优惠', '', '-' . $item['minus_amount'], '', '', '', '', '',  '实收总金额', ''],
         ['微信支付优惠', '', '-' . $item['pay_reduce']],
         ['运费', '', '+' . $item['deliver_fee']],
@@ -724,17 +732,17 @@ class DistributionLogic {
         //大果定制需求
         if($item['site_name'] == '大果') {
             $tail_arr = [
-            ['订单备注', $item['remarks']],
+            ['订单备注', $remarks],
             ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-            ['预估总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
-            ['活动优惠', '- ' . $item['minus_amount']],
-            ['微信支付优惠', '-' . $item['pay_reduce']],
-            ['运费', '+' . $item['deliver_fee']],
-            ['应付总价', sprintf("%.2f", $item['final_price']), '', '', '', '', '', '', '', '以实际称重为准'],
+            ['预估总价', '', sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '实收总金额', ''],
+            ['活动优惠', '', '-' . $item['minus_amount']],
+            ['微信支付优惠', '', '-' . $item['pay_reduce']],
+            ['运费', '', '+' . $item['deliver_fee']],
+            ['应付总价', '', sprintf("%.2f", $item['final_price']), '', '', '', '', '', '以实际称重为准', ''],
             ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
             ['客户签字'],
             [],
-            ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
+            ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491', '']
             ];
         }
     
