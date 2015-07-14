@@ -444,9 +444,10 @@ class StockLogic{
      * $pro_qty 产品数量
      * $pro_uom 产品计量单位
      * $status 库存状态
+     * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
@@ -454,6 +455,7 @@ class StockLogic{
         $row['pro_code'] = $pro_code;
         $row['batch'] = $batch;
         $row['status'] =$status;
+        $row['product_date'] = $product_date;
         
         $res = $stock->where($row)->find();
         

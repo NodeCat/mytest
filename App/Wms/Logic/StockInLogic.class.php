@@ -83,8 +83,9 @@ class StockInLogic{
 	//$qty 本次上架量
 	//$location_code 上架库位
 	//$status 本次上架状态
-	public function on($inId,$code,$qty,$location_code,$status){
-		if(empty($inId) || empty($code)  || $location_code == '' || empty($status)) {
+	//$product_date 生产日期
+	public function on($inId,$code,$qty,$location_code,$status,$product_date){
+		if(empty($inId) || empty($code)  || $location_code == '' || empty($status) || empty($product_date)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
 		}
 		if(!is_numeric($qty)|| empty($qty)) {
@@ -150,7 +151,7 @@ class StockInLogic{
 		$batch   = $in['code'];
 		//管理批次号
 		get_batch($batch);
-		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status);
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
 		
 		if($res == true) {
 			$oned = $this->checkOn($inId); 

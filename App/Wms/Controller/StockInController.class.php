@@ -134,9 +134,11 @@ class StockInController extends CommonController {
 				$qty = I('post.qty');
 				$location = I('post.location');
 				$status = I('post.status');
+				//生产日期
+				$product_date = I('post.product_date');
 
 				//上架逻辑
-				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
+				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status,$product_date);
 				if($res['res'] == true) {
 					//判断是否是采购入库
 					$map['id'] = $id;
