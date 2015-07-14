@@ -705,12 +705,17 @@ class DistributionLogic {
         //合并表头和列表
         $csv_data = array_merge($csv_data, $details);
     
-    
+        $should_total_amount = 0.00;
+        //应收总金额
+        if($item['pay_status'] == 0){
+            $should_total_amount = sprintf("%.2f",$item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']);
+        }
+        
         //尾部内容
         $tail_arr = [
-        ['订单备注', $item['remarks']],
+        ['订单备注', substr($item['remarks'],0,120)],
         ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '应收总金额' , '', $item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']],
+        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '应收总金额' , '', $should_total_amount],
         ['活动优惠', '', '-' . $item['minus_amount'], '', '', '', '', '',  '实收总金额', ''],
         ['微信支付优惠', '', '-' . $item['pay_reduce']],
         ['运费', '', '+' . $item['deliver_fee']],
