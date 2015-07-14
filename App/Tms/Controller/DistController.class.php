@@ -137,6 +137,7 @@ class DistController extends Controller {
                         # code...
                         break;
                 };
+                $val['pay_status_code'] = $val['order_info']['pay_status'];
                 $val['pay_status'] = $s;
                 //从订单获取字段到出库单
                 $val['shop_name']    = $val['order_info']['shop_name'];
@@ -146,6 +147,7 @@ class DistController extends Controller {
                 $val['status_cn']    = $val['order_info']['status_cn'];
                 $val['total_price']  = $val['order_info']['total_price'];
                 $val['minus_amount'] = $val['order_info']['minus_amount'];
+                $val['pay_reduce']   = $val['order_info']['pay_reduce'];
                 $val['deliver_fee']  = $val['order_info']['deliver_fee'];
                 $val['final_price']  = $val['order_info']['final_price'];
                 $val['deal_price']   = $val['order_info']['deal_price'];
@@ -199,6 +201,10 @@ class DistController extends Controller {
             'bill_out_id'    => I('post.bid/d'),
             'receivable_sum' => I('post.final_price/f',0),
             'real_sum'       => I('post.deal_price/f',0),
+            'minus_amount'   => I('post.minus_amount/f',0),
+            'pay_reduce'     => I('post.pay_reduce/f',0),
+            'deliver_fee'    => I('post.deliver_fee/f',0),
+            'pay_status'     => I('post.pay_status/d',0),
             'sign_msg'       => I('post.sign_msg', '' ,'trim'),
             'status'         => 1,
             'sign_time'      => get_time(),

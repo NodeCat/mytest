@@ -47,25 +47,21 @@
           </tr>
         </thead>
         <volist name="attrs['orders']" id="order">
-          <volist name="order['detail']" id="detail" key="k">
-          	<tr class="order_list">
+          <volist name="order['detail']" id="detail" key="k">	
+          	<tr class="order_list_td">
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
-	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.stock_bill_out_code}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.code}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.line_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.deliver_addr}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.mobile}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.remarks}</td>
-	            <td>{$detail.sku_number}</td>
-	            <td>{$detail.name}</td>
-	            <td>            		
-	            		<small>
-	            		<foreach name="detail['spec']" item="spec">{$spec.name}：{$spec.val}</foreach>
-	            		</small>
-	            	</td>
-	            <td>{$detail.single_price}元/{$detail.close_unit}</td>
-	            <td>{$detail.quantity}{$detail.unit_id}</td>
-	            <td>{$detail['single_price'] * $detail['quantity']|sprintf="%.2f",###}</td>
+	            <td>{$detail.pro_code}</td>
+	            <td>{$detail.pro_name}</td> 
+	            <td>{$detail.pro_attrs}</td>         		
+	            <td>{$detail.price}元/{$detail.close_unit}</td>
+	            <td>{$detail.order_qty}{$detail.unit_id}</td>
+	            <td>{$detail['price'] * $detail['order_qty']|sprintf="%.2f",###}</td>
 	            <td></td>
             </tr>
           </volist>
@@ -99,10 +95,10 @@
           <tbody>
             <volist name="attrs['sku_list']" id="detail">
               <tr>
-                <td>{$detail.sku_number}</td>
-                <td>{$detail.name}</td>
+                <td>{$detail.pro_code}</td>
+                <td>{$detail.pro_name}</td>
                 <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
-                <td>{$detail.quantity}{$detail.unit_id}</td>
+                <td>{$detail.order_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
               </tr>
             </volist>
             <tr>
@@ -113,6 +109,31 @@
           </tbody>
         </table>
       </div>
+      	
+      	<div class="col-xs-6">
+      		<p>司机领用物品登记栏</p>
+      	<table class="table table-condensed table-bordered table-striped">
+          <thead>
+            <tr>
+            <td></td>
+      		<td>保温箱</td>
+      		<td>蔬菜中转筐</td>
+      		<td>手推车</td>
+      		<td>电子称</td>
+			</tr>	
+      		</thead>
+      		<tbody>
+      			<tr>
+      				<td>数量</td>
+      				<td></td>
+      				<td></td>
+      				<td></td>
+      				<td></td>
+      			</tr>
+      		</tbody>
+      	</table>
+      </div>
+      <br>
       <div class="col-xs-6 sign">
         <p class="">仓库操作人员签字：</p>
         <p class="">司机操作人员签字：</p>
@@ -123,7 +144,10 @@
       <a href="javascript:;" onclick="window.print()" class="hidden-print btn btn-success">打印全部</a>
     </div>
 </div>
-<div style="height:600px;width:900px;margin-bottom:50px;" class="mapContainer" id="mapContainer{$kk}"></div>
+<div style="height:600px;width:900px;margin-bottom:50px; display:none" class="mapContainer" id="mapContainer{$kk}"></div>
+<div class="staticMap">
+	<img src="" alt="" class="staticImg">
+</div>
 <div class="hidden" id="map_pos{$kk}" >{$attrs.map_pos}</div>
 </div>
 </div>
@@ -274,7 +298,8 @@
 
 <script>
 $(function() {
-	var td =  $('.order_list').children('td[rowspan]');
+	var markerPoint;
+	var td =  $('.order_list_td').children('td[rowspan]');
 	  td.each(function(i) {
 		  //alert($(this).attr('index'));
 		  if ($(this).attr('index') > 1) {
@@ -282,26 +307,26 @@ $(function() {
 		  }
 	  });
 	$('#hidden-map').click(function() {
-		if ($('.mapContainer').css('display') == "block") {
-			$('.mapContainer').css('display',"none");
+		if ($('.staticMap').css('display') == "block") {
+			$('.staticMap').css('display',"none");
 			$(this).html('显示地图');
 		} else if ($('.mapContainer').css('display') == "none") {
-			$('.mapContainer').css('display', "block");
+			$('.staticMap').css('display', "block");
 			$(this).html('隐藏地图');
 		}
 	});
+
 	$(".mapContainer").each(function(i){
 		var mapObj, marker, markers = [];
 		var num = i + 1;
 		var map_pos = $('#map_pos'+num).html();
-		console.log(map_pos);
+		//console.log(map_pos);
 		// 地图初始化
 		mapObj = new AMap.Map("mapContainer"+num,{
 		  center:new AMap.LngLat(116.397428,39.90923), //地图中心点
 		  level:11  //地图显示的比例尺级别
 		  //zoomEnable:false
 		});
-		
 		<volist name='list' id='attrs' key="kk">
 		  if (num == {$kk}) {
 			 <volist name="attrs['map_pos']" id="pos">
@@ -315,14 +340,30 @@ $(function() {
 							imageOffset:new AMap.Pixel(-28,0)
 						}),
 					//在地图上添加点
-					position:new AMap.LngLat({$pos.lng},{$pos.lat})
-					
+					<php>if (!empty($pos['lng']) && !empty($pos['lat'])) {</php>
+						position:new AMap.LngLat({$pos.lng},{$pos.lat})
+					<php>}</php>
 				});
 				marker.setMap(mapObj);
 			 </volist>
 		  }
 		</volist>
+		<volist name='list' id='attrs' key="kk">
+		  if (num == {$kk}) {
+			<volist name="attrs['map_pos']" id="pos">
+			<php>if (!empty($pos['lng']) && !empty($pos['lat'])) {</php>
+				markerPoint += "mid,,"+{$i}+":"+{$pos.lng}+","+{$pos.lat}+"|";
+			<php>}</php>
+			</volist>
+		  }
+		</volist>
 	});	
+	if (markerPoint != undefined) {
+	    markerPoint = markerPoint.slice(9,-1)
+		var Imgsrc = "http://restapi.amap.com/v3/staticmap?size=900*600&key=ee95e52bf08006f63fd29bcfbcf21df0&markers="
+		Imgsrc = Imgsrc + markerPoint;
+		$('.staticImg').attr("src",Imgsrc);
+	}
 })
 
 
