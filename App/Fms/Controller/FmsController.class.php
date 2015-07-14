@@ -118,7 +118,7 @@ class FmsController extends \Common\Controller\AuthController{
                     $value['deal_price'] = 0;
 
                 }
-                elseif($value['status_cn']== '已退货') {
+                elseif($value['status_cn']== '已拒收') {
                     $value['pay_for_price'] = 0;
                     $value['deal_price'] = 0;
                     $value['actual_price'] = 0;
@@ -177,7 +177,7 @@ class FmsController extends \Common\Controller\AuthController{
             }
             //获得订单状态
             $value['status_cn'] = $this->get_status($sign_data['status']);
-            if($value['status_cn'] != '已签收' && $value['status_cn'] != '已退货' ) {
+            if($value['status_cn'] != '已签收' && $value['status_cn'] != '已拒收' ) {
                 if($value['status_cn'] == '已完成') {
                     $this->msgReturn('0','结算失败,该配送单已结算过');
                 }
@@ -185,18 +185,24 @@ class FmsController extends \Common\Controller\AuthController{
             }
         }
         
-        //回写签收状态
+        //回写配送单详情状态
         foreach ($bill_outs as $value) {
             unset($map);
             $map['bill_out_id'] = $value['id'];
             $data['status'] = 4; //已完成
             $sign = M('stock_wave_distribution_detail');
-            //找到该出库单的签收信息
             $s = $sign->where($map)->save($data);
+            
         }
-        $order_ids = array_column($bill_outs,'refer_code');
+        //回写配送单状态
+        unset($map);
+        $map['id'] = $id;
+        $data['status'] = 4; //已结算
+        $res = M('stock_wave_distribution')->where($map)->save($data);
+
         /*
         //回写订单状态
+        $order_ids = array_column($bill_outs,'refer_code');
         $A = A('Common/Order','Logic');
         //根据多个订单ID批量获取订单
         $order_list = $A->getOrderInfoByOrderIdArr($order_ids);
