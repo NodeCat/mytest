@@ -63,55 +63,142 @@ class DistLogic{
 		return $res;
 	}
 
-	//签收后修改配送单详情－>配送单状态
-	public function set_dist_status($map = array()) {
-		if(!empty($map)) {
-			$code = 0;
+	/**
+	 * [set_dist_detail_status 修改配送单详情状态]
+	 * @param array $map [bill_out_id,status]
+	 */
+	public function set_dist_detail_status($params = array()) {
+		if(!empty($params['bill_out_id']) && !empty($params['status'])) {
 			$M = M('stock_wave_distribution_detail');
-			$data['status'] = $map['status'];
-			unset($map['status']);
-			//更新配送单详情状态
-			$sign_detail = $M->field('status')->where($map)->find();
-			if($sign_detail['status'] != $data['status']) {
-				$re = $M->where($map)->save($data);
-				$code = $re ? 1 : -1;
+			$map['bill_out_id'] = $params['bill_out_id'];
+			$map['is_deleted']  = 0;
+			//配送单详情
+			$bill_out = $M->field('id,pid,status')->where($map)->find();
+			if($bill_out['status'] == $params['status']) {
+				$res = array(
+					'code' => 0,
+					'msg'  => '状态已更新'
+				);
 			}
-			$pid = $map['pid'];
-			unset($map);
-			unset($data);
-			$map['pid'] = $pid;
-			//该配送单所有配送单详情状态
-			$detail_status = $M->field('status')->where($map)->select();
-			unset($map);
-			$flag = 1;
-			foreach ($detail_status as $value) {
-				if($value['status'] != 1) {
-					$flag = 0;
-					break;
+			else {
+				//更新配送单详情状态
+				$s = $M->where(array('bill_out_id' => $map['bill_out_id']))
+				     ->save(array('status' => $map['status']));
+				if($s) {
+					$res = array(
+						'code' => 0,
+						'msg'  => '配送单详情状态更新成功'
+					);
+				}
+				else {
+					$res = array(
+						'code' => -1,
+						'msg'  => '配送单详情状态更新失败'
+					);
+					return $res;
 				}
 			}
-			if($flag) {
-				$dM = M('stock_wave_distribution');
+			$dmap['dist_id'] = $bill_out['pid'];
+			$dmap['status']  = $params['status'];
+			$ds = $this->set_dist_status($dmap);
+			if($ds['status'] === -1){
+				$res = array(
+					'code' => -1,
+					'msg'  => '配送单详情状态更新成功，配送单主表状态更新失败'
+				);
+				return $res;
+			}
+		}
+		else {
+			$res = array(
+				'code' => -1,
+				'msg'  => '出库单ID或状态不能为空'
+			);
+		}
+
+		return $res;
+	}
+
+	/**
+	 * [set_dist_status 更改配送单状态]
+	 * @param array $map [dist_id,status]
+	 */
+	public function set_dist_status($params = array()) {
+		if(!empty($params['dist_id'] && !empty($params['status']))) {
+			$map['dist_id'] = $params['dist_id'];
+			$map['status']  = $params['status'];
+			$M = M('stock_wave_distribution');
+			//配送单是否已为需要更新的状态
+			$dist = $M->field('id')->where($map)->find();
+			if($dist) {
+				$res = array(
+					'code' => 0,
+					'msg'  => '状态已更新'
+				);
+				return $res;
+			} 
+			else {
+				//该配送单所有配送单详情状态
+				$detail_status = $M->table('stock_wave_distribution')
+				->field('status')
+				->where(array('pid' => $params['dist_id']))
+				->select();
+				$flag = 1;
+				foreach ($detail_status as $value) {
+					if($value['status'] != $params['status']) {
+						$flag = 0;
+						break;
+					}
+				}
 				//更新配送单状态
-				$map['id'] = $pid;
-				$data['status'] = 3;//配送单状态：已签收
-				$sign_dist = $dM->field('status')->where($map)->find();
-				if($sign_dist['status'] != 3) {
-					$re = $dM->where($map)->save($data);
-					$code = $re ? 2 : $code;
+				if($flag) {
+					unset($map);
+					$map['id'] = $params['dist_id'];
+					switch($params['status']) {
+						case '1'://已装车对应配送单状态2:已发运
+							$status = 2;
+							break;
+						case '2'://已签收对应配送单状态3:已配送
+							$status = 3;
+							break;
+						case '3'://已完成对应配送单状态4:已结算
+							$status = 4;
+							break;
+					}
+					$data['status'] = $status;
+					$s = $M->where($map)->save($data);
+					//成功的返回结果
+					if($s) {
+						$res = array(
+							'code' => 0,
+							'msg'  => '配送单状态更新成功'
+						);
+					}
+					//失败的返回结果
+					else {
+						$res = array(
+							'code' => -1,
+							'msg'  => '配送单状态更新失败'
+						);
+						return $res;
+					}
+				}
+				else {
+					$res = array(
+						'code' => 0,
+						'msg'  => '当前状态无需更新'
+					);
 				}
 			}
 		}
 		else {
-			$code = -1;
+			$res = array(
+				'code' => -1,
+				'msg'  => '配送单ID或状态不能为空'
+			);
 		}
-
-		return $code;
+		return $res;
 	}
-
-
-
-
 
 
 }

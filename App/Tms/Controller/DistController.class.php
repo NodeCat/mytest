@@ -195,10 +195,23 @@ class DistController extends Controller {
 
     //司机签收
     public function sign() {
+        $bill_out_id = I('post.bid/d');
+        $M = M('stock_wave_distribution_detail');
+        //该出库单签收状态
+        $dist_detail = $M->field('id,status')
+        ->where(array('bill_out_id' => $bill_out_id))
+        ->find();
+        if(!$dist_detail) {
+            $res = array(
+                'code' => -1,
+                'msg'  => '出库单不存在'
+            );
+            $this->ajaxReturn($res);
+        }
+        //配送单ID
+        $dist_id = I('post.dist_id/d', 0);
         //签收表主表数据
         $fdata = array(
-            'dist_id'        => I('post.dist_id/d'),
-            'bill_out_id'    => I('post.bid/d'),
             'receivable_sum' => I('post.final_price/f',0),
             'real_sum'       => I('post.deal_price/f',0),
             'minus_amount'   => I('post.minus_amount/f',0),
@@ -206,11 +219,9 @@ class DistController extends Controller {
             'deliver_fee'    => I('post.deliver_fee/f',0),
             'pay_status'     => I('post.pay_status/d',0),
             'sign_msg'       => I('post.sign_msg', '' ,'trim'),
-            'status'         => 1,
+            'status'         => 2,//签收
             'sign_time'      => get_time(),
             'sign_driver'    => session('user.mobile'),
-            'created_time'   => get_time(),
-            'updated_time'   => get_time(),
         );
         //签收详情表数据
         $refer_code  = I('post.id/d',0);
@@ -223,25 +234,14 @@ class DistController extends Controller {
         $deal_price  = $fdata['real_sum'];
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity,$weight ,$price_unit);
-        $re = array('status' => 0);
         if($re['status'] === 0) {
-            $M = M('tms_sign_in');
-            //该出库单签收状态
-            $sign_status = $M->field('id')
-            ->where(array('bill_out_id' => $fdata['bill_out_id']))
-            ->find();
-            if($sign_status) {
-                $M->where(array('id' => $sign_status['id']))->save($fdata);
-                $sign_id = $sign_status['id'];
-            }
-            else {
-                $sign_id = $M->add($fdata);
-            }
-            if($sign_id) {
+            $s = $M->where(array('id' => $dist_detail['id']))->save($fdata);
+            //配送单详情的状态为2:已签收或者更成功
+            if($dist_detail['status'] == 2 || $s) {
                 $cdata = array();
                 //组合一个出库单的签收数据并更新
                 foreach ($detail_id as $val) {
-                    $tmp['pid']                = $sign_id;
+                    $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $val;
                     $tmp['real_sign_qty']      = $quantity[$val];
                     $tmp['real_sign_wgt']      = isset($weight[$val]) ? $weight[$val] : 0;
@@ -253,11 +253,7 @@ class DistController extends Controller {
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
-                if(!$sign_status) {
-                    //添加签收数据
-                    M('tms_sign_in_detail')->addAll($cdata);
-                }
-                else {
+                if($dist_detail['status'] == 2) {
                     //更新签收数据
                     foreach ($cdata as $value) {
                         unset($value['created_time']);
@@ -266,18 +262,21 @@ class DistController extends Controller {
                         ->save($value);
                     }
                 }
+                else {
+                    //添加签收数据
+                    M('tms_sign_in_detail')->addAll($cdata);
+                }
                 //更新配送单详情－>配送单状态
                 $A = A('Tms/Dist','Logic');
-                $map['pid'] = $fdata['dist_id'];
-                $map['bill_out_id'] = $fdata['bill_out_id'];
-                $map['status'] = 1;
-                $code = $A->set_dist_status($map);
-                $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
+                $map['dist_id'] = $dist_id;
+                $map['status']  = 2;
+                $s = $A->set_dist_status($map);
+                $msg = ($s['code'] === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
             
             $status = ($code === -1) ? -1 : 0;
             $json = array('status' => $status, 'msg' => $msg);
-            //code:－1(更新失败);0(未执行更新);1(配送单详情状态更新成功);2(配送单完成)
+            //code:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
         }
         $this->ajaxReturn($re);
@@ -317,33 +316,29 @@ class DistController extends Controller {
             unset($map);
             //签收表主表数据
             $fdata = array(
-                'dist_id'      => I('post.dist_id/d'),
-                'bill_out_id'  => I('post.bid/d'),
-                'sign_msg'     => I('post.sign_msg', '' ,'trim'),
-                'status'       => 2,
-                'sign_time'    => get_time(),
-                'sign_driver'  => session('user.mobile'),
-                'created_time' => get_time(),
-                'updated_time' => get_time()
+                'receivable_sum' => 0,
+                'real_sum'       => 0,
+                'sign_msg'       => I('post.sign_msg', '' ,'trim'),
+                'status'         => 3,//拒收
+                'sign_time'      => get_time(),
+                'sign_driver'    => session('user.mobile'),
             );
-            $M = M('tms_sign_in');
-            //签收表中是否有拒收纪录
-            $signin = $M->field('id')
-            ->where(array('bill_out_id' => $fdata['bill_out_id']))
+            $bill_out_id = I('post.bid/d');
+            $M = M('stock_wave_distribution_detail');
+            //出库单信息
+            $dist_detail = $M->field('id,status')
+            ->where(array('bill_out_id' => $bill_out_id))
             ->find();
-            //向签收表添加或更新一条记录，status为0
-            if($signin) {
-                $M->where(array('id' => $signin['id']))->save($fdata);
+            //向出库单详情更新status为3
+            if($dist_detail) {
+                $M->where(array('id' => $dist_detail['id']))->save($fdata);
             }
             else {
-                $M->add($fdata);
+                $res = array(
+                    'code' => -1,
+                    'msg'  => '出库单不存在'
+                );
             }
-            //更新配送单详情－>配送单状态
-            $A = A('Tms/Dist','Logic');
-            $map['pid'] = $fdata['dist_id'];
-            $map['bill_out_id'] = $fdata['bill_out_id'];
-            $map['status'] = 2;
-            $code = $A->set_dist_status($map);
         }
         $this->ajaxReturn($res);
     }
