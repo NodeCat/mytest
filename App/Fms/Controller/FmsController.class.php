@@ -40,34 +40,22 @@ class FmsController extends \Common\Controller\AuthController{
             }
             //遍历所有出库单，并拼装数据
             foreach ($bill_outs as $value){
-                unset($map);
-                $map['bill_out_id'] = $value['id'];
                 //找到该出库单的签收信息
-                $sign_data = M('tms_sign_in')->where($map)->select();
+                $dist_detail = $dist['detail'];
+                for($i = 0; $i < count($dist_detail); $i++){
+                    if($dist_detail[$i]['bill_out_id'] == $value['id']){
+                        $sign_data = $dist_detail[$i];
+                    }
+                }
+               
                 unset($map);
-                $map['pid'] = $sign_data[0]['id'];
+                $map['pid'] = $sign_data['id'];
                 //找到出库单的签收的所有详情信息
-                $sign_data[0]['detail'] = M('tms_sign_in_detail')->where($map)->select();
-                switch ($sign_data[0]['status']) {
-                    case 0:
-                        $s = '未处理';
-                        break;
-                    case 1:
-                        $s = '已签收';
-                        break;
-                    case 2:
-                        $s = '已退货';
-                        break;
-                    case 3:
-                        $s = '已完成';
-                        break;
-                    default:
-                        $s = '未处理';   
-                        break;
-                }    
-                $value['status_cn'] = $s;
+                $sign_data['detail'] = M('tms_sign_in_detail')->where($map)->select();
+                //获得订单状态
+                $value['status_cn'] = $this->get_status($sign_data['status']);
 
-                switch ($sign_data[0]['pay_status']) {
+                switch ($sign_data['pay_status']) {
                     case -1:
                         $s = '货到付款';
                         break;
@@ -87,7 +75,7 @@ class FmsController extends \Common\Controller\AuthController{
                 //遍历出库单详情，并拼装数据
                 foreach ($value['detail'] as $val) {
                     //签收详情信息
-                    $sign_detail = $sign_data[0]['detail'];
+                    $sign_detail = $sign_data['detail'];
                     if(count($sign_detail) > 0){
                         //遍历签收详情信息找到该出库单详情对应的签收详情信息
                         for($i = 0; $i < count($sign_detail); $i++){
@@ -106,16 +94,17 @@ class FmsController extends \Common\Controller\AuthController{
                     }else{
                         $val['real_sign_qty'] = 0;
                         $val['actual_sum_price'] = 0;
+                        $val['unit_id'] = $val['measure_unit'];
                         $value['actual_price'] = 0;
                     }
                     $value_detail[] = $val;
                 }
                 $value['detail'] = $value_detail;
 
-                $value['minus_amount'] = $sign_data[0]['minus_amount'];
-                $value['pay_reduce'] = $sign_data[0]['pay_reduce'];
-                $value['deliver_fee'] = $sign_data[0]['deliver_fee'];
-                $value['deal_price'] = $sign_data[0]['real_sum'];
+                $value['minus_amount'] = $sign_data['minus_amount'];
+                $value['pay_reduce'] = $sign_data['pay_reduce'];
+                $value['deliver_fee'] = $sign_data['deliver_fee'];
+                $value['deal_price'] = $sign_data['real_sum'];
                 
                 if($value['actual_price'] > 0) {
                     $value['pay_for_price'] = $value['actual_price'] - $value['minus_amount'] - $value['pay_reduce'] + $value['deliver_fee'];
@@ -179,28 +168,15 @@ class FmsController extends \Common\Controller\AuthController{
         }
         //遍历所有出库单，并判断是否已经结算过，是否含有未处理的订单
         foreach ($bill_outs as $value){
-            unset($map);
-            $map['bill_out_id'] = $value['id'];
             //找到该出库单的签收信息
-            $sign_data = M('tms_sign_in')->where($map)->select();
-            switch ($sign_data[0]['status']) {
-                case 0:
-                    $s = '未处理';
-                    break;
-                case 1:
-                    $s = '已签收';
-                    break;
-                case 2:
-                    $s = '已退货';
-                    break;
-                case 3:
-                    $s = '已完成';
-                    break;
-                default:
-                    $s = '未处理';   
-                    break;
-            }    
-            $value['status_cn'] = $s;
+            $dist_detail = $dist['detail'];
+            for($i = 0; $i < count($dist_detail); $i++){
+                if($dist_detail[$i]['bill_out_id'] == $value['id']){
+                    $sign_data = $dist_detail[$i];
+                }
+            }
+            //获得订单状态
+            $value['status_cn'] = $this->get_status($sign_data['status']);
             if($value['status_cn'] != '已签收' && $value['status_cn'] != '已退货' ) {
                 if($value['status_cn'] == '已完成') {
                     $this->msgReturn('0','结算失败,该配送单已结算过');
@@ -213,13 +189,13 @@ class FmsController extends \Common\Controller\AuthController{
         foreach ($bill_outs as $value) {
             unset($map);
             $map['bill_out_id'] = $value['id'];
-            $data['status'] = 3;
-            $sign = M('tms_sign_in');
+            $data['status'] = 4; //已完成
+            $sign = M('stock_wave_distribution_detail');
             //找到该出库单的签收信息
             $s = $sign->where($map)->save($data);
         }
         $order_ids = array_column($bill_outs,'refer_code');
-        
+        /*
         //回写订单状态
         $A = A('Common/Order','Logic');
         //根据多个订单ID批量获取订单
@@ -255,7 +231,7 @@ class FmsController extends \Common\Controller\AuthController{
             $map['cur']['name'] = session('user.username');
             $res = $A->set_status($map);
             unset($map);
-        }
+        }*/
         $this->msgReturn('1','结算成功。','',U('Fms/orders',array('id'=>$id)));
     }
 
@@ -307,13 +283,28 @@ class FmsController extends \Common\Controller\AuthController{
         $bill_out['detail'] = $bill_out_detail;
         return $bill_out;
     }
-    /*
-    *根据出库单id获得出库单及出库单详情信息
-    *@param:    类型array() 参数名$bill_out_ids 一个或多个出库单id组成的数组
-    *@return:   $orders出库单及出库单详情信息
-    */
-    public function get_orders($bill_out_ids){
-        
-        return $orders;
+    public function get_status($status = 0){
+        switch ($status) {
+            case 0:
+                $s = '已分拨';
+                break;
+            case 1:
+                $s = '已装车';
+                break;
+            case 2:
+                $s = '已签收';
+                break;
+            case 3:
+                $s = '已拒收';
+                break;
+            case 4:
+                $s = '已完成';
+                break;
+            default: 
+                $s = '未处理'; 
+                break;
+        } 
+        return $s;   
     }
+
 }
