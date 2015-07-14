@@ -7,7 +7,7 @@ class StockLogic{
     * @param
     * $order_id
     **/
-    public function checkStockIsEnoughByOrderId($order_id){
+    public function checkStockIsEnoughByOrderId($order_id, $loc_type = null){
         if(empty($order_id)){
             return false;
         }
@@ -22,12 +22,20 @@ class StockLogic{
         //获取 收货区 发货区 降级存储区 加工损耗区 加工区 库内报损区 下的库位信息
         $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
         $not_in_location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
-
+        if ($loc_type != null) {
+            $area_name = array($loc_type);
+            $location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
+        }
         foreach($bill_out_detail_infos as $bill_out_detail_info){
             $data['wh_id'] = session('user.wh_id');
             $data['pro_code'] = $bill_out_detail_info['pro_code'];
             $data['pro_qty'] = $bill_out_detail_info['order_qty'];
-            $data['not_in_location_ids'] = $not_in_location_ids;
+            if ($loc_type == null) {
+                $data['not_in_location_ids'] = $not_in_location_ids;
+            } else {
+                //指定库位检查
+                $data['location_ids'] = $location_ids;
+            }
             $check_re = $this->outStockBySkuFIFOCheck($data);
             if($check_re['status'] != 1){
                 $is_enough = false;
@@ -91,13 +99,16 @@ class StockLogic{
         foreach($stock_list as $key=>$stock){
             //可用量
             $stock_available = $stock['stock_qty'] - $stock['assign_qty'];
+            if($stock_available <= 0){
+                continue;
+            }
             if($diff_qty > 0){
                 //可用量小于等于差异量
                 if($stock_available <= $diff_qty){
                     //获取此次销库存的相关信息
                     $return['stock_info'][$key]['location_id'] = $stock['location_id'];
                     $return['stock_info'][$key]['batch'] = $stock['batch'];
-                    $return['stock_info'][$key]['qty'] = $stock['stock_qty'];
+                    $return['stock_info'][$key]['qty'] = $stock_available;
 
                     $map['id'] = $stock['id'];
                     $data['assign_qty'] = $stock['assign_qty'] + $stock_available;
@@ -577,6 +588,9 @@ class StockLogic{
                     //增加目标库存量 减少原库存量
                     $param['variable_qty'] = $diff_qty;
                     $this->incDestStockDecSrcStock($src_stock,$dest_stock_info,$param);
+                
+                    //diff应该归零，没有再需要移动的数量了
+                    $diff_qty = 0;
                 }
 
                 //库存量等于剩余移动量
@@ -589,6 +603,9 @@ class StockLogic{
                     $map['id'] = $src_stock['id'];
                     M('Stock')->where($map)->delete();
                     unset($map);
+
+                    //diff应该归零，没有再需要移动的数量了
+                    $diff_qty = 0;
                 }
 
                 //库存量小于剩余移动量

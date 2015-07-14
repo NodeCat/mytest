@@ -66,11 +66,13 @@ class DistLogic{
 	//签收后修改配送单详情－>配送单状态
 	public function set_dist_status($map = array()) {
 		if(!empty($map)) {
+			$code = 0;
 			$M = M('stock_wave_distribution_detail');
-			$data['status'] = 1;//配送单详情状态：已签收
+			$data['status'] = $map['status'];
+			unset($map['status']);
 			//更新配送单详情状态
 			$sign_detail = $M->field('status')->where($map)->find();
-			if($sign_detail['status'] != 1) {
+			if($sign_detail['status'] != $data['status']) {
 				$re = $M->where($map)->save($data);
 				$code = $re ? 1 : -1;
 			}

@@ -13,12 +13,12 @@ class DistDetailController extends CommonController {
             'quantity' => '数量',
     );
     protected $query   = array (
-            /*'company_id' => array(
-                    'title' => '所属系统',
+            'stype' => array(
+                    'title' => '出库单类型',
                     'query_type' => 'eq',
                     'control_type' => 'getField',
-                    'value' => 'Company.id,name',
-            ),*/
+                    'value' => 'stock_bill_out_type.id,name',
+            ),
             'type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',
@@ -36,12 +36,6 @@ class DistDetailController extends CommonController {
                     'control_type' => 'select',
                     'value' => '',
             ),
-            /*'wh_id' => array(
-                    'title' => '所属仓库',
-                    'query_type' => 'eq',
-                    'control_type' => 'getField',
-                    'value' => 'warehouse.id,name',
-            ),*/
             'date' => array(
                     'title' => '日期',
                     'query_type' => 'eq',

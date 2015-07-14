@@ -115,9 +115,15 @@ class PickController extends CommonController {
   public function view(){
       $pid = I('id');
       $m = M('stock_wave_picking_detail');
-      $map['pid'] = $pid;
+      $map['stock_wave_picking_detail.pid'] = $pid;
       $result = array();
-      $result = $m->where($map)->select();
+      //按照库位标识排序
+      $result = $m
+      ->join('location on stock_wave_picking_detail.src_location_id = location.id')
+      ->where($map)
+      ->order('location.code')->select();
+
+      $result = A('Pms','Logic')->add_fields($result,'pro_name');
       $this->assign('pickDetail',$result);
       parent::view();
   }
@@ -153,11 +159,16 @@ class PickController extends CommonController {
               $items[$key]['detail'] = '';
               $items[$key]['items'] = $value;
               $items[$key]['items']['barcode'] = "http://api.pda.dachuwang.com/barcode/get?text=".$value['code'];
-              $map['pid'] = $value['id'];
-              $map['is_deleted'] = 0;
+              $map['stock_wave_picking_detail.pid'] = $value['id'];
+              $map['stock_wave_picking_detail.is_deleted'] = 0;
 
-              $child = $detail->where($map)->select();
+              //按照库位标识排序
+              $child = $detail
+              ->join('location on stock_wave_picking_detail.src_location_id = location.id')
+              ->where($map)
+              ->order('location.code')->select();
               
+              $child = A('Pms','Logic')->add_fields($child,'pro_name');
               if($child){
                 $items[$key]['detail'] = $child;
               }
