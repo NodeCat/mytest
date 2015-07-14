@@ -711,7 +711,6 @@ class DistributionLogic {
             $should_total_amount = sprintf("%.2f",$item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']);
         }
         
-        $item['site_name'] = '大果';
         //订单备注
         $remarks = (empty($item['remarks'])) ? '' : substr($item['remarks'],0,120);
         //尾部内容
@@ -731,6 +730,11 @@ class DistributionLogic {
     
         //大果定制需求
         if($item['site_name'] == '大果') {
+            $should_total_amount = 0.00;
+            //应收总金额
+            if($item['pay_status'] == 0){
+                $should_total_amount = sprintf("%.2f", $item['final_price']);
+            }
             $tail_arr = [
             ['订单备注', $remarks],
             ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
@@ -738,7 +742,7 @@ class DistributionLogic {
             ['活动优惠', '', '-' . $item['minus_amount']],
             ['微信支付优惠', '', '-' . $item['pay_reduce']],
             ['运费', '', '+' . $item['deliver_fee']],
-            ['应付总价', '', sprintf("%.2f", $item['final_price']), '', '', '', '', '', '以实际称重为准', ''],
+            ['应付总价', '', $should_total_amount, '', '', '', '', '', '以实际称重为准', ''],
             ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
             ['客户签字'],
             [],
