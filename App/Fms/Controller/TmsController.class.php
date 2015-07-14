@@ -86,6 +86,7 @@ class TmsController extends \Common\Controller\AuthController{
             $this->msgReturn('0','结算失败，提货码不能为空');
         }
         $map['dist_id'] = $id;
+        $map['itemsPerPage'] = 'all';
         $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
         $A = A('Common/Order','Logic');
         $orders = $A->order($map);
@@ -123,7 +124,7 @@ class TmsController extends \Common\Controller\AuthController{
             $map['deal_price'] = $val['pay_for_price'];
             $order_ids[] = $val['id'];
             $map['suborder_id'] = $val['id'];
-            $map['cur']['name'] = session('user.username');
+            $map['cur']['name'] = 'fms-'.session('user.username');
             $res = $A->set_status($map);
             unset($map);
         }
