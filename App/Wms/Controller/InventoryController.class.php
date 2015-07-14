@@ -695,6 +695,7 @@ class InventoryController extends CommonController {
 		->join('location on location.id = stock_inventory_detail.location_id')
 		->where($map)
 		->field('stock_inventory_detail.*,location.code as location_code')
+		->order('stock_inventory_detail.id')
 		->select();
 
 		$inventory_detail = A('Pms','Logic')->add_fields($inventory_detail,'pro_name');

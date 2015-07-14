@@ -24,7 +24,7 @@ class WaveController extends CommonController {
         );
 	protected $columns = array (
 	       'id'                => '',
-	       'wave_id'				    => '波次号',
+	       'wid'				    => '波次号',
 	       'company_id'        => '所属系统',
 	       'order_count'       => '总单数',
 	       'line_count'        => '总行数',

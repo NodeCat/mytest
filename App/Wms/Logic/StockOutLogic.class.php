@@ -179,14 +179,14 @@ class StockOutLogic{
      * @return String $Result;
      * 
      */
-    public function enoughaResult($ids){
+    public function enoughaResult($ids, $loc_type = null){
         $idsArr = explode(',', $ids);
         $result = array();
         $result['tureResult'] = array();
         $result['falseResult'] = array();
         if(!$idsArr) return '';
         foreach($idsArr as $key=>$value){
-            $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
+            $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value, $loc_type);
             if($is_enough){ 
                 array_push($result['tureResult'], $value);
             }else{

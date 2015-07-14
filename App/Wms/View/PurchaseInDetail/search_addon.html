@@ -40,12 +40,12 @@ $(function(){
 			_condition[i] = $(o).val();
 		});
 
-		var _purchase_code = _condition[0];
-		var _stock_in_code = _condition[1];
-		var _pro_code = _condition[2];
+		var _purchase_code = _condition[1];
+		var _stock_in_code = _condition[2];
+		var _pro_code = _condition[3];
 		var _status = $("select[name^='query']").val();
-		var _partner = $("input[name='partner_name']").val();
-		
+		var _partner = _condition[0];
+
 		window.location.href="/PurchaseInDetail/export?"+'purchase_code='+_purchase_code+'&stock_in_code='+_stock_in_code+'&pro_code='+_pro_code+'&status='+_status+'&partner='+_partner; 
 
 	});

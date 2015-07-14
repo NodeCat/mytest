@@ -623,7 +623,7 @@ class ProcessLogic {
         $param['company_id'] = $data['company_id']; //所属系统
         $param['refer_code'] = $data['code']; //关联加工单号
         $param['pid'] = 0; //关联采购单号ID
-        $param['batch_code'] = get_batch($data['code']);; //批次号
+        $param['batch_code'] = get_batch($param['code']); //批次号
         $param['partner_id'] = 0; //供应商
         $param['remark'] = $data['remark']; //备注
         $param['status'] = $status; //状态 
