@@ -853,7 +853,8 @@ class DistributionController extends CommonController {
         if (empty($idsArr)) {
             $this->msgReturn(false, '所有出库单已全部加入波次不可重复创建');
         }
-        $ids = array_filter($idsArr['trueResult']);//去除空元素liuguangping
+        //去除空元素liuguangping
+        $ids = array_filter($idsArr['trueResult']);
         $unids = array_filter($idsArr['falseResult']);
         if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
