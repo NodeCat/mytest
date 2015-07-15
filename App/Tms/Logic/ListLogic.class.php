@@ -117,6 +117,59 @@ class ListLogic{
             $data['delivery_count'] = $list;//配送状态统计
             $data['back_lists'] = $back_lists;//退货清单统计
             return $data;
+    }
+    
+    /**
+     * 获取司机配送客户的地址详情
+     * @param  string  $mobile      司机电话号码
+     * @return array   $geo_arrays  返回用户店铺位置信息
+     */
+    public function getCustomerAddress($mobile) {
+        //只显示当天的记录
+        $map['mobile'] = $mobile;
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['status'] = '1';
+        unset($M);
+        $M = M('tms_delivery');
+        $data = $M ->where($map)->select();
+        unset($map);
+        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+        $A = A('Common/Order','Logic');
+        $geo_array=array();
+        foreach ($data as $key => $value) {
+            // dump($value['dist_id']);
+            $map['dist_id'] = $value['dist_id'];
+            $map['itemsPerPage'] = $value['order_count'];
+            $orders = $A->order($map);
+            foreach ($orders as $keys => $values) {
+                $values['geo'] = json_decode($values['geo'],TRUE);
+                //如果地址为空的话跳过
+                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
+                    continue;
+                }
+                $geo = $values['geo'];
+                $geo['order_id'] = $value['id'];
+                $geo['user_id']  = $values['user_id'];
+                $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                // 只要有一单还没送完颜色就是0
+                if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                    if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                        $geo['color_type'] = 3;
+                    }
+                    else{
+                        $geo['color_type'] = 0;
+                    }      
+                }
+                else{
+                    $geo['color_type'] = 0;
+                }   
+                $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
+            }            
+        }
+        $geo_array  = array_values($geo_array);
+        return $geo_arrays;
     }	
 
 }

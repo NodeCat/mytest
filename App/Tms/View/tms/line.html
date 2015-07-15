@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>司机配送路线</title>
+	<style type="text/css">
+		body{
+			margin:0;
+			height:100%;
+			width:100%;
+			position:absolute;
+		}
+		#container{
+			margin-left: 10px;
+
+
+		}
+		#mapContainer{
+			top:0;
+			left:0;
+			right:0;
+			bottom:0;
+			width: 600px;
+			height: 500px;
+		}
+		
+		#tip{
+			bottom:20px;
+			left:0;
+			height:80px;
+			font-size:12px;
+		}
+		
+		#tip input[type='button']{
+			margin-top:10px;
+			height:28px;
+			line-height:28px;
+			outline:none;
+			text-align:center;
+			padding-left:5px;
+			padding-right:5px;
+			color:#FFF;
+			background-color:#0D9BF2;
+			border:0;
+			border-radius: 3px;
+			margin-top:5px;
+			margin-left:5px;
+			cursor:pointer;
+			margin-right:10px;
+		}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<div>
+		<h4>
+			路线：  <span>国贸（北京）</span>
+			客户量：<span>4</span>
+			总里程：<span>100.5KM</span>
+			总耗时：<span>4小时20分20秒<span>
+		</h4>
+	    </div>
+	<div id="mapContainer"></div>
+	<div id="tip">  
+		<input type="button" value="添加线覆盖物" onClick="javascript:polyline.setMap(map)"/>
+		<input type="button" value="删除线覆盖物" onClick="javascript:polyline.setMap(null)"/> 
+	</div>
+	
+	
+</div>
+</body>
+</html>
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=67f642a47ca5d2d0b4c4a272baeda00f"></script>
+	<script type="text/javascript">
+		var polyline;
+		//初始化地图对象，加载地图
+		var map = new AMap.Map("mapContainer",{
+				resizeEnable: true,
+			  	view: new AMap.View2D({
+		      	//center:new AMap.LngLat(116.397428,39.90923),//地图中心点
+		      	zoom:13//地图显示的缩放级别
+		     }),
+		});	
+		//添加线覆盖物
+		(function addLine() {
+		   var lineArr = new Array();//创建线覆盖物节点坐标数组
+		   lineArr.push(new AMap.LngLat("116.368904","39.913423")); 
+		   lineArr.push(new AMap.LngLat("116.382122","39.901176")); 
+		   lineArr.push(new AMap.LngLat("116.387271","39.912501")); 
+		   lineArr.push(new AMap.LngLat("116.398258","39.904600")); 
+		   polyline = new AMap.Polyline({ 
+			   path:lineArr, //设置线覆盖物路径
+			   strokeColor:"#3366FF", //线颜色
+			   strokeOpacity:1, //线透明度 
+			   strokeWeight:4, //线宽
+			   strokeStyle:"solid", //线样式
+			   strokeDasharray:[10,5] //补充线样式 
+		   }); 
+		   polyline.setMap(map);
+		 })();
+
+		//添加侧边控制条
+		map.plugin(["AMap.ToolBar"],function(){		
+		toolBar = new AMap.ToolBar();
+		map.addControl(toolBar);		
+		});
+
+		//在地图上标记点
+		(function addMarker(){
+			// marker.InfoWindow = true;
+			marker = new AMap.Marker({	
+				map:map,			  
+				//icon:"http://webapi.amap.com/images/marker_sprite.png",
+				//icon:"http://webapi.amap.com/images/custom_a_j.png",
+				// position:new AMap.LngLat({$data[0]},{$data[1]}),
+				position:new AMap.LngLat(116.405467,39.907761),
+			});
+			marker.setMap(map);
+			marker.setTitle('我是地图中心点哦~');  //在地图上添加点
+		})();
+	</script>
