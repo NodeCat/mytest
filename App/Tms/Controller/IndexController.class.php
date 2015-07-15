@@ -289,6 +289,7 @@ class IndexController extends Controller {
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
+            $oid = I('get.oid',0);
             $M = M('tms_delivery');
             $res = $M->find($id);
             
@@ -342,6 +343,10 @@ class IndexController extends Controller {
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
+            //默认展开订单数据
+            $this->id   = $id;
+            $this->oid  = $oid;
+
         }
         $this->title = "客户签收";
         $this->display('tms:orders');

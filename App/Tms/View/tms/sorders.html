@@ -80,18 +80,17 @@
           </case>
           <case value="已回款" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
-            data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
+            aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
           </case>
           <case value="已退货" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
-            data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
+            aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
           </case>
           <default />
           <a onclick="check(this)" class="list-group-item  panel-footer collapsed"
-          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false"
-          data-parent="#orders" aria-controls="info_{$vo.id}">
+          data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}">
         </switch>
         <!--{$vo.order_type_cn}-->
         <span class="order-id">
@@ -124,7 +123,7 @@
         </switch>
         <span id="show" style="color:red;">点击展开</span>
         </a>
-        <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.id}">
+        <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.refer_code}">
           <form class="order">
             <input type="hidden" name="id" value="{$vo.refer_code}" />
             <input type="hidden" name="dist_id" value="{$dist_id}" />
@@ -146,11 +145,11 @@
                       <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.single_price}" />
                       <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
                        
-                      <input type="number" name="quantity[{$v.id}]" min="0" class="form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
+                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
                       <span class="input-group-addon">{$v.unit_id}</span>
 
                 	    <neq name="v['close_unit']" value="$v['unit_id']">
-                      <input type="number" name="weight[{$v.id}]" min="0" class="form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
+                      <input type="number" name="weight[{$v.id}]" min="0" class="real form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
                       <span class="input-group-addon">{$v.close_unit}</span>
                   	  </neq>
 
@@ -238,7 +237,7 @@
               </case>
               <case value="已回款" break="1">
                 <!-- 打印小票 -->
-                <div class="panel-footer">
+                <div class="panel-footer" id="p_{$vo.refer_code}">
                     <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">
                         <div>
                             <a class="btn btn-primary btn-block js-btn-print" data-str='{$vo.printStr}'>打印小票</a>
@@ -268,6 +267,14 @@
                   </div>
                   <div class="clearfix">
                   </div>
+                </div>
+                <!-- 打印小票 -->
+                <div class="panel-footer">
+                    <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 center-block">
+                        <div>
+                            <a class="btn btn-default btn-block disabled">打印小票</a>
+                        </div>
+                    </div>
                 </div>
               </case>
             </switch>

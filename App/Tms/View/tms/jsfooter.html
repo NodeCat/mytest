@@ -1,5 +1,11 @@
-<script type="text/javascript"> 
-
+<script type="text/javascript">
+    //签收刷新后跳到之前的订单打印位置 
+    var oid = "{$oid}";
+    if(oid !== '0') {
+        $("a[data-oid="+oid+"]").trigger('click');
+        $('#info_'+oid+'').addClass('in');
+        location.href = location.href + "#p_" + oid;
+    }
     function ticketPrint(printStr){
       if(typeof HostApp == "undefined") {
         alert('使用打印功能请您先下载大厨网配送app.');
@@ -129,7 +135,7 @@
         if (i == 1) {
           var params = $(this).closest('form.order').serialize();
           var addr = "{:U('sign')}";
-
+          var oid = $(this).parents('.order').find('input[name=id]').val();
           $.ajax({
             url: addr,
             type: 'post',
@@ -143,7 +149,9 @@
                 } else {
                   HostApp.toast(msg.msg);
                 }
-                location.reload();
+                var action = "__ACTION__";
+                var url = action + "/id/{$id}/oid/"+oid;
+                location.href = url;
               } else {
                 alert_error(msg.msg);
               }
@@ -151,7 +159,6 @@
           });
         } else {
           alert('签收数量不能为空');
-
         }
       });
 

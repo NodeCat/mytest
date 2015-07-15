@@ -102,6 +102,7 @@ class DistController extends Controller {
     public function orders() {
         $id = I('get.id',0);
         if(!empty($id)) {
+            $oid = I('get.oid',0);
             $M = M('tms_delivery');
             $res = $M->find($id);
             if(empty($res)) {
@@ -192,10 +193,14 @@ class DistController extends Controller {
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $lists;
+            //默认展开订单数据
+            $this->id   = $id;
+            $this->oid  = $oid;
 
         }
         //小票数据
         $this->title = "客户签收";
+        $this->id = $id;
         $this->display('tms:sorders');
     }
 

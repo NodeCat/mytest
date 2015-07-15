@@ -7,8 +7,8 @@ use Think\Controller;
  */
 class BillOutApi extends CommApi {
 
-    protected $model;
-    protected $max_len = 32;//打印机单行最大宽度
+    private $model;
+    private $max_len = 32;//打印机单行最大宽度
     protected function _initialize () {}
 
     /**
@@ -182,7 +182,7 @@ class BillOutApi extends CommApi {
         $tmp[] = '支付方式：' . $pay_status;
         $tmp[] = $this->getPrintCommand('print');
         //订单金额
-        $final_price = '订单金额：' . $bill['final_price'] . '元';
+        $final_price = '订单金额：' . $this->formatePrice($bill['final_price']) . '元';
         $tmp[] = $final_price;
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
@@ -208,9 +208,9 @@ class BillOutApi extends CommApi {
             $tmp[] = $this->formateName($val['name']);
             $tmp[] = $this->getPrintCommand('print');
             $tmp[] = $this->getPrintCommand('right');
-            $pqs   = $val['actual_price'] . '   ';
+            $pqs   = $this->formatePrice($val['actual_price']) . '   ';
             $pqs  .= $val['actual_quantity'] .'   ';
-            $pqs  .= $val['actual_sum_price'] . '  ';
+            $pqs  .= $this->formatePrice($val['actual_sum_price']) . '  ';
             $tmp[] = $pqs;
             $tmp[] = $this->getPrintCommand('print');
         }
@@ -223,9 +223,9 @@ class BillOutApi extends CommApi {
                 $tmp[] = $this->formateName($val['name']);
                 $tmp[] = $this->getPrintCommand('print');
                 $tmp[] = $this->getPrintCommand('right');
-                $pqs   = $val['price'] . '   ';
+                $pqs   = $this->formatePrice($val['price']) . '   ';
                 $pqs  .= $val['quantity'] .'   ';
-                $pqs  .= $val['sum_price'] . '  ';
+                $pqs  .= $this->formatePrice($val['sum_price']) . '  ';
                 $tmp[] = $pqs;
                 $tmp[] = $this->getPrintCommand('print');
             }
@@ -247,10 +247,10 @@ class BillOutApi extends CommApi {
         $tmp = array();
         //优惠
         $tmp[] = $this->getPrintCommand('left');
-        $tmp[] = $this->formateLine('活动优惠', '-' . $bill['minus_amount']);
+        $tmp[] = $this->formateLine('活动优惠', '-' . $this->formatePrice($bill['minus_amount']));
         $tmp[] = $this->getPrintCommand('print');
         //运费
-        $tmp[] = $this->formateLine('运费', '+' . $bill['deliver_fee']);
+        $tmp[] = $this->formateLine('运费', '+' . $this->formatePrice($bill['deliver_fee']));
         $tmp[] = $this->getPrintCommand('print');
         //下划线
         $tmp[] = $this->getPrintCommand('center');
@@ -258,22 +258,20 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         //合计
-        $tmp[] = $this->formateLine('合计', $bill['deal_price'] . ' 元');
+        $tmp[] = $this->formateLine('合计', $this->formatePrice($bill['deal_price'] . ' 元'));
+        $tmp[] = $this->getPrintCommand('print');
+        //售后电话
+        $tmp[] = $this->getPrintCommand('left');
+        $tmp[] = '售后电话：400-8199-491';
+        $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         //确认信息
-        $tmp[] = $this->getPrintCommand('left');
         $tmp[] = '本人确认以上交易，已完成签收';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         //签名
         $tmp[] = '签名：';
-        $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('print');
-        //售后电话
-        $tmp[] = $this->getPrintCommand('right');
-        $tmp[] = '售后电话：400-8199-491';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
@@ -373,4 +371,12 @@ class BillOutApi extends CommApi {
         return $str; 
     }
     
+    /**
+     * [formatePrice 格式化金额为两位小数的形式]
+     * @param  [type] $price [description]
+     * @return [type]        [description]
+     */
+    public function formatePrice($price) {
+        return sprintf('%.2f',$price);
+    }
 }
