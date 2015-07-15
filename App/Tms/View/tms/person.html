@@ -91,7 +91,6 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
-  alert(1);
   //打印设置
   function settingPrinter() {
     if(typeof HostApp == "undefined") {
@@ -103,6 +102,7 @@ margin-top: 10px;
   }
   (function(){
   alert(1);
+  HostApp.toast('打印内容不能为空');
   //获取打印机名字
   function getPrinterName() {
     var  printerName = '选择打印机';
