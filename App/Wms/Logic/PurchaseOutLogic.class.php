@@ -136,7 +136,7 @@ class PurchaseOutLogic{
         }
         $stockOut = M('stock_bill_out');
         $addStockOut = array();
-        $addStockOut['code'] = get_sn('SO',$param['wh_id']);
+        $addStockOut['code'] = get_sn('RTSG',$param['wh_id']);
         $addStockOut['wh_id'] = $param['wh_id'];
         $addStockOut['type'] = 3;
         $addStockOut['refer_code'] = $param['refer_code'];
