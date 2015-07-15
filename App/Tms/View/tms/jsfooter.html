@@ -12,7 +12,7 @@
       }
       else {
         if(!HostApp.isBondPrinter()) {
-          alert('请先去个人中心绑定打印机型号.');
+          HostApp.toast('请先去个人中心绑定打印机型号.');
           return;
         }
         if(!printStr) {

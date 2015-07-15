@@ -60,7 +60,7 @@
 
   <div class="input-group">
     <span class="input-group-addon">打印设置</span>
-    <input type="text" autocomplete="off" value="WP-T630" type="text" class="form-control input-lg input-pda" id="printer-name" name="" placeholder="选择打印机" readonly>
+    <input type="text" autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="printer-name" name="" placeholder="选择打印机" readonly>
     <a class="input-group-addon btn btn-default js-btn-set" onclick="settingPrinter()">修改</a>
   </div>
 
@@ -104,16 +104,13 @@ margin-top: 10px;
 
   //获取打印机名字
   function getPrinterName() {
-    var  printerName = '';
+    var  printerName = '选择打印机';
     if(typeof HostApp != "undefined") {
       if(HostApp.isBondPrinter()) {
         printerName = HostApp.getBondPrinterName();
-        $('#printer-name').val(printerName);
       }
     }
-    else {
-        $('#printer-name').val(printerName);
-    }
+    $('#printer-name').val(printerName);
   }
   getPrinterName();
 
