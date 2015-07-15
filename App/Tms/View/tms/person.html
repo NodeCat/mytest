@@ -92,6 +92,15 @@ margin-top: 10px;
 </style>
 <script type="text/javascript">
   alert(1);
+  //打印设置
+  function settingPrinter() {
+    if(typeof HostApp == "undefined") {
+      alert('使用打印功能请您先下载大厨网配送app.');
+    }
+    else {
+      HostApp.settingPrinter();
+    }
+  }
   (function(){
   alert(1);
   //获取打印机名字
@@ -106,16 +115,6 @@ margin-top: 10px;
   }
   getPrinterName();
 
-  //打印设置
-  function settingPrinter() {
-    if(typeof HostApp == "undefined") {
-      alert('使用打印功能请您先下载大厨网配送app.');
-    }
-    else {
-      HostApp.settingPrinter();
-    }
-  }
-  
   x=document.getElementById('f');
   // 车型
       switch("{$data['car_type']}"){
