@@ -538,7 +538,7 @@ class IndexController extends Controller {
         $dist_code = $dist_code['dist_code'];
         unset($map);
         //查询条件为配送单id
-        $map['stock_wave_distribution_detail.pid'] = $dist_id;
+        $map['pid'] = $dist_id;
         //根据配送单id查配送详情单里与出库单相关联的出库单id
         $bill_out_id = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
         //若查出的出库单id非空
@@ -551,12 +551,10 @@ class IndexController extends Controller {
             $stock_bill_out = M('stock_bill_out')->where($map)->select();
             //若查出的出库单信息非空
             if(!empty($stock_bill_out)){
-                
+                $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
                 for($n = 0; $n < count($stock_bill_out); $n++){
                     //创建客退入库单
-                    $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
-                                            
-                        //$bill = $Min->create();
+                    unset($bill);
                     $bill['refer_code'] = $stock_bill_out[$n]['id'];//关联单据为出库id
                     $bill['code'] = get_sn('wms_back_in');   //生成客退入库单号
                     $bill['type'] = '3';    //入库类型为客退入库单
@@ -572,28 +570,47 @@ class IndexController extends Controller {
                     $bill['updated_time'] = get_time();
                     unset($map);
                     $map['pid'] = $stock_bill_out[$n]['id'];
-                        //根据出库单id查询出所有出库单详情信息
+                    //根据出库单id查询出所有出库单详情信息
                     $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
                     if(!empty($bill_out_detail)){
                         $A = A('Tms/List','Logic');
                         foreach ($bill_out_detail as $key => $val) {
                             $real_sign_qty = 0; //签收数量先置为0
                             unset($map);
-                            $map['bill_out_detail_id'] = $val['id'];
-                            $sign_data = M('tms_sign_in_detail')->where($map)->select();
-                            if(!empty($sign_data)){
-                                $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
-                                unset($map);
-                                $map['id'] = $sign_data['pid'];
-                                //若没有签收详情
-                                $status = M('tms_sign_in')->field('status')->where($map)->find();
-                                //若已经拒收
-                                if($status == 2){
+                            $map['bill_out_id'] = $val['pid'];
+                            //若没有签收详情
+                            $status = M('stock_wave_distribution_detail')->field('status')->where($map)->find();
+                            switch ($status) {
+                                case '0':
+                                    //若是已分拨状态
+                                    $this->error('此车单中有已分拨的订单，请提货并签收或拒收后再提出交货申请。');exit;
+                                    break;
+                                case '1':
+                                    //若是已装车状态
+                                    $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
+                                    break;
+                                case '2':
+                                    //若是已签收状态
+                                    unset($map);
+                                    $map['bill_out_detail_id'] = $val['id'];
+                                    $sign_data = M('tms_sign_in_detail')->where($map)->select();
+                                    if(!empty($sign_data)){
+                                        $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
+                                    }
+                                    break;
+                                case '3':
+                                    //若已经拒收
                                     $real_sign_qty = 0;
-                                }
-                            }else{  //若没有签收数据，则是正在配送中的订单
-                                continue;
+                                    break;
+                                case '4':
+                                    //若是已经完成
+                                    $this->error('此车单已经完成，无需交货。');exit;
+                                    break;
+                                default:
+                                    # code...
+                                    break;
                             }
+                            
                             //若没有退货
                             if(($val['delivery_qty'] - $real_sign_qty) <= 0){
                                 continue;
@@ -609,7 +626,7 @@ class IndexController extends Controller {
                             //$v['type'] = 'in';
                             $v['refer_code'] = $val['pid']; //写入相关联的出库单id
                             $v['pid'] = $bill['id'];
-                            $v['price_unit'] = $sign_data[0]['charge_unit'];  //计价单位留空
+                            $v['price_unit'] = $sign_data[0]['charge_unit'];  //计价单位
                             $bill['detail'][] = $v;
                             
                             $container['refer_code'] = $bill['code'];   //关联客退入库单号
@@ -636,10 +653,8 @@ class IndexController extends Controller {
                         }  
                         if(!empty($bill['detail'])){
                             $res = $Min->relation('detail')->add($bill); //写入客退入库单 
-                        }                 
-                         
-                    }
-                        
+                        }  
+                    }       
                 }
             }else{
                 $this->error("没有找到相应的订单");
