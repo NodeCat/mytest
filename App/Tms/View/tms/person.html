@@ -91,7 +91,8 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
-
+  var printerName = HostApp.getBondPrinterName();
+  alert(printerName);
   //打印设置
   function settingPrinter() {
     if(typeof HostApp == "undefined") {
