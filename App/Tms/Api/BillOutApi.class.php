@@ -269,9 +269,9 @@ class BillOutApi extends CommApi {
         $tmp[] = '本人确认以上交易，已完成签收';
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('print');
         //签名
         $tmp[] = '签名：';
+        $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
