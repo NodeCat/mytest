@@ -515,9 +515,9 @@ class DistributionController extends CommonController {
                 }
             }
         }
-        /*if (empty($pass_ids)) {
+        if (empty($pass_ids) && empty($reduce_ids)) {
             $this->msgReturn(false, '没有待复核的出库单');
-        }*/
+        }
         if (!empty($wavein_ids) || !empty($pick_ids)) {
             //波次中或带分拣出库单
             $unpass_ids = implode(',', $wavein_ids) . '|' . implode(',', $pick_ids);
