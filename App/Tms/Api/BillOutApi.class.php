@@ -258,7 +258,7 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         //合计
-        $tmp[] = $this->formateLine('合计', $this->formatePrice($bill['deal_price'] . ' 元'));
+        $tmp[] = $this->formateLine('合计', $this->formatePrice($bill['deal_price']) . ' 元');
         $tmp[] = $this->getPrintCommand('print');
         //售后电话
         $tmp[] = $this->getPrintCommand('left');
@@ -271,10 +271,6 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('print');
         //签名
         $tmp[] = '签名：';
-        $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('print');
-        $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getPrintCommand('print');
         return $tmp;
     }
