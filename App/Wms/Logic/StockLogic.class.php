@@ -60,7 +60,7 @@ class StockLogic{
     * $not_in_location_ids 过滤掉某些库位id
     */
     public function assignStockByFIFOWave($params = array()){
-        if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+        if(empty($params['wh_id']) || empty($params['pro_code'])){
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
@@ -158,8 +158,12 @@ class StockLogic{
      * )
      */
     public function outStockBySkuFIFOCheck($params = array()){
-        if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+        if(empty($params['wh_id']) || empty($params['pro_code'])){
             return array('status'=>0,'msg'=>'参数有误！');
+        }
+
+        if($params['pro_qty'] == 0){
+            return array('status'=>1);
         }
 
         $diff_qty = $params['pro_qty'];
@@ -208,7 +212,7 @@ class StockLogic{
      * )
      */
     public function outStockBySkuFIFO($params = array()){
-        if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+        if(empty($params['wh_id']) || empty($params['pro_code'])){
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
