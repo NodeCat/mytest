@@ -640,9 +640,6 @@ class DistributionController extends CommonController {
         $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
         M()->execute($sql);
         unset($map);
-        //修改采购退货已收货状态和实际收货量 liuguangping
-        $distribution_logic = A('PurchaseOut','Logic');
-        $distribution_logic->upPurchaseOutStatus($pass_ids); 
 
         //通知实时库存接口 需要遍历出库单详情
         $synch_hop_bill_out_ids = array();
@@ -853,8 +850,8 @@ class DistributionController extends CommonController {
         if (empty($idsArr)) {
             $this->msgReturn(false, '所有出库单已全部加入波次不可重复创建');
         }
-        $ids = $idsArr['trueResult'];
-        $unids = $idsArr['falseResult'];
+        $ids = array_filter($idsArr['trueResult']);//去除空元素liuguangping
+        $unids = array_filter($idsArr['falseResult']);
         if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
