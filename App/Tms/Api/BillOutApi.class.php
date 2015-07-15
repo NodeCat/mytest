@@ -198,7 +198,7 @@ class BillOutApi extends CommApi {
     public function getList($bill) {
         $tmp = array();
         $tmp[] = $this->getPrintCommand('left');
-        $tmp[] = $this->formateLine('商品名称', '单价  数量  小计  ');
+        $tmp[] = $this->formateLine('商品名称', '单价   数量   小计  ');
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getLineText('签收商品');
         $tmp[] = $this->getPrintCommand('print');
