@@ -233,7 +233,7 @@ class PurchaseController extends CommonController {
 
 		$this->msgReturn(1,'','',U('view','id='.$pid));
 	}
-	protected function before_edit() {//dump($this->auth);
+	protected function before_edit() {
 		$M = D('Purchase');
 		$id = I($M->getPk());
 		$map['pid'] = $id;
