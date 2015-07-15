@@ -1,17 +1,38 @@
 
 <div class="table-responsive" >
-    <form id="f" name="f" action="" method="post">
-    <div class="input-group">
-        <span class="input-group-addon">选择仓库</span>
-        <select autocomplete="off" value="" type="text" style="width:300px;" class="form-control input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-        <volist name='car.warehouse' id='storge'> 
-            <option value="{$key}">{$storge}</option>
-        </volist>
-        </select>
-        <button class='btn btn-primary' onclick="select()" >查询</button>
-        <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
+    <form id="f" name="f" action="" method="post" class="form-inline">
+    <div class="input-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 clearfix">
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择仓库</span>
+                <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <volist name='car.warehouse' id='storge'> 
+                    <option value="{$key}">{$storge}</option>
+                    </volist>
+                </select>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择平台</span>
+                <select autocomplete="off" class="form-control input-pda"  id="platform" name="platform">
+                    <volist name='car.car_from' id='storge'> 
+                    <option value="{$key}">{$storge}</option>
+                    </volist>
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择日期</span>
+                <input type="txt" rel="datepicker" name="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
+            </div>
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                <button class='btn btn-primary' onclick="select()" >查询</button>
+                <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
+            </div>
+        </div>
+        <div class=" col-lg-2 col-md-2 col-sm-2 col-xs-2"></div>
+            <button class="btn btn-success pull-right" onclick="" >编辑当天运费</botton>
+        </div>
+    </div>
 
-    </div> 
   </form>      
     <table class="table table-bordered" style="text-align:center">
         <!--<thead align="center">-->
@@ -30,6 +51,7 @@
             <th>已退货</th>
             <th>配送中</th>
             <th>已完成</th>
+            <th>当天运费</th>
             <th>备注</th>
           </tr>
         <!--</thead>-->
@@ -50,6 +72,7 @@
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>    
+            <td>300</td>    
             <td></td>
 
           </tr>
