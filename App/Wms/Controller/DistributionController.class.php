@@ -527,7 +527,7 @@ class DistributionController extends CommonController {
             if (!empty($confirm)) {
                 //继续操作
                 //删除此配送单下的这些出库单
-                $merge = array_merge($make_ids);
+                $merge = $make_ids;
                 $map['bill_out_id'] = array('in', $merge);
                 $map['pid'] = $result['id'];
                 $data['is_deleted'] = 1; //已删除
