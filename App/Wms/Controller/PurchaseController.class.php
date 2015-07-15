@@ -22,6 +22,15 @@ class PurchaseController extends CommonController {
 			'14' => '已驳回'
 		)
 	);
+
+	protected $outremark = array(
+                'quality'   =>"质量问题",
+                'wrong'     =>"收错货物",
+                'replace'   =>"替代销售",
+                'unsalable' =>"滞销退货",
+                'overdue'   =>"过期退货",
+                'other'     =>"其他问题",
+        );
 	
 	protected $columns = array (   
 		'id' => '',   
@@ -659,14 +668,27 @@ class PurchaseController extends CommonController {
     	if(!$result){
     		$this->msgReturn('0','没有满足要退货的货物！');
     	}
+    	$stock_logic = A('Stock','Logic');
+    	foreach ($result as $key => $vo) {
+    		$parma = array();
+    		$parma['pro_code']   = $vo['pro_code'];
+    		$parma['wh_id']      = $wh_id;
+    		$parma['batch_code'] = $vo['batch_code'];
+    		$parma['pro_code']   = $vo['pro_code'];
+    		if($flg == 'success'){
+            	$parma['stock_status'] = 'qualified';
+        	}elseif($flg == 'error'){
+            	$parma['stock_status'] = 'unqualified';
+       		}
+    		$pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
+    		$result[$key]['stock_qty'] = $pro_qty['sum'];
+    	}
     	$this->data = $result;
     	$this->p_code = $p_code;
     	$this->wh_id = $wh_id;
     	$this->partner_id = $partner_id;
-    	$this->out_remark = C('OUTREMARK');
+    	$this->out_remark = $this->outremark;
     	$this->flg = $flg;
-    	//dump($result);
-
     	$this->display('out');
     }
 
@@ -736,14 +758,6 @@ class PurchaseController extends CommonController {
 	        	if(M('stock_purchase_out_detail')->addAll($addAll)){
 	        		//@todo插入出库单表 出库单详细表 已经迁了退货出库单的审核批准方法下面
 	        		$this->msgReturn('0','退货成功！','',U('PurchaseOut/view',array('id'=>$result)));
-	        		/*if($purchaseOutLogic->addStockOut($addAll,I())){
-	        			$this->msgReturn('0','添加成功！','',U('index'));
-	        		}else{
-	        			//插入出库单表 出库单详细表失败，则删除退货单 详细
-	        			$purchaseoutM->where(array('id'=>$result))->save(array('is_deleted'=>1));
-	        			M('stock_purchase_out_detail')->where(array('pid'=>$result))->save(array('is_deleted'=>1));
-	        			$this->msgReturn('1','提货单创建失败');
-	        		}*/
 	        		
 	        	}else{
 	        		//做处理如果详细插入失败，则删除退货单

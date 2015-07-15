@@ -289,36 +289,7 @@ function getStockQtyByWpcode($pro_code,$wh_id){
     }
     return $res;
 }
-/**
- * getStockQtyPurchase 根据sku 和 仓库 批次 状态汇总库存量
- * @param String $pro_code sku code
- * @param Int $wh_id 仓库id
- * @param String batch_code 批次
- * @author liuguangping@dachuwang.com
- * @since 2015-06-13
- */
-function getStockQtyPurchase($pro_code,$wh_id,$batch_code,$flg='success'){
 
-    $m = M('Stock');
-    if(!$pro_code || !$wh_id || !$batch_code){
-        return 0;
-    }
-    $where = array();
-    $where['wh_id'] = $wh_id;
-    $where['pro_code'] = $pro_code;
-    $where['batch'] = $batch_code;
-    if($flg == 'success'){
-        $where['status'] = 'qualified';
-    }elseif($flg == 'error'){
-        $where['status'] = 'unqualified';
-    }
-    $res = $m->where($where)->sum('stock_qty');
-
-    if(!$res){
-        return 0;
-    }
-    return $res;
-}
 /**
  * getDownOrderNum 根据sku和仓库id汇总下单数
  * @param String $pro_code sku code
@@ -418,28 +389,3 @@ function arraySum($pArray,$pKey=''){
     return $result;
 }
 
-/**
- * getDoneQty 获取同一批次该商品的上架量
- * @param Int $wh_id 仓库id
- * @param String $batch_code 批次
- * @param String $pro_code 货物编码
- * @author liuguangping@dachuwang.com
- * @since 2015-06-13
- */
-function getDoneQty($wh_id,$batch_code,$pro_code){
-
-    $m = M('stock_bill_in_detail');
-    if(!$pro_code || !$wh_id || !$batch_code){
-
-        return 0;
-    }
-    $where = array();
-    $where['pro_code'] = $pro_code;
-    $where['wh_id'] = $wh_id;
-    $where['batch_code'] = $batch_code;
-    $done_qty = $m->where($where)->getField('done_qty');
-    if(!$done_qty){
-        return 0;
-    }
-    return $done_qty;
-}

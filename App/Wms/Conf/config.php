@@ -1,7 +1,7 @@
 <?php
 return array(
 	//'配置项'=>'配置值'
-    'LOAD_EXT_CONFIG' => 'warehouse,location,columns,locationarea,productbarcode,purchase_out', 
+    'LOAD_EXT_CONFIG' => 'warehouse,location,columns,locationarea,productbarcode', 
     'SITE_TITLE' =>'大厨网WMS系统 2.0',
 
 	//Database

@@ -990,19 +990,23 @@ class StockLogic{
         return array('status'=>1);
     }
 
-
     /**
-    * 根据货品号，货品名称，库位编号，库存状态，查询库存记录
-    * $params = array(
+    * 根据货品号，仓库编号，批次编号，货品名称，库位编号，库存状态，标示（flg=》不等于null 统计 =》null 查看）,查询库存记录
+    * $params = array( liuguangping
     *    'pro_code' => 'xxxx',
+    *    'wh_id'    => 'xxx'
     *    'pro_name' => 'xxxx',
+    *    'batch_code'=>'xxxx',
     *    'location_code' => 'xxxx',
-    *    'status' => 'xxxxx',
+    *    'stock_status' => 'xxxxx',
+    *    
     * )
     * return array $stock_infos
     */
-    public function getStockInfosByCondition($params = array()){
+    public function getStockInfosByCondition($params = array(), $flg = null){
         $pro_code = $params['pro_code'];
+        $wh_id    = $params['wh_id'];
+        $batch_code = $params['batch_code'];
         $pro_name = $params['pro_name'];
         $location_code = $params['location_code'];
         $stock_status = $params['stock_status'];
@@ -1011,6 +1015,14 @@ class StockLogic{
         //根据pro_code添加map
         if($pro_code){
             $map['stock.pro_code'] = array('LIKE','%'.$pro_code.'%');
+        }
+        //仓库编号
+        if($wh_id){
+            $map['wh_id'] = $wh_id;
+        }
+        //批次号
+        if($batch_code){
+            $map['batch'] = $batch_code;
         }
         //根据pro_name查询对应的pro_code
         if($pro_name){
@@ -1036,7 +1048,21 @@ class StockLogic{
             $map['stock.status'] = array('eq',$stock_status);
         }
 
-        $stock_infos = M('Stock')->where($map)->select();
+        $m = M('Stock')->where($map);
+        if($flg === null){
+            $stock_infos = $m->select();
+        }else{
+            $M = clone $m;
+            $result = $m->select();
+            $stock_infos['result'] = $result;
+            if(!$pro_code || !$wh_id || !$batch_code){
+                $stock_qty = 0;
+            }else{
+                $stock_qty   = $M->sum('stock_qty');
+            }
+            
+            $stock_infos['sum'] = $stock_qty;
+        }
 
         return $stock_infos;
     }
@@ -1399,4 +1425,5 @@ class StockLogic{
 
         return $data;
     }
+
 }

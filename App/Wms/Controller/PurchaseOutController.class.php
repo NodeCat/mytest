@@ -38,6 +38,14 @@ class PurchaseOutController extends CommonController {
           )
 
         );
+    protected $outremark = array(
+                'quality'   =>"质量问题",
+                'wrong'     =>"收错货物",
+                'replace'   =>"替代销售",
+                'unsalable' =>"滞销退货",
+                'overdue'   =>"过期退货",
+                'other'     =>"其他问题",
+        );
     protected $columns = array (
        'id'                => '',
        'rtsg_code'         => '采退单号',
@@ -125,12 +133,8 @@ class PurchaseOutController extends CommonController {
             'statusbar' => true
          );                                                                               
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
-            //'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"audit,cancelled,rejected"), //编辑
-            //'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"audit"),//通过 批准
-            //'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"audit"),//拒绝 驳回
-            //'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"audit,rejected")//作废
-        );
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true')
+            );
         $this->search_addon = true;
     }
 
@@ -202,6 +206,7 @@ class PurchaseOutController extends CommonController {
       $pmap['pid'] = $id;
       $this->mresult = $m->where($map)->find();
       $this->presult = $pm->where($pmap)->select();
+
       if(!$this->presult || !$this->mresult || !$id){
         $this->msgReturn('请正确操作');
       }
@@ -211,7 +216,26 @@ class PurchaseOutController extends CommonController {
       $this->wh_id = $this->mresult['wh_id'];
       $this->partner_id = $this->mresult['partner_id'];
       $this->remark = $this->mresult['remark'];
-      $this->out_remark = C('OUTREMARK');
+      $this->out_remark = $this->outremark;
+
+      $stock_logic = A('Stock','Logic');
+      $stockin_logic = A('StockIn','Logic');
+      $result = $this->presult;
+      foreach ($result as $key => $vo) {
+        $parma = array();
+        $parma['pro_code']   = $vo['pro_code'];
+        $parma['wh_id']      = $this->wh_id;
+        $parma['batch_code'] = $vo['batch_code'];
+        if($this->mresult['out_type'] == 'genuine'){
+          $parma['stock_status'] = 'qualified';
+        }elseif($this->mresult['out_type'] == 'defective'){
+          $parma['stock_status'] = 'unqualified';
+        }
+        $pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
+        $result[$key]['doneQty'] = $stockin_logic->getQtyForOn($vo['batch_code'],$vo['pro_code'],$this->wh_id);
+        $result[$key]['stock_qty'] = $pro_qty['sum'];
+      }
+      $this->presult = $result;
       if($this->mresult['out_type'] == 'genuine'){
           $flg = 'success';
       }elseif($this->mresult['out_type'] == 'defective'){
@@ -301,8 +325,6 @@ class PurchaseOutController extends CommonController {
         $this->editStatus($id,'tbr');
       }else{
         //插入出库单表 出库单详细表失败，则删除退货单 详细
-        //$purchaseoutM->where(array('id'=>$result))->save(array('is_deleted'=>1));
-        //M('stock_purchase_out_detail')->where(array('pid'=>$result))->save(array('is_deleted'=>1));
         $this->msgReturn('1','提货单创建失败，审核失败！');
       }
 

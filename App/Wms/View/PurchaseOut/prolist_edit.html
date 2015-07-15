@@ -37,7 +37,7 @@
               <input type="hidden" value="{$vo.pro_name}" name="pros[pro_name][]" class="pro_name form-control input-sm" >
               <input type="hidden" value="{$vo.pro_attrs}" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
               <input type="hidden" value="{$vo.price_unit}" name="pros[price_unit][]" class="price_unit form-control input-sm" >
-              <input type="hidden" value="{$vo.pro_code|getDoneQty=$wh_id,$vo[batch_code],###}" name="pros[done_qty][]" class="done_qty form-control input-sm" >
+              <input type="hidden" value="{$vo.doneQty}" name="pros[done_qty][]" class="done_qty form-control input-sm" >
               <input type="hidden" value="{$vo.pro_uom}" name="pros[pro_uom][]" class="pro_uom form-control input-sm" >
               <input type="hidden" value="{$vo.batch_code}" name="pros[batch_code][]" class="batch_code form-control input-sm" >
               <label type="text" value="{$vo.pro_code}" class="text-left p_res">{$vo.pro_code}</label>
@@ -54,16 +54,16 @@
               <label type="text" value="" class="text-left p_res">{$vo.price_unit}</label>
             </td>
             <td  style="width:10%;">
-              <label type="text" value="" class="text-left p_res">{$vo.pro_code|getDoneQty=$wh_id,$vo[batch_code],###}</label>
+              <label type="text" value="" class="text-left p_res">{$vo.doneQty}</label>
             </td>
             <td style="width:10%;">
               <label type="text" value="" class="text-left p_res">{$vo.pro_uom}</label>
             </td>
             <td style="width:10%;">
-              <label type="text" value="" class="text-left p_res" >{$flg|getStockQtyPurchase=$vo[pro_code],$wh_id,$vo[batch_code],###}</label>
+              <label type="text" value="" class="text-left p_res" >{$vo.stock_qty}</label>
             </td>
             <td  style="width:10%;">
-              <input type="text" attr="out_qty" name="pros[plan_return_qty][]" placeholder="数量"  value="{$vo.plan_return_qty}" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" data-value="{$flg|getStockQtyPurchase=$vo[pro_code],$wh_id,$vo[batch_code],###}"/>
+              <input type="text" attr="out_qty" name="pros[plan_return_qty][]" placeholder="数量"  value="{$vo.plan_return_qty}" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" data-value="{$vo.stock_qty}"/>
             </td>
 
 <!--             <td style="width:10%;" class="text-center">

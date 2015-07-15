@@ -531,7 +531,6 @@ class DistributionLogic {
             $type = $this->get_stock_bill_out_type($key);
             if ($type[$key] == 'RTSG') {
                 //采购正品退货单 可以不指定库位，指定批次出库 liuguangping
-                //$v = array(233,344,55);
                 $idsArr = array();
                 $idsArr['tureResult'] = array();
                 $idsArr['falseResult'] = array();
@@ -551,7 +550,6 @@ class DistributionLogic {
                 if($idsArr['tureResult']){
                     $idsArr['tureResult'] = implode(',', $idsArr['tureResult']);
                 }
-                //$idsArr = $stockout_logic->enoughaResult(implode(',', $v), 'WORK-01');
             } else {
                 $idsArr = $stockout_logic->enoughaResult(implode(',', $v));
             }

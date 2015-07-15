@@ -25,10 +25,7 @@ class PurchaseOutModel extends Model {
     protected $_map = array(
         
     );
-
     
-
-
     protected $_scope = array(
         'default'=>array(
             'where'=>array('stock_purchase_out.is_deleted'=>'0'),

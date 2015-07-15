@@ -59,10 +59,10 @@
               <label type="text" value="" class="text-left p_res">{$vo.pro_uom}</label>
             </td>
             <td style="width:10%;">
-              <label type="text" value="" class="text-left p_res" >{$flg|getStockQtyPurchase=$vo[pro_code],$wh_id,$vo[batch_code],###}</label>
+              <label type="text" value="" class="text-left p_res" >{$vo.stock_qty}</label>
             </td>
             <td  style="width:10%;">
-              <input type="text" attr="out_qty" name="pros[plan_return_qty][]" placeholder="数量"  value="" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" data-value="{$flg|getStockQtyPurchase=$vo[pro_code],$wh_id,$vo[batch_code],###}">
+              <input type="text" attr="out_qty" name="pros[plan_return_qty][]" placeholder="数量"  value="" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" data-value="{$vo.stock_qty}">
             </td>
 
             <td style="width:10%;" class="text-center">
