@@ -186,6 +186,68 @@ class PurchaseOutLogic{
         }
     }
 
+    /**
+     * 根据出库单id修改采购退货单状态
+     * upPurchaseOutStatus
+     *  
+     * @param Int $out_id 出库单id
+     * @author liuguangping@dachuwang.com
+     * @return Boolture;
+     * 
+     */
+    public function upPurchaseOutStatus($idArr = array()){
+        if(!$idArr) return FALSE;
+        $return = array();
+        foreach ($idArr as $out_id) {
+            if(!$out_id){
+                continue;
+            }
+            $M = M('stock_bill_out');
+            $map = array();
+            $where = array();
+            $map['id'] = $out_id;
+            $bill_out_result = $M->where($map)->find();
+            //用于多种类型出库单库存判断扩展 liuguangping
+            $distribution_logic = A('Distribution','Logic');
+            $key = $bill_out_result['type'];
+            $type = $distribution_logic->get_stock_bill_out_type($key);
+            if ($type[$key] == 'RTSG') {
+                $purchaseCode = $bill_out_result['refer_code'];
+                if($purchaseCode){
+                    $where['rtsg_code'] = $purchaseCode;
+                    $purSave['status'] = 'refunded';
+                    $purSave['updated_time'] = get_time();
+                    $purchase_out = M('stock_purchase_out');
+                    if($purchase_out->where($where)->save($purSave)){
+                        $where = array();
+                        $where['rtsg_code'] = $purchaseCode;
+                        $id = $purchase_out->where($where)->getField('id');
+                        //这里只有全部出完，否则就一个也不出
+                        $sql = "UPDATE stock_purchase_out_detail SET real_return_qty = plan_return_qty,updated_time='".get_time()."' WHERE pid=".$id;
+                        if(M()->execute($sql)){
+                            $return = TRUE;
+                        }else{
+                            $where = array();
+                            $purSave = array();
+                            $where['rtsg_code'] = $purchaseCode;
+                            $purSave['status'] = 'tbr';
+                            $purchase_out->where($where)->save($purSave);
+                            continue;
+                        }
+                    }else{
+                        continue;
+                    }
+                }else{
+                    continue;
+                }
+            }else{
+                continue;
+            }
+        }
+        return $return;
+
+    }
+
 }
 /* End of file PurchaseOut.class.php */
 /* Location: ./Application/Logic/PurchaseOut.class.php */
