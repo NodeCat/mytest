@@ -289,6 +289,7 @@ function getStockQtyByWpcode($pro_code,$wh_id){
     }
     return $res;
 }
+
 /**
  * getDownOrderNum 根据sku和仓库id汇总下单数
  * @param String $pro_code sku code
@@ -360,3 +361,31 @@ function getProcessByCode($pro_code,$wh_id,$delivery_date='',$delivery_ampm='',$
     }
     return $order_num;
 }
+
+/**
+ * array_sum 数组之和
+ * @param Array $array 处理的数组
+ * @param key $key 仓库id
+ * @author liuguangping@dachuwang.com
+ * @since 2015-06-13
+ */
+function arraySum($pArray,$pKey=''){
+
+    $result = 0;
+    if(is_array($pArray) && $pKey){
+        foreach($pArray as $key=>$value){
+            foreach ($value as $keys => $values) {
+                if($keys == $pKey){
+                    $result += $values;
+                }
+            }
+        }
+    }else{
+        foreach ($pArray as $key => $value) {
+            $result += $value;
+        }
+    }
+
+    return $result;
+}
+

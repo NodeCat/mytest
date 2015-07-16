@@ -22,9 +22,9 @@ class DistributionLogic {
             $return['msg'] = '请选择出库单类型';
             return $return;
         }
-        if ($post['stype'] != 1 && $post['stype'] != 4 && $post['stype'] != 5) {
+        if ($post['stype'] != 1 && $post['stype'] != 4 && $post['stype'] != 5 && $post['stype'] != 3) {
             //1 销售出库 5调拨出库
-            $return['msg'] = '目前只能选择销售出库,调拨出库,领用出库';
+            $return['msg'] = '目前只能选择销售出库,调拨出库,领用出库,采购正品出库';
             return $return;
         }
         if ($post['stype'] == 1) {
@@ -75,6 +75,7 @@ class DistributionLogic {
         $map['wh_id'] = session('user.wh_id');
         $map['status'] = 1; //状态 1带生产
         $map['type'] = $search['stype']; //出库单类型
+        $map['is_deleted'] = 0;
         if (!empty($search['type'])) {
             $map['order_type'] = $search['type']; //订单类型
         }
@@ -174,6 +175,7 @@ class DistributionLogic {
     
     /**
      * 替换订单sku信息
+     * @param int $dis 配送单ID
      */
     public function replace_sku_info($dis = 0) {
         $return = array();
@@ -185,12 +187,14 @@ class DistributionLogic {
         $det = M('stock_bill_out_detail');
         $distri = M('stock_wave_distribution_detail');
         $map['pid'] = $dis;
+        $map['is_deleted'] = 0;
         $detail = $distri->where($map)->select();
         unset($map);
         $result = array();
         $order_ids = array();
         foreach ($detail as $key => $value) {
             $map['id'] = $value['bill_out_id'];
+            $map['is_deleted'] = 0;
             $result[$key] = $M->where($map)->find();
             unset($result[$key]['id']);
             $result[$key]['detail'] = $this->get_out_detail($value['bill_out_id']);
@@ -365,7 +369,9 @@ class DistributionLogic {
         $det = M('stock_wave_distribution_detail');
         $M = M('stock_bill_out');
         foreach ($nid as $value) {
+            $map = array();
             $map['id'] = array('in', $value);
+            $map['is_deleted'] = 0;
             $stock_out = $M->where($map)->select();
             if (empty($stock_out)) {
                 $return['msg'] = '不存在的出库单';
@@ -411,13 +417,17 @@ class DistributionLogic {
             $data['order_count'] = count($value); //订单数
             $data['status'] = 1; //状态 未发运
             $data['is_printed'] = 0; //未打印
+            $data['line_count'] = 0; //总种类
+            $data['line_id'] = ''; //路线
+            $data['sku_count'] = 0; //sku总数量
+            $data['total_price'] = 0;  //总价格
             $i = 0;
             foreach ($stock_out as $val) {
                 $data['line_count'] += count($val['detail']); //总种类
                 $data['line_id'] .= $val['line_id'] . ','; //路线
+                $data['total_price'] += $val['total_amount']; //总价格
                 foreach ($val['detail'] as $v) {
                     $data['sku_count'] += $v['order_qty']; //sku总数量
-                    $data['total_price'] += $v['price'] * $v['order_qty']; //总价格
                 } 
                 if ($i < 1) {
                     //重复数据  取一次即可
@@ -461,6 +471,8 @@ class DistributionLogic {
             if ($M->create($data)) {
                 $M->where($map)->save();
             }
+            unset($map);
+            unset($data);
         }
        
         $return['status'] = true;
@@ -517,17 +529,37 @@ class DistributionLogic {
         foreach ($merge as $key => $v) {
             //用于多种类型出库单库存判断扩展
             $type = $this->get_stock_bill_out_type($key);
-            if ($type == 'MNO') {
-                //假如是加工出库单 可以这样指定加工出库区库位
-                $idsArr = $stockout_logic->enoughaResult(implode(',', $v), 'WORK-01');
+            if ($type[$key] == 'RTSG') {
+                //采购正品退货单 可以不指定库位，指定批次出库 liuguangping
+                $idsArr = array();
+                $idsArr['tureResult'] = array();
+                $idsArr['falseResult'] = array();
+                foreach ($v as $outId) {
+                    $batch_codeArr = M('stock_bill_out_detail')->field('batch_code')->where(array('pid'=>$outId))->find();
+                    if($batch_codeArr){
+                        $idsPurchaseArr = $stockout_logic->enoughaResult( $outId , null, $batch_codeArr['batch_code']);
+                        if($idsPurchaseArr['tureResult']){
+                            $idsArr['tureResult'] = array_merge($idsArr['tureResult'], explode(',', $idsPurchaseArr['tureResult']));
+                        }
+                        if($idsPurchaseArr['falseResult']){
+                            $idsArr['falseResult'] = array_merge($idsArr['falseResult'],$idsPurchaseArr['falseResult']);
+                        }
+                    }
+                    
+                }
+                if($idsArr['tureResult']){
+                    $idsArr['tureResult'] = implode(',', $idsArr['tureResult']);
+                }
             } else {
                 $idsArr = $stockout_logic->enoughaResult(implode(',', $v));
             }
+
             $trueArr = array_merge($trueArr, explode(',', $idsArr['tureResult']));
             $falseArr = array_merge($falseArr, $idsArr['falseResult']);
         }
         $return['trueResult'] = $trueArr;
         $return['falseResult'] = $falseArr;
+
         return $return;
     }
     
@@ -560,7 +592,7 @@ class DistributionLogic {
         $return = array('status' => false, 'msg' => '');
         
         $M = M('stock_bill_out');
-        $map['type'] = array('in', array(1, 4, 5)); //类型 1销售出库 4领用出库 5调拨出库
+        $map['type'] = array('in', array(1, 3, 4, 5)); //类型 1销售出库 3 采购正品出库 4领用出库 5调拨出库
         $map['status'] = 1; //状态 1带生产
         $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
@@ -624,7 +656,7 @@ class DistributionLogic {
         $param['is_deleted'] = 0;
         if ($main->create($param)) {
             $pid = $main->add();
-            if (!pid) {
+            if (!$pid) {
                 return $return;
             }
         } 
@@ -660,7 +692,7 @@ class DistributionLogic {
         [$item['city_name'], $item['address']],
         [$item['shop_name'], '', $item['realname'], "tel:{$item['mobile']}", '', '下单时间', $item['created_time']],
         ['销售', $item['bd']['name'], '销售电话', "tel:{$item['bd']['mobile']}", '',  '配送时间', "{$item['deliver_date']} {$item['deliver_time']}"],
-        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
         ['货号', '产品名称', '', '', '', '订货数量', '订货单位', '结算单价', '结算单位', '实收数量', '实收金额'],
         ];
     
@@ -685,7 +717,7 @@ class DistributionLogic {
         }
         //为了让尾部内容可以吸底，需要补充一些空行
         $detail_cnt = count($details);
-        while($detail_cnt < 12) {
+        while($detail_cnt < 8) {
             $details[] = [];
             $detail_cnt ++;
         }
@@ -693,36 +725,48 @@ class DistributionLogic {
         //合并表头和列表
         $csv_data = array_merge($csv_data, $details);
     
-    
+        $should_total_amount = 0.00;
+        //应收总金额
+        if($item['pay_status'] == 0){
+            $should_total_amount = sprintf("%.2f",$item['total_price'] - $item['minus_amount'] - $item['pay_reduce'] + $item['deliver_fee']);
+        }
+        
+        //订单备注
+        $remarks = (empty($item['remarks'])) ? '' : substr($item['remarks'],0,120);
         //尾部内容
         $tail_arr = [
-        ['订单备注', $item['remarks']],
-        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-        ['订单总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
-        ['活动优惠', '-' . $item['minus_amount']],
-        ['微信支付优惠', '-' . $item['pay_reduce']],
-        ['运费', '+' . $item['deliver_fee']],
+        ['订单备注', $remarks],
+        ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+        ['订单总价', '',sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '应收总金额' , '', $should_total_amount],
+        ['活动优惠', '', '-' . $item['minus_amount'], '', '', '', '', '',  '实收总金额', ''],
+        ['微信支付优惠', '', '-' . $item['pay_reduce']],
+        ['运费', '', '+' . $item['deliver_fee']],
         $line_need_pay,
         ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
         ['客户签字'],
         [],
-        ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
+        ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491'] ,''
         ];
     
         //大果定制需求
         if($item['site_name'] == '大果') {
+            $should_total_amount = 0.00;
+            //应收总金额
+            if($item['pay_status'] == 0){
+                $should_total_amount = sprintf("%.2f", $item['final_price']);
+            }
             $tail_arr = [
-            ['订单备注', $item['remarks']],
-            ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
-            ['预估总价', sprintf("%.2f", $item['total_price']), '', '', '', '', '', '', '',  '实收总金额'],
-            ['活动优惠', '- ' . $item['minus_amount']],
-            ['微信支付优惠', '-' . $item['pay_reduce']],
-            ['运费', '+' . $item['deliver_fee']],
-            ['应付总价', sprintf("%.2f", $item['final_price']), '', '', '', '', '', '', '', '以实际称重为准'],
+            ['订单备注', $remarks],
+            ["－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－"],
+            ['预估总价', '', sprintf("%.2f", $item['total_price']), '', '', '', '', '',  '实收总金额', ''],
+            ['活动优惠', '', '-' . $item['minus_amount']],
+            ['微信支付优惠', '', '-' . $item['pay_reduce']],
+            ['运费', '', '+' . $item['deliver_fee']],
+            ['应付总价', '', $should_total_amount, '', '', '', '', '', '以实际称重为准', ''],
             ['支付状态：' . $item['pay_status_cn'] . ', 支付方式：' . $item['pay_type_cn']],
             ['客户签字'],
             [],
-            ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491']
+            ['客户(白联) 存根(粉联)', '', '', '', '', '', '', '', '售后电话', 'tel:400-8199-491', '']
             ];
         }
     

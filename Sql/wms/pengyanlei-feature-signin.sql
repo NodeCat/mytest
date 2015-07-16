@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `tms_sign_in` (
   `pay_reduce` decimal(18,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '支付减免',
   `deliver_fee` decimal(18,2) unsigned DEFAULT '0.00' COMMENT '运费',
   `pay_status` smallint(2) NOT NULL DEFAULT '0' COMMENT '支付状态：－1，0货到付款1已付款',
-  `status` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '类型：0未处理1签收2拒收',
+  `status` VARCHAR( 45 ) NOT NULL DEFAULT '0' COMMENT '类型：0未处理1签收2拒收',
   `created_user` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '创建人',
   `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `tms_sign_in_detail` (
 
 -- 修改配送单详情增加 状态字段
 
-ALTER TABLE  `stock_wave_distribution_detail` ADD  `status` TINYINT( 2 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '0未处理1已签收2拒收' AFTER  `pid`;
+ALTER TABLE  `stock_wave_distribution_detail` ADD  `status` VARCHAR( 45 ) NOT NULL DEFAULT  '0' COMMENT  '0未处理1已签收2拒收' AFTER  `pid`;
 
 -- 修改配送单 状态字段 增加已签收状态
 

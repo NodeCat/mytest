@@ -55,8 +55,22 @@ class WavePickingLogic{
                     unset($map);
                     
                     $is_enough = true;
+
+                    //用于多种类型出库单库存判断扩展 加入采购正品退货liuguangping
+                    $distribution_logic = A('Distribution','Logic');
+                    $keys = $bill_out_info['type'];
+                    $type = $distribution_logic->get_stock_bill_out_type($keys);
+                    $batch_codeS = null;
+                    if ($type[$keys] == 'RTSG') {
+                        $batch_codeArr = M('stock_bill_out_detail')->field('batch_code')->where(array('pid'=>$bill_out_info['id']))->find();
+                        if($batch_codeArr){
+                            $batch_codeS = $batch_codeArr['batch_code'];
+                        }
+                        
+                    }
+
                     //查看出库单中所有sku是否满足数量需求
-                    $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id']);
+                    $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
                     //如果不够 处理下一个订单
                     if(!$is_enough){
                         //把订单状态置为待生产 拒绝标识改为2 缺货
@@ -87,7 +101,17 @@ class WavePickingLogic{
                         $result_arr[$code_mark]['pro_qty_sum'] += $bill_out_detail_info['order_qty'];
                         
                         //检查应当从哪个库位出库 并锁定库存量 assign_qty
-                        $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave(array('wh_id'=>session('user.wh_id'),'pro_code'=>$bill_out_detail_info['pro_code'],'pro_qty'=>$bill_out_detail_info['order_qty'],'not_in_location_ids'=>$not_in_location_ids));
+                        //用于多种类型出库单库存判断扩展 加入采购正品退货liuguangping
+                        $param = array();
+                        $param = array(
+                            'wh_id'=>session('user.wh_id'),
+                            'pro_code'=>$bill_out_detail_info['pro_code'],
+                            'pro_qty'=>$bill_out_detail_info['order_qty'],
+                            'not_in_location_ids'=>$not_in_location_ids,
+                            'batch_code'=>$batch_codeS
+                            );
+                        
+                        $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave($param);
                         
                         foreach($assign_stock_infos['data']['stock_info'] as $assign_stock_info){
                             //pro_code

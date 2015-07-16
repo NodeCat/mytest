@@ -33,7 +33,7 @@
 
 <script type="text/javascript">
 $(function(){
-	$('#data-table tbody tr td').click(function(){
+	$('#table-content').delegate('#data-table tbody tr td','click',function(){
 		if(!$(this).is('.input') && $(this)[0].cellIndex == 5){
 			var _toolbar_tr_is_edit = {$toolbar_tr_is_edit};
 			if(!_toolbar_tr_is_edit){
