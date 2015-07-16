@@ -63,7 +63,8 @@
 	<div id="mapContainer"></div>
 	<div id="tip">  
 		<input type="button" value="添加线覆盖物" onClick="javascript:polyline.setMap(map)"/>
-		<input type="button" value="删除线覆盖物" onClick="javascript:polyline.setMap(null)"/> 
+		<input type="button" value="删除线覆盖物" onClick="javascript:polyline.setMap(null)"/>
+		<input type="button" value="测距" onClick="javascript:ruler1.turnOn();"/>  
 	</div>
 	
 	
@@ -84,15 +85,17 @@
 		//添加线覆盖物
 		(function addLine() {
 		   var lineArr = new Array();//创建线覆盖物节点坐标数组
-		   lineArr.push(new AMap.LngLat("116.368904","39.913423")); 
-		   lineArr.push(new AMap.LngLat("116.382122","39.901176")); 
+		   <volist name='points' id='point'>
+		   lineArr.push(new AMap.LngLat("{$point.lng}","{$point.lat}"));
+		   </volist>
+		   /*lineArr.push(new AMap.LngLat("116.382122","39.901176")); 
 		   lineArr.push(new AMap.LngLat("116.387271","39.912501")); 
-		   lineArr.push(new AMap.LngLat("116.398258","39.904600")); 
+		   lineArr.push(new AMap.LngLat("116.398258","39.904600")); */
 		   polyline = new AMap.Polyline({ 
 			   path:lineArr, //设置线覆盖物路径
 			   strokeColor:"#3366FF", //线颜色
 			   strokeOpacity:1, //线透明度 
-			   strokeWeight:4, //线宽
+			   strokeWeight:3, //线宽
 			   strokeStyle:"solid", //线样式
 			   strokeDasharray:[10,5] //补充线样式 
 		   }); 
@@ -108,14 +111,31 @@
 		//在地图上标记点
 		(function addMarker(){
 			// marker.InfoWindow = true;
-			marker = new AMap.Marker({	
-				map:map,			  
+			<volist name='address' id='addr'>
+
+			marker{$i} = new AMap.Marker({	
 				//icon:"http://webapi.amap.com/images/marker_sprite.png",
 				//icon:"http://webapi.amap.com/images/custom_a_j.png",
 				// position:new AMap.LngLat({$data[0]},{$data[1]}),
-				position:new AMap.LngLat(116.405467,39.907761),
+				position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
+				
 			});
-			marker.setMap(map);
+			marker{$i}.setMap(map);
+			</volist>
 			marker.setTitle('我是地图中心点哦~');  //在地图上添加点
 		})();
+
+		map.plugin(["AMap.RangingTool"],function(){ 
+	         ruler1 = new AMap.RangingTool(map);
+			 AMap.event.addListener(ruler1,"end",function(e){
+				ruler1.turnOff();
+			 });
+		});
+		// 线路描边
+		(function addOutline(){
+		  polyline.setOptions({
+		    isOutline:true,
+		    outlineColor:"#000066"
+		  });
+		 })();
 	</script>

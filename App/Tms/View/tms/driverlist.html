@@ -51,7 +51,9 @@
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>
-            <td></td>    
+            <td>{$k.distance}</br>
+            <a href="{:U('GpsTrack/showLine@api.tms.dachuwang.net?id='.$k['id'].'&mobile='.$k['mobile'])}">轨迹</a>
+            </td>    
             <td></td>
 
           </tr>

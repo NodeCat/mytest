@@ -17,6 +17,7 @@ class DispatchController extends Controller{
         'unsign_orders'=> '已退货',
         'delivering'   => '配送中',
         'sign_finished'=> '已完成',
+        'distance'     => '总里程/km',
         'mark'         => '备注',
          
     );

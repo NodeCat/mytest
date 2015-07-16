@@ -121,19 +121,19 @@ class ListLogic{
     
     /**
      * 获取司机配送客户的地址详情
-     * @param  string  $mobile      司机电话号码
-     * @return array   $geo_arrays  返回用户店铺位置信息
+     * @param  string $mobile     司机电话号码
+     * @param  string $id         签到id（车次id）
+     * @return array  $geo_arrays 返回用户店铺位置信息
      */
-    public function getCustomerAddress($mobile) {
-        //只显示当天的记录
+    public function getCustomerAddress($mobile,$id) {
+        //只显示当次配送的记录
+        $map['id']     = $id;
+        $sign_msg = M('tms_sign_list')->where($map)->find();
+        unset($map);
         $map['mobile'] = $mobile;
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
-        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['status'] = '1';
-        unset($M);
-        $M = M('tms_delivery');
-        $data = $M ->where($map)->select();
+        $data = M('tms_delivery')->where($map)->select();
         unset($map);
         $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
         $A = A('Common/Order','Logic');
@@ -168,7 +168,7 @@ class ListLogic{
                 $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
             }            
         }
-        $geo_array  = array_values($geo_array);
+        $geo_arrays  = array_values($geo_array);
         return $geo_arrays;
     }	
 
