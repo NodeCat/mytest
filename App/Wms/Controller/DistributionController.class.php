@@ -661,6 +661,7 @@ class DistributionController extends CommonController {
         }
         unset($map);
         unset($data);
+
         if(!empty($pass_ids)){
             //更新库存充足的出库单状态 AND 出库单出库量
             $map['id'] = array('in', $pass_ids);
@@ -676,6 +677,9 @@ class DistributionController extends CommonController {
             $pass_ids_string = implode(',', $pass_ids);
             $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
             M()->execute($sql);
+            //修改采购退货已收货状态和实际收货量 liuguangping        
+            $distribution_logic = A('PurchaseOut','Logic');        
+            $distribution_logic->upPurchaseOutStatus($pass_ids);
         }
         
         if(!empty($reduce_ids)){
@@ -699,7 +703,6 @@ class DistributionController extends CommonController {
                 unset($data);
             }
         }
-        
 
         //通知实时库存接口 需要遍历出库单详情
         $synch_hop_bill_out_ids = array();
@@ -911,8 +914,9 @@ class DistributionController extends CommonController {
         if (empty($idsArr)) {
             $this->msgReturn(false, '所有出库单已全部加入波次不可重复创建');
         }
-        $ids = $idsArr['trueResult'];
-        $unids = $idsArr['falseResult'];
+        //去除空元素liuguangping
+        $ids = array_filter($idsArr['trueResult']);
+        $unids = array_filter($idsArr['falseResult']);
         if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
         }
