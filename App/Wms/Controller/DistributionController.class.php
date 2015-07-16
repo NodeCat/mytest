@@ -515,19 +515,19 @@ class DistributionController extends CommonController {
                 }
             }
         }
-        if (empty($pass_ids)) {
+        if (empty($pass_ids) && empty($reduce_ids)) {
             $this->msgReturn(false, '没有待复核的出库单');
         }
         if (!empty($wavein_ids) || !empty($pick_ids)) {
             //波次中或带分拣出库单
             $unpass_ids = implode(',', $wavein_ids) . '|' . implode(',', $pick_ids);
             $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=wave'));
-        } elseif (!empty($make_ids) || !empty($reduce_ids)) {
+        } elseif (!empty($make_ids)) {
             //弹出没有分拣的出库单
             if (!empty($confirm)) {
                 //继续操作
                 //删除此配送单下的这些出库单
-                $merge = array_merge($make_ids, $reduce_ids);
+                $merge = $make_ids;
                 $map['bill_out_id'] = array('in', $merge);
                 $map['pid'] = $result['id'];
                 $data['is_deleted'] = 1; //已删除
@@ -578,18 +578,51 @@ class DistributionController extends CommonController {
             }
         }
         //统计SKU数量扣减库存
-        //获取出库详情
-        $sku_detail = $D->get_out_detail($pass_ids);
+        //获取库存充足的出库详情
+        $pass_sku_detail = $D->get_out_detail($pass_ids);
+        //获取库存不足的出库详情
+        $reduce_sku_detail = $D->get_out_detail($reduce_ids);
 
         //统计
         $merg = array(); //sku统计结果
-        foreach ($sku_detail as $v) {
+        //整理库存充足的出库详情
+        foreach ($pass_sku_detail as $v) {
             if (!isset($merg[$v['pro_code']])) {
                 $merg[$v['pro_code']] = $v;
             } else {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
+
+        //整理库存不足的出库详情
+        foreach ($reduce_sku_detail as $v) {
+            $total_stock_qty = 0;
+            //查询PACK区内所有该sku的库存量
+            $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
+                array(
+                    'pro_code'=>$v['pro_code'],
+                    'location_code'=>'PACK',
+                    'stock_status'=>'qualified')
+            );
+            //累加库存量集合
+            foreach($stock_infos as $stock_info){
+                $total_stock_qty += $stock_info['stock_qty'] - $stock_info['assign_qty'];
+            }
+
+            //如果库存不足 记录下实际发货量
+            $reduce_delivery_qty_list = array();
+            if($total_stock_qty < intval($v['order_qty'])){
+                $v['order_qty'] = $total_stock_qty;
+                $reduce_delivery_qty_list[$v['pid']] = $total_stock_qty;
+            }
+
+            if (!isset($merg[$v['pro_code']])) {
+                $merg[$v['pro_code']] = $v;
+            } else {
+                $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
+            }
+        }
+
         //获取去拣货区库位
         $loc = M('location');
         $map['code'] = 'PACK';
@@ -628,25 +661,53 @@ class DistributionController extends CommonController {
         }
         unset($map);
         unset($data);
-        //更新出库单状态 AND 出库单出库量
-        $map['id'] = array('in', $pass_ids);
-        $data['status'] = 2; //已出库
-        $data['dis_mark'] = 1; //已分拨
-        if ($stock->create($data)) {
-            $stock->where($map)->save();
+
+        if(!empty($pass_ids)){
+            //更新库存充足的出库单状态 AND 出库单出库量
+            $map['id'] = array('in', $pass_ids);
+            $data['status'] = 2; //已出库
+            $data['dis_mark'] = 1; //已分拨
+            if ($stock->create($data)) {
+                $stock->where($map)->save();
+            }
+            unset($map);
+            unset($data);
+
+            //更新库存充足的发货量
+            $pass_ids_string = implode(',', $pass_ids);
+            $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
+            M()->execute($sql);
+            //修改采购退货已收货状态和实际收货量 liuguangping        
+            $distribution_logic = A('PurchaseOut','Logic');        
+            $distribution_logic->upPurchaseOutStatus($pass_ids);
         }
-        //更新发货量
-        $pass_ids_string = implode(',', $pass_ids);
-        $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
-        M()->execute($sql);
-        unset($map);
-        //修改采购退货已收货状态和实际收货量 liuguangping        
-        $distribution_logic = A('PurchaseOut','Logic');        
-        $distribution_logic->upPurchaseOutStatus($pass_ids);
+        
+        if(!empty($reduce_ids)){
+            //更新库存不足的出库单状态 AND 出库单出库量
+            $map['id'] = array('in', $reduce_ids);
+            $data['status'] = 2; //已出库
+            $data['dis_mark'] = 1; //已分拨
+            $data['refused_type'] = 2; //缺货
+            if ($stock->create($data)) {
+                $stock->where($map)->save();
+            }
+            unset($map);
+            unset($data);
+
+            //更新库存不充足的发货量
+            foreach($reduce_delivery_qty_list as $pid => $reduce_delivery_qty){
+                $map['pid'] = $pid;
+                $data['delivery_qty'] = $reduce_delivery_qty;
+                M('stock_bill_out_detail')->where($map)->save($data);
+                unset($map);
+                unset($data);
+            }
+        }
 
         //通知实时库存接口 需要遍历出库单详情
         $synch_hop_bill_out_ids = array();
-        $map['id'] = array('in', $pass_ids);
+        $pass_reduce_ids = array_merge($pass_ids,$reduce_ids);
+        $map['id'] = array('in', $pass_reduce_ids);
         $bill_out_infos = M('stock_bill_out')->where($map)->select();
         foreach($bill_out_infos as $bill_out_info){
             if(is_numeric($bill_out_info['refer_code']) && $bill_out_info['refer_code'] > 0){
@@ -667,7 +728,7 @@ class DistributionController extends CommonController {
                 $notice_params['wh_id'] = session('user.wh_id');
                 $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
                 $notice_params['type'] = 'outgoing';
-                $notice_params['qty'] = $bill_out_detail_info['order_qty'];
+                $notice_params['qty'] = $bill_out_detail_info['delivery_qty'];
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
                 unset($notice_params);
             }
