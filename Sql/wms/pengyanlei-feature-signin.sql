@@ -32,7 +32,7 @@ ALTER TABLE  `stock_wave_distribution` CHANGE  `status`  `status` VARCHAR( 45 ) 
 
 ALTER TABLE  `stock_wave_distribution_detail` ADD (
  `status` VARCHAR( 45 ) NOT NULL DEFAULT  '0' COMMENT  '0已分波1已装车2已签收3已拒收4已完成',
- `sign_driver` VARCHAR( 32 ) NOT NULL DEFAULT  '' COMMENT  '签收人',
+ `sign_driver` VARCHAR( 32 ) NOT NULL DEFAULT  '''''' COMMENT  '签收人',
  `sign_time` DATETIME NOT NULL DEFAULT  '0000-00-00 00:00:00' COMMENT  '签收时间',
  `sign_msg` VARCHAR( 320 ) NOT NULL DEFAULT  '''''' COMMENT  '签收备注',
  `receivable_sum` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT  '应收小计',
