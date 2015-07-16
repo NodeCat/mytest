@@ -16,7 +16,7 @@ class IndexController extends Controller {
         }
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject');
+            $action2 = array('delivery','orders','sign','reject','signature');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();
@@ -688,5 +688,23 @@ class IndexController extends Controller {
         $this->ajaxReturn($geo_arrays);
     }
 
+    //保存客户签名
+    public function signature() {
+        $map = array(
+            'suborder_id' => I('post.oid/d',0),
+            'signature'   => I('post.path','','trim'),
+        );
+        if($map['suborder_id'] && $map['signature']) {
+            $A  = A('Common/Order','Logic');
+            $re = $A->save_signature($map);
+        }
+        else {
+            $re = array(
+                'code' => -1,
+                'msg'  => '订单ID或签名不能为空'
+            );
+        }
+        $this->ajaxReturn($re);
+    }
 
 }

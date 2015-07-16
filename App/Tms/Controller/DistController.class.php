@@ -450,4 +450,56 @@ class DistController extends Controller {
         $this->display('tms:orderlist');
     }
 
+    //保存客户签名
+    public function signature() {
+        $suborder_id = I('post.oid/d',0);
+        $signature   = I('post.path','','trim');
+        if($suborder_id && $signature) {
+            //查询出库单ID
+            $M = M('stock_bill_out');
+            $map['refer_code'] = $suborder_id;
+            $map['is_deleted'] = 0;
+            $bill_out = $M->field('id')
+            ->where($map)
+            ->find();
+            if($bill_out) {
+                unset($map['refer_code']);
+                $map['bill_out_id'] = $bill_out['id'];
+                //更新签名图片至配送单详情表
+                $s = M('stock_wave_distribution_detail')
+                ->where($map)
+                ->save(array('signature' => $signature));
+                //保存签名成功
+                if($s) {
+                    $re = array(
+                        'code' => 0,
+                        'msg'  => '保存签名成功'
+                    );
+                }
+                //保存签名失败
+                else {
+                    $re = array(
+                        'code' => -1,
+                        'msg'  => '保存签名失败'
+                    );
+                }
+            }
+            //订单号对应出库单失败
+            else {
+                $re = array(
+                    'code' => -1,
+                    'msg'  => '获取出库单数据失败'
+                );
+            }
+        }
+        //传入参数错误
+        else {
+            $re = array(
+                'code' => -1,
+                'msg'  => '订单ID或签名不能为空'
+            );
+        }
+        $this->ajaxReturn($re);
+    }
+
 }

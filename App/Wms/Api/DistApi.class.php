@@ -46,11 +46,12 @@ class DistApi extends CommApi {
                 }
             }
         }
-        //查询条件
-        if(!empty($detail_ids)) {
-            $map['id'] = array('in', $detail_ids);
-            $limit = count($detail_ids);
+        if(empty($detail_ids)) {
+            return $this->_return(array(), $json);
         }
+        //查询条件
+        $map['id'] = array('in', $detail_ids);
+        $limit = count($detail_ids);
         $map['is_deleted'] = 0;
         $order_conditions = $map['order'];
         unset($map['dist_id']);
