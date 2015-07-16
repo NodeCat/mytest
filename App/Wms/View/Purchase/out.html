@@ -13,9 +13,7 @@
   <div class="panel-body">
     <div class="row">
         <div class="col-lg-6">
-          <h3>新建 采购
-          <if condition="$flg eq 'success'">正品
-          <elseif condition="$flg eq 'error'" />残次
+          <h3>新建 采购<if condition="$flg eq 'success'">正品<elseif condition="$flg eq 'error'" />残次
           </if>退货单
           <input type="hidden" value="{$flg}" name="flg" class="pro_uom form-control input-sm" >
           </h3>
