@@ -1,12 +1,5 @@
- <ol class="breadcrumb">
-  <li><a href="{:U('Pda/index')}">首页</a></li>
-  <li><a href="{:U('__CONTROLLER__/over')}">配送完成</a></li>
-  <li class="active">发运异常</li>
-</ol>
+<include file="Pda:nav-cur" />
 
-<div class="page-header text-center">
-  <h3>发运异常 <small></small></h3>
-</div>
 <div class="alert alert-danger text-center hidden" role="alert"></div>
 <form class="form-horizontal form-ajax form-pda form-scan" action="/Distribution/over" method="post">
   <input type="hidden" name="dist_code" value="{$dist_code}">

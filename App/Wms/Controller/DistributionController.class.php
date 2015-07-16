@@ -443,8 +443,11 @@ class DistributionController extends CommonController {
      */
     public function over() {
         if (!IS_POST) {
+            $this->cur = '配送完成';
+            C('LAYOUT_NAME','pda');
             $this->title = '请输入配送单号';
-            $this->display();
+            $tmpl = 'Distribution:over';
+            $this->display($tmpl);
             return;
         }
         $post = I('post.dist_code');
@@ -573,7 +576,13 @@ class DistributionController extends CommonController {
                     $M->where($map)->save();
                 }
             } else {
-                $unpass_ids .= implode(',', $make_ids) . '|' . implode(',', $reduce_ids) . '|' . $post;
+                $unpass_ids .= implode(',', $make_ids) . '|' . $post;
+                $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
+            }
+        } elseif (!empty($reduce_ids)) {
+            //弹出提示框
+            if (empty($confirm)) {
+                $unpass_ids .= implode(',', $reduce_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
             }
         }
@@ -802,6 +811,10 @@ class DistributionController extends CommonController {
         }
         $this->assign('confirm', $confirm);
         $this->assign('data', $data);
+        $this->cur = '发运异常';
+        C('LAYOUT_NAME','pda');
+        $this->title = '发运异常';
+        $tmpl = 'Distribution:unpass';
         $this->display();
     }
     
