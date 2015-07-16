@@ -583,7 +583,7 @@ class DistributionController extends CommonController {
             //弹出提示框
             if (empty($confirm)) {
                 $unpass_ids .= implode(',', $reduce_ids) . '|' . $post;
-                $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
+                $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=reduce'));
             }
         }
         //统计SKU数量扣减库存
@@ -686,9 +686,6 @@ class DistributionController extends CommonController {
             $pass_ids_string = implode(',', $pass_ids);
             $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
             M()->execute($sql);
-            //修改采购退货已收货状态和实际收货量 liuguangping        
-            $distribution_logic = A('PurchaseOut','Logic');        
-            $distribution_logic->upPurchaseOutStatus($pass_ids);
         }
         
         if(!empty($reduce_ids)){
@@ -743,6 +740,10 @@ class DistributionController extends CommonController {
             }
             unset($map);
         }
+
+        //修改采购退货已收货状态和实际收货量 liuguangping        
+        $distribution_logic = A('PurchaseOut','Logic');        
+        $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
 
         $this->msgReturn(true, '已完成', '', U('over'));
     }
