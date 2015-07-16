@@ -10,7 +10,7 @@
      <a class="navbar-brand" href="＃">仓储管理系统</a>
   </div>
   <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-    <ul class="nav navbar-nav">
+    <ul class="nav navbar-nav navlist">
       <notempty name="Think.session.user.uid">
           <include file="Menu:top"/>
       </notempty>
@@ -63,3 +63,81 @@ unset($items[session('user.wh_id')]);
   </div>
 </div>
 </nav>
+<script>
+  switch(window.location.href){
+    case "http://wms.dachuwang.net/Index/index.htm":
+    case "http://wms.dachuwang.net":
+         $(".navlist li:eq(0)").addClass("active");
+         break;
+    case "http://wms.dachuwang.net/Process/index.htm":
+    case　"http://wms.dachuwang.net/ProcessRatio/index.htm":
+         $(".navlist li:eq(1)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/Purchase/index.htm":
+    case "http://wms.dachuwang.net/StockIn/pindex.htm":
+    case "http://wms.dachuwang.net/Partner/index.htm":
+    case "http://wms.dachuwang.net/PurchaseInDetail/index.htm":
+    case "http://wms.dachuwang.net/PurchaseRefund/index.htm":
+    case "http://wms.dachuwang.net/PurchaseOut/index.htm":
+    case "http://wms.dachuwang.net/Settlement/index.htm":
+         $(".navlist li:eq(2)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/StockIn/index.htm":
+         $(".navlist li:eq(3)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/StockOut/index.htm":
+    case "http://wms.dachuwang.net/Distribution/index.htm":
+    case "http://wms.dachuwang.net/DistDetail/index.htm":
+    case "http://wms.dachuwang.net/Wave/index.htm":
+    case "http://wms.dachuwang.net/Pick/index.htm":
+         $(".navlist li:eq(4)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/Stock/index.htm":
+    case "http://wms.dachuwang.net/Adjustment/index.htm":
+    case "http://wms.dachuwang.net/StockMoveDetail/index.htm":
+         $(".navlist li:eq(5)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/Inventory/index.htm":
+         $(".navlist li:eq(6)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/Product/index.htm":
+    case "http://wms.dachuwang.net/ProductBarcode/index.htm":
+    case "http://wms.dachuwang.net/Warehouse/index.htm":
+    case "http://wms.dachuwang.net/LocationArea/index.htm":
+    case "http://wms.dachuwang.net/Location/index.htm":
+    case "http://wms.dachuwang.net/LocationType/index.htm":
+    case "http://wms.dachuwang.net/User/index.htm":
+    case "http://wms.dachuwang.net/AuthRole/index.htm":
+    case "http://wms.dachuwang.net/AuthUserRule/edit.htm":
+         $(".navlist li:eq(7)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/Insales/index.htm":
+    case "http://wms.dachuwang.net/Purchases/index.htm":
+         $(".navlist li:eq(8)").addClass("active");
+          break;
+    case "http://wms.dachuwang.net/StockBillInType/index.htm":
+    case "http://wms.dachuwang.net/StockBillOutType/index.htm":
+         $(".navlist li:eq(9)").addClass("active");
+          break;
+
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
