@@ -439,16 +439,17 @@ class ProcessController extends CommonController {
             //查询加工单是否存在
             $map['code'] = $post;
             $process = M('erp_process')->where($map)->find();
+            
             if (empty($process)) {
                 //不存在
                 $this->msgReturn(false, '不存在的加工单');
             }
-            if ($process['status'] == 3) {
+            if ($process['status'] != 2 && $process['status'] != 3) {
                 //生产完成
                 $this->msgReturn(false, '已生产完成');
-            } elseif ($process['status'] != 2) {
-                //未审核加工单
-                $this->msgReturn(false, '未审核的加工单');
+            }
+            if ($process['over_task'] >= $process['task']) {
+                $this->msgReturn(false, '已生产完成');
             }
             unset($map);
             $param = array(
