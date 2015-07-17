@@ -10,9 +10,14 @@ use Think\Controller;
 class GpsTrackApi extends CommApi {
 	// 获取司机路线信息
 	public function getAddress() {
-        $data = I('json.');
+        $data = $_POST['location'];
+
+        //$data = I('post.location');
+        print_r($data);exit;
+        //$data=trim($data,"\"");
 		//$data = '{"id":"3","points":[{"time":"afdsf","lng":116.382122,"lat":39.901176},{"time":"nsdfb","lng":116.387271,"lat":39.912501},{"time":"2015-07-18 01:58:28","lng":116.398258,"lat":39.904600}]}';
 		//$data  = json_decode($data,true);
+        print_r($data);exit;
 		$A = A('Tms/Gps','Logic'); 
         $i=0;
         $distance = 0;
