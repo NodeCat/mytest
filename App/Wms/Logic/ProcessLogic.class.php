@@ -461,6 +461,8 @@ class ProcessLogic {
         }
         $result['true_qty'] = $real_qty; 
         $result['pro_code'] = $result['p_pro_code'];
+        $result['main_status'] = $result['status'];
+        unset($result['status']);
         //物料清单
         $ratio = $this->get_ratio_by_pro_code($sku_code);
         if (empty($ratio)) {

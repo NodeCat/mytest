@@ -563,7 +563,13 @@ class ProcessController extends CommonController {
         if (empty($process)) {
             $this->msgReturn(false, '不存在的加工单');
         }
-        
+        if (($process['main_status'] != 2 && $process['main'] != 3) || $process['over_task'] >= $process['task']) {
+            //状态2 为已生效 3已加工
+            $this->msgReturn(false, '此加工单已经生产完成');
+        }
+        if ($process['status'] == $process['real_qty'] >= $process['plan_qty']) {
+            $this->msgReturn(false, '此SKU已经加工完成');
+        }
         if ($real_qty + $process['real_qty'] > $process['plan_qty']) {
             $this->msgReturn(false, '加工数量不可大于待入库数量');
         }
