@@ -349,7 +349,7 @@ class IndexController extends Controller {
 
         }
         $this->title = "客户签收";
-        $this->signature_url = C('TMS_API_PATH') . '/signin/signature';
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
