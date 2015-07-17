@@ -531,7 +531,7 @@ class ProcessLogic {
      * @param string $type 入库 OR 出库
      */
     public function get_prefix($name = '', $type = 'in') {
-        $return = '';
+        $return = 0;
         
         if (empty($name)) {
             return $return;
@@ -550,7 +550,7 @@ class ProcessLogic {
         $result = $M->where(array('type' => $res['prefix']))->find();
         
         if (!empty($result)) {
-            $result = $result['id'];
+            $return = $result['id'];
         }
         
         return $return;
@@ -901,7 +901,7 @@ class ProcessLogic {
         }
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
-        if ($assist->create($data)) {
+        if ($assist->create($detail)) {
             $affect = $assist->where($map)->save();
         }
     
@@ -945,13 +945,12 @@ class ProcessLogic {
         if ($res['status'] != 33) {
             $detail['status'] = 33;
         }
-        $detail['delivery_qty'] = $data['true_qty'] + $res['delivery_qty'];
+        $detail['done_qty'] = $data['true_qty'] + $res['done_qty'];
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         if ($assist->create($detail)) {
             $affect = $assist->where($map)->save();
         }
-    
         $return = true;
         return $return;
     }
@@ -968,8 +967,9 @@ class ProcessLogic {
         if (empty($id) || empty($data)) {
             return $return;
         }
-        $main = M('stock_bill_in');
-        $assist = M('stock_bill_in_detail');
+        $main = M('erp_process_in');
+        $assist = M('erp_process_in_detail');
+        
         $map['id'] = $id;
         $result = $main->where($map)->find();
         if ($result['status'] != 2) {
@@ -983,7 +983,6 @@ class ProcessLogic {
                 }
             }
         }
-        unset($map);
         $map['pid'] = $id;
         $map['pro_code'] = $data['pro_code'];
         //计算单价
@@ -998,7 +997,7 @@ class ProcessLogic {
         }
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
-        if ($$assist->create($data)) {
+        if ($assist->create($detail)) {
             $affect = $assist->where($map)->save();
         }
         $return = true;
@@ -1035,7 +1034,7 @@ class ProcessLogic {
         $map = array();
         $map['pid'] = $id;
         $map['p_pro_code'] = $data['p_pro_code'];
-        $res = $main->where($map)->find();
+        $res = $assist->where($map)->find();
         $detail['real_qty'] = $res['real_qty'] + $data['real_qty'];
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
