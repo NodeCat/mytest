@@ -19,6 +19,7 @@ class SignInApi extends CommApi
             $this->ajaxReturn($re);
         }
         $path = $this->uploadImg($img);
+        dump($path);die();
         if ($path) {
             $map['suborder_id'] = $suborder_id;
             $map['sign_img'] = $path;
