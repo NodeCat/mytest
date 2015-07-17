@@ -24,10 +24,6 @@ class DistApi extends CommApi {
         return $this->_return($dist);
     }
     
-    public function signature() {
-        dump($_FILES);die();
-    }
-
     /**
      * [lists 出库单列表]
      * @param  array  $map [查询条件，排序条件]

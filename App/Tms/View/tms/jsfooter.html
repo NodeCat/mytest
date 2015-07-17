@@ -7,7 +7,7 @@
         location.href = location.href + "#p_" + oid;
     }
     //打印小票
-    function ticketPrint(printStr, oid){
+    function ticketPrint(printStr, oid, url){
       if(typeof HostApp == "undefined") {
         alert('使用打印功能请您先下载大厨网配送app.');
       }
@@ -20,7 +20,7 @@
             HostApp.toast('打印内容不能为空');
             return;
         }
-        HostApp.printTicket(printStr,oid);
+        HostApp.printTicket(printStr,oid, url);
       }
     }
     function goToGaodeMap(lat, lng) {
@@ -193,9 +193,10 @@
     $('.js-btn-print').on('click',function(){
         var printStr = $(this).data('str');
         var oid = $(this).data('id');
+        var url = "{$signature_url}";
         oid = oid.toString();
         printStr = JSON.stringify(printStr);
-        ticketPrint(printStr, oid);
+        ticketPrint(printStr, oid, url);
     })
 
     function check(x) {
