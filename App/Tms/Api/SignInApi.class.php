@@ -10,7 +10,9 @@ class SignInApi extends CommApi
     public function signature() 
     {
         $suborder_id = I('post.order_id/d',0);
-        $img = $_FILES['image'];
+        $img = file_get_contents('php://input');
+        file_put_contents('/1.jpg',$img, true);
+        dump($img);die();
         if (empty($suborder_id) || empty($img)) {
             $re = array(
                 'status' => -1,
@@ -19,7 +21,6 @@ class SignInApi extends CommApi
             $this->ajaxReturn($re);
         }
         $path = $this->uploadImg($img);
-        dump($path);die();
         if ($path) {
             $map['suborder_id'] = $suborder_id;
             $map['sign_img'] = $path;
