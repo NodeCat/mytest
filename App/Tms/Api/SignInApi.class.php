@@ -9,6 +9,6 @@ class SignInApi extends CommApi
 {
     public function signature() 
     {
-        dump($_FIELS);die();
+        dump($_FILES);die();
     }
 }
