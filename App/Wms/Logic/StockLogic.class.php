@@ -1014,7 +1014,7 @@ class StockLogic{
         $batch_code = $params['batch_code'];
         $pro_name = $params['pro_name'];
         $location_code = $params['location_code'];
-        $no_location_code = $params['no_location_code'];
+        $no_in_location_area_code = $params['no_in_location_area_code'];
         $stock_status = $params['stock_status'];
 
         $map = array();
@@ -1041,9 +1041,9 @@ class StockLogic{
         }
         //根据库位编号 查询对应的location_id
         if($location_code){
-            //升级方法 liuguangpng 
-            $location_codeArr = explode(',', $location_code);
-            $location_ids = A('Location','Logic')->getLocationIdByAreaName($location_codeArr);
+            $location_map['code'] = array('LIKE','%'.$location_code.'%');
+            $location_ids = M('Location')->where($location_map)->getField('id',true);
+
             if(empty($location_ids)){
                 $location_ids = array(0);
             }
@@ -1051,9 +1051,9 @@ class StockLogic{
             $map['stock.location_id'] = array('in',$location_ids);
         }
         //排斥库位 liuguangping
-        if($no_location_code){
+        if($no_in_location_area_code){
             //升级方法 liuguangpng 
-            $location_ids = A('Location','Logic')->getLocationIdByAreaName($no_location_code);
+            $location_ids = A('Location','Logic')->getLocationIdByAreaName($no_in_location_area_code);
             if(empty($location_ids)){
                 $location_ids = array(0);
             }
