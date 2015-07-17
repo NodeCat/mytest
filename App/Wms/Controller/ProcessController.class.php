@@ -567,7 +567,7 @@ class ProcessController extends CommonController {
             //状态2 为已生效 3已加工
             $this->msgReturn(false, '此加工单已经生产完成');
         }
-        if ($process['status'] == $process['real_qty'] >= $process['plan_qty']) {
+        if ($process['real_qty'] >= $process['plan_qty']) {
             $this->msgReturn(false, '此SKU已经加工完成');
         }
         if ($real_qty + $process['real_qty'] > $process['plan_qty']) {
