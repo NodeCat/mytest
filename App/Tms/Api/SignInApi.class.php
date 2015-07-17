@@ -9,7 +9,8 @@ class SignInApi extends CommApi
 {
     public function signature() 
     {
-        $suborder_id = I('post.order_id/d',0);
+        // $suborder_id = I('post.order_id/d',0);
+        unset($_POST['order_id']);
         $img = $GLOBALS['HTTP_RAW_POST_DATA'];
         file_put_contents('/1.jpg',$img, true);
         dump($img);die();
