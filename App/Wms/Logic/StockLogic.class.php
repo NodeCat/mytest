@@ -76,7 +76,7 @@ class StockLogic{
             $map['location_id'] = array('not in',$params['not_in_location_ids']);
         }
 
-        $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+        $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
 
         //检查所有的 库存量 是否满足 出库量
@@ -183,7 +183,7 @@ class StockLogic{
             $map['stock.status'] = $location_status['status'];
             unset($location_map);
         }
-        $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+        $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
 
         //检查所有的 库存量 是否满足 出库量
@@ -228,7 +228,7 @@ class StockLogic{
             $map['stock.status'] = $location_status['status'];
             unset($location_map);
         }
-        $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+        $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
 
         //检查所有的 库存量 是否满足 出库量
@@ -455,14 +455,15 @@ class StockLogic{
         $row['pro_code'] = $pro_code;
         $row['batch'] = $batch;
         $row['status'] =$status;
-        $row['product_date'] = $product_date;
         
-        $res = $stock->where($row)->find();
+        $stock_info = $stock->where($row)->find();
         
-        if(empty($res)) {
+        if(empty($stock_info)) {
             $row['prepare_qty'] = 0;
             $row['stock_qty'] = $pro_qty;
-            $row['assign_qty'] = 0;    
+            $row['assign_qty'] = 0;
+            //增加生产日期
+            $row['product_date'] = $product_date;
             
             $data = $stock->create($row);
 
@@ -470,22 +471,32 @@ class StockLogic{
 
             $log_old_qty = 0;
             $log_new_qty = $pro_qty;
+            unset($data);
         }
         else{
-            $log_old_qty = $res['stock_qty'];
-            $log_new_qty = $res['stock_qty'] + $pro_qty;
+            $log_old_qty = $stock_info['stock_qty'];
+            $log_new_qty = $stock_info['stock_qty'] + $pro_qty;
 
-            $map['id'] = $res['id'];
-            $data['stock_qty'] = $res['stock_qty'] + $pro_qty;
+            //增加数量
+            $map['id'] = $stock_info['id'];
+            $data['stock_qty'] = $stock_info['stock_qty'] + $pro_qty;
             $data = $stock->create($data,2);
             $res = $stock->where($map)->save($data);
+            unset($data);
+
+            //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+            if(strtotime($stock_info['product_date']) > strtotime($product_date) || $stock_info['product_date'] == '0000-00-00 00:00:00'){
+                $data['product_date'] = $product_date;
+                $data = $stock->create($data,2);
+                $res = $stock->where($map)->save($data);
+                unset($data);
+            }
             unset($map);
         }
         if($res == false) {
             return false;
         }
         unset($row);
-        unset($data);
 
         //减待上架库存 增加已上量
         $map['refer_code'] = $refer_code;
@@ -559,7 +570,7 @@ class StockLogic{
         $map['location_id'] = $param['src_location_id'];
         $map['pro_code'] = $param['pro_code'];
         $map['wh_id'] = $param['wh_id'];
-        $src_stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->group('batch')->select();
+        $src_stock_list = M('Stock')->where($map)->order('product_date')->group('batch')->select();
         unset($map);
 
         //检查变化量是否大于总库存量，如果大于则报错

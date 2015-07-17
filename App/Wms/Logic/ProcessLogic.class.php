@@ -141,11 +141,7 @@ class ProcessLogic {
         $map['wh_id'] = $data['wh_id'];
         $map['pro_code'] = $data['pro_code'];
         $map['stock.status'] = 'qualified'; //合格
-		$stock_list = $stock->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')
-		                        ->where($map)
-		                        ->order('stock_batch.product_date')
-		                        ->field('stock.*,stock_batch.product_date')
-		                        ->select();
+		$stock_list = $stock->where($map)->order('product_date')->select();
 		unset($map);
 		//先进先出
 		$container = array();

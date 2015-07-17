@@ -176,6 +176,14 @@ class StockInLogic{
 		if($status == 'unqualified'){
 			M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$qty);
 		}
+		//是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+        if(strtotime($line['product_date']) > strtotime($product_date) || $line['product_date'] == '0000-00-00 00:00:00'){
+            $stock_bill_in_detail = D('stock_bill_in_detail');
+            $data['product_date'] = $product_date;
+            $data = $stock_bill_in_detail->create($data,2);
+            $stock_bill_in_detail->where($map)->save($data);
+            unset($data);
+        }
 		unset($map);
 
 		if($res == true){
@@ -390,7 +398,7 @@ class StockInLogic{
 		$map['pro_code'] = $code;
 		$map['is_deleted'] = '0';
 		$detail = M('stock_bill_in_detail')
-		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty')
+		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty,product_date')
 		->group('pro_code')->where($map)->find();
 		return $detail;
 	}
