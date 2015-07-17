@@ -201,7 +201,7 @@ class DistController extends Controller {
         //小票数据
         $this->title = "客户签收";
         $this->id = $id;
-        $this->signature_url = C('TMS_API_PATH') . '/signin/signature';
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:sorders');
     }
 
