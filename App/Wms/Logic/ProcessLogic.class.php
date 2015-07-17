@@ -928,7 +928,7 @@ class ProcessLogic {
     
         $map['id'] = $id;
         $result = $main->where($map)->find();
-        if ($result['status'] != 2) {
+        if ($result['status'] != 33) {
             $param['status'] = 33; //已上架
             $param['updated_time'] = get_time();
             $param['updated_user'] = session('user.uid');
