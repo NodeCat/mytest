@@ -11,7 +11,7 @@ class SignInApi extends CommApi
     {
         $suborder_id = I('post.order_id/d',0);
         $img = $_FILES['image'];
-        $dest = "../" . $img["name"];
+        $dest = "/upload/" . $img["name"];
         move_uploaded_file($img["tmp_name"],$dest);
         dump(file_get_contents($dest));die();
         if (empty($suborder_id) || empty($img)) {
