@@ -1,73 +1,48 @@
-<div id="c_sku_info" role="tabpanel">
+<div role="tabpanel">
   <!-- Nav tabs -->
   <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">父SKU信息</a></li>
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">货品</a></li>
   </ul>
 
   <!-- Tab panes -->
   <div class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="home">
-      <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
-      <thead>
-        <th style="width:10%;">父SKU</th><th style="width:40%;">产品名称</th><th style="width:40%;">规格</th><th style="width:10%;">数量</th>
-      </thead>
-      <tbody>
-      <tr class="tr-tpl">
-      <td style="width:10%;">
-        {$p_sku_info.pro_code}<!--<input type="text" name="p_sku_code" value="{$p_sku_info.pro_code}" class=" typeahead form-control input-sm" readonly="">-->
-      </td>
-      <td  style="width:40%;">
-      	{$p_sku_info.wms_name}
-      </td>
-      <td  style="width:40%;">
-      	{$p_sku_info.pro_attrs_str}
-      </td>
-      <td style="width:10%;" id="pro_plan_qty">
-      	
-      </td>
-
-      </tbody>
-      </table>
-    </div>
-  </div>
-
-</br>
-
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">子SKU信息</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="home">
-      <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
-      <thead>
-        <th style="width:10%;">子SKU</th><th style="width:40%;">产品名称</th><th style="width:40%;">规格</th><th style="width:10%;">数量</th>
-      </thead>
-      <tbody>
-      <volist name="c_sku_info" id="c_sku">
-      <tr class="tr-tpl">
-      <td style="width:10%;back">
-      	{$c_sku.pro_code}
-      </td>
-      <td style="width:40%;">
-      	{$c_sku.wms_name}
-      </td>
-      <td style="width:40%;">
-      	{$c_sku.pro_attrs_str}
-      </td>
-      <td style="width:10%;">
-      	{$ratio[$c_sku['pro_code']] * $plan_qty}
-      </td>
+    	<table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
+  		<thead>
+  			<th>产品名称</th>
+  			<th>计划加工量</th>
+  			<th>操作</th>
+  		</thead>
+  		<tbody>
+        <tr class="hidden tr-tpl">
+        <td style="width:50%;">
+	        <input type="hidden" value="" name="pros[0][pro_code]" class="pro_code form-control input-sm" >
+	        <input type="hidden" value="" name="pros[0][pro_name]" class="pro_name form-control input-sm" >
+	        <input type="hidden" value="" name="pros[0][pro_attrs]" class="pro_attrs form-control input-sm" >
+	        <input type="text" id="typeahead" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" >
+	    </td>
+        <td  style="width:10%;">
+            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1" class="form-control input-sm text-left" autocomplete="off">
+        </td>
+        <td style="width:10%;" class="text-center">
+            <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+        </td>
       </tr>
-      </volist>
-
-      </tbody>
-      </table>
+  			<tr>
+  				<td colspan="6"><a class="add-pro" href="#">添加一个产品</a></td>
+  			</tr>
+  		</tbody>
+  		</table>
     </div>
   </div>
+</div>
+  </div>
 
+  <div class="row">
+    <div class="tab-content">
+      <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
+    </div>
+  </div>
 
 </div>
 <style type="text/css">
@@ -75,8 +50,94 @@
   padding: 1px 10px;
   font-size: 13px;
 }
-#table-pro td {
-	background: #fff;
-}
 
+</style>
+<script type="text/javascript">
+
+$(function(){
+
+typehead();
+var i = 0;
+$('.add-pro').on('click',function(){
+	i++;
+    var val = $('.tr-cur .pro_code').val();
+    if(val == '' && val != null) {
+      $('.tr-cur .pro_names').focus();
+      alert('请输入产品编号选择产品。');
+      return;
+    }
+    $('.tr-cur').removeClass('tr-cur');
+    var tr = $('#table-pro tr.tr-tpl').clone();
+    tr.removeClass('tr-tpl');
+    tr.addClass('tr-cur');
+    tr.removeClass('hidden');
+    $('#table-pro tr:eq(2)').after(tr);
+    typehead();
+    $('#table-pro tr.tr-cur .pro_names').focus();
+    $('#table-pro tr:eq(3)').find('input:not(#typeahead)').each(function() {
+    		var old_name = $(this).attr('name');
+    		var new_name = old_name.replace('0', i);
+    		$(this).attr('name', new_name);
+    });
+    $('#table-pro tr:eq(3)').find('select').attr('name', 'pros[' + i + '][pro_uom]');
+});
+
+
+$('#table-pro').delegate('.pro_names','focus',function(){
+  $('.tr-active').removeClass('tr-active');
+  $(this).parents('tr').addClass('tr-active');
+});
+
+$('#table-pro').delegate('input','click',function(){
+  $(this).select();
+});
+
+});
+
+
+function typehead() {
+$('.tr-cur .pro_names').typeahead({ 
+    display: 'name',
+    val: 'val',
+    items:10,
+    ajax: {
+      url:"{:U('Process/match_code')}",
+      triggerLength: 1,
+      method: 'post',
+      preDispatch: function(data) {
+          return { 'q': data };
+      },
+      preProcess: function(data) {
+        var n =$.parseJSON(data);
+        $.each(n,function(a,b){
+          n[a]['val'] = JSON.stringify(b['val']);
+        }); 
+        return n;
+      }
+    },
+    itemSelected:function(item,val,text) {
+        val = $.parseJSON(val);
+        $('#table-pro .tr-active .pro_code').val(val['code']);
+        $('#table-pro .tr-active .pro_name').val(val['name']);
+        $('#table-pro .tr-active .pro_attrs').val(val['attrs']);
+        $('.tr-active').removeClass('tr-active');
+    }
+  	});
+	//删除操作
+	$('.tab-content').delegate( '.btn-delete', 'click', function(){
+	  $(this).closest('tr').remove();
+	});
+}
+</script>
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
 </style>

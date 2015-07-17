@@ -529,7 +529,7 @@ class DistributionLogic {
         foreach ($merge as $key => $v) {
             //用于多种类型出库单库存判断扩展
             $type = $this->get_stock_bill_out_type($key);
-            if ($type == 'MNO') {
+            if ($type[$key] == 'MNO') {
                 //假如是加工出库单 可以这样指定加工出库区库位
                 $idsArr = $stockout_logic->enoughaResult(implode(',', $v), 'WORK-01');
             } else {

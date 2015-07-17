@@ -488,7 +488,7 @@ class StockLogic{
         //减待上架库存 增加已上量
         $map['refer_code'] = $refer_code;
         $map['pro_code'] = $pro_code;
-        $map['pro_uom'] = $pro_uom;
+        //$map['pro_uom'] = $pro_uom;
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
         unset($map);
@@ -519,7 +519,7 @@ class StockLogic{
         $stock_move_data = $stock_move->create($stock_move_data);
         $stock_move->data($stock_move_data)->add();
 
-        return ture;
+        return true;
     }
 
     /**
