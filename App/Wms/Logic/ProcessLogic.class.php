@@ -712,7 +712,7 @@ class ProcessLogic {
             $detail['pro_name'] = $value['pro_name']; //SKU名称
             $detail['pro_attrs'] = $value['pro_attrs']; //SKU规格
             $detail['expected_qty'] = $value['plan_qty']; //预计数量
-            $detail['prepare_qty'] = 0; //待上架量
+            $detail['prepare_qty'] = $value['plan_qty']; //待上架量
             $detail['done_qty'] = 0; //已上架量
             $detail['pro_uom'] = $value['uom_name'];
             $detail['price'] = 0;
