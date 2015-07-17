@@ -373,7 +373,7 @@ class StockInController extends CommonController {
 			//$pros[$key]['moved_qty'] = $qtyIn;
 			//$moved_qty_total += $qtyIn;
 			//预计收获量
-			$expected_qty_total += $val['pro_qty'];
+			$expected_qty_total += $val['expected_qty'];
 			//已收总量
 			$receipt_qty_total += $getQtyForReceipt;
 			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
@@ -392,9 +392,9 @@ class StockInController extends CommonController {
 
 		$data['qtyForPrepare'] = $qtyForPrepare;
 		//预计收获量
-		$data['expected_qty_total'] = $expected_qty_total;
+		$data['expected_qty_total'] = sprintf('%.2f',$expected_qty_total);
 		//已收总量
-		$data['receipt_qty_total'] = $receipt_qty_total;
+		$data['receipt_qty_total'] = sprintf('%.2f',$receipt_qty_total);
 
 		//$data['qtyForOn'] =$qtyForIn;
 	}
