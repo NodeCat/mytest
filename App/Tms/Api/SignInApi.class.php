@@ -9,11 +9,11 @@ class SignInApi extends CommApi
 {
     public function signature() 
     {
-        // $suborder_id = I('post.order_id/d',0);
-        unset($_POST['order_id']);
-        $img = $GLOBALS;
-        dump($img);die();
-        file_put_contents('/1.jpg',$img, true);
+        $suborder_id = I('post.order_id/d',0);
+        $img = $_FILES['image'];
+        $dest = "../" . $img["name"];
+        move_uploaded_file($img["tmp_name"],$dest);
+        dump(file_get_contents($dest));die();
         if (empty($suborder_id) || empty($img)) {
             $re = array(
                 'status' => -1,
@@ -49,7 +49,7 @@ class SignInApi extends CommApi
         }
     }
 
-    public function uploadImg($img){
+    public function uploadImg($img) {
         //读取临时文件
         $fileStr = file_get_contents($img['tmp_name']);
         $path = '/tms/sign/1.png';
