@@ -11,7 +11,7 @@
 			position:absolute;
 		}
 		#container{
-			margin-left: 10px;
+			margin:0 10px;
 
 
 		}
@@ -20,7 +20,7 @@
 			left:0;
 			right:0;
 			bottom:0;
-			width: 600px;
+			width:80%;
 			height: 500px;
 		}
 		
@@ -48,23 +48,24 @@
 			cursor:pointer;
 			margin-right:10px;
 		}
+		h4 span{font-size: 16px;}
 	</style>
 </head>
 <body>
 	<div id="container">
 		<div>
 		<h4>
-			路线：  <span>国贸（北京）</span>
-			客户量：<span>4</span>
-			总里程：<span>100.5KM</span>
-			总耗时：<span>4小时20分20秒<span>
+			路线：<span>{$lines}</span></br>
+			客户量：<span>{:count($address)}</span></br>
+			总里程：<span>{$distance} km</span></br>
+			总耗时：<span>{$time.hour}小时{$time.min}分{$time.sec}秒<span>
 		</h4>
 	    </div>
 	<div id="mapContainer"></div>
 	<div id="tip">  
 		<input type="button" value="添加线覆盖物" onClick="javascript:polyline.setMap(map)"/>
 		<input type="button" value="删除线覆盖物" onClick="javascript:polyline.setMap(null)"/>
-		<input type="button" value="测距" onClick="javascript:ruler1.turnOn();"/>  
+		<input type="button" value="测距" onClick="javascript:ruler.turnOn()"/>  
 	</div>
 	
 	
@@ -88,9 +89,6 @@
 		   <volist name='points' id='point'>
 		   lineArr.push(new AMap.LngLat("{$point.lng}","{$point.lat}"));
 		   </volist>
-		   /*lineArr.push(new AMap.LngLat("116.382122","39.901176")); 
-		   lineArr.push(new AMap.LngLat("116.387271","39.912501")); 
-		   lineArr.push(new AMap.LngLat("116.398258","39.904600")); */
 		   polyline = new AMap.Polyline({ 
 			   path:lineArr, //设置线覆盖物路径
 			   strokeColor:"#3366FF", //线颜色
@@ -110,26 +108,22 @@
 
 		//在地图上标记点
 		(function addMarker(){
-			// marker.InfoWindow = true;
 			<volist name='address' id='addr'>
-
-			marker{$i} = new AMap.Marker({	
+				marker{$i} = new AMap.Marker({	
 				//icon:"http://webapi.amap.com/images/marker_sprite.png",
 				//icon:"http://webapi.amap.com/images/custom_a_j.png",
-				// position:new AMap.LngLat({$data[0]},{$data[1]}),
 				position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
-				
 			});
 			marker{$i}.setMap(map);
 			</volist>
-			marker.setTitle('我是地图中心点哦~');  //在地图上添加点
+			//marker.setTitle('我是地图中心点哦~');  //在地图上添加点
 		})();
-
+	  // 测距
 		map.plugin(["AMap.RangingTool"],function(){ 
-	         ruler1 = new AMap.RangingTool(map);
-			 AMap.event.addListener(ruler1,"end",function(e){
-				ruler1.turnOff();
-			 });
+	    	ruler = new AMap.RangingTool(map);
+		 	AMap.event.addListener(ruler,"end",function(e){
+			ruler.turnOff();
+			});
 		});
 		// 线路描边
 		(function addOutline(){
@@ -137,5 +131,5 @@
 		    isOutline:true,
 		    outlineColor:"#000066"
 		  });
-		 })();
+		})();
 	</script>

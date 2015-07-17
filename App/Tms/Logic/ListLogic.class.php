@@ -42,6 +42,7 @@ class ListLogic{
      * 统计配送单的订单状态
      * @param  string  $dist_id  配送单id
      * @return array   $data     返回统计信息
+     * @author   jt
      */
 	public function deliveryCount($dist_id = '') {
 		if($dist_id == '') {
@@ -124,6 +125,7 @@ class ListLogic{
      * @param  string $mobile     司机电话号码
      * @param  string $id         签到id（车次id）
      * @return array  $geo_arrays 返回用户店铺位置信息
+     * @author   jt
      */
     public function getCustomerAddress($mobile,$id) {
         //只显示当次配送的记录
@@ -170,6 +172,35 @@ class ListLogic{
         }
         $geo_arrays  = array_values($geo_array);
         return $geo_arrays;
-    }	
+    }
+  
+  /**
+     * 计算两个时间的时间差
+     * @param  string $begin_time 开始时间
+     * @param  string $end_time   结束时间
+     * @return array  $res        返回时间差
+     * @author   jt
+     */
+    public function timediff($begin_time,$end_time) {
+        $begin_time = strtotime($begin_time);
+        $end_time   = strtotime($end_time);
+        if($begin_time < $end_time) {
+            $starttime = $begin_time;
+            $endtime   = $end_time;
+        }
+        else {
+        $starttime = $begin_time;
+        $endtime   = $begin_time;
+        }
+        $timediff = $endtime-$starttime;
+        $days = intval($timediff/86400);
+        $remain = $timediff%86400;
+        $hours = intval($remain/3600);
+        $remain = $remain%3600;
+        $mins = intval($remain/60);
+        $secs = $remain%60;
+        $res = array("day" => $days,"hour" => $hours,"min" => $mins,"sec" => $secs);
+        return $res;
+    }
 
 }

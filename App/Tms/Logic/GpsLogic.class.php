@@ -5,6 +5,29 @@ namespace Tms\Logic;
  */
 class GpsLogic{
     private $PI = 3.14159265358979324;
+
+    //计算两经纬度之间的距离
+    public function distance($latA, $lngA, $latB, $lngB) {
+        $earthR = 6371000.;
+        $x = cos($latA * $this->PI / 180.) * cos($latB * $this->PI / 180.) * cos(($lngA - $lngB) * $this->PI / 180);
+        $y = sin($latA * $this->PI / 180.) * sin($latB * $this->PI / 180.);
+        $s = $x + $y;
+        if ($s > 1) $s = 1;
+        if ($s < -1) $s = -1;
+        $alpha = acos($s);
+        $distance = $alpha * $earthR;
+        return $distance;//m
+    }
+
+    // GCJ-02坐标 to WGS-84坐标
+    public function gcj_decrypt($gcjLat, $gcjlng) {
+        if ($this->outOfChina($gcjLat, $gcjlng))
+            return array('lat' => $gcjLat, 'lng' => $gcjlng); 
+        $d = $this->delta($gcjLat, $gcjlng);
+        return array('lat' => $gcjLat - $d['lat'], 'lng' => $gcjlng - $d['lng']);
+    }
+
+    // 判断是不是在中国的地图上
     private function outOfChina($lat, $lng) {
         if ($lng < 72.004 || $lng > 137.8347)
             return TRUE;
@@ -46,24 +69,5 @@ class GpsLogic{
         $dlng = ($dlng * 180.0) / ($a / $sqrtMagic * cos($radLat) * $this->PI);
         return array('lat' => $dLat, 'lng' => $dlng);
     }
-    //计算两经纬度之间的距离
-    public function distance($latA, $lngA, $latB, $lngB) {
-        $earthR = 6371000.;
-        $x = cos($latA * $this->PI / 180.) * cos($latB * $this->PI / 180.) * cos(($lngA - $lngB) * $this->PI / 180);
-        $y = sin($latA * $this->PI / 180.) * sin($latB * $this->PI / 180.);
-        $s = $x + $y;
-        if ($s > 1) $s = 1;
-        if ($s < -1) $s = -1;
-        $alpha = acos($s);
-        $distance = $alpha * $earthR;
-        return $distance;
-    }
-
-    // GCJ-02 to WGS-84
-    public function gcj_decrypt($gcjLat, $gcjlng) {
-        if ($this->outOfChina($gcjLat, $gcjlng))
-            return array('lat' => $gcjLat, 'lng' => $gcjlng); 
-        $d = $this->delta($gcjLat, $gcjlng);
-        return array('lat' => $gcjLat - $d['lat'], 'lng' => $gcjlng - $d['lng']);
-    }
+    
 }

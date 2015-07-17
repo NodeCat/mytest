@@ -59,11 +59,12 @@ margin-top: 10px;
   	}
 
 </style>
+
 <script type="text/javascript">
 (function(){
         <if condition="$msg eq '提货成功'">
         alert('计乘开始1');
-        HostApp.startLocate({$userid['id']});
+        HostApp.startLocate("{$userid['id']}");
         HostApp.toast('计乘开始');
        </if>
     })();

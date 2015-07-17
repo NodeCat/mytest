@@ -3,14 +3,16 @@ namespace Tms\Api;
 use Think\Controller;
 
 /**
- * GPS数据接口
+ * GPS数据收集接口
+ *
+ * @author  jt
  */
 class GpsTrackApi extends CommApi {
 	// 获取司机路线信息
 	public function getAddress() {
-        $location = I('post.');
-		//$location = '{"id":"213","points":[{"time":"afdsf","lng":116.382122,"lat":39.901176},{"time":"nsdfb","lng":116.387271,"lat":39.912501},{"time":"nsdfb","lng":116.398258,"lat":39.904600}]}';
-		$data  = json_decode($location,true);
+        $data = I('json.');
+		//$data = '{"id":"3","points":[{"time":"afdsf","lng":116.382122,"lat":39.901176},{"time":"nsdfb","lng":116.387271,"lat":39.912501},{"time":"2015-07-18 01:58:28","lng":116.398258,"lat":39.904600}]}';
+		//$data  = json_decode($data,true);
 		$A = A('Tms/Gps','Logic'); 
         $i=0;
         $distance = 0;
@@ -40,25 +42,19 @@ class GpsTrackApi extends CommApi {
         unset($map);
         $map['id'] = $sign_mg['id'];
         $map['distance'] = $distance;
-    	$D->save($map);// 把路程写入签到表
-        $key=$sign_mg['id'].$sign_mg['mobile'];
-    	S(md5($key),$location,3360);
-   		//$this->display('tms:line');
-	}
-	// 司机轨迹页面的的输出
-	public function showLine() {
-		$id     = I('get.id');
-        $mobile = I('get.mobile');
-        $key    = $id.$mobile;
-        $location = S(md5($key));
-        //$location = json_decode($location,true);
-        $customerAddress = A('Tms/List','Logic')->getCustomerAddress($mobile,$id);
-        // dump($customerAddress);
-        // dump($location['points']);
-        $this->assign('address',$customerAddress);
-		$this->assign('points',$location['points']);
-		$this->display('tms:line');
-	}
+        $map['delivery_end_time'] = $value['time'];//配送完成时间
+    	$res = $D->save($map);
+        // 把路程写入签到表
+        if($res) {
+            $key=$sign_mg['id'].$sign_mg['mobile'];
+    	    S(md5($key),$data,3360);
+            $return = array('status' =>'1', 'message' => '成功');
+            $this->ajaxReturn($return);
+        } else {
+            $return = array('status' => '0', 'message' => '路线获取失败' );
+            $this->ajaxReturn($return);
+        }
+  	}
 
     
 
