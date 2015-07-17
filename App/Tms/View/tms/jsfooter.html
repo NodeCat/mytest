@@ -193,6 +193,7 @@
     $('.js-btn-print').on('click',function(){
         var printStr = $(this).data('str');
         var oid = $(this).data('id');
+        oid = oid.toString();
         printStr = JSON.stringify(printStr);
         ticketPrint(printStr, oid);
     })
