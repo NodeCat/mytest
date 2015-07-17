@@ -951,7 +951,7 @@ class ProcessLogic {
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         if ($assist->create($detail)) {
-            $affect = $assist->where($map)->save();
+            //$affect = $assist->where($map)->save();
         }
         $return = true;
         return $return;
@@ -985,6 +985,7 @@ class ProcessLogic {
                 }
             }
         }
+        unset($map);
         $map['pid'] = $id;
         $map['pro_code'] = $data['pro_code'];
         //计算单价

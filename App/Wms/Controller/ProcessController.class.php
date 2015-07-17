@@ -501,9 +501,13 @@ class ProcessController extends CommonController {
         if (empty($result)) {
             $this->msgReturn(false, '不存在的加工单');
         }
+        
         $break = false;
         foreach ($result as $value) {
             if ($value['p_pro_code'] == $sku_code) {
+                if ($value['real_qty'] >= $value['plan_qty']) {
+                    $this->msgReturn(false, '此SKU已经加工完成');
+                }
                 switch ($res['type']) {
                 	    case 'unite':
                 	        $res['type'] = '组合';
@@ -566,9 +570,6 @@ class ProcessController extends CommonController {
         if (($process['main_status'] != 2 && $process['main_status'] != 3) || $process['over_task'] >= $process['task']) {
             //状态2 为已生效 3已加工
             $this->msgReturn(false, '此加工单已经生产完成');
-        }
-        if ($process['real_qty'] >= $process['plan_qty']) {
-            $this->msgReturn(false, '此SKU已经加工完成');
         }
         if ($real_qty + $process['real_qty'] > $process['plan_qty']) {
             $this->msgReturn(false, '加工数量不可大于待入库数量');
@@ -633,7 +634,7 @@ class ProcessController extends CommonController {
             }
             
             /** 5---更新ERP端出库单 入库单 数据 */
-            
+            $price = 0;
             //更新入库单(针对父SKU 无需循环 只有一个)
             $erporder_back_in = $Logic->update_in_stock_erp($process, $erp_in_id, $price);
             if (!$erporder_back_in) {
@@ -646,7 +647,7 @@ class ProcessController extends CommonController {
                     $this->msgReturn(false, '更新出库单失败');
                 }
             }
-            
+           
         } else {
             /**
              * 拆分状态下 扣减父SKU库存 入库子SKU
