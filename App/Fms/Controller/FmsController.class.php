@@ -243,6 +243,7 @@ class FmsController extends \Common\Controller\AuthController{
                             $val['actual_sum_price'] = $val['real_sign_qty'] * $sign_detail[$i]['price_unit'];
                             //合计
                             $value['actual_price'] += $val['actual_sum_price'];
+
                         }
                     }
                 }else{
@@ -270,10 +271,10 @@ class FmsController extends \Common\Controller\AuthController{
             if($value['actual_price'] > 0) {
                 //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费
                 $value['pay_for_price'] = $value['actual_price'] - $value['minus_amount'] - $value['pay_reduce'] + $value['deliver_fee'];
-                //抹零
-                if($value['pay_for_price'] + 0.5 < ceil($value['pay_for_price'])){
+
+                if(($value['pay_for_price'] + 0.5) < ceil($value['pay_for_price'])){
                     //抹零总计
-                    $wipe_zero_sum += $value['pay_for_price'] - floor($value['pay_for_price']);
+                    $wipe_zero_sum += round($value['pay_for_price'] - floor($value['pay_for_price']),2);
                 }
                 //抹零
                 $value['pay_for_price'] = $this->wipe_zero($value['pay_for_price']);
@@ -389,7 +390,7 @@ class FmsController extends \Common\Controller\AuthController{
     //抹零
     protected function wipe_zero($price =0){
         if($price + 0.5 < ceil($price)){
-            $price = $price - floor($price);
+            $price = floor($price);
         }
         return $price;
     }
