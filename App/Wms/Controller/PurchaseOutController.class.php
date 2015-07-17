@@ -231,6 +231,8 @@ class PurchaseOutController extends CommonController {
         }elseif($this->mresult['out_type'] == 'defective'){
           $parma['stock_status'] = 'unqualified';
         }
+        $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+        $parma['no_in_location_area_code'] = $area_name;
         $pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
         $result[$key]['doneQty'] = $stockin_logic->getQtyForOn($vo['batch_code'],$vo['pro_code'],$this->wh_id);
         $result[$key]['stock_qty'] = $pro_qty['sum'];
