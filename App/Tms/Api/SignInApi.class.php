@@ -5,7 +5,7 @@ use Think\Controller;
 /**
  * 配送单接口
  */
-class SignInApi
+class SignInApi extends CommApi
 {
     public function signature() 
     {
