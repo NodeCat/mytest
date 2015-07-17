@@ -23,14 +23,6 @@
         HostApp.printTicket(printStr,oid);
       }
     }
-    //保存签名
-    function saveSignature(oid,path) {
-      var url = "{:U('signature')}";
-      $.post(url,{oid:oid,path:path},function(res){
-        console.log(res);
-      })
-    }
-    saveSignature(41941,'img');
     function goToGaodeMap(lat, lng) {
       if (typeof HostApp == "undefined") {
         alert('使用导航功能请您先下载大厨网配送app.');
