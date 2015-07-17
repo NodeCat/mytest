@@ -11,9 +11,6 @@ class SignInApi extends CommApi
     {
         $suborder_id = I('post.order_id/d',0);
         $img = $_FILES['image'];
-        $dest = "/upload/" . $img["name"];
-        move_uploaded_file($img["tmp_name"],$dest);
-        dump(file_get_contents($dest));die();
         if (empty($suborder_id) || empty($img)) {
             $re = array(
                 'status' => -1,
@@ -49,25 +46,7 @@ class SignInApi extends CommApi
         }
     }
 
-    public function uploadImg($img) {
-        //读取临时文件
-        $fileStr = file_get_contents($img['tmp_name']);
-        $path = '/tms/sign/1.png';
-        $paramsQuery = http_build_query($params);
+    public function uploadImg($img){
         
-        $url = 'http://img.dachuwang.com/upload' . $path;
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT'); 
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fileStr);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $ret = curl_exec($ch);
-        //$info = curl_getinfo($ch);
-        //$errorMsg = curl_error ( $ch );
-        //$errorNumber = curl_errno ( $ch );
-        curl_close ( $ch );
-
-        //清除临时文件
-        exec('rm -rf '.$info['file']['tmp_name']);
-        return $ret;
     }
 }
