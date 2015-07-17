@@ -690,7 +690,6 @@ class IndexController extends Controller {
 
     //保存客户签名
     public function signature() {
-        dump($_FILES);die();
         $map = array(
             'suborder_id' => I('post.oid/d',0),
             'signature'   => I('post.path','','trim'),
