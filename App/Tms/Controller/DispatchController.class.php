@@ -258,6 +258,27 @@ class DispatchController extends Controller{
             }
         }
     }
+
+    //保存运费
+    public function save_fee() {
+        $fees = I('post.fees');
+        if(empty($fees)) {
+            $re = array(
+                'status' => -1,
+                'msg'    => '数据不能为空',
+            );
+            $this->ajaxReturn($re);
+        }
+        $D = D('TmsSignList');
+        foreach ($fees as $key => $value) {
+            $s = $D->where(array('id' => $key))-> save(array('fee' => $value));
+        }
+        $re = array(
+            'status' => 0,
+            'msg'    => '保存成功',
+        );
+        $this->ajaxReturn($re);
+    }
     
 }
 
