@@ -276,6 +276,7 @@ class ProcessRatioController extends CommonController {
         	        $this->msgReturn(false, '父SKU和子SKU不可相同');
         	    }
         	    if ($this->p_pro_code != $M->p_pro_code) {
+        	        $map['p_pro_code'] = $M->p_pro_code;
             	    $have = M('erp_process_sku_relation')->where($map)->find();
             	    if (!empty($have)) {
             	        $this->msgReturn(false, '此物料清单已存在');
