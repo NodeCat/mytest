@@ -162,7 +162,7 @@ class StockInController extends CommonController {
 						$data['stock_in_code'] = $bill_in_detail_info['code'];
 						$data['purchase_code'] = $bill_in_detail_info['refer_code'];
 						$data['pro_status'] = $status;
-						$data['price_subtotal'] = ($bill_in_detail_info['price_unit'] * 100) * $qty / 100;
+						$data['price_subtotal'] = formatMoney(($bill_in_detail_info['price_unit'] * 100) * $qty / 100,2);
 
 						if($bill_in_detail_info['invoice_method'] == 0){
 							$data['status'] = 'paid';
@@ -270,7 +270,6 @@ class StockInController extends CommonController {
 			if($type == 'input_qty') {
 				$qty = I('post.qty');
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
-
 				if($res['res'] == true) {
 					//有一件商品入库 更新到货单状态为 待上架
 					$upd_map['id'] = $id;
@@ -510,7 +509,7 @@ class StockInController extends CommonController {
                             ->where(array('pid' => $value['id']))
                             ->find();
                 $value['cat_total'] = $detail['cat_total']; //SKU总数
-                $value['qty_total'] = $detail['qty_total']; //总数量
+                $value['qty_total'] = formatMoney($detail['qty_total'], 2); //总数量
                 $value['sp_created_time'] = $value['created_time']; //创建时间
             }
         }

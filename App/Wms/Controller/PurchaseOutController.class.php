@@ -151,8 +151,8 @@ class PurchaseOutController extends CommonController {
           $qty_total += $value['real_return_qty'];
         }
 
-        $this->price_total = $price_total;
-        $this->qty_total = $qty_total;
+        $this->price_total = formatMoney($price_total, 2);
+        $this->qty_total = formatMoney($qty_total, 2);
         $this->pros = $result;
         //加入权限
         $this->toolbar_tr =array(
@@ -235,7 +235,7 @@ class PurchaseOutController extends CommonController {
         $parma['no_location_code'] = $area_name;
         $pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
         $result[$key]['doneQty'] = $stockin_logic->getQtyForOn($vo['batch_code'],$vo['pro_code'],$this->wh_id);
-        $result[$key]['stock_qty'] = $pro_qty['sum'];
+        $result[$key]['stock_qty'] = formatMoney($pro_qty['sum'],2);
       }
       $this->presult = $result;
       if($this->mresult['out_type'] == 'genuine'){

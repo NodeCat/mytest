@@ -190,18 +190,39 @@ class PurchaseController extends CommonController {
 
 	protected function after_save($pid){
 		$pros = I('pros');
-		if(ACTION_NAME=='edit'){
-			$pid = I('id');
+		
+		$n = count($pros['pro_code']);
+		if($n <2) {
+			$this->msgReturn(1,'','',U('view','id='.$pid));
+		}
+		//验证小数点 liuguangping
+		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
+			$mes = '';
+			$pro_code = $pros['pro_code'][$j];
+			if(empty($pro_code)) {
+				$mes = '第' . $j . '产品不能为空！';
+				continue;
+			}
+			if (strlen(formatMoney($pros['pro_qty'][$j], 2, 1))>2) {
+				$mes = $pro_code . '采购数量只能精确到两位小数点';
+				$this->msgReturn(0,$mes);
+			}
 
+			if (strlen(formatMoney($pros['price_unit'][$j], 2, 1))>2) {
+				$mes = $pro_code . '采购单价只能精确到两位小数点';
+				$this->msgReturn(0,$mes);
+			}
+		}
+
+		//如果编辑时删除
+		if (ACTION_NAME == 'edit') {
+			$pid = I('id');
 			//如果是edit 根据pid 删除所有相关的puchase_detail记录
 			$map['pid'] = $pid;
 			M('stock_purchase_detail')->where($map)->delete();
 			unset($map);
 		}
-		$n = count($pros['pro_code']);
-		if($n <2) {
-			$this->msgReturn(1,'','',U('view','id='.$pid));
-		}
+
 		$M = D('PurchaseDetail');
 		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
 			$row['pid'] = $pid ;
@@ -211,10 +232,10 @@ class PurchaseController extends CommonController {
 			}
 			$row['pro_name'] = $pros['pro_name'][$j];
 			$row['pro_attrs'] = $pros['pro_attrs'][$j];
-			$row['pro_qty'] = $pros['pro_qty'][$j];
+			$row['pro_qty'] = formatMoney($pros['pro_qty'][$j],2);
 			$row['pro_uom'] = $pros['pro_uom'][$j];
-			$row['price_unit'] = $pros['price_unit'][$j];
-			$row['price_subtotal'] = (($row['price_unit'] * 100) * $row['pro_qty'] / 100);
+			$row['price_unit'] = formatMoney($pros['price_unit'][$j],2);
+			$row['price_subtotal'] = formatMoney((($row['price_unit'] * 100) * $row['pro_qty'] / 100),2);
 			$data = $M->create($row);
 			//if(!empty($pros['id'][$j])) {
 				//$map['id'] = $pros['id'][$j];
@@ -426,6 +447,7 @@ class PurchaseController extends CommonController {
 		$M_rep_purchase_refund = D('PurchaseRefund');
 		$refund_purchase_data = $M_rep_purchase_refund->create($refund_purchase_data);
 
+
 		//根据到货单id获取到货详情
 		$map['refer_code'] = $refund_purchase_data['refer_code'];
 		$map['type'] = 1;//采购入库单类型id
@@ -454,7 +476,8 @@ class PurchaseController extends CommonController {
 		if(empty($refund_purchase_data['detail'])){
 			$this->msgReturn(0,'已经全部收货成功，没有差异，不能生成冲红单');
 		}
-		$refund_purchase_data['for_paid_amount'] = $refund_purchase_data['price_total'] - $sum;
+		//精确两位 liuguangping
+		$refund_purchase_data['for_paid_amount'] = formatMoney($refund_purchase_data['price_total'] - $sum, 2);
 
 		$res = $M_rep_purchase_refund->relation(true)->add($refund_purchase_data);
 		
@@ -683,7 +706,7 @@ class PurchaseController extends CommonController {
        		$area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
        		$parma['no_location_code'] = $area_name;
     		$pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
-    		$result[$key]['stock_qty'] = $pro_qty['sum'];
+    		$result[$key]['stock_qty'] = formatMoney($pro_qty['sum'], 2);
     	}
     	$this->data = $result;
     	$this->p_code = $p_code;
@@ -725,6 +748,21 @@ class PurchaseController extends CommonController {
     		if($num<=0){
     			$this->msgReturn('1','退货量为零不能退货');
     		}
+
+    		foreach ($pros['plan_return_qty']  as $pank => $valp) {
+    			$mes = '';
+    			$pro_codemes = $pros['pro_code'][$pank];
+    			if($valp == ''){
+    				$mes = $pro_codemes . '采购数量不能为空';
+					$this->msgReturn(0,$mes);
+    			}
+				if (strlen(formatMoney($valp, 2, 1))>2) {
+					$mes = $pro_codemes . '采购数量只能精确到两位小数点';
+					$this->msgReturn(0,$mes);
+				}
+
+    		}
+
     		$purchaseout = array();
     		$purchaseout['wh_id'] = $wh_id;
 			$purchaseout['partner_id'] = $partner_id;
@@ -756,7 +794,6 @@ class PurchaseController extends CommonController {
 	    			}
 	    			array_push($addAll, $vals);
 	    		}
-	    	
 	        	if(M('stock_purchase_out_detail')->addAll($addAll)){
 	        		//@todo插入出库单表 出库单详细表 已经迁了退货出库单的审核批准方法下面
 	        		$this->msgReturn('0','退货成功！','',U('PurchaseOut/view',array('id'=>$result)));
