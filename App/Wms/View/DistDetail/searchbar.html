@@ -4,7 +4,7 @@
 <include file="search" />
 <volist name="query" id="vo" key="k">
 <eq name="k%5" value="0"></div><div class="row"></eq>
-<div class="form-group  col-lg-3">
+<div class="form-group  col-lg-6">
 <neq name="vo['control_type']" value="checkbox">
 <label class="control-label col-lg-4 col-sm-4 col-xs-4">{$vo.title}</label>
 </neq>
@@ -88,7 +88,7 @@
 </div>
 </div>
 </volist>
-<div class="form-group  col-lg-9">
+<div class="form-group  col-lg-6">
 <div class="col-lg-10 col-lg-offset-2">
    <button type="submit" data-href="__SELF__" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
    <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>

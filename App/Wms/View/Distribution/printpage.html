@@ -307,6 +307,9 @@
 <script>
 $(function() {
 	var markerPoint;
+	var ImgBase;
+	var Imgsrc;
+	var maxNum =10;
 	var td =  $('.order_list_td').children('td[rowspan]');
 	  td.each(function(i) {
 		  //alert($(this).attr('index'));
@@ -318,7 +321,7 @@ $(function() {
 		if ($('.staticMap').css('display') == "block") {
 			$('.staticMap').css('display',"none");
 			$(this).html('显示地图');
-		} else if ($('.mapContainer').css('display') == "none") {
+		}else if($('.staticMap').css('display')=="none"){
 			$('.staticMap').css('display', "block");
 			$(this).html('隐藏地图');
 		}
@@ -359,19 +362,17 @@ $(function() {
 		<volist name='list' id='attrs' key="kk">
 		  if (num == {$kk}) {
 			<volist name="attrs['map_pos']" id="pos">
-			<php>if (!empty($pos['lng']) && !empty($pos['lat'])) {</php>
-				markerPoint += "mid,,"+{$i}+":"+{$pos.lng}+","+{$pos.lat}+"|";
-			<php>}</php>
+			    var num;
+			   	num = String.fromCharCode(65+{$i}-1);
+			   	markerPoint += "mid,,"+num+":"+{$pos.lng}+","+{$pos.lat}+"|";
 			</volist>
 		  }
 		</volist>
 	});	
-	if (markerPoint != undefined) {
-	    markerPoint = markerPoint.slice(9,-1)
-		var Imgsrc = "http://restapi.amap.com/v3/staticmap?size=900*600&key=ee95e52bf08006f63fd29bcfbcf21df0&markers="
-		Imgsrc = Imgsrc + markerPoint;
-		$('.staticImg').attr("src",Imgsrc);
-	}
+    markerPoint = markerPoint.slice(9,-1);
+	ImgBase = "http://restapi.amap.com/v3/staticmap?size=900*600&key=ee95e52bf08006f63fd29bcfbcf21df0&markers=";
+	Imgsrc = ImgBase + markerPoint;
+	$('.staticImg').attr("src",Imgsrc);
 })
 
 
