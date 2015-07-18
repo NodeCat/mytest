@@ -102,6 +102,7 @@ class DistController extends Controller {
     public function orders() {
         $id = I('get.id',0);
         if(!empty($id)) {
+            $oid = I('get.oid',0);
             $M = M('tms_delivery');
             $res = $M->find($id);
             if(empty($res)) {
@@ -128,6 +129,7 @@ class DistController extends Controller {
                 $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
                 $val['pay_status_code'] = $val['order_info']['pay_status'];
                 $val['pay_status'] = $s;
+                $val['order_info']['pay_status'] = $s;
                 //从订单获取字段到出库单
                 $val['shop_name']       = $val['order_info']['shop_name'];
                 $val['mobile']          = $val['order_info']['mobile'];
@@ -175,13 +177,21 @@ class DistController extends Controller {
                         }
                     }
                 }
+                // 获取打印小票要用的数据
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val['order_info']);
                 $lists[$val['user_id']][] = $val;
             }
             $this->dist_id = $res['dist_id'];
             $this->data = $lists;
+            //默认展开订单数据
+            $this->id   = $id;
+            $this->oid  = $oid;
 
         }
+        //小票数据
         $this->title = "客户签收";
+        $this->id = $id;
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:sorders');
     }
 
@@ -465,6 +475,58 @@ class DistController extends Controller {
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
         $this->display('tms:orderlist');
+    }
+
+    //保存客户签名
+    public function signature() {
+        $suborder_id = I('post.oid/d',0);
+        $signature   = I('post.path','','trim');
+        if($suborder_id && $signature) {
+            //查询出库单ID
+            $M = M('stock_bill_out');
+            $map['refer_code'] = $suborder_id;
+            $map['is_deleted'] = 0;
+            $bill_out = $M->field('id')
+            ->where($map)
+            ->find();
+            if($bill_out) {
+                unset($map['refer_code']);
+                $map['bill_out_id'] = $bill_out['id'];
+                //更新签名图片至配送单详情表
+                $s = M('stock_wave_distribution_detail')
+                ->where($map)
+                ->save(array('signature' => $signature));
+                //保存签名成功
+                if($s) {
+                    $re = array(
+                        'code' => 0,
+                        'msg'  => '保存签名成功'
+                    );
+                }
+                //保存签名失败
+                else {
+                    $re = array(
+                        'code' => -1,
+                        'msg'  => '保存签名失败'
+                    );
+                }
+            }
+            //订单号对应出库单失败
+            else {
+                $re = array(
+                    'code' => -1,
+                    'msg'  => '获取出库单数据失败'
+                );
+            }
+        }
+        //传入参数错误
+        else {
+            $re = array(
+                'code' => -1,
+                'msg'  => '订单ID或签名不能为空'
+            );
+        }
+        $this->ajaxReturn($re);
     }
 
 }
