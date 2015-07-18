@@ -50,6 +50,8 @@ class DistApi extends CommApi {
         if(!empty($detail_ids)) {
             $map['id'] = array('in', $detail_ids);
             $limit = count($detail_ids);
+        } else {
+            return array();
         }
         $map['is_deleted'] = 0;
         $order_conditions = $map['order'];
