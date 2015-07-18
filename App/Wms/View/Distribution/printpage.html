@@ -34,14 +34,15 @@
             <td width="7%">出库单号</td>
             <td width="8%">线路</td>
             <td width="8%">店铺名称</td>
-            <td width="10%">送货地址</td>
+            <td width="8%">送货地址</td>
             <td width="7%">联系电话</td>
             <td width="8%">客户备注</td>
             <td width="5%">货品号</td>
-            <td width="10%">产品名称</td>
-            <td width="12%">规格</td>
+            <td width="8%">产品名称</td>
+            <td width="11%">规格</td>
             <td width="5%">单价</td>
             <td width="5%">订货数量</td>
+            <td width="5%">发货数量</td>
             <td width="5%">小计</td>
             <td width="5%">重量</td>
           </tr>
@@ -61,8 +62,11 @@
 	            <td>{$detail.pro_attrs}</td>         		
 	            <td>{$detail.price}元/{$detail.close_unit}</td>
 	            <td>{$detail.order_qty}{$detail.unit_id}</td>
-	            <td>{$detail['price'] * $detail['order_qty']|sprintf="%.2f",###}</td>
+	            <td>{$detail.delivery_qty}{$detail.unit_id}</td>
+	            <td>{$detail['price'] * $detail['delivery_qty']|sprintf="%.2f",###}</td>
 	            <td></td>
+	            <php>$delivery_sku_count += $detail['delivery_qty']</php>
+	            <php>$delivery_price_amount += $detail['price'] * $detail['delivery_qty']</php>
             </tr>
           </volist>
         </volist>
@@ -75,7 +79,8 @@
           <td></td>
           <td></td>
           <td>{$attrs.sku_count}</td>
-          <td>{$attrs.price_amount|sprintf="%.2f",###}</td>
+          <td>{$delivery_sku_count}</td>
+          <td>{$delivery_price_amount|sprintf="%.2f",###}</td>
           <td></td>
         </tr>
       </table>
