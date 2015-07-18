@@ -28,11 +28,9 @@ class GpsTrackApi extends CommApi {
                 }
             $distance_sub=$A->distance($wgs_pre['lat'],$wgs_pre['lng'],$wgs['lat'],$wgs['lng']);
             $wgs_pre = $wgs;
-            // dump($distance_sub);
             $distance +=$distance_sub;
 		}
         $distance=sprintf('%.3f',$distance/1000);
-        //dump($distance);
 		$D = D('TmsSignList');
 		$start_date = date('Y-m-d',NOW_TIME);
         $end_date   = date('Y-m-d',strtotime('+1 Days'));
@@ -44,11 +42,10 @@ class GpsTrackApi extends CommApi {
         $map['id'] = $sign_mg['id'];
         $map['distance'] = $distance;
         $map['delivery_end_time'] = $value['time'];//配送完成时间
-    	$res = $D->save($map);
-        // 把路程写入签到表
+    	$res = $D->save($map);// 把路程写入签到表和时间
         if($res) {
             $key=$sign_mg['id'].$sign_mg['mobile'];
-    	    S(md5($key),$data,3360);
+    	    S(md5($key),$data,3600*24*2);
             $return = array('status' =>'1', 'message' => '成功');
             $this->ajaxReturn($return);
         } else {

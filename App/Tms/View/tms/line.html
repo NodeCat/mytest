@@ -115,6 +115,7 @@
 				position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
 			});
 			marker{$i}.setMap(map);
+			marker{$i}.setTitle("{$addr['address']}");
 			</volist>
 			//marker.setTitle('我是地图中心点哦~');  //在地图上添加点
 		})();
