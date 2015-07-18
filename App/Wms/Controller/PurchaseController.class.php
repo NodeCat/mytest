@@ -22,6 +22,15 @@ class PurchaseController extends CommonController {
 			'14' => '已驳回'
 		)
 	);
+
+	protected $outremark = array(
+                'quality'   =>"质量问题",
+                'wrong'     =>"收错货物",
+                'replace'   =>"替代销售",
+                'unsalable' =>"滞销退货",
+                'overdue'   =>"过期退货",
+                'other'     =>"其他问题",
+        );
 	
 	protected $columns = array (   
 		'id' => '',   
@@ -243,6 +252,21 @@ class PurchaseController extends CommonController {
 		}
 		$this->pros = $pros;
 
+		//查找采购单是否有商品已经上架 liuguangping 20150709
+		$p_code = $M->where(array('id'=>$id))->getField('code');
+		//查找采购单和批次是否有东西上架
+		$where 			 	 = array();
+		$where['status'] 	 = '33';//上架
+		$where['is_deleted'] = 0;
+		$where['type']		 = 1;//采购到货单
+		$where['refer_code'] = $p_code;
+		$purchase_in_code    = M('stock_bill_in')->where($where)->getField('code');
+		//有上架才能退货
+		if($purchase_in_code){
+			$this->purchase_in_code = TRUE;
+		}
+
+
 		//view上方按钮显示权限
 		$this->toolbar_tr =array(
 			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
@@ -251,7 +275,9 @@ class PurchaseController extends CommonController {
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
+            'out'=>array('name'=>'out' ,'show' => isset($this->auth['out']),'new'=>'true','domain'=>array('13')),//退货已经生效的采购单，并且采购单已经上架的
 		);
+
 	}
 	protected function before_lists(){
 		$pill = array(
@@ -605,5 +631,148 @@ class PurchaseController extends CommonController {
     	}
     	
     	$this->msgReturn(1,'',array('html'=>$result));
+    }
+
+    /**
+     * 退货显示
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-07-09
+     */
+    public function out(){
+    	$flg = I('flg');
+    	$id  = I('id');
+
+    	//查找采购单是否有商品已经上架 liuguangping 20150709
+    	$M = D('Purchase');
+		$purchase_infos = $M->field('code,wh_id,partner_id')->where(array('id'=>$id))->find();
+		if(!$purchase_infos){
+			$this->msgReturn('0','请合法操作！');
+		}
+		$p_code = $purchase_infos['code'];
+		$wh_id = $purchase_infos['wh_id'];
+		$partner_id = $purchase_infos['partner_id'];
+		//查找采购单和批次是否有东西上架
+		$where 			 	 = array();
+		$where['status'] 	 = '33';//上架
+		$where['is_deleted'] = 0;
+		$where['type']		 = 1;//采购到货单
+		$where['refer_code'] = $p_code;
+		$purchase_in_code    = M('stock_bill_in')->where($where)->getField('code');
+		if(!$purchase_in_code){
+			$this->msgReturn('0','请选择已上架的采购单');
+		}
+
+    	$purchaseOutLogic = A('PurchaseOut','Logic');
+    	$result = $purchaseOutLogic->getOutInfoByPurchaseCode($id, $p_code, $purchase_in_code , $flg);
+    	if(!$result){
+    		$this->msgReturn('0','没有满足要退货的货物！');
+    	}
+    	$stock_logic = A('Stock','Logic');
+    	foreach ($result as $key => $vo) {
+    		$parma = array();
+    		$parma['pro_code']   = $vo['pro_code'];
+    		$parma['wh_id']      = $wh_id;
+    		$parma['batch_code'] = $vo['batch_code'];
+    		$parma['pro_code']   = $vo['pro_code'];
+    		if($flg == 'success'){
+            	$parma['stock_status'] = 'qualified';
+        	}elseif($flg == 'error'){
+            	$parma['stock_status'] = 'unqualified';
+       		}
+       		$area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+       		$parma['no_in_location_area_code'] = $area_name;
+    		$pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
+    		$result[$key]['stock_qty'] = $pro_qty['sum'];
+    	}
+    	$this->data = $result;
+    	$this->p_code = $p_code;
+    	$this->wh_id = $wh_id;
+    	$this->partner_id = $partner_id;
+    	$this->out_remark = $this->outremark;
+    	$this->flg = $flg;
+    	$this->display('out');
+    }
+
+    /**
+     * 退货入库
+     *
+     * @author liuguangping@dachuwang.com
+     * @since 2015-07-10
+     */
+    public function doOut(){
+    	if(IS_POST){
+    		$flg 		= I('flg');
+    		$refer_code = I('refer_code');
+    		$wh_id 		= I('wh_id');
+    		$partner_id = I('partner_id');
+    		$out_remark = I('out_remark');
+    		$remark 	= I('remark');
+    		$pros 		= I('pros');
+
+    		if($flg == 'success'){
+    			$flg = 'genuine';
+    		}elseif($flg == 'error'){
+    			$flg = 'defective';
+    		}
+
+    		if(!$pros){
+    			$this->msgReturn('1','请选择要退款的货品');
+    		}
+
+    		$plan_return_qtys = $pros['plan_return_qty'];
+    		$num = arraySum($plan_return_qtys);
+    		if($num<=0){
+    			$this->msgReturn('1','退货量为零不能退货');
+    		}
+    		$purchaseout = array();
+    		$purchaseout['wh_id'] = $wh_id;
+			$purchaseout['partner_id'] = $partner_id;
+			$purchaseout['out_remark'] = $out_remark;
+			$purchaseout['remark'] = $remark;
+			$purchaseout['out_type'] = $flg;
+			$purchaseout['rtsg_code'] = get_sn('RTSG',$wh_id);
+			$purchaseout['status'] = 'audit';
+			$purchaseout['refer_code'] = $refer_code;
+			$purchaseoutM = D('PurchaseOut');
+
+			if(!$purchaseoutM->create($purchaseout)){
+            	$mes = $purchaseoutM->getError();
+            	$this->msgReturn('1',$mes);
+        	}
+
+            $result = $purchaseoutM->add();
+
+        	if($result){
+	        	//在插入退货单详细表
+	        	$purchaseOutLogic = A('PurchaseOut','Logic');
+	        	$purchaseoutDetail = $purchaseOutLogic->getInserDate(I(),$result);
+	    		$purchaseoutDetailM = D('PurchaseOutDetail');
+	    		$addAll = array();
+	    		foreach($purchaseoutDetail as $vals){
+	    			if(!$purchaseoutDetailM->create($vals)){
+	    				$mes = $purchaseoutDetailM->getError();
+            			$this->msgReturn('1',$mes);exit;
+	    			}
+	    			array_push($addAll, $vals);
+	    		}
+	    	
+	        	if(M('stock_purchase_out_detail')->addAll($addAll)){
+	        		//@todo插入出库单表 出库单详细表 已经迁了退货出库单的审核批准方法下面
+	        		$this->msgReturn('0','退货成功！','',U('PurchaseOut/view',array('id'=>$result)));
+	        		
+	        	}else{
+	        		//做处理如果详细插入失败，则删除退货单
+	        		$purchaseoutM->where(array('id'=>$result))->save(array('is_deleted'=>1));
+	        		$this->msgReturn('1','提货单创建失败');
+	        	}
+
+        	}else{
+        		$this->msgReturn('1','提货单创建失败');
+        	}
+
+    	}else{
+    		$this->msgReturn('1','请合法提交！');
+    	}
     }
 }

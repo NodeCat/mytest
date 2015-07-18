@@ -175,18 +175,20 @@ class StockOutLogic{
      * 查看出库单中所有sku是否满足数量需求出库单
      * 
      * @param String $ids 条件
+     * @param String $loc_type 库位
+     * @param String $batch_code 批次
      * @author liuguangping@dachuwang.com
      * @return String $Result;
      * 
      */
-    public function enoughaResult($ids, $loc_type = null){
+    public function enoughaResult($ids, $loc_type = null, $batch_code = null){
         $idsArr = explode(',', $ids);
         $result = array();
         $result['tureResult'] = array();
         $result['falseResult'] = array();
         if(!$idsArr) return '';
         foreach($idsArr as $key=>$value){
-            $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value, $loc_type);
+            $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value, $loc_type, $batch_code);
             if($is_enough){ 
                 array_push($result['tureResult'], $value);
             }else{
