@@ -27,17 +27,26 @@ class DispatchController extends Controller{
     );
 	public function index() {
         $D=D("TmsSignList");
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $sign_date = I('post.sign_date', '' , 'trim');
+        $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-
+        $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        if(I('post.warehouse')) {
-            $map1['warehouse']=I('post.warehouse');
-            $this->warehouse=$this->car['warehouse'][$map1['warehouse']];
+        $warehouse = I('post.warehouse/d', 0);
+        $car_from  = I('post.car_from', '' ,'trim');
+        if ($warehouse || $car_from) {
+            if ($warehouse) {
+                $map1['warehouse'] = $warehouse;
+            }
+            if ($car_from) {
+                $map1['car_from'] = $car_from;
+            }
+            $this->warehouse = $warehouse;
+            $this->car_from  = $car_from;
             $M=M('TmsUser');
             //按仓库把用户id取出来
-            $user_ids=$M->field('id')->where($map1)->select();
+            $user_ids = $M->field('id')->where($map1)->select();
             foreach ($user_ids as $value) {
                 foreach ($value as $val) {
                     $userid[]=$val;
@@ -50,19 +59,20 @@ class DispatchController extends Controller{
                 $map['userid'] = NULL;
             }
         }
+
         //把对应仓库的用户签到信息取出来
-        $sign_lists=$D->relation('TmsUser')->where($map)->group('userid')->order('updated_time DESC')->select();
+        $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
+        unset($map);
         unset($M);
         $M = M('tms_delivery');
-        unset($map);
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $map['status'] = '1';
         unset($value);
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
             $value['warehouse'] = $this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
             $map['mobile']      = $value['mobile'];
+            $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
+            $map['status'] = '1';
             //获取司机配送单的线路和id信息
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
@@ -132,18 +142,18 @@ class DispatchController extends Controller{
             }
         }
         //把对应仓库的用户签到信息取出来
-        $sign_lists=$D->relation('TmsUser')->where($map)->group('userid')->order('updated_time DESC')->select();
+        $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($M);
         $M = M('tms_delivery');
         unset($map);
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $map['status'] = '1';
         unset($value);
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
             $value['warehouse']=$this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
             $map['mobile'] = $value['mobile'];
+            $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
+            $map['status'] = '1';
             //获取司机配送单的线路和id信息取出来
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收

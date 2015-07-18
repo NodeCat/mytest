@@ -6,22 +6,24 @@
             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                 <span class="input-group-addon form-control" style="line-height:1.4;">选择仓库</span>
                 <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <volist name='car.warehouse' id='storge'> 
-                    <option value="{$key}">{$storge}</option>
+                    <option value="0">请选择仓库</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                     </volist>
                 </select>
             </div>
             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
                 <span class="input-group-addon form-control" style="line-height:1.4;">选择平台</span>
                 <select autocomplete="off" class="form-control input-pda"  id="platform" name="car_from">
-                    <volist name='car.car_from' id='storge'> 
-                    <option value="{$key}">{$storge}</option>
+                    <option value="0">请选择平台</option> 
+                    <volist name='car.car_from' id='plat'>
+                    <option value="{$plat}" <eq name="car_from" value="$plat">selected="true"</eq> >{$plat}</option>
                     </volist>
                 </select>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                 <span class="input-group-addon form-control" style="line-height:1.4;">选择日期</span>
-                <input type="txt" rel="datepicker" name="sign_date" value="2015-07-15" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
+                <input type="txt" rel="datepicker" name="sign_date" value="{$start_date}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
             </div>
             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
                 <button class='btn btn-primary' onclick="select()" >查询</button>
@@ -135,18 +137,6 @@ function cancleEdit(obj) {
     $(obj).after(btn);
     $(obj).remove();
 }
-(function(){
-    x=document.getElementById('f');
-        switch("{$warehouse}"){
-            <volist name='car.warehouse' id='storge' key="k"> 
-                case "{$storge}": val="{$k}"-1;break;
-            </volist>
-            default:val=0; 
-        }
-    x.warehouse.options[val].selected=true;  
-
-
-})();
 
 function exp(){ 
     x=document.getElementById('f');
