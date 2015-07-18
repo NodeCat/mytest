@@ -6,7 +6,7 @@ class ProcessOutController extends CommonController {
     protected $columns = array (
             'company_id' => '所属系统',
             'wh_id' => '所属仓库',
-            'code' => '入库单号',
+            'code' => '出库单号',
             'refer_code' => '加工单号',
             'status' => '状态',
             'created_time' => '创建时间',
@@ -14,7 +14,7 @@ class ProcessOutController extends CommonController {
     //搜索字段定义
     protected $query   = array (
             'erp_process_out.code' => array(
-                    'title' => ' 入库单号',
+                    'title' => '出库单号',
                     'query_type' => 'eq',
                     'control_type' => 'text',
                     'value' => 'code',
