@@ -404,6 +404,7 @@ class DistributionController extends CommonController {
                     $merge[$v['pro_code']] = $v;
                 } else {
                     $merge[$v['pro_code']]['order_qty'] += $v['order_qty'];
+                    $merge[$v['pro_code']]['delivery_qty'] += $v['delivery_qty'];
                 }
                 unset($merge[$key]);
             }

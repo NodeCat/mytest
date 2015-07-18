@@ -106,13 +106,14 @@
                 <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
                 <td>{$detail.order_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
                 <td>{$detail.delivery_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
+                <php>$delivery_sku_count_group += $detail['delivery_qty']</php>
               </tr>
             </volist>
             <tr>
               <td>汇总</td>
               <td colspan="1"></td>
               <td>{$attrs.sku_count}</td>
-              <td>{$delivery_sku_count}</td>
+              <td>{$delivery_sku_count_group}</td>
             </tr>
           </tbody>
         </table>
