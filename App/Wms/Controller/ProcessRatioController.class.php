@@ -248,7 +248,7 @@ class ProcessRatioController extends CommonController {
 	    if (!empty($processSku)) {
 	        foreach ($processSku as $value) {
 	            $processStatus = M('erp_process')->where(array('id'=>$value['pid']))->find();
-	            if ($processStatus['status'] == 3) {
+	            if ($processStatus['status'] == 5) {
 	                continue;
 	            }
 	            if ($value['real_qty'] < $value['plan_qty']) {
@@ -306,7 +306,7 @@ class ProcessRatioController extends CommonController {
 	        if (!empty($processSku)) {
 	            foreach ($processSku as $value) {
 	                $processStatus = M('erp_process')->where(array('id'=>$value['pid']))->find();
-	                if ($processStatus['status'] == 3) {
+	                if ($processStatus['status'] == 5) {
 	                    continue;
 	                }
 	                if ($value['real_qty'] < $value['plan_qty']) {
