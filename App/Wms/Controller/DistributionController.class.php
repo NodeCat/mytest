@@ -812,6 +812,7 @@ class DistributionController extends CommonController {
         }
         $this->assign('confirm', $confirm);
         $this->assign('data', $data);
+        $this->assign('type', $type);
         $this->cur = '发运异常';
         C('LAYOUT_NAME','pda');
         $this->title = '发运异常';
