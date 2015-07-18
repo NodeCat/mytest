@@ -107,3 +107,18 @@ VALUES (
 NULL ,  'confirm',  '4',  'Wms',  'Wms',  'Process',  'confirm',  'Wms/Process/confirm',  '',  '',  '扫描父SKU',  '1',  '210',  '0',  '0',  '0',  '',  '',  '1',  '0', '0000-00-00 00:00:00',  '0',  '0000-00-00 00:00:00',  '0'
 );
 
+DROP TABLE IF EXISTS `erp_process_out_price`;
+CREATE TABLE IF NOT EXISTS `erp_process_out_price` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `pro_code` varchar(50) NOT NULL DEFAULT '' COMMENT 'sku编号',
+  `pro_qty` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '数量',
+  `price` decimal(10,0) unsigned NOT NULL DEFAULT '0' COMMENT '单价',
+  `batch` varchar(100) NOT NULL DEFAULT '' COMMENT '批次',
+  `location_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '库位',
+  `created_user` int(10) unsigned NOT NULL DEFAULT '0',
+  `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_user` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `is_deleted` tinyint(4) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='加工出库SKU价格记录表' AUTO_INCREMENT=149 ;
