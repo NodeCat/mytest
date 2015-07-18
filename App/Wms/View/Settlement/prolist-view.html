@@ -1,0 +1,61 @@
+<div role="tabpanel">
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">产品列表</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+  			<th>单据号</th><th>付款方式</th><th>采购时间</th><th>结算金额</th><th>操作</th>
+  		</thead>
+  		<tbody>
+      <volist name="pros" id="vo">
+        <tr class="tr-cur">
+            <td style="width:50%;">{$vo.order_code}</td>
+            <td>
+                <switch name="vo.order_type" >
+                    <case value="1" break="1">预付款</case>
+                    <case value="2" break="1">货到付款</case>
+                    <case value="3" break="1">冲红单</case>
+                </switch>
+            </td>
+            <td  style="width:10%;" class="text-left p_qty">
+              {$vo.purchase_time}
+            </td>
+            <td style="width:10%;">
+                <if condition="$vo.order_type neq 3">
+                    {$vo.total_amount}
+                <else />
+                    -{$vo.total_amount}
+                </if>
+            </td>
+            <td style="width:10%;">
+                <if condition="$vo.order_type neq 3">
+                <a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/{$vo.pid}.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i></a>
+                <else />
+                    <a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/PurchaseRefund/view/id/{$vo.refund_id}.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i></a>
+                </if>
+            </td>
+      </tr>
+        
+      </volist>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+</div>
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

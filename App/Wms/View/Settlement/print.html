@@ -1,0 +1,79 @@
+<include file="Index:header"/>
+<body>
+<div class="container">
+
+<div class="row">
+<div class="text-center"><h3>结算单</h3></div>
+</div>
+</br>
+</br>
+
+<div class="row">
+	<div class="text-center">
+		<div><h3>结算单号:{$settlement.code}</h3></div>
+	</div>
+</div>
+
+<div class="row">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$settlement.code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
+</div>
+
+<br/>
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>结算时间</td><td>{$settlement.settlement_time}</td>
+  </tr>
+  	<tr>
+  		<td>打印时间</td><td>{$settlement.print_time}</td>
+  	</tr>
+  	<tr>
+  		<td>供应商</td><td>{$settlement.partner_name}</td>
+  	</tr>
+  	<tr>
+  		<td>结算人员</td><td>{$settlement.settlement_user}</td>
+  	</tr>
+    <tr>
+  		<td>结算单据数</td><td>{$list|count}</td>
+  	</tr>
+    <tr>
+  		<td>结算总金额</td><td>{$settlement.total_amount}</td>
+  	</tr>
+  </tbody>
+</table>
+</div>
+
+<div class="row">
+<div><h3>货品明细</h3></div>
+</div>
+
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  	<tr>
+  		<td>单据号</td><td>采购时间</td><td>采购金额</td>
+  	</tr>
+  </thead>
+
+  <tbody>
+    <volist name="list" id="vo">
+    <tr>
+        <td>{$vo.order_code}</td>
+        <td>{$vo.purchase_time}</td>
+        <td><if condition="$vo.order_type eq 3">-</if>{$vo.total_amount}</td>
+    </tr>
+
+    </volist>
+  </tbody>
+</table>
+</div>
+</br>
+</br>
+
+</div>
+</body>
+</html>
