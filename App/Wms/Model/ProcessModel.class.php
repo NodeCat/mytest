@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class ProcessModel extends Model {
 
-    protected $insertFields = array('id','code','type','wh_id','plan_qty','real_qty','p_pro_code','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('code','type','wh_id','plan_qty','real_qty','p_pro_code','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','code','type','wh_id','status','task', 'over_task', 'remark','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('code','type','wh_id','status','task', 'over_task', 'remark','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName = 'erp_process';
 
