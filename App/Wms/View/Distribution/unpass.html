@@ -3,7 +3,11 @@
 <div class="alert alert-danger text-center hidden" role="alert"></div>
 <form class="form-horizontal form-ajax form-pda form-scan" action="/Distribution/over" method="post">
   <input type="hidden" name="dist_code" value="{$dist_code}">
+  <if condition="$type eq 'reduce'">
+  <input type="hidden" name="confirm" value="confirm_reduce">
+  <else />
   <input type="hidden" name="confirm" value="confirm">
+  </if>
   <eq name="confirm" value="yes">
   <div class="form-group">
       <label for="" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label"></label>
