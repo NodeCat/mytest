@@ -197,4 +197,37 @@ class DistLogic {
         }
         return $res;
     }
+
+    /**
+     * [formateSum 格式化应收金额]
+     * @param  [type] $sum [应收]
+     * @return [type]      [返回格式好的数据]
+     */
+    public function formateSum($sum)
+    {
+        $sum = sprintf('%.1f', $sum);
+        $s = substr($sum, -1, 1);
+        $s = intval($s);
+        $s = ($s < 5) ? 0 : $s;
+        $sum = ($s === 0) ? sprintf('%.2f', intval($sum)) : sprintf('%.2f', $sum);
+        return $sum;
+    }
+
+    public function getPayStatusByCode($code)
+    {
+        switch ($code) {
+            case -1:
+                $s = '货到付款';
+                break;
+            case 0:
+                $s = '货到付款';
+                break;
+            case 1:
+                $s = '已付款';
+            default:
+                $s = '';
+                break;
+        }
+        return $s;
+    }
 }

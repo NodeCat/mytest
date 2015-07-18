@@ -195,11 +195,11 @@
                 <span class="input-group-addon">
                   应收 ¥
                   <span class="p_final">
-                    {$vo.final_price}
+                    {$vo.receivable_sum}
                   </span>
                   元
                 </span>
-                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
+                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.receivable_sum}" value="{$vo.receivable_sum}" readonly>
                 <span class="input-group-addon">
                   实收
                 </span>
@@ -210,7 +210,7 @@
                   </case>
                   <case value="已回款" break="1">
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.deal_price}" readonly>
+                    value="{$vo.real_sum}" readonly>
                   </case>
                   <case value="已退货" break="1">
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
@@ -218,7 +218,7 @@
                   </case>
                   <default />
                   <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                  value="{$vo.real_sum}" readonly>
                 </switch>
               </div>
             </div>
