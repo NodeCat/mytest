@@ -15,7 +15,7 @@ class ProcessModel extends Model {
 
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
-                array('created_user',UID,1,'string'),
+        array('created_user',UID,1,'string'),
         array('created_time','get_time',1,'function'),
         array('updated_user',UID,3,'string'),
         array('updated_time','get_time',3,'function'),
@@ -35,8 +35,10 @@ class ProcessModel extends Model {
             'join'=>array(
                 'inner join warehouse on erp_process.wh_id=warehouse.id ',
                 'inner join user u2 on erp_process.updated_user = u2.id',
+                'inner join user u1 on erp_process.created_user = u1.id',
                 ),
-            'field'=>'erp_process.*, warehouse.name as wh_name, u2.nickname as updated_user',
+            'field'=>'erp_process.*, warehouse.name as wh_id, u2.nickname as updated_user, u1.nickname as created_user
+                      ',
         ),
         'latest'=>array(
             'where'=>array('erp_process.is_deleted'=>'0'),
