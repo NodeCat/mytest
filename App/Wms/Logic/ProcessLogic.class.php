@@ -54,7 +54,7 @@ class ProcessLogic {
     }
     
     /**
-     * 出库（并且记录SKU批次价格）
+     * 出库（并且记录SKU批次价格） @todo 出库操作
      * @param unknown $data
      * @return multitype:boolean string
      */
@@ -288,8 +288,8 @@ class ProcessLogic {
                             $c_sku_info['c_pro_name'] = $sku_info['name'];
                             $c_sku_info['c_pro_attrs'] = $sku_info['pro_attrs_str'];
                             $c_sku_info['c_uom_name'] = $sku_info['uom_name'];
-                            $c_sku_info['plan_qty'] = $p_sku_info['plan_qty'] * $c_sku_info['ratio'];
-                            $c_sku_info['real_qty'] = $p_sku_info['real_qty'] * $c_sku_info['ratio'];
+                            $c_sku_info['plan_qty'] = formatMoney($p_sku_info['plan_qty'] * $c_sku_info['ratio'], 2);
+                            $c_sku_info['real_qty'] = formatMoney($p_sku_info['real_qty'] * $c_sku_info['ratio'], 2);
                         }
                     }
                 }
@@ -400,8 +400,8 @@ class ProcessLogic {
             $detail['p_pro_code'] = $value['pro_code'];
             $detail['p_pro_name'] = $value['pro_name'];
             $detail['p_pro_attrs'] = $value['pro_attrs'];
-            $detail['plan_qty'] = intval($value['pro_qty']);
-            $detail['real_qty'] = 0;
+            $detail['plan_qty'] = formatMoney($value['pro_qty'], 2);
+            $detail['real_qty'] = formatMoney(0, 2);
             $detail['created_user'] = session('user.uid');
             $detail['created_time'] = get_time();
             $detail['updated_user'] = session('user.uid');
@@ -594,8 +594,8 @@ class ProcessLogic {
         $assist = M('erp_process_in_detail');
         foreach ($data['detail'] as $value) {
             $detail['pro_code'] = $value['pro_code']; //sku编号
-            $detail['plan_qty'] = $value['plan_qty']; //计划量
-            $detail['real_qty'] = 0; //实际量
+            $detail['plan_qty'] = formatMoney($value['plan_qty'], 2); //计划量
+            $detail['real_qty'] = formatMoney('0', 2); //实际量
             $detail['status'] = 1; //状态
             $detail['pid'] = $pid;
             $detail['created_user'] = session()['user']['uid']; //创建人
@@ -650,8 +650,8 @@ class ProcessLogic {
         foreach ($data['detail'] as $value) {
             $detail['pid'] = $pid;
             $detail['pro_code'] = $value['pro_code']; //sku编号
-            $detail['plan_qty'] = $value['plan_qty']; //计划量
-            $detail['real_qty'] = 0; //实际量
+            $detail['plan_qty'] = formatMoney($value['plan_qty'], 2); //计划量
+            $detail['real_qty'] = formatMoney(0 , 2); //实际量
             $detail['status'] = 1; //状态
             $detail['created_user'] = session()['user']['uid']; //创建人
             $detail['updated_user'] = session()['user']['uid']; //修改人
@@ -711,13 +711,13 @@ class ProcessLogic {
             $detail['pro_code'] = $value['pro_code']; //SKU编号
             $detail['pro_name'] = $value['pro_name']; //SKU名称
             $detail['pro_attrs'] = $value['pro_attrs']; //SKU规格
-            $detail['expected_qty'] = $value['plan_qty']; //预计数量
-            $detail['prepare_qty'] = $value['plan_qty']; //待上架量
-            $detail['done_qty'] = 0; //已上架量
+            $detail['expected_qty'] = formatMoney($value['plan_qty'], 2); //预计数量
+            $detail['prepare_qty'] = formatMoney($value['plan_qty'], 2); //待上架量
+            $detail['done_qty'] = formatMoney('0' , 2); //已上架量
             $detail['pro_uom'] = $value['uom_name'];
             $detail['price'] = 0;
-            $detail['qualified_qty'] = $value['plan_qty'];
-            $detail['unqualified_qty'] = 0;
+            $detail['qualified_qty'] = formatMoney($value['plan_qty'] , 2);
+            $detail['unqualified_qty'] = formatMoney('0' , 2);;
             $detail['remark'] = $data['remark'];
             $detail['status'] = 1;
             $detail['created_user'] = session()['user']['uid']; //创建人
@@ -734,7 +734,7 @@ class ProcessLogic {
     }
     
     /**
-     * 生成加工出库单（wms）
+     * 生成加工出库单（wms）@todo liuguangping 出库操作
      * @param array $data
      */
     public function make_process_out_stock_wms($data = array()) {

@@ -175,9 +175,17 @@ class ProcessController extends CommonController {
     	        if (empty($value['pro_code'])) {
     	            $this->msgReturn(false, '请选择sku');
     	        }
-    	        if (empty($value['pro_qty']) || intval($value['pro_qty']) != $value['pro_qty'] || intval($value['pro_qty']) <= 0) {
+    	        if (empty($value['pro_qty']) || intval($value['pro_qty']) <= 0) {
     	            $this->msgReturn(false, '请填写大于0的整型数量');
     	        }
+
+                //验证小数 liuguangping
+                $mes = '';
+                if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                    $mes = '计划加工数量只能精确到两位小数点';
+                    $this->msgReturn(0,$mes);exit;
+                }
+
     	        $result = $process->get_ratio_by_pro_code($value['pro_code']);
     	        if (empty($result)) {
     	            $this->msgReturn(false, '你添加的父sku中含有不存在物料清单的');
@@ -283,7 +291,7 @@ class ProcessController extends CommonController {
                 $this->msgReturn(false, '生成加工入库单失败');
             }
             
-            //创建wms下的子SKU出库单（返回出库单号）
+            //创建wms下的子SKU出库单（返回出库单号）liuguangping @todo
             $out_code = $Logic->make_process_out_stock_wms($format_c);
             if (empty($out_code)) {
                 $this->msgReturn(false, '生成加工出库单失败');

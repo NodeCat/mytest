@@ -48,3 +48,18 @@ ALTER TABLE `stock_move` CHANGE `new_qty` `new_qty` DECIMAL(18,2) UNSIGNED NOT N
 #盘点列表
 ALTER TABLE `stock_inventory_detail` CHANGE `pro_qty` `pro_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '盘点数量';
 ALTER TABLE `stock_inventory_detail` CHANGE `theoretical_qty` `theoretical_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '理论仓库数';
+
+#加工单
+ALTER TABLE `erp_process_detail` CHANGE `plan_qty` `plan_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0' COMMENT '计划生产量';
+ALTER TABLE `erp_process_detail` CHANGE `real_qty` `real_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0' COMMENT '实际生产量';
+
+#物料清单
+ALTER TABLE `erp_process_sku_relation` CHANGE `ratio` `ratio` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '比例数量';
+
+#erp 加工入库单详细
+ALTER TABLE `erp_process_in_detail` CHANGE `plan_qty` `plan_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '计划量';
+ALTER TABLE `erp_process_in_detail` CHANGE `real_qty` `real_qty` DECIMAL(10) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '实际量';
+
+#erp 加工出库单详细
+ALTER TABLE `erp_process_out_detail` CHANGE `plan_qty` `plan_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0' COMMENT '计划量';
+ALTER TABLE `erp_process_out_detail` CHANGE `real_qty` `real_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '实际量';
