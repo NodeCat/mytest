@@ -247,6 +247,10 @@ class ProcessRatioController extends CommonController {
 	    $processSku = $processDetail->where($map)->select();
 	    if (!empty($processSku)) {
 	        foreach ($processSku as $value) {
+	            $processStatus = M('erp_process')->where(array('id'=>$value['pid']))->find();
+	            if ($processStatus['status'] == 3) {
+	                continue;
+	            }
 	            if ($value['real_qty'] < $value['plan_qty']) {
 	                $this->msgReturn(false, '此物料清单正在使用中请勿编辑');
 	            }
@@ -301,6 +305,10 @@ class ProcessRatioController extends CommonController {
 	        $processSku = M('erp_process_detail')->where($map)->select();
 	        if (!empty($processSku)) {
 	            foreach ($processSku as $value) {
+	                $processStatus = M('erp_process')->where(array('id'=>$value['pid']))->find();
+	                if ($processStatus['status'] == 3) {
+	                    continue;
+	                }
 	                if ($value['real_qty'] < $value['plan_qty']) {
 	                    $this->msgReturn(false, '此物料清单正在使用中请勿删除');
 	                }
