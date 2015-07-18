@@ -555,6 +555,7 @@ class DistributionController extends CommonController {
                 $sur_info = $stock->where($map)->select();
                 unset($map);
                 $sur_detail = $D->get_out_detail($pass_ids); //通过审核的sku详情
+                //dump($);
                 $total['order_count'] = count($pass_ids); //总单数
                 $total['sku_count'] = 0; //总件数
                 $total['line_count'] = 0; //总行数
@@ -579,7 +580,8 @@ class DistributionController extends CommonController {
                 $unpass_ids .= implode(',', $make_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
             }
-        } elseif (!empty($reduce_ids)) {
+        } 
+        if (!empty($reduce_ids)) {
             //弹出提示框
             if (empty($confirm)) {
                 $unpass_ids .= implode(',', $reduce_ids) . '|' . $post;
