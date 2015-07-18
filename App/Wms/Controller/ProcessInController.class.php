@@ -28,12 +28,6 @@ class ProcessInController extends CommonController {
 	                'control_type' => 'text',
 	                'value' => 'refer_code',
 	        ),
-	        /*'erp_process_in_detail.p_pro_code' => array(
-	                'title' => '父SKU编号',
-	                'query_type' => 'eq',
-	                'control_type' => 'text',
-	                'value' => '',
-	        ),*/
 	        'erp_process_in.wh_id' => array(
 	                'title' => '所属仓库',
 	                'query_type' => 'eq',
@@ -52,8 +46,9 @@ class ProcessInController extends CommonController {
 	                'query_type' => 'eq',
 	                'control_type' => 'select',
 	                'value' => array(
-	        	            	'parpare' => '待入库',
-			            'on' => '已入库',
+	        	            	1 => '待入库',
+			            2 => '已入库',
+			            3 => '已作废',
 	                ),
 	        ),
 	        'erp_process_in.created_time' => array(
@@ -85,14 +80,14 @@ class ProcessInController extends CommonController {
 	    $in_detail = D('ProcessIn');
 	    $code = array();
 	    foreach ($data as &$value) {
-	        $sql = "select *,company.name,d.p_pro_code from erp_process_in e
+	        $sql = "select *,company.name,f.p_pro_code from erp_process_in e
 	                inner join erp_process d on d.code=e.refer_code
-	                inner join erp_process_sku_relation r on d.p_pro_code=r.p_pro_code
+	                inner join erp_process_detail f on f.pid=d.id
+	                inner join erp_process_sku_relation r on f.p_pro_code=r.p_pro_code
 	                inner join company on r.company_id=company.id
 	                where e.code=" . "'".$value['code'] . "' limit 1";
 	        $result = $in_detail->query($sql);
 	        $value['company_id'] = $result[0]['name'];
-	        //$value['p_pro_code'] = $result[0]['p_pro_code'];
 	        
 	        //格式化仓库
 	        $warehouse = M('warehouse');
@@ -102,30 +97,17 @@ class ProcessInController extends CommonController {
 	        
 	        //格式化状态
 	        switch ($value['status']) {
-	        	    case 'parpare':
+	        	    case 1:
 	        	        $value['status'] = '待入库';
 	        	        break;
-	        	    case 'on':
+	        	    case 2:
 	        	        $value['status'] = '已上架';
 	        	        break;
+	        	    case 3:
+	        	        $value['status'] = '已作废';
+	        	        break;
 	        }
-	        $code[] = $value['p_pro_code'];
 	    }
-	    $code = array_unique($code);
-	    //调用pms接口
-	    /*$pms = D('Pms', 'Logic');
-	    $p_info = $pms->get_SKU_field_by_pro_codes($code);
-	    if (!empty($p_info)) {
-	        foreach ($data as &$val) {
-	            foreach ($p_info as $key => $v) {
-	                if ($val['p_pro_code'] == $key) {
-	                    $val['p_pro_name'] = $v['name'];
-	                    $val['p_pro_norms'] = $v['pro_attrs_str'];
-	                    break;
-	                }
-	            }
-	        }
-	    }*/
 	}
 	
 	/**
@@ -133,19 +115,6 @@ class ProcessInController extends CommonController {
 	 * @param unknown $map
 	 */
 	public function after_search(&$map) {
-	   /*if (array_key_exists('erp_process_in_detail.p_pro_code', $map)) {
-	       //根据父sku编号查询父id
-	       $M = M('erp_process_in_detail');
-	       $where['pro_code'] = $map['erp_process_in_detail.p_pro_code'][1];
-	       $pids = $M->field('pid')->where($where)->select();
-	       
-	       foreach ($pids as $value) {
-	           $pid_arr[] = $value['pid'];
-	       }
-	       $map['erp_process_in.id'] = array('in', $pid_arr);
-	       unset($where);
-	       unset($map['erp_process_in_detail.p_pro_code']);
-	   }*/
 	   if (array_key_exists('erp_process_sku_relation.company_id', $map)) {
 	       //查询系统
 	       $relation = M('erp_process_sku_relation');
@@ -220,20 +189,22 @@ class ProcessInController extends CommonController {
          
         //格式化状态
         switch ($data['status']) {
-        	case 'parpare':
-        	    $data['status'] = '待出库';
-        	    break;
-        	case 'on':
-        	    $data['status'] = '已出库';
-        	    break;
+            	case 1:
+            	    $data['status'] = '待出库';
+            	    break;
+            	case 2:
+            	    $data['status'] = '已出库';
+            	    break;
+            	case 3:
+            	    $data['status'] = '已作废';
         }
         unset($map);
         
         //创建人
         $map['id'] = $data['created_user'];
         $user = M('user');
-        $username = $user->field('username')->where($map)->find();
-        $data['created_user'] = $username['username'];
+        $username = $user->field('nickname')->where($map)->find();
+        $data['created_user'] = $username['nickname'];
         $data['total_qty'] = $num;
         $data['cat_total'] = count($data['pros']);
     }
