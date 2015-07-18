@@ -95,6 +95,7 @@
               <td>产品名称</td>
               <!--<td>规格</td>-->
               <td>订货数量</td>
+              <td>发货数量</td>
             </tr>
           </thead>
           <tbody>
@@ -104,12 +105,14 @@
                 <td>{$detail.pro_name}</td>
                 <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
                 <td>{$detail.order_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
+                <td>{$detail.delivery_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
               </tr>
             </volist>
             <tr>
               <td>汇总</td>
               <td colspan="1"></td>
               <td>{$attrs.sku_count}</td>
+              <td>{$delivery_sku_count}</td>
             </tr>
           </tbody>
         </table>
