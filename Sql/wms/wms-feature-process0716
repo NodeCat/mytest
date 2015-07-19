@@ -1,0 +1,124 @@
+DROP TABLE IF EXISTS `erp_process`;
+CREATE TABLE IF NOT EXISTS `erp_process` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(32) NOT NULL DEFAULT '' COMMENT '加工单号',
+  `type` varchar(32) NOT NULL DEFAULT '' COMMENT '加工类型 unit 组合 split拆分',
+  `wh_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '所属仓库',
+  `status` int(10) NOT NULL DEFAULT '0' COMMENT '状态 1待复核 2已生效 3已完成 4已驳回 5已作废',
+  `task` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '总任务数',
+  `over_task` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '完成任务数量',
+  `remark` varchar(200) DEFAULT '' COMMENT '备注',
+  `created_user` int(11) unsigned NOT NULL DEFAULT '0',
+  `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_user` int(11) unsigned NOT NULL DEFAULT '0',
+  `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `is_deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=59 ;
+
+DROP TABLE IF EXISTS `erp_process_detail`;
+CREATE TABLE IF NOT EXISTS `erp_process_detail` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `pid` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '关联加工单id',
+  `p_pro_code` int(10) NOT NULL DEFAULT '0' COMMENT '父sku编号',
+  `p_pro_name` varchar(100) NOT NULL DEFAULT '' COMMENT '父sku名称',
+  `p_pro_attrs` varchar(200) NOT NULL DEFAULT '' COMMENT '父sku规格',
+  `plan_qty` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '计划生产量',
+  `real_qty` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '实际生产量',
+  `created_user` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建人',
+  `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_user` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新人',
+  `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  `is_deleted` tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '是否删除 0未删除 >0已删除',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='加工单详情表' AUTO_INCREMENT=26 ;
+
+ALTER TABLE  `erp_process_in` CHANGE  `status`  `status` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT '状态 1待入库 2已上架3已作废';
+UPDATE  `erp_process_in` SET STATUS =2 WHERE 1;
+
+ALTER TABLE  `erp_process_in_detail` CHANGE  `status`  `status` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT '状态 1待入库 2已上架';
+UPDATE  `erp_process_in_detail` SET STATUS =2 WHERE 1;
+ALTER TABLE  `erp_process_in_detail` ADD  `price` DECIMAL( 10, 0 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '单价' AFTER `status` ;
+
+ALTER TABLE  `erp_process_out` CHANGE  `status`  `status` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT '状态 1待生产 2已出库 3 已作废';
+UPDATE  `erp_process_out` SET STATUS =2 WHERE 1;
+
+ALTER TABLE  `erp_process_out_detail` CHANGE  `status`  `status` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT '状态 1待出库 2已出库';
+UPDATE  `erp_process_out_detail` SET STATUS =2 WHERE 1;
+
+INSERT INTO  `wms`.`auth_authority` (
+`id` ,
+`name` ,
+`type` ,
+`app` ,
+`group` ,
+`module` ,
+`action` ,
+`url` ,
+`condition` ,
+`description` ,
+`title` ,
+`show` ,
+`pid` ,
+`mpid` ,
+`level` ,
+`queue` ,
+`target` ,
+`location` ,
+`status` ,
+`updated_user` ,
+`updated_time` ,
+`created_user` ,
+`created_time` ,
+`is_deleted`
+)
+VALUES (
+NULL ,  'match_code',  '4',  'Wms',  'Wms',  'Process',  'match_code',  'Wms/Process/match_code',  '',  '',  '获取物料清单',  '1',  '210',  '0',  '0',  '0',  '', '',  '1',  '0',  '0000-00-00 00:00:00',  '0',  '0000-00-00 00:00:00',  '0'
+);
+
+
+INSERT INTO  `wms`.`auth_authority` (
+`id` ,
+`name` ,
+`type` ,
+`app` ,
+`group` ,
+`module` ,
+`action` ,
+`url` ,
+`condition` ,
+`description` ,
+`title` ,
+`show` ,
+`pid` ,
+`mpid` ,
+`level` ,
+`queue` ,
+`target` ,
+`location` ,
+`status` ,
+`updated_user` ,
+`updated_time` ,
+`created_user` ,
+`created_time` ,
+`is_deleted`
+)
+VALUES (
+NULL ,  'confirm',  '4',  'Wms',  'Wms',  'Process',  'confirm',  'Wms/Process/confirm',  '',  '',  '扫描父SKU',  '1',  '210',  '0',  '0',  '0',  '',  '',  '1',  '0', '0000-00-00 00:00:00',  '0',  '0000-00-00 00:00:00',  '0'
+);
+
+DROP TABLE IF EXISTS `erp_process_out_price`;
+CREATE TABLE IF NOT EXISTS `erp_process_out_price` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `pro_code` varchar(50) NOT NULL DEFAULT '' COMMENT 'sku编号',
+  `pro_qty` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '数量',
+  `price` decimal(10,0) unsigned NOT NULL DEFAULT '0' COMMENT '单价',
+  `batch` varchar(100) NOT NULL DEFAULT '' COMMENT '批次',
+  `location_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '库位',
+  `created_user` int(10) unsigned NOT NULL DEFAULT '0',
+  `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_user` int(10) unsigned NOT NULL DEFAULT '0',
+  `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `is_deleted` tinyint(4) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='加工出库SKU价格记录表' AUTO_INCREMENT=149 ;

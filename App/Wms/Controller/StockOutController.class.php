@@ -270,6 +270,7 @@ class StockOutController extends CommonController {
         }
     }
     protected function after_save($id) {
+        //获得需要修改的参数
         $post = I('pros');
         $stock_bill_detail = D('stock_bill_out_detail'); 
         $column['pid'] = $id;
@@ -298,7 +299,7 @@ class StockOutController extends CommonController {
             }
         }
         unset($map);
-        $field="sum(order_qty) as total_qty";
+        $field="sum(order_qty) as total_qty, sum(price * order_qty) as total_amount";
         $map['pid'] = $id;
         $data = $stock_bill_detail->field($field)->where($map)->group('pid')->find();
         $where['id'] = $id;

@@ -27,25 +27,36 @@
         <td style="width:10%;" class="text-center">
             <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
         </td>
-      </tr>
-  			<tr>
-  				<td colspan="6"><a class="add-pro" href="#">添加一个产品</a></td>
-  			</tr>
+        </tr>
+  		<tr>
+  			<td colspan="6"><a class="add-pro" href="#">添加一个产品</a></td>
+  		</tr>
+  		<volist name="data['detail']" id="value">
+        		<tr class="tr-tpl tr-cur">
+	        <td style="width:50%;">
+		        <input type="hidden" value="" name="pros[0][pro_code]" class="pro_code form-control input-sm" >
+		        <input type="hidden" value="" name="pros[0][pro_name]" class="pro_name form-control input-sm" >
+		        <input type="hidden" value="" name="pros[0][pro_attrs]" class="pro_attrs form-control input-sm" >
+		        <input type="text" id="typeahead" placeholder="编号" value="[{$value['p_pro_code']}] {$value['p_pro_name']} {$value['p_pro_attrs']}" class="pro_names typeahead form-control input-sm" autocomplete="off" >
+		    </td>
+	        <td  style="width:10%;">
+	            <input type="text" name="pros[0][pro_qty]" placeholder="数量^"  value="{$value['plan_qty']}" class="form-control input-sm text-left" autocomplete="off">
+	        </td>
+	        <td style="width:10%;" class="text-center">
+	            <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+	        </td>
+	        </tr>
+        </volist>
   		</tbody>
   		</table>
     </div>
   </div>
 </div>
+  </div>
 
-  </div><!-- 
-	<div class="">
-	  <textarea name="pro_infos" id="pro_infos" class="form-control" rows="5" placeholder="批量添加，请从excel中直接粘贴，数据格式：货品号 采购数量 采购单价 中间请用tab分割，每行请回车"></textarea>
-	  </br>
-	  <a id="preview" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon"></span>批量添加预览</a>
-	</div>-->
   <div class="row">
     <div class="tab-content">
-      <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
+      <textarea name="remark" class="form-control" rows="5" placeholder="{$data['remark']}"></textarea>
     </div>
   </div>
 
@@ -132,29 +143,6 @@ $('.tr-cur .pro_names').typeahead({
 	$('.tab-content').delegate( '.btn-delete', 'click', function(){
 	  $(this).closest('tr').remove();
 	});
-	
-	 //预览
-	  $('#preview').on('click',function(){
-	    var _pro_infos = $('#pro_infos').val();
-	    var _url = '/Process/preview';
-	    //提交数据到后端处理
-	    $.ajax({
-	      url:_url,
-	      type:'post',
-	      cache : false,
-	      dataType:'json',
-	      data:'pro_infos='+_pro_infos,
-	      success: function(json){
-	        if(json.status == 1){
-	          $('#table-pro tr:last').before(json.data.html);
-	          typehead();
-	        }else{
-	          alert(json.msg);
-	        }
-	      }
-	    });
-	  });
-
 }
 </script>
 
