@@ -82,17 +82,16 @@
           <case value="已回款" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
             data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <case value="已退货" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
             data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <default />
           <a onclick="check(this)" class="list-group-item  panel-footer collapsed"
-          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false"
-          data-parent="#orders" aria-controls="info_{$vo.id}">
+          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
         </switch>
         <!--{$vo.order_type_cn}-->
         <span class="order-id">

@@ -1,0 +1,1 @@
+ALTER TABLE  `stock_wave_distribution_detail` ADD  `signature` VARCHAR( 64 ) NOT NULL DEFAULT  '''''' COMMENT  '客户签名' AFTER  `status` ;
