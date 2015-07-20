@@ -18,7 +18,9 @@ class SignInApi extends CommApi
             );
             $this->ajaxReturn($re);
         }
+        dump($img);
         $path = $this->uploadImg($img);
+        dump($path);die();
         if ($path) {
             $map['suborder_id'] = $suborder_id;
             $map['sign_img'] = $path;
@@ -47,6 +49,20 @@ class SignInApi extends CommApi
     }
 
     public function uploadImg($img){
-        
+        import("Common.Lib.HttpCurl");
+        $this->request = new \HttpCurl();
+        $url = "http://img.dachuwang.com/upload?bucket=tms";
+        $file = array(
+            'name' => $img['tmp_name'],
+            'dir'  => dirname($img['tmp_name'])
+        );
+        $res = $this->request->post(
+            $url,
+            $args, 
+            $options = array('post_json' => false),
+            $urlencode = false,
+            $file
+        );
+        dump($res);
     }
 }
