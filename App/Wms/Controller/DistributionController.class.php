@@ -1020,6 +1020,23 @@ class DistributionController extends CommonController {
                $this->msgReturn(false, '出库单状态更新失败');
            }
         }
+        //通知hop订单状态改变为波次中
+        foreach($ids as $bill_out_id){
+            $map['id'] = $bill_out_id;
+            $bill_out_info = $stock_out->where($map)->find();
+            unset($map);
+
+            //如果是销售订单则通知hop接口
+            if($bill_out_info['order_type'] == 1){
+                $map['suborder_id'] = $bill_out_info['refer_code'];
+                $map['status'] = '11';
+                $map['cur']['name'] = session('user.username');
+                A('Common/Order','Logic')->set_status($map);
+                unset($map);
+            }
+            
+            unset($bill_out_info);
+        }
         $msg = array();
         $msg['order_count'] = count($ids);
         $msg['type'] = 'success';
