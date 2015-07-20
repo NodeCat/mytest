@@ -147,7 +147,11 @@ class ProcessController extends CommonController {
                 $ids[] = $value['pid'];
             }
             unset($map['erp_process.p_pro_code']);
-            $map['erp_process.id'] = array('in', $ids);
+            if (!empty($ids)) {
+                $map['erp_process.id'] = array('in', $ids);
+            } else {
+	            $map['erp_process.id'] = array('eq', null);
+	        }
         }
         if (array_key_exists('erp_process.created_user', $map)) {
             $where['nickname'] = $map['erp_process.created_user'][1];
@@ -160,7 +164,11 @@ class ProcessController extends CommonController {
                 $uids[] = $value['id'];
             }
             unset($map['erp_process.created_user']);
-            $map['erp_process.created_user'] = array('in', $uids);
+            if (!empty($uids)) {
+                $map['erp_process.created_user'] = array('in', $uids);
+            } else {
+	            $map['erp_process.created_user'] = array('eq', null);
+	        }
         }
     }
     
