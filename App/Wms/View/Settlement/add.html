@@ -133,18 +133,22 @@ function checkForm(){
                 html += '<td>'+data[item].warehouse_name+'</td>';
                 if(data[item].state == 'norefund'){
                     html += '<td>未收款</td>';
+                    html += '<td>-'+data[item].paid_amount+'</td>';
                 }else if(data[item].invoice_method_code == 0){
                     html += '<td>预付款</td>';
+                    html += '<td>'+data[item].paid_amount+'</td>';
                 }else{
                     html += '<td>货到付款</td>';
-                }
-                if(data[item].state == 'norefund'){
-                    html += '<td>-'+data[item].paid_amount+'</td>';
-                }else{
                     html += '<td>'+data[item].paid_amount+'</td>';
                 }
                 html += '<td>'+data[item].user_nickname+'</td>';
-                html += '<td></td>';
+                if(data[item].state == 'norefund'){
+                    html += '<td><a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/PurchaseRefund/view/id/'+data[item].id+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a></td>';
+                }else if(data[item].invoice_method_code == 0){
+                    html += '<td><a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/'+data[item].id+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a></td>';
+                }else{
+                    html += '<td><a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/'+data[item].fid+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a></td>';
+                }
                 html += '</tr>';
                 i++;
             }
@@ -198,27 +202,4 @@ $(function(){
         })
     });
 });
-/*$(function(){
- //预览
- $('#preview').on('click',function(){
- var _pro_infos = $('#pro_infos').val();
- var _url = '/Purchase/preview';
- //提交数据到后端处理
- $.ajax({
- url:_url,
- type:'post',
- cache : false,
- dataType:'json',
- data:'pro_infos='+_pro_infos,
- success: function(json){
- if(json.status == 1){
- $('#table-pro tr:last').before(json.data.html);
- typehead();
- }else{
- alert(json.msg);
- }
- }
- });
- });
- });*/
 </script>

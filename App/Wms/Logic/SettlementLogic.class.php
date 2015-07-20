@@ -64,7 +64,7 @@ class SettlementLogic
         $where['stock_purchase.is_deleted']     = 0;
         //取采购单 货到付款 并且是 已生效状态，并且对应的入库单有 未付款的订单(入库单),并且是合格状态
         $join[] = "inner join erp_purchase_in_detail ON erp_purchase_in_detail.purchase_code=stock_purchase.code AND erp_purchase_in_detail.status='nopaid' AND erp_purchase_in_detail.pro_status!='unqualified'";
-        $field = "erp_purchase_in_detail.id as id,stock_purchase.code as code, erp_purchase_in_detail.price_subtotal as paid_amount,stock_purchase.invoice_method as invoice_method_code,stock_purchase.status as state, warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname";
+        $field = "erp_purchase_in_detail.id as id,stock_purchase.id as fid,stock_purchase.code as code, erp_purchase_in_detail.price_subtotal as paid_amount,stock_purchase.invoice_method as invoice_method_code,stock_purchase.status as state, warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname";
 
         $model = M('stock_purchase');
 

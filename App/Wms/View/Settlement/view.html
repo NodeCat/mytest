@@ -6,7 +6,7 @@
     <div class="col-lg-6 col-sm-6 col-md-6 col-xs-12">
         <input type="hidden" value="{$data[$pk]}" id="id" />
 
-        <if condition="($data.state eq '0') OR ($data.status eq '1')">
+        <if condition="($data.state eq '0') OR ($data.state eq '1')">
             <a href="javascript:void(0);" data-title="修改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul" id="editInvoice">
                 <i class="glyphicon glyphicon-edit"></i> 修改
             </a>

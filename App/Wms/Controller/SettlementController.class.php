@@ -132,13 +132,6 @@ class SettlementController extends CommonController
             array('name'=>'add', 'show' =>isset($this->auth['add']),'new'=>'true'),
         );
 
-        /*$this->status =array(
-            array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])),
-                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
-            ),
-        );*/
-
         $this->search_addon = true;
     }
 
