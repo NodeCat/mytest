@@ -51,7 +51,7 @@ class SignInApi extends CommApi
     public function uploadImg($img){
         import("Common.Lib.HttpCurl");
         $this->request = new \HttpCurl();
-        $url = "http://img.dachuwang.com/upload?bucket=tms";
+        $url = "http://img.dachuwang.com/upload/";
         $file = array(
             'name' => $img['tmp_name'],
             'dir'  => dirname($img['tmp_name'])
@@ -63,6 +63,7 @@ class SignInApi extends CommApi
             $urlencode = false,
             $file
         );
+        dump($file);
         dump($res);
     }
 }
