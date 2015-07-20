@@ -176,10 +176,10 @@ $(function(){
                 paid_amount += amount;
             }
         });
-        /*if(postData.length <= 0){
+        if(postData.length <= 0){
             alert('请选择要结算的订单！');
             return false;
-        }*/
+        }
         var partner_id  = $('input[name=partner_id]').val();    //供货商ID
         var bill_number = $('input[name=bill_number]').val();   //发票号
         var bill_amount = $('input[name=bill_amount]').val();   //发票金额
