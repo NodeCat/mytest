@@ -7,7 +7,7 @@ class StockLogic{
     * @param
     * $order_id
     **/
-    public function checkStockIsEnoughByOrderId($order_id, $loc_type = null){
+    public function checkStockIsEnoughByOrderId($order_id, $loc_type = null, $batch_code = null){
         if(empty($order_id)){
             return false;
         }
@@ -36,6 +36,8 @@ class StockLogic{
                 //指定库位检查
                 $data['location_ids'] = $location_ids;
             }
+            //加入批次条件满足采购退货 liuguangping
+            $data['batch_code'] = $batch_code;
             $check_re = $this->outStockBySkuFIFOCheck($data);
             if($check_re['status'] != 1){
                 $is_enough = false;
@@ -60,7 +62,7 @@ class StockLogic{
     * $not_in_location_ids 过滤掉某些库位id
     */
     public function assignStockByFIFOWave($params = array()){
-        if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+        if(empty($params['wh_id']) || empty($params['pro_code'])){
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
@@ -74,6 +76,11 @@ class StockLogic{
         //过滤某些仓库id
         if(!empty($params['not_in_location_ids'])){
             $map['location_id'] = array('not in',$params['not_in_location_ids']);
+        }
+
+        //加入批次条件满足采购退货 liuguangping
+        if($params['batch_code']){
+            $map['stock.batch'] = $params['batch_code'];
         }
 
         $stock_list = M('Stock')->where($map)->order('product_date')->select();
@@ -158,8 +165,12 @@ class StockLogic{
      * )
      */
     public function outStockBySkuFIFOCheck($params = array()){
-        if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+        if(empty($params['wh_id']) || empty($params['pro_code'])){
             return array('status'=>0,'msg'=>'参数有误！');
+        }
+
+        if($params['pro_qty'] == 0){
+            return array('status'=>1);
         }
 
         $diff_qty = $params['pro_qty'];
@@ -182,6 +193,11 @@ class StockLogic{
             $location_status = M('Location')->where($location_map)->find();
             $map['stock.status'] = $location_status['status'];
             unset($location_map);
+        }
+
+        //加入批次条件满足采购退货 liuguangping
+        if($params['batch_code']){
+            $map['stock.batch'] = $params['batch_code'];
         }
         $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
@@ -208,7 +224,7 @@ class StockLogic{
      * )
      */
     public function outStockBySkuFIFO($params = array()){
-        if(empty($params['wh_id']) || empty($params['pro_code']) || empty($params['pro_qty'])){
+        if(empty($params['wh_id']) || empty($params['pro_code'])){
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
@@ -501,7 +517,7 @@ class StockLogic{
         //减待上架库存 增加已上量
         $map['refer_code'] = $refer_code;
         $map['pro_code'] = $pro_code;
-        $map['pro_uom'] = $pro_uom;
+        //$map['pro_uom'] = $pro_uom;
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
         unset($map);
@@ -532,7 +548,7 @@ class StockLogic{
         $stock_move_data = $stock_move->create($stock_move_data);
         $stock_move->data($stock_move_data)->add();
 
-        return ture;
+        return true;
     }
 
     /**
@@ -992,27 +1008,41 @@ class StockLogic{
         return array('status'=>1);
     }
 
-
     /**
-    * 根据货品号，货品名称，库位编号，库存状态，查询库存记录
-    * $params = array(
+    * 根据货品号，仓库编号，批次编号，货品名称，库位编号，库存状态，标示（flg=》不等于null 统计 =》null 查看）,查询库存记录
+    * $params = array( liuguangping
     *    'pro_code' => 'xxxx',
+    *    'wh_id'    => 'xxx'
     *    'pro_name' => 'xxxx',
+    *    'batch_code'=>'xxxx',
     *    'location_code' => 'xxxx',
-    *    'status' => 'xxxxx',
+    *    'no_location_code'=> array('DownGrade,PACK')
+    *    'stock_status' => 'xxxxx',
+    *    
     * )
     * return array $stock_infos
     */
-    public function getStockInfosByCondition($params = array()){
+    public function getStockInfosByCondition($params = array(), $flg = null){
         $pro_code = $params['pro_code'];
+        $wh_id    = $params['wh_id'];
+        $batch_code = $params['batch_code'];
         $pro_name = $params['pro_name'];
         $location_code = $params['location_code'];
+        $no_in_location_area_code = $params['no_in_location_area_code'];
         $stock_status = $params['stock_status'];
 
         $map = array();
         //根据pro_code添加map
         if($pro_code){
             $map['stock.pro_code'] = array('LIKE','%'.$pro_code.'%');
+        }
+        //仓库编号
+        if($wh_id){
+            $map['wh_id'] = $wh_id;
+        }
+        //批次号
+        if($batch_code){
+            $map['batch'] = $batch_code;
         }
         //根据pro_name查询对应的pro_code
         if($pro_name){
@@ -1027,18 +1057,43 @@ class StockLogic{
         if($location_code){
             $location_map['code'] = array('LIKE','%'.$location_code.'%');
             $location_ids = M('Location')->where($location_map)->getField('id',true);
+
             if(empty($location_ids)){
                 $location_ids = array(0);
             }
 
             $map['stock.location_id'] = array('in',$location_ids);
         }
+        //排斥库位 liuguangping
+        if($no_in_location_area_code){
+            //升级方法 liuguangpng 
+            $location_ids = A('Location','Logic')->getLocationIdByAreaName($no_in_location_area_code);
+            if(empty($location_ids)){
+                $location_ids = array(0);
+            }
+
+            $map['stock.location_id'] = array('not in',$location_ids);
+        }
 
         if(!empty($stock_status)){
             $map['stock.status'] = array('eq',$stock_status);
         }
 
-        $stock_infos = M('Stock')->where($map)->select();
+        $m = M('Stock')->where($map);
+        if($flg === null){
+            $stock_infos = $m->select();
+        }else{
+            $M = clone $m;
+            $result = $m->select();
+            $stock_infos['result'] = $result;
+            if(!$pro_code || !$wh_id || !$batch_code){
+                $stock_qty = 0;
+            }else{
+                $stock_qty   = $M->sum('stock_qty');
+            }
+            
+            $stock_infos['sum'] = $stock_qty;
+        }
 
         return $stock_infos;
     }
@@ -1401,4 +1456,5 @@ class StockLogic{
 
         return $data;
     }
+
 }

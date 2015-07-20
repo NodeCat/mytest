@@ -361,7 +361,15 @@ class StockInLogic{
 		return $in['qty_total'];
 	}
 
-	public function getQtyForOn($batch,$pro_code){
+	/**
+     * getQtyForOn 获取同一批次该商品的相应数量
+     * @param Int $wh_id 仓库id
+     * @param String $batch 批次
+     * @param String $pro_code 货物编码
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-13
+     */
+	public function getQtyForOn($batch,$pro_code,$wh_id = null){
 		/*$map['location_id'] = '0';
 		$map['pro_code'] = $pro_code;
 		$map['type'] = 'in';
@@ -369,14 +377,22 @@ class StockInLogic{
 		$map['batch'] = $batch;
 		$res = M('stock')->field('stock_qty,prepare_qty')->where($map)->find();
 		*/
+		$map = array();
+		if($wh_id !== null){
+			$map['wh_id'] = $wh_id;
+		}
 		$map['pro_code'] = $pro_code;
 		$map['refer_code'] = $batch;
 		$res = M('stock_bill_in_detail')->where($map)->find();
-		if(empty($res)) {
+		if(!$pro_code || !$batch || empty($res)) {
 			return 0;
 		}
 		else {
-			return $res['prepare_qty'];
+			if(isset($map['wh_id'])){
+				return $res['done_qty'];
+			}else{
+				return $res['prepare_qty'];
+			}
 		}
 	}
 
@@ -417,4 +433,5 @@ class StockInLogic{
 		
 		return true;
 	}
+
 }

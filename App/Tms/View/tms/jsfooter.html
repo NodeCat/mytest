@@ -111,7 +111,7 @@
         if (i == 1) {
           var params = $(this).closest('form.order').serialize();
           var addr = "{:U('sign')}";
-
+          var oid = $(this).parents('.order').find('input[name=id]').val();
           $.ajax({
             url: addr,
             type: 'post',
@@ -133,7 +133,6 @@
           });
         } else {
           alert('签收数量不能为空');
-
         }
       });
 

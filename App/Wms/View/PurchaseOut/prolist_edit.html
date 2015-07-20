@@ -1,0 +1,199 @@
+<div role="tabpanel">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">货品</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+        <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
+        <thead>
+            <!-- <th>
+              <label class="checkbox">
+                  <input type="checkbox" class="select-all" data-target="data-table" id="inlineCheckboxAll" value='-1'> 全选
+              </label>
+            </th> -->
+            <th>货号</th>
+            <th>货号名称</th>
+            <th>规格</th>
+            <th>采购单价</th>
+            <th>上架量</th>
+            <th>计量单位</th>
+            <th>在库量</th>
+            <th>退货量</th>
+            <!-- <th>操作</th> -->
+        </thead>
+        <tbody>
+        <volist name='presult' id='vo' key='k'>
+        <tr class="tr-tpl" id="tr_{$k}">
+
+            <!-- <td style="width:5%;">
+                  <input type="checkbox" value="{$k}" />
+            </td> -->
+            <td style="width:15%;">
+              <input type="hidden" value="{$vo.id}" name="pros[id][]" class="pro_code form-control input-sm" >
+              <input type="hidden" value="{$vo.pro_code}" name="pros[pro_code][]" class="pro_code form-control input-sm" >
+              <input type="hidden" value="{$vo.pro_name}" name="pros[pro_name][]" class="pro_name form-control input-sm" >
+              <input type="hidden" value="{$vo.pro_attrs}" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+              <input type="hidden" value="{$vo.price_unit}" name="pros[price_unit][]" class="price_unit form-control input-sm" >
+              <input type="hidden" value="{$vo.doneQty}" name="pros[done_qty][]" class="done_qty form-control input-sm" >
+              <input type="hidden" value="{$vo.pro_uom}" name="pros[pro_uom][]" class="pro_uom form-control input-sm" >
+              <input type="hidden" value="{$vo.batch_code}" name="pros[batch_code][]" class="batch_code form-control input-sm" >
+              <label type="text" value="{$vo.pro_code}" class="text-left p_res">{$vo.pro_code}</label>
+            </td>
+
+            <td  style="width:10%;">
+              <label type="text" value="" class="text-left p_res">{$vo.pro_name}</label>
+            </td>
+
+            <td style="width:10%;">
+              <label type="text" value="" class="text-left p_res">{$vo.pro_attrs}</label>
+            </td>
+            <td  style="width:10%;">
+              <label type="text" value="" class="text-left p_res">{$vo.price_unit}</label>
+            </td>
+            <td  style="width:10%;">
+              <label type="text" value="" class="text-left p_res">{$vo.doneQty}</label>
+            </td>
+            <td style="width:10%;">
+              <label type="text" value="" class="text-left p_res">{$vo.pro_uom}</label>
+            </td>
+            <td style="width:10%;">
+              <label type="text" value="" class="text-left p_res" >{$vo.stock_qty}</label>
+            </td>
+            <td  style="width:10%;">
+              <input type="text" attr="out_qty" name="pros[plan_return_qty][]" placeholder="数量"  value="{$vo.plan_return_qty}" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" data-value="{$vo.stock_qty}"/>
+            </td>
+
+<!--             <td style="width:10%;" class="text-center">
+              <a data-href="/Category/delete.htm" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-rel='delOne' data-value='{$k}' data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+            </td> -->
+          </tr>
+          </volist>
+        </tbody>
+        </table>
+    </div>
+  </div>
+
+
+</div>
+
+  </div>
+</div>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>
+<script type="text/javascript">
+
+$(function(){
+  var jsObj = {
+          'checkAll':function(){
+            var aInput = $('table tbody input[type=checkbox]');
+            var arr = [];
+
+            aInput.each(function(i){
+              var inputVal = aInput.eq(i).val();
+              if(aInput.eq(i).prop("checked")){
+                arr.push(inputVal);
+              }
+            });
+            return arr;
+          },
+
+          'chilChecked':function(vb){
+            var isAll = $(vb).prop('checked');
+            var aInput = $('table tbody input[type=checkbox]');
+            aInput.each(function(i){
+              aInput.eq(i).prop('checked',isAll);
+            });
+          },
+
+          'chilCheckClick':function(){
+
+            var _this = this;
+            $(document).on('click','table tbody input[type=checkbox]',function(){
+              var isFalse = _this.isNotChilCkecked();
+              $("#inlineCheckboxAll").prop('checked',isFalse);
+            });
+          },
+          'isNotChilCkecked':function(){
+            var aInput = $('table tbody input[type=checkbox]');
+            var isFalse = true;
+            aInput.each(function(i){
+              if(!aInput.eq(i).prop('checked')) isFalse = false;
+            });
+            return isFalse;
+          },
+          'checkboxAll':function(){
+            var _this = this;
+            $(document).on('click','#inlineCheckboxAll',function(){
+              _this.chilChecked(this);
+            });
+          },
+          'dellAll':function(){
+            var _this = this;
+            $(document).on('click','[data-rel = all]',function(){
+                var allVal = _this.checkAll();
+                var len = allVal.length;
+                _this.delConstroller(len,allVal);
+            });
+          },
+          'delConstroller':function(len,allVal){
+            if(parseInt(len,10)>0){
+                  if(confirm('你确定要删除这'+len+"行数据！")){
+                    for(var i=0;i<len;i++){
+                      $("#tr_"+allVal[i]).remove();
+                    }
+                  }
+                }else{
+                  alert('请选择要删除数据！');
+                }
+          },
+          'deleteOne':function(){
+            var _this = this;
+            $(document).on('click','[data-rel = delOne]',function(){
+                var allVal = $(this).attr('data-value');
+                var len = allVal.length;
+                _this.delConstroller(len,allVal);
+            });
+          },
+          'post':function(url,param,callBack){
+            $.post(url,param,callBack,'json');
+          }
+    };
+  $(document).on('keyup','[attr = out_qty]',function(){
+    var out_qty = $(this).val();
+    var reg = /^[0-9]+$/;
+    if (out_qty != '' && !out_qty.match(reg)){
+      alert('退货量只能数字');
+      $(this).val('0');
+    }
+    var pro_qty = parseInt($(this).attr('data-value'),10);
+    if(out_qty>pro_qty){
+      alert('退货量不能大于在库量');
+      $(this).val(pro_qty);
+    }
+  });
+  jsObj.deleteOne();
+  jsObj.dellAll();
+  jsObj.checkboxAll();//全部中
+  jsObj.chilCheckClick();//子集选中
+});
+
+</script>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>
