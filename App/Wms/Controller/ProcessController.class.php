@@ -547,7 +547,6 @@ class ProcessController extends CommonController {
      * 加工区操作
      */
     public function process() {
-        
         if (!IS_POST) {
             $this->msgReturn(false, '未知错误');
         }

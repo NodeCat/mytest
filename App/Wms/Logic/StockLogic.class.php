@@ -227,7 +227,7 @@ class StockLogic{
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
-        $diff_qty = $params['pro_qty'];
+        $diff_qty = $params['pro_qty']; 
 
         //根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
         $map['pro_code'] = $params['pro_code'];
@@ -255,7 +255,7 @@ class StockLogic{
             return array('status'=>0,'msg'=>'库存总量不足！');
         }
 
-        $diff_qty = intval($diff_qty);
+        $diff_qty = formatMoney($diff_qty, 2);
         
         //按照现进先出原则 减去最早的批次量
         foreach($stock_list as $key=>$stock){
@@ -581,18 +581,18 @@ class StockLogic{
         }
 
 
-        if(intval($param['variable_qty']) > intval($src_total_qty)){
+        if(formatMoney($param['variable_qty'], 2) > formatMoney($src_total_qty, 2)){
             return array('status'=>0,'msg'=>'移库量大于库存总量！');
         }
 
         //剩余移动量
-        $diff_qty = intval($param['variable_qty']);
+        $diff_qty = formatMoney($param['variable_qty'], 2);
 
         //整理数据格式
         foreach($src_stock_list as $key => $value){
-            $src_stock_list[$key]['stock_qty'] = intval($value['stock_qty']);
-            $src_stock_list[$key]['assign_qty'] = intval($value['assign_qty']);
-            $src_stock_list[$key]['prepare_qty'] = intval($value['prepare_qty']);
+            $src_stock_list[$key]['stock_qty'] = formatMoney($value['stock_qty'], 2);
+            $src_stock_list[$key]['assign_qty'] = formatMoney($value['assign_qty'], 2);
+            $src_stock_list[$key]['prepare_qty'] = formatMoney($value['prepare_qty'], 2);
         }
 
         //按照现进先出原则 减去最早的批次量

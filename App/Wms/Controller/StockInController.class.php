@@ -600,6 +600,12 @@ class StockInController extends CommonController {
                 $this->msgReturn(0, '数量不可为0');
                 return;
             }
+
+            if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                $mes = '数量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);
+                return;
+            }
         }
         $M->code = get_sn($name['name']); //入库单号
         $M->batch_code = get_batch(); //批次

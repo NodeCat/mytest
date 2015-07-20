@@ -70,3 +70,7 @@ ALTER TABLE `stock_bill_out_detail` CHANGE `order_qty` `order_qty` DECIMAL(18,2)
 ALTER TABLE `stock_bill_out_detail` CHANGE `delivery_qty` `delivery_qty` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '发货量';
 ALTER TABLE `stock_bill_in_container` CHANGE `qty` `qty` DECIMAL(18,2) NOT NULL COMMENT '出库量';
 ALTER TABLE `stock_bill_out` CHANGE `total_amount` `total_amount` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '总金额';
+
+#库存调整单
+ALTER TABLE `stock_adjustment_detail` CHANGE `origin_qty` `origin_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '原数量';
+ALTER TABLE `stock_adjustment_detail` CHANGE `adjusted_qty` `adjusted_qty` DECIMAL(10) NOT NULL DEFAULT '0.00' COMMENT '调整量';
