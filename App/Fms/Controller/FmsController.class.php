@@ -105,7 +105,7 @@ class FmsController extends \Common\Controller\AuthController{
             $model->rollback();
             $this->msgReturn('0','结算失败，未找到该配送单中的hop的订单。');
         }
-        
+        $DistLogic = A('Tms/Dist','Logic');
         $flag = true;
         foreach ($orders as $val) {
             unset($map);   
@@ -127,7 +127,7 @@ class FmsController extends \Common\Controller\AuthController{
             }
             $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee']; 
             //抹零
-            $val['pay_for_price'] = $this->wipe_zero($val['pay_for_price']);
+            $val['pay_for_price'] = $DistLogic->wipeZero($val['pay_for_price']);
             $map['status']  = '1';//已完成
             $map['deal_price'] = $val['pay_for_price'];
             $order_ids[] = $val['id'];
@@ -172,6 +172,7 @@ class FmsController extends \Common\Controller\AuthController{
         }
         //抹零总计
         $wipe_zero_sum = 0;
+        $Dist_Logic = A('Tms/Dist','Logic');
         //dump($dist);
         //获得所有出库单id 
         $bill_out_ids = array_column($dist['detail'],'bill_out_id');
@@ -271,13 +272,12 @@ class FmsController extends \Common\Controller\AuthController{
             if($value['actual_price'] > 0) {
                 //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费
                 $value['pay_for_price'] = $value['actual_price'] - $value['minus_amount'] - $value['pay_reduce'] + $value['deliver_fee'];
-
-                if(($value['pay_for_price'] + 0.5) < ceil($value['pay_for_price'])){
-                    //抹零总计
-                    $wipe_zero_sum += round($value['pay_for_price'] - floor($value['pay_for_price']),2);
-                }
-                //抹零
-                $value['pay_for_price'] = $this->wipe_zero($value['pay_for_price']);
+                
+                $old_value = $value['pay_for_price'];
+                //抹零处理
+                $value['pay_for_price'] = $Dist_Logic->wipeZero($value['pay_for_price']);
+                //抹零总计
+                $wipe_zero_sum += round($old_value - $value['pay_for_price'],2);
             }
             else {
                 //应收总计
@@ -387,11 +387,5 @@ class FmsController extends \Common\Controller\AuthController{
         } 
         return $s;   
     }
-    //抹零
-    protected function wipe_zero($price =0){
-        if($price + 0.5 < ceil($price)){
-            $price = floor($price);
-        }
-        return $price;
-    }
+    
 }

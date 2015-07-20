@@ -79,6 +79,8 @@
       		  deal_sum = accAdd(deal_sum, $(item).text());
       		});
       		deal_sum = accSub(deal_sum, minus);
+          //抹零处理
+          deal_sum = wipeZero(deal_sum);
       		obj.parents('.order').find('.p_deal').val(deal_sum);
       	}
 
