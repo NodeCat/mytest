@@ -34,6 +34,13 @@ class ProcessRatioController extends CommonController {
 	                'control_type' => 'getField',
 	                'value' => 'company.id,name',
 	        ),
+	        'erp_process_sku_relation.created_user' => array(
+	                'title' => '创建人',
+	                'query_type' => 'eq',
+	                'control_type' => 'text',
+	                'value' => 'user.id,name',
+	        ),
+	        
     );
 	
 	/**
