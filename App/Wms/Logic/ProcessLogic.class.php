@@ -951,8 +951,9 @@ class ProcessLogic {
         $detail['done_qty'] = $data['true_qty'] + $res['done_qty'];
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
+        $detail['product_date'] = date('Y-m-d');
         if ($assist->create($detail)) {
-            //$affect = $assist->where($map)->save();
+            $affect = $assist->where($map)->save();
         }
         $return = true;
         return $return;
@@ -1001,6 +1002,7 @@ class ProcessLogic {
         }
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
+        $detail['product_date'] = date('Y-m-d');
         if ($assist->create($detail)) {
             $affect = $assist->where($map)->save();
         }

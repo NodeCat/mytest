@@ -1,5 +1,6 @@
-ALTER TABLE `stock` ADD `product_date` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `prepare_qty`;
-ALTER TABLE `stock_bill_in_detail` ADD `product_date` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER `unqualified_qty`;
+ALTER TABLE `stock` ADD `product_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' AFTER `prepare_qty`;
+ALTER TABLE `stock_bill_in_detail` ADD `product_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' AFTER `unqualified_qty`;
+ALTER TABLE `erp_process_in_detail` ADD `product_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' AFTER `price`;
 
 update `stock` set product_date='2015-02-27' where pro_code = '1000461' and wh_id = 8;
 update `stock` set product_date='2015-03-28' where pro_code = '1000462' and wh_id = 8;
