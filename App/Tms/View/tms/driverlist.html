@@ -101,7 +101,7 @@ function editFee(obj) {
     tds = $('.delivery-fee');
     tds.each(function(){
         var fee = $.trim($(this).text());
-        var input  = "<input class='input-sm' style='width:80px;' type='number' value='"+fee+"'>";
+        var input  = "<input class='input-sm' min='0' style='width:80px;' type='number' value='"+fee+"'>";
         $(this).html(input);
     })
 }
@@ -109,7 +109,8 @@ function editFee(obj) {
 function saveFee(obj) {
     var arr = {};
     $('.delivery-fee').each(function(){
-        var fee = $.trim($(this).find('input').val()),
+        var fee = parseInt($(this).find('input').val()),
+            fee = fee ? fee : 0;
             sid = parseInt($(this).data('id'));
         if(sid) {
             arr[sid] = fee;
@@ -130,7 +131,8 @@ function saveFee(obj) {
 }
 function cancleEdit(obj) {
     tds.each(function(){
-        var fee = $.trim($(this).find('input').val());
+        var fee = parseInt($(this).find('input').val());
+            fee = fee ? fee : 0;
         $(this).text(fee);
     })
     $(obj).siblings().remove();
