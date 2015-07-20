@@ -952,7 +952,7 @@ class ProcessLogic {
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         if ($assist->create($detail)) {
-            //$affect = $assist->where($map)->save();
+            $affect = $assist->where($map)->save();
         }
         $return = true;
         return $return;

@@ -59,6 +59,12 @@ class ProcessController extends CommonController {
 		            
                 ),
         ),
+        'erp_process.created_user' => array(
+                'title' => '创建人',
+                'query_type' => 'eq',
+                'control_type' => 'text',
+                'value' => ''
+        ),
 	);
 	//设置列表页选项
 	protected function before_index() {
@@ -142,6 +148,19 @@ class ProcessController extends CommonController {
             }
             unset($map['erp_process.p_pro_code']);
             $map['erp_process.id'] = array('in', $ids);
+        }
+        if (array_key_exists('erp_process.created_user', $map)) {
+            $where['nickname'] = $map['erp_process.created_user'][1];
+            $result = M('user')->where($where)->select();
+            if (empty($result)) {
+                unset($map['erp_process.created_user']);
+            }
+            $uids = array();
+            foreach ($result as $value) {
+                $uids[] = $value['id'];
+            }
+            unset($map['erp_process.created_user']);
+            $map['erp_process.created_user'] = array('in', $uids);
         }
     }
     
