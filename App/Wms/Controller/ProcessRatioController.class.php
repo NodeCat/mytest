@@ -135,6 +135,7 @@ class ProcessRatioController extends CommonController {
         	    //去除隐藏域
         	    unset($post['pros'][0]);
         	    $map['p_pro_code'] = $post['p_pro_code_hidden'];
+        	    $map['is_deleted'] = 0;
         	    $affected = $M->where($map)->find();
         	    if (!empty($affected)) {
         	        //此比例关系已存在
@@ -281,6 +282,7 @@ class ProcessRatioController extends CommonController {
         	    }
         	    if ($this->p_pro_code != $M->p_pro_code) {
         	        $map['p_pro_code'] = $M->p_pro_code;
+        	        $map['is_deleted'] = 0;
             	    $have = M('erp_process_sku_relation')->where($map)->find();
             	    if (!empty($have)) {
             	        $this->msgReturn(false, '此物料清单已存在');

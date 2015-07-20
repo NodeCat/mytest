@@ -174,6 +174,7 @@ class ProcessLogic {
         }
         
         $map['p_pro_code'] = $pro_code;
+        $map['is_deleted'] = 0;
         $M = M('erp_process_sku_relation');
         $res = $M->where($map)->select();
         if (!empty($res)) {
