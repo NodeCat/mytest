@@ -34,7 +34,30 @@ class ProcessRatioController extends CommonController {
 	                'control_type' => 'getField',
 	                'value' => 'company.id,name',
 	        ),
+	        'erp_process_sku_relation.created_user' => array(
+	                'title' => '创建人',
+	                'query_type' => 'eq',
+	                'control_type' => 'text',
+	                'value' => '',
+	        ),
+	        
     );
+	
+	public function after_search(&$map){
+	    if (array_key_exists('erp_process_sku_relation.created_user', $map)) {
+	        $where['nickname'] = $map['erp_process_sku_relation.created_user'][1];
+	        $result = M('user')->where($where)->select();
+	        if (empty($result)) {
+	            unset($map['erp_process_sku_relation.created_user']);
+	        }
+	        $ids = array();
+	        foreach ($result as $value) {
+	            $ids[] = $value['id'];
+	        }
+	        unset($map['erp_process_sku_relation.created_user']);
+	        $map['erp_process_sku_relation.created_user'] = array('in', $ids);
+	    }
+	}
 	
 	/**
 	 * 定义页面格局
@@ -135,6 +158,7 @@ class ProcessRatioController extends CommonController {
         	    //去除隐藏域
         	    unset($post['pros'][0]);
         	    $map['p_pro_code'] = $post['p_pro_code_hidden'];
+        	    $map['is_deleted'] = 0;
         	    $affected = $M->where($map)->find();
         	    if (!empty($affected)) {
         	        //此比例关系已存在
@@ -281,6 +305,7 @@ class ProcessRatioController extends CommonController {
         	    }
         	    if ($this->p_pro_code != $M->p_pro_code) {
         	        $map['p_pro_code'] = $M->p_pro_code;
+        	        $map['is_deleted'] = 0;
             	    $have = M('erp_process_sku_relation')->where($map)->find();
             	    if (!empty($have)) {
             	        $this->msgReturn(false, '此物料清单已存在');

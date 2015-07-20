@@ -174,6 +174,7 @@ class ProcessLogic {
         }
         
         $map['p_pro_code'] = $pro_code;
+        $map['is_deleted'] = 0;
         $M = M('erp_process_sku_relation');
         $res = $M->where($map)->select();
         if (!empty($res)) {
@@ -951,7 +952,7 @@ class ProcessLogic {
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         if ($assist->create($detail)) {
-            //$affect = $assist->where($map)->save();
+            $affect = $assist->where($map)->save();
         }
         $return = true;
         return $return;
