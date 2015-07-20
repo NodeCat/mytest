@@ -37,7 +37,7 @@ class ProcessRatioController extends CommonController {
 	        'erp_process_sku_relation.created_user' => array(
 	                'title' => '创建人',
 	                'query_type' => 'eq',
-	                'control_type' => 'text',
+	                'control_type' => 'text',  
 	                'value' => '',
 	        ),
 	        
@@ -55,7 +55,11 @@ class ProcessRatioController extends CommonController {
 	            $ids[] = $value['id'];
 	        }
 	        unset($map['erp_process_sku_relation.created_user']);
-	        $map['erp_process_sku_relation.created_user'] = array('in', $ids);
+	        if (!empty($ids)) {
+	           $map['erp_process_sku_relation.created_user'] = array('in', $ids);
+	        } else {
+	            $map['erp_process_sku_relation.created_user'] = array('eq', null);
+	        }
 	    }
 	}
 	
