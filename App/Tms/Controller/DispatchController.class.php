@@ -18,6 +18,7 @@ class DispatchController extends Controller{
         'unsign_orders'=> '已退货',
         'delivering'   => '配送中',
         'sign_finished'=> '已完成',
+        'fee'          => '当天运费',
         'mark'         => '备注',
          
     );
@@ -28,17 +29,26 @@ class DispatchController extends Controller{
     );
 	public function index() {
         $D=D("TmsSignList");
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $sign_date = I('post.sign_date', '' , 'trim');
+        $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-
+        $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        if(I('post.warehouse')) {
-            $map1['warehouse']=I('post.warehouse');
-            $this->warehouse=$this->car['warehouse'][$map1['warehouse']];
+        $warehouse = I('post.warehouse/d', 0);
+        $car_from  = I('post.car_from', '' ,'trim');
+        if ($warehouse || $car_from) {
+            if ($warehouse) {
+                $map1['warehouse'] = $warehouse;
+            }
+            if ($car_from) {
+                $map1['car_from'] = $car_from;
+            }
+            $this->warehouse = $warehouse;
+            $this->car_from  = $car_from;
             $M=M('TmsUser');
             //按仓库把用户id取出来
-            $user_ids=$M->field('id')->where($map1)->select();
+            $user_ids = $M->field('id')->where($map1)->select();
             foreach ($user_ids as $value) {
                 foreach ($value as $val) {
                     $userid[]=$val;
@@ -51,6 +61,7 @@ class DispatchController extends Controller{
                 $map['userid'] = NULL;
             }
         }
+
         //把对应仓库的用户签到信息取出来
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
@@ -108,18 +119,27 @@ class DispatchController extends Controller{
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
-        $D = D('TmsSignList');
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $D=D("TmsSignList");
+        $sign_date = I('post.sign_date', '' , 'trim');
+        $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-
+        $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        if(I('post.warehouse')) {
-            $map1['warehouse']=I('post.warehouse');
-            $this->warehouse=$this->car['warehouse'][$map1['warehouse']];
+        $warehouse = I('post.warehouse/d', 0);
+        $car_from  = I('post.car_from', '' ,'trim');
+        if ($warehouse || $car_from) {
+            if ($warehouse) {
+                $map1['warehouse'] = $warehouse;
+            }
+            if ($car_from) {
+                $map1['car_from'] = $car_from;
+            }
+            $this->warehouse = $warehouse;
+            $this->car_from  = $car_from;
             $M=M('TmsUser');
             //按仓库把用户id取出来
-            $user_ids=$M->field('id')->where($map1)->select();
+            $user_ids = $M->field('id')->where($map1)->select();
             foreach ($user_ids as $value) {
                 foreach ($value as $val) {
                     $userid[]=$val;
@@ -258,6 +278,27 @@ class DispatchController extends Controller{
                 }
             }
         }
+    }
+
+    //保存运费
+    public function save_fee() {
+        $fees = I('post.fees');
+        if(empty($fees)) {
+            $re = array(
+                'status' => -1,
+                'msg'    => '数据不能为空',
+            );
+            $this->ajaxReturn($re);
+        }
+        $D = D('TmsSignList');
+        foreach ($fees as $key => $value) {
+            $s = $D->where(array('id' => $key))-> save(array('fee' => $value));
+        }
+        $re = array(
+            'status' => 0,
+            'msg'    => '保存成功',
+        );
+        $this->ajaxReturn($re);
     }
     
 }

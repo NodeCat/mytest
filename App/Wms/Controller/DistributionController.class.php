@@ -8,6 +8,8 @@ class DistributionController extends CommonController {
     	    'status' => array(
     	        '1' => '未发运',
     	        '2' => '已发运',
+    	        '3' => '已配送',
+    	        '4' => '已结算',
         )
     );
     protected $columns = array (
@@ -22,6 +24,12 @@ class DistributionController extends CommonController {
             'status' => '状态',
     );
     protected $query   = array (
+            'stock_wave_distribution.dist_code' => array(
+                    'title' => '配送单号',
+                    'query_type' => 'eq',
+                    'control_type' => 'text',
+                    'value' => ''
+            ),
             'stock_wave_distribution.order_type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',
@@ -40,6 +48,8 @@ class DistributionController extends CommonController {
                     'value' => array(
                         '1' => '未发运',
                         '2' => '已发运',
+                        '3' => '已配送',
+                        '4' => '已结算',
                     ),
             ),
             'stock_wave_distribution.order_id' => array(

@@ -738,7 +738,5 @@ class IndexController extends Controller {
         $geo_arrays =json_encode($geo_array,JSON_UNESCAPED_UNICODE);
         $this->ajaxReturn($geo_arrays);
     }
-   
- 
 
 }
