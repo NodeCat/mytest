@@ -318,16 +318,17 @@ class DistributionLogic {
      * @param number $line_id
      * @return string|Ambigous <string, unknown>
      */
-    public function format_line($line_id = -1) {
+    public function format_line($line_id = -1, $wh_id = 0) {
         $return = '';
         
         if ($line_id == 0) {
             return $return;
         }
+        
         //获取线路
         if (empty($this->line)) {
             $lines = D('Wave', 'Logic');
-            $result = $lines->line();
+            $result = $lines->line($wh_id);
             $this->line = $result;
         }
         

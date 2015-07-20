@@ -327,7 +327,7 @@ class StockOutController extends CommonController {
         $data['wh_name'] = $warehouse->where($map)->getField('name');
         
         if($data['op_date'] == "0000-00-00 00:00:00") {
-            $data['delivery_time'] = '无';
+            //$data['delivery_time'] = '无';
         }else {
             $data['delivery_time'] = date('Y-m-d', strtotime($data['op_date'])) . $this->filter['op_time'][$data['op_time']];
         }
