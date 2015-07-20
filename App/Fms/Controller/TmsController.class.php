@@ -22,6 +22,7 @@ class TmsController extends \Common\Controller\AuthController{
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);
+            $dist_logic = A('Tms/Dist','Logic');
             foreach ($orders as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
@@ -51,6 +52,7 @@ class TmsController extends \Common\Controller\AuthController{
                 }
                 if($val['actual_price'] > 0) {
                     $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'];
+                    $val['pay_for_price'] = $dist_logic->wipeZero($val['pay_for_price']);
                 }
                 else {
                     $val['pay_for_price'] = 0 ;
@@ -90,6 +92,7 @@ class TmsController extends \Common\Controller\AuthController{
         $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
         $A = A('Common/Order','Logic');
         $orders = $A->order($map);
+        $dist_logic = A('Tms/Dist','Logic');
         if(empty($orders)) {
             $this->msgReturn('0','结算失败，未找到该配送单中的订单。');
         }
@@ -121,7 +124,7 @@ class TmsController extends \Common\Controller\AuthController{
                 }
             }
             $map['status']  = '1';//已完成
-            $map['deal_price'] = $val['pay_for_price'];
+            $map['deal_price'] = $dist_logic->wipeZero($val['pay_for_price']);
             $order_ids[] = $val['id'];
             $map['suborder_id'] = $val['id'];
             $map['cur']['name'] = 'fms-'.session('user.username');
