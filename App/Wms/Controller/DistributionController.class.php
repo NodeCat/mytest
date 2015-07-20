@@ -22,6 +22,12 @@ class DistributionController extends CommonController {
             'status' => '状态',
     );
     protected $query   = array (
+            'stock_wave_distribution.dist_code' => array(
+                    'title' => '配送单号',
+                    'query_type' => 'eq',
+                    'control_type' => 'text',
+                    'value' => ''
+            ),
             'stock_wave_distribution.order_type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',

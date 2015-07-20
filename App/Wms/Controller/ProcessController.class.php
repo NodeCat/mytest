@@ -128,6 +128,23 @@ class ProcessController extends CommonController {
         }
     }
     
+    public function after_search(&$map) {
+        if (array_key_exists('erp_process.p_pro_code', $map)) {
+            $where['p_pro_code'] = $map['erp_process.p_pro_code'][1];
+            $processDetail = M('erp_process_detail')->where($where)->select();
+            if (empty($processDetail)) {
+                unset($map['erp_process.p_pro_code']);
+                return;
+            }
+            $ids = array();
+            foreach ($processDetail as $value) {
+                $ids[] = $value['pid'];
+            }
+            unset($map['erp_process.p_pro_code']);
+            $map['erp_process.id'] = array('in', $ids);
+        }
+    }
+    
     /**
      * 所有物料清单中存在的父sku信息(新建加工单时js请求接口)
      */
