@@ -1,17 +1,40 @@
 
 <div class="table-responsive" >
-    <form id="f" name="f" action="" method="post">
-    <div class="input-group">
-        <span class="input-group-addon">选择仓库</span>
-        <select autocomplete="off" value="" type="text" style="width:300px;" class="form-control input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-        <volist name='car.warehouse' id='storge'> 
-            <option value="{$key}">{$storge}</option>
-        </volist>
-        </select>
-        <button class='btn btn-primary' onclick="select()" >查询</button>
-        <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
+    <form id="f" name="f" action="" method="post" class="form-inline">
+    <div class="input-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 clearfix">
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择仓库</span>
+                <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">请选择仓库</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择平台</span>
+                <select autocomplete="off" class="form-control input-pda"  id="platform" name="car_from">
+                    <option value="0">请选择平台</option> 
+                    <volist name='car.car_from' id='plat'>
+                    <option value="{$plat}" <eq name="car_from" value="$plat">selected="true"</eq> >{$plat}</option>
+                    </volist>
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择日期</span>
+                <input type="txt" rel="datepicker" name="sign_date" value="{$start_date}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
+            </div>
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                <button class='btn btn-primary' onclick="select()" >查询</button>
+                <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
+            </div>
+        </div>
+        <div class=" col-lg-2 col-md-2 col-sm-2 col-xs-2">
+            <a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>
+        </div>
+    </div>
 
-    </div> 
   </form>      
     <table class="table table-bordered" style="text-align:center">
         <!--<thead align="center">-->
@@ -30,6 +53,7 @@
             <th>已退货</th>
             <th>配送中</th>
             <th>已完成</th>
+            <th>当天运费(元)</th>
             <th>备注</th>
           </tr>
         <!--</thead>-->
@@ -50,6 +74,7 @@
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>    
+            <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>
 
           </tr>
@@ -64,19 +89,56 @@ function select(){
     x.action="{:U('Dispatch/index')}";
     x.submit();
 }
+//编辑运费
+var tds;
+var btn = '<a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>';
+function editFee(obj) {
+    var save   = '<a class="btn btn-primary btn-sm pull-right" onclick="saveFee(this)" >保存</a>',
+        sp     = '<span class="pull-right">&nbsp;&nbsp;&nbsp;&nbsp;</span>'
+        cancle = '<a class="btn btn-default btn-sm pull-right" onclick="cancleEdit(this)" > 取消</a>';
+        $(obj).after(cancle+sp+save);
+        $(obj).remove();
+    tds = $('.delivery-fee');
+    tds.each(function(){
+        var fee = $.trim($(this).text());
+        var input  = "<input class='input-sm' min='0' style='width:80px;' type='number' value='"+fee+"'>";
+        $(this).html(input);
+    })
+}
 
-(function(){
-    x=document.getElementById('f');
-        switch("{$warehouse}"){
-            <volist name='car.warehouse' id='storge' key="k"> 
-                case "{$storge}": val="{$k}"-1;break;
-            </volist>
-            default:val=0; 
+function saveFee(obj) {
+    var arr = {};
+    $('.delivery-fee').each(function(){
+        var fee = parseInt($(this).find('input').val()),
+            fee = fee ? fee : 0;
+            sid = parseInt($(this).data('id'));
+        if(sid) {
+            arr[sid] = fee;
         }
-    x.warehouse.options[val].selected=true;  
-
-
-})();
+    })
+    $.post("{:U('save_fee')}",{fees:arr},function(res){
+        if(res.status == 0) {
+            for (x in arr) {
+                $('td[data-id='+x+']').text(arr[x]);
+            };
+        }else{
+            alert(res.msg);
+        }
+        $(obj).siblings().remove();
+        $(obj).after(btn);
+        $(obj).remove();
+    })
+}
+function cancleEdit(obj) {
+    tds.each(function(){
+        var fee = parseInt($(this).find('input').val());
+            fee = fee ? fee : 0;
+        $(this).text(fee);
+    })
+    $(obj).siblings().remove();
+    $(obj).after(btn);
+    $(obj).remove();
+}
 
 function exp(){ 
     x=document.getElementById('f');
