@@ -12,9 +12,12 @@ class DistController extends Controller {
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            //$map['created_time'] = array('between',$start_date.','.$end_date);
+            $map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
-            $dist = $M->field('id,mobile')->where($map)->find();
+            $dist = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
+            unset($map['dist_id']);
+            $map['mobile'] = session('user.mobile');
+            $dist_all = $M->field('id,mobile,dist_id,order_count')->where($map)->select();//取出当前司机所有配送单信息
             unset($map);
             if(!empty($dist)) {//若该配送单已被认领
                 if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
@@ -57,18 +60,51 @@ class DistController extends Controller {
                 $data['updated_time'] = get_time();
                 $data['status']       = '1';
                 $cA = A('Common/Order','Logic');//实例化Common下的OrderLogic
-                $lines = $cA->line(array('line_ids'=>array($dist['line_id'])));
-                $data['line_name'] = $lines[0]['name'];
-                $citys = $cA->city();
-                $data['city_id'] = $citys[$dist['city_id']];
-                //添加一条记录到tms_delivery
-                $res = $M->add($data);
                 unset($map);
                 $map['dist_id'] = $dist['id'];
                 $map['order'] = array('created_time' => 'DESC');
                 $bills = A('Tms/Dist', 'Logic')->billOut($map);
                 $orders = $bills['orders'];
                 unset($map);
+                //遍历每个订单的取出路线id
+                foreach ($orders as $v) {
+                    $line_id[] = $v['line_id'];
+                # code...
+                }
+                $line_id = array_unique($line_id);//重复的去掉
+                $lines = $cA->line(array('line_ids'=>$line_id));//取出所有路线
+                // 把路线连接起来
+                foreach ($lines as $key => $val) {
+                    if($key==0) {
+                        $line_names = $val['name'];
+                    }
+                    else{
+                        $line_names .='/'.$val['name'];
+                    }
+                }
+                $data['line_name'] = $line_names;//写入devilery
+                $citys = $cA->city();
+                $data['city_id'] = $citys[$dist['city_id']];
+                //添加一条记录到tms_delivery
+                $res = $M->add($data);
+                //判断是否已结款完成
+                foreach ($dist_all as $va) {
+                    unset($map);
+                    $map['dist_id'] = $va['dist_id'];
+                    $map['order'] = array('created_time' => 'DESC');
+                    $bill_outs = A('Tms/Dist', 'Logic')->billOut($map);
+                    $ords = $bill_outs['orders'];
+                    foreach ($ords as $v) {
+                        if($v['order_info']['status_cn'] != "已完成") {
+                            $status = '3';//只要有一个订单不是已完成，
+                            break 2;
+                        }
+                        else {
+                            $status = '4';// 已结款完成
+                        }
+                    }
+                }
+
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
@@ -79,22 +115,49 @@ class DistController extends Controller {
                 unset($map);
                 if($res) {
                     $this->msg = "提货成功";
+                    $M = M('TmsUser');                    
+                    $map['mobile'] = session('user.mobile');
+                    $user_data = $M->field('id')->where($map)->order('created_time DESC')->find(); 
+                    unset($map);
+                    unset($M);
+                    $M = M('TmsSignList');
+                    // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
+                    $status = 4;
+                    if($status=='4'){
+                    $map['updated_time'] = $data['updated_time'];
+                    $map['created_time'] = $data['created_time'];
+                    $map['userid']       = $user_data['id'];
+                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                        $map['period'] = '上午';
+                    } else {
+                        $map['period'] = '下午';
+                    }
+                    $M->add($map);
+                    unset($map);
+                    }
+                    $map['created_time'] = array('between',$start_date.','.$end_date);
+                    $map['userid']       =  $user_data['id'];
+                    $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                    $map['delivery_time'] = $data['created_time'];//加入提货时间
+                    $map['id']            = $sign_id['id'];
+                    $M->save($map); 
+                    unset($map);
                 }
                 else {
                     $this->error = "提货失败";
                 }
             }
         }
-
         //只显示当天的记录
         $map['mobile'] = session('user.mobile');
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
+        $map['status'] = '1';
+        $start_date    = date('Y-m-d',NOW_TIME);
+        $end_date      = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->data = M('tms_delivery')->where($map)->select();
+        $this->data  = M('tms_delivery')->where($map)->select();
         $this->title = '提货扫码';
         $this->display('tms:delivery');  
-
     }
 
     //出库单列表
