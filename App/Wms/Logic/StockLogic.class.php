@@ -479,7 +479,7 @@ class StockLogic{
             $row['stock_qty'] = $pro_qty;
             $row['assign_qty'] = 0;
             //增加生产日期
-            $row['product_date'] = $product_date;
+            $row['product_date'] = (empty($product_date)) ? date('Y-m-d') : $product_date;
             
             $data = $stock->create($row);
 
@@ -502,7 +502,7 @@ class StockLogic{
 
             //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
             if(strtotime($stock_info['product_date']) > strtotime($product_date) || $stock_info['product_date'] == '0000-00-00 00:00:00'){
-                $data['product_date'] = $product_date;
+                $data['product_date'] = (empty($product_date)) ? date('Y-m-d') : $product_date;
                 $data = $stock->create($data,2);
                 $res = $stock->where($map)->save($data);
                 unset($data);

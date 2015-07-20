@@ -147,6 +147,7 @@ class ProcessLogic {
             return $return;
         }
         
+        $product_date = date('Y-m-d');
         $Stock = A('Stock', 'Logic');
         $return = $Stock->adjustStockByShelves(
                 $data['wh_id'],
@@ -156,7 +157,8 @@ class ProcessLogic {
                 $data['pro_code'],
                 $data['pro_qty'],
                 '',
-                'qualified'
+                'qualified',
+                $product_date
         );
         
         return $return;
