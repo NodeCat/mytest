@@ -18,6 +18,7 @@ class PurchaseController extends CommonController {
 			'11'=>'待审核',
 			'13' => '已生效',
 			'23' => '已完成',
+            '99' => '已结算',
 			'04' => '已作废',
 			'14' => '已驳回'
 		)
@@ -124,7 +125,7 @@ class PurchaseController extends CommonController {
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
             //'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
             //'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
             //'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
@@ -137,7 +138,7 @@ class PurchaseController extends CommonController {
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => false,'new'=>'true'),
             'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
-        
+
         $this->toolbar =array(
             array('name'=>'add', 'show' =>isset($this->auth['add']),'new'=>'true'),
         );
@@ -285,6 +286,7 @@ class PurchaseController extends CommonController {
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				array('value'=>'21','title'=>'待入库','class'=>'primary'),
 				array('value'=>'31','title'=>'待上架','class'=>'info'),
+                array('value'=>'99','title'=>'已结算','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				array('value'=>'04','title'=>'已作废','class'=>''),
 			)
@@ -307,7 +309,8 @@ class PurchaseController extends CommonController {
 				//array('value'=>'43','title'=>'已结算','class'=>'success'),
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
-				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
+                '99'=> array('value'=>'99','title'=>'已结算','class'=>'danger'),
+                '14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
 				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning')
 			)
 		);
