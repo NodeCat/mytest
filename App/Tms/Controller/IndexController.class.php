@@ -14,10 +14,9 @@ class IndexController extends Controller {
                 $this->redirect('logout');
             }
         }
-
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject');
+            $action2 = array('delivery','orders','sign','reject','signature');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();
@@ -290,6 +289,7 @@ class IndexController extends Controller {
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
+            $oid = I('get.oid',0);
             $M = M('tms_delivery');
             $res = $M->find($id);
             
@@ -339,11 +339,17 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
+            //默认展开订单数据
+            $this->id   = $id;
+            $this->oid  = $oid;
+
         }
         $this->title = "客户签收";
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
@@ -724,7 +730,5 @@ class IndexController extends Controller {
         $geo_arrays =json_encode($geo_array,JSON_UNESCAPED_UNICODE);
         $this->ajaxReturn($geo_arrays);
     }
-   
- 
 
 }

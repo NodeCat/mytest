@@ -67,7 +67,7 @@ class DistDetailController extends CommonController {
         
         //分配线路
         $D = D('Distribution', 'Logic');
-        $line = $D->format_line();
+        $line = $D->format_line(-1, session('user.wh_id'));
         $this->query['line']['value'] = $line;
     }
     //显示数据列表

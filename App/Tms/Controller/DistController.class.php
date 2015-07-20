@@ -29,9 +29,8 @@ class DistController extends Controller {
             }
 
             //查询该配送单的信息
-            //$map['dist_number'] = substr($id, 2);
-            $A = A('Tms/Dist','Logic');
-            $dist = $A->distInfo($id);
+            $wA = A('Wms/Distribution','Logic');
+            $dist = $wA->distInfo($id);
             //if($id != $dist['dist_number']) {
             if(empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
@@ -67,7 +66,8 @@ class DistController extends Controller {
                 unset($map);
                 $map['dist_id'] = $dist['id'];
                 $map['order'] = array('created_time' => 'DESC');
-                $orders = $A->billOut($map);
+                $bills = A('Tms/Dist', 'Logic')->billOut($map);
+                $orders = $bills['orders'];
                 unset($map);
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
@@ -91,7 +91,6 @@ class DistController extends Controller {
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-        // dump($map);die();
         $this->data = M('tms_delivery')->where($map)->select();
         $this->title = '提货扫码';
         $this->display('tms:delivery');  
@@ -102,6 +101,7 @@ class DistController extends Controller {
     public function orders() {
         $id = I('get.id',0);
         if(!empty($id)) {
+            $oid = I('get.oid/d',0);
             $M = M('tms_delivery');
             $res = $M->find($id);
             if(empty($res)) {
@@ -121,170 +121,212 @@ class DistController extends Controller {
             $map['order'] = array('created_time' => 'DESC');
             $A = A('Tms/Dist','Logic');
             $bills = $A->billOut($map);
-            $orders = $bills['orders'];
-            $this->orderCount = $bills['orderCount'];
-            foreach ($orders as &$val) {
-                switch ($val['order_info']['pay_status']) {
-                    case -1:
-                        $s = '货到付款';
-                        break;
-                    case 0:
-                        $s = '货到付款';
-                        break;
-                    case 1:
-                        $s = '已付款';
-                    default:
-                        # code...
-                        break;
-                };
-                $val['pay_status_code'] = $val['order_info']['pay_status'];
-                $val['pay_status'] = $s;
-                //从订单获取字段到出库单
-                $val['shop_name']    = $val['order_info']['shop_name'];
-                $val['mobile']       = $val['order_info']['mobile'];
-                $val['remarks']      = $val['order_info']['remarks'];
-                // $val['status_cn']    = '已装车';
-                $val['status_cn']    = $val['order_info']['status_cn'];
-                $val['total_price']  = $val['order_info']['total_price'];
-                $val['minus_amount'] = $val['order_info']['minus_amount'];
-                $val['pay_reduce']   = $val['order_info']['pay_reduce'];
-                $val['deliver_fee']  = $val['order_info']['deliver_fee'];
-                $val['final_price']  = $val['order_info']['final_price'];
-                $val['deal_price']   = $val['order_info']['deal_price'];
-                $val['sign_msg']     = $val['order_info']['sign_msg'];
-                $val['user_id']      = $val['order_info']['user_id'];
-
-                $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
-                $sign_in = $M->table('tms_sign_in')->where(array('bill_out_id' => $val['id']))->find();
-                foreach ($val['detail'] as &$v) {
-                    if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
-                        //该出库单详情对应的签收数据
-                        $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
-                        $val['final_price'] = $sign_in['receivable_sum'];
-                        $val['deal_price']  = $sign_in['real_sum'];
-                        $v['quantity']  = $sign_in_detail['real_sign_qty'];
-                        $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
-                        if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
-                            $v['weight'] = $sign_in_detail['real_sign_wgt'];
-                            $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+            if($bills) {
+                $orders = $bills['orders'];
+                $this->orderCount = $bills['orderCount'];
+                foreach ($orders as &$val) {
+                    //获取支付状态的中文
+                    $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
+                    $val['pay_status_code'] = $val['order_info']['pay_status'];
+                    $val['pay_status'] = $s;
+                    $val['order_info']['pay_status'] = $s;
+                    //从订单获取字段到出库单
+                    $val['shop_name']       = $val['order_info']['shop_name'];
+                    $val['mobile']          = $val['order_info']['mobile'];
+                    $val['remarks']         = $val['order_info']['remarks'];
+                    // $val['status_cn']    = '已装车';
+                    $val['status_cn']       = $val['order_info']['status_cn'];
+                    $val['total_price']     = $val['order_info']['total_price'];
+                    $val['minus_amount']    = $val['order_info']['minus_amount'];
+                    $val['pay_reduce']      = $val['order_info']['pay_reduce'];
+                    $val['deliver_fee']     = $val['order_info']['deliver_fee'];
+                    $val['final_price']     = $val['order_info']['final_price'];
+                    $val['receivable_sum']  = $val['order_info']['final_price'];
+                    $val['real_sum']        = $A->formateSum($val['order_info']['final_price']);
+                    $val['sign_msg']        = $val['order_info']['sign_msg'];
+                    $val['user_id']         = $val['order_info']['user_id'];
+                    //收获地址坐标
+                    $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
+                    $sign_in = $M->table('stock_wave_distribution_detail')
+                        ->where(array('bill_out_id' => $val['id']))
+                        ->find();
+                    foreach ($val['detail'] as &$v) {
+                        if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
+                            //该出库单详情对应的签收数据
+                            $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
+                            $val['receivable_sum'] = $sign_in['receivable_sum'];
+                            $val['real_sum'] = $sign_in['real_sum'];
+                            $v['quantity']  = $sign_in_detail['real_sign_qty'];
+                            $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
+                            if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
+                                $v['weight'] = $sign_in_detail['real_sign_wgt'];
+                                $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+                            }
+                        }
+                        else {
+                            $v['quantity'] = $v['delivery_qty'];
+                        }
+                        //从订单详情获取SKU信息
+                        foreach ($val['order_info']['detail'] as $value) {
+                            if($v['pro_code'] == $value['sku_number']) {
+                                $v['single_price']    = $value['single_price'];
+                                $v['close_unit']      = $value['close_unit'];
+                                $v['unit_id']         = $value['unit_id'];
+                                $v['sum_price']       = $v['sum_price'] ? $v['sum_price'] : $value['sum_price'];
+                                $v['order_detail_id'] = $value['id'];//获取订单详情ID，用于更新订单状态
+                            }
                         }
                     }
-                    else {
-                        $v['quantity'] = $v['delivery_qty'];
-                    }
-                    //从订单详情获取SKU信息
-                    foreach ($val['order_info']['detail'] as $value) {
-                        if($v['pro_code'] == $value['sku_number']) {
-                            $v['single_price']    = $value['single_price'];
-                            $v['close_unit']      = $value['close_unit'];
-                            $v['unit_id']         = $value['unit_id'];
-                            $v['sum_price']       = $v['sum_price'] ? $v['sum_price'] : $value['sum_price'];
-                            $v['order_detail_id'] = $value['id'];//获取订单详情ID，用于更新订单状态
-                        }
-                    }
+                    // 获取打印小票要用的数据
+                    $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val['order_info']);
+                    $lists[$val['user_id']][] = $val;
                 }
-                $lists[$val['user_id']][] = $val;
+                $this->dist_id = $res['dist_id'];
+                $this->data = $lists;
+            } else {
+                $this->error ='数据不存在';
             }
-            $this->dist_id = $res['dist_id'];
-            $this->data = $lists;
-
+            //提货单ID和订单ID，用于签收后自动展开
+            $this->id   = $id;
+            $this->oid  = $oid;
         }
         $this->title = "客户签收";
+        //电子签名保存接口
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:sorders');
     }
 
     //司机签收
     public function sign() {
-        //签收表主表数据
-        $fdata = array(
-            'dist_id'        => I('post.dist_id/d'),
-            'bill_out_id'    => I('post.bid/d'),
-            'receivable_sum' => I('post.final_price/f',0),
-            'real_sum'       => I('post.deal_price/f',0),
-            'minus_amount'   => I('post.minus_amount/f',0),
-            'pay_reduce'     => I('post.pay_reduce/f',0),
-            'deliver_fee'    => I('post.deliver_fee/f',0),
-            'pay_status'     => I('post.pay_status/d',0),
-            'sign_msg'       => I('post.sign_msg', '' ,'trim'),
-            'status'         => 1,
-            'sign_time'      => get_time(),
-            'sign_driver'    => session('user.mobile'),
-            'created_time'   => get_time(),
-            'updated_time'   => get_time(),
-        );
-        //签收详情表数据
+        $bill_out_id = I('post.bid/d', 0);
+        if (!$bill_out_id) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '出库单ID参数错误'
+            );
+            $this->ajaxReturn($res);
+        }
+        $wA = A('Wms/Distribution', 'Logic');
+        $map['bill_out_id'] = $bill_out_id;
+        $dist_details = $wA->getDistDetails($map);
+        //该出库单对应配送单详情
+        $dist_detail = $dist_details['list'][0];
+        if(!$dist_detail) {
+            $res = array(
+                'status' => -1,
+                'msg'  => '没有对应的配送单详情'
+            );
+            $this->ajaxReturn($res);
+        }
+        //配送单ID
+        $dist_id = $dist_detail['pid'];
+        //订单信息
         $refer_code  = I('post.id/d',0);
-        $detail_id   = I('post.pro_id');
+        $cA = A('Common/Order', 'Logic');
+        $orderInfo = $cA->getOrderInfoByOrderId($refer_code);
+        //出库单详情
+        $bill_details = $wA->get_out_detail(array($bill_out_id));
+        if (empty($bill_details)) {
+            $res = array(
+                'status' => -1,
+                'msg'  => '没有出库单详情'
+            );
+            $this->ajaxReturn($res);
+        }
+        //实收数量或重量
         $quantity    = I('post.quantity');
         $weight      = I('post.weight', 0);
-        $unit_id     = I('post.unit_id');
-        $close_unit  = I('post.close_unit');
-        $price_unit  = I('post.price_unit');
-        $deal_price  = $fdata['real_sum'];
+        $receivable_sum = 0;
+        //出库单详情关联订单详情,计算应收总额
+        $bill_id_details = array();
+        $price_unit = array();
+        foreach ($bill_details as $val) {
+            foreach ($orderInfo['info']['detail'] as $v) {
+                if ($val['pro_code'] == $v['sku_number']) {
+                    $val['order_detail'] = $v;
+                }
+            }
+            //出库单详情ID对应单价
+            $price_unit[$val['id']] = $val['order_detail']['single_price'];
+            //出库单详情ID对应详情数据
+            $bill_id_details[$val['id']] = $val;
+            //应收金额
+            $unit_num = isset($weight[$val['id']]) ? $weight[$val['id']] : $quantity[$val['id']];
+            $receivable_sum += $val['order_detail']['single_price'] * $unit_num;
+        }
+        //实收抹零
+        $A = A('Tms/Dist','Logic');
+        $deal_price = $A->formateSum($receivable_sum);
+        $sign_msg = I('post.sign_msg', '' ,'trim');
+        //签收表主表数据
+        $fdata = array(
+            'receivable_sum' => $receivable_sum,
+            'real_sum'       => $deal_price,
+            'minus_amount'   => $orderInfo['info']['minus_amount'],
+            'pay_reduce'     => $orderInfo['info']['pay_reduce'],
+            'deliver_fee'    => $orderInfo['info']['deliver_fee'],
+            'pay_status'     => $orderInfo['info']['pay_status'],
+            'sign_msg'       => $sign_msg,
+            'status'         => 2,//签收
+            'sign_time'      => get_time(),
+            'sign_driver'    => session('user.mobile'),
+        );
         //更新订单状态
-        $re = $this->set_order_status($refer_code, $deal_price, $quantity,$weight ,$price_unit);
-        $re = array('status' => 0);
+        $re = $this->set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg);
         if($re['status'] === 0) {
-            $M = M('tms_sign_in');
-            //该出库单签收状态
-            $sign_status = $M->field('id')
-            ->where(array('bill_out_id' => $fdata['bill_out_id']))
-            ->find();
-            if($sign_status) {
-                $M->where(array('id' => $sign_status['id']))->save($fdata);
-                $sign_id = $sign_status['id'];
-            }
-            else {
-                $sign_id = $M->add($fdata);
-            }
-            if($sign_id) {
+            //保存签收数据到配送单详情
+            $datas = array(
+                'id'   => $dist_detail['id'],
+                'data' => $fdata,
+            );
+            $s = $wA->saveSignDataToDistDetail($datas);
+            //配送单详情的状态为2:已签收或者更成功
+            if($dist_detail['status'] == 2 || $s) {
                 $cdata = array();
-                //组合一个出库单的签收数据并更新
-                foreach ($detail_id as $val) {
-                    $tmp['pid']                = $sign_id;
-                    $tmp['bill_out_detail_id'] = $val;
-                    $tmp['real_sign_qty']      = $quantity[$val];
-                    $tmp['real_sign_wgt']      = isset($weight[$val]) ? $weight[$val] : 0;
-                    $tmp['measure_unit']       = $unit_id[$val];
-                    $tmp['charge_unit']        = $close_unit[$val];
-                    $tmp['price_unit']         = $price_unit[$val];
+                //组合一个签收详情数据
+                foreach ($bill_id_details as $detail_id => $detail) {
+                    $tmp['pid']                = $dist_detail['id'];
+                    $tmp['bill_out_detail_id'] = $detail_id;
+                    $tmp['real_sign_qty']      = $quantity[$detail_id];
+                    $tmp['real_sign_wgt']      = isset($weight[$detail_id]) ? $weight[$detail_id] : 0;
+                    $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
+                    $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
+                    $tmp['price_unit']         = $detail['order_detail']['single_price'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
-                if(!$sign_status) {
-                    //添加签收数据
-                    M('tms_sign_in_detail')->addAll($cdata);
-                }
-                else {
+                if($dist_detail['status'] == 2) {
                     //更新签收数据
                     foreach ($cdata as $value) {
                         unset($value['created_time']);
                         M('tms_sign_in_detail')
-                        ->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))
-                        ->save($value);
+                            ->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))
+                            ->save($value);
                     }
                 }
+                else {
+                    //添加签收数据
+                    M('tms_sign_in_detail')->addAll($cdata);
+                }
                 //更新配送单详情－>配送单状态
-                $A = A('Tms/Dist','Logic');
-                $map['pid'] = $fdata['dist_id'];
-                $map['bill_out_id'] = $fdata['bill_out_id'];
-                $map['status'] = 1;
-                $code = $A->set_dist_status($map);
-                $msg = ($code === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
+                $map['dist_id'] = $dist_id;
+                $map['status']  = 2;
+                $s = $wA->set_dist_status($map);
+                $status = $s['status'];
+                $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
             
-            $status = ($code === -1) ? -1 : 0;
             $json = array('status' => $status, 'msg' => $msg);
-            //code:－1(更新失败);0(未执行更新);1(配送单详情状态更新成功);2(配送单完成)
+            //status:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
         }
         $this->ajaxReturn($re);
     }
 
     //司机签收后订单回调
-    protected function set_order_status($refer_code, $deal_price, $quantity,$weight, $price_unit, $sign_msg) {
+    protected function set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg) {
         $map['suborder_id'] = $refer_code;
         $map['status']   = '6';
         $map['deal_price'] = $deal_price;
@@ -317,33 +359,35 @@ class DistController extends Controller {
             unset($map);
             //签收表主表数据
             $fdata = array(
-                'dist_id'      => I('post.dist_id/d'),
-                'bill_out_id'  => I('post.bid/d'),
-                'sign_msg'     => I('post.sign_msg', '' ,'trim'),
-                'status'       => 2,
-                'sign_time'    => get_time(),
-                'sign_driver'  => session('user.mobile'),
-                'created_time' => get_time(),
-                'updated_time' => get_time()
+                'sign_msg'       => I('post.sign_msg', '' ,'trim'),
+                'status'         => 3,//拒收
+                'sign_time'      => get_time(),
+                'sign_driver'    => session('user.mobile'),
             );
-            $M = M('tms_sign_in');
-            //签收表中是否有拒收纪录
-            $signin = $M->field('id')
-            ->where(array('bill_out_id' => $fdata['bill_out_id']))
-            ->find();
-            //向签收表添加或更新一条记录，status为0
-            if($signin) {
-                $M->where(array('id' => $signin['id']))->save($fdata);
+            $bill_out_id = I('post.bid/d');
+            $wA = A('Wms/Distribution', 'Logic');
+            $map['bill_out_id'] = $bill_out_id;
+            $dist_details = $wA->getDistDetails($map);
+            //该出库单对应配送单详情
+            $dist_detail = $dist_details['list'][0];
+            //向出库单详情更新拒收信息
+            if($dist_detail) {
+                $datas = array(
+                    'id'   => $dist_detail['id'],
+                    'data' => $fdata,
+                );
+                $s = $wA->saveSignDataToDistDetail($datas);
+                $res = array(
+                    'status' => 0,
+                    'msg'    => '更新成功'
+                );
             }
             else {
-                $M->add($fdata);
+                $res = array(
+                    'status' => -1,
+                    'msg'    => '出库单不存在'
+                );
             }
-            //更新配送单详情－>配送单状态
-            $A = A('Tms/Dist','Logic');
-            $map['pid'] = $fdata['dist_id'];
-            $map['bill_out_id'] = $fdata['bill_out_id'];
-            $map['status'] = 2;
-            $code = $A->set_dist_status($map);
         }
         $this->ajaxReturn($res);
     }
@@ -441,6 +485,58 @@ class DistController extends Controller {
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
         $this->display('tms:orderlist');
+    }
+
+    //保存客户签名
+    public function signature() {
+        $suborder_id = I('post.oid/d',0);
+        $signature   = I('post.path','','trim');
+        if($suborder_id && $signature) {
+            //查询出库单ID
+            $M = M('stock_bill_out');
+            $map['refer_code'] = $suborder_id;
+            $map['is_deleted'] = 0;
+            $bill_out = $M->field('id')
+            ->where($map)
+            ->find();
+            if($bill_out) {
+                unset($map['refer_code']);
+                $map['bill_out_id'] = $bill_out['id'];
+                //更新签名图片至配送单详情表
+                $s = M('stock_wave_distribution_detail')
+                ->where($map)
+                ->save(array('signature' => $signature));
+                //保存签名成功
+                if($s) {
+                    $re = array(
+                        'code' => 0,
+                        'msg'  => '保存签名成功'
+                    );
+                }
+                //保存签名失败
+                else {
+                    $re = array(
+                        'code' => -1,
+                        'msg'  => '保存签名失败'
+                    );
+                }
+            }
+            //订单号对应出库单失败
+            else {
+                $re = array(
+                    'code' => -1,
+                    'msg'  => '获取出库单数据失败'
+                );
+            }
+        }
+        //传入参数错误
+        else {
+            $re = array(
+                'code' => -1,
+                'msg'  => '订单ID或签名不能为空'
+            );
+        }
+        $this->ajaxReturn($re);
     }
 
 }
