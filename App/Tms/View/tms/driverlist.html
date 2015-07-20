@@ -101,7 +101,7 @@ function editFee(obj) {
     tds = $('.delivery-fee');
     tds.each(function(){
         var fee = $.trim($(this).text());
-        var input  = "<input class='input-sm' type='text' value='"+fee+"'>";
+        var input  = "<input class='input-sm' style='width:80px;' type='number' value='"+fee+"'>";
         $(this).html(input);
     })
 }
