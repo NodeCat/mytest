@@ -12,6 +12,7 @@ class DispatchController extends Controller{
         'warehouse'    => '签到仓库',
         'created_time' => '第一次签到时间',
         'updated_time' => '最后签到时间',
+        'period'       => '时间段',
         'line_name'    => '线路',
         'sign_orders'  => '已签收',
         'unsign_orders'=> '已退货',
@@ -51,18 +52,18 @@ class DispatchController extends Controller{
             }
         }
         //把对应仓库的用户签到信息取出来
-        $sign_lists=$D->relation('TmsUser')->where($map)->group('userid')->order('updated_time DESC')->select();
+        $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
+        unset($map);
         unset($M);
         $M = M('tms_delivery');
-        unset($map);
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $map['status'] = '1';
         unset($value);
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
             $value['warehouse'] = $this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
             $map['mobile']      = $value['mobile'];
+            $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
+            $map['status'] = '1';
             //获取司机配送单的线路和id信息
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
@@ -132,18 +133,18 @@ class DispatchController extends Controller{
             }
         }
         //把对应仓库的用户签到信息取出来
-        $sign_lists=$D->relation('TmsUser')->where($map)->group('userid')->order('updated_time DESC')->select();
+        $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($M);
         $M = M('tms_delivery');
         unset($map);
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $map['status'] = '1';
         unset($value);
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
             $value['warehouse']=$this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
             $map['mobile'] = $value['mobile'];
+            $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
+            $map['status'] = '1';
             //获取司机配送单的线路和id信息取出来
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
