@@ -58,8 +58,15 @@ ALTER TABLE `erp_process_sku_relation` CHANGE `ratio` `ratio` DECIMAL(18,2) UNSI
 
 #erp 加工入库单详细
 ALTER TABLE `erp_process_in_detail` CHANGE `plan_qty` `plan_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '计划量';
-ALTER TABLE `erp_process_in_detail` CHANGE `real_qty` `real_qty` DECIMAL(10) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '实际量';
+ALTER TABLE `erp_process_in_detail` CHANGE `real_qty` `real_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '实际量';
 
 #erp 加工出库单详细
 ALTER TABLE `erp_process_out_detail` CHANGE `plan_qty` `plan_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0' COMMENT '计划量';
 ALTER TABLE `erp_process_out_detail` CHANGE `real_qty` `real_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '实际量';
+
+#出库单
+ALTER TABLE `stock_bill_out` CHANGE `total_qty` `total_qty` INT(11) NOT NULL DEFAULT '0.00' COMMENT '总件数';
+ALTER TABLE `stock_bill_out_detail` CHANGE `order_qty` `order_qty` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '订单量';
+ALTER TABLE `stock_bill_out_detail` CHANGE `delivery_qty` `delivery_qty` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '发货量';
+ALTER TABLE `stock_bill_in_container` CHANGE `qty` `qty` DECIMAL(18,2) NOT NULL COMMENT '出库量';
+ALTER TABLE `stock_bill_out` CHANGE `total_amount` `total_amount` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '总金额';

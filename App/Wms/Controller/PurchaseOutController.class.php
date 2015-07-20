@@ -268,12 +268,31 @@ class PurchaseOutController extends CommonController {
       $psave['updated_time'] = get_time();
       $psave['status'] = 'audit';
       $psave['updated_user'] = UID;
+
+      foreach ($pros['plan_return_qty']  as $pank => $valp) {
+          $mes = '';
+          $pro_codemes = $pros['pro_code'][$pank];
+          if($valp == ''){
+            $mes = $pro_codemes . '采购数量不能为空';
+            $this->msgReturn(0,$mes);exit;
+          }
+          if (strlen(formatMoney($valp, 2, 1))>2) {
+            $mes = $pro_codemes . '退货数量只能精确到两位小数点';
+            $this->msgReturn(0,$mes);exit;
+          }
+          if ($pros['done_qty'][$pank] < $valp) {
+              $mes = $pro_codemes . '退货量不能大于在库量';
+              $this->msgReturn(0,$mes);exit;
+          }
+
+      }
+
       if($pm->where($pmap)->save($psave)){
         foreach ($pros['id'] as $key => $value) {
           $map = array();
           $save = array();
           $map['id'] = $value;
-          $save['plan_return_qty'] = intval($pros['plan_return_qty'][$key]);
+          $save['plan_return_qty'] = formatMoney($pros['plan_return_qty'][$key], 2);
           //如果计划量为零的话则删除
           if($save['plan_return_qty']<=0){
               $datau['is_deleted'] = 1;

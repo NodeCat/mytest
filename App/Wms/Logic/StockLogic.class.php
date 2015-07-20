@@ -206,7 +206,7 @@ class StockLogic{
             $stock_total += $stock['stock_qty'] - $stock['assign_qty'];
         }
 
-        if($stock_total < intval($params['pro_qty'])){
+        if($stock_total < formatMoney($params['pro_qty'], 2)){
             return array('status'=>0,'msg'=>'库存总量不足！');
         }
 

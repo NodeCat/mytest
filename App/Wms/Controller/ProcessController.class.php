@@ -175,8 +175,8 @@ class ProcessController extends CommonController {
     	        if (empty($value['pro_code'])) {
     	            $this->msgReturn(false, '请选择sku');
     	        }
-    	        if (empty($value['pro_qty']) || intval($value['pro_qty']) <= 0) {
-    	            $this->msgReturn(false, '请填写大于0的整型数量');
+    	        if (empty($value['pro_qty']) || $value['pro_qty'] <= 0) {
+    	            $this->msgReturn(false, '请填写大于0的数量');
     	        }
 
                 //验证小数 liuguangping
@@ -496,6 +496,9 @@ class ProcessController extends CommonController {
         if (empty($process_id) || empty($sku_code)) {
             $this->msgReturn(false, '参数有误');
         }
+        //ena13 to pro_code liuguangping
+        $codeLogic = A('Code','Logic');
+        $sku_code = $codeLogic->getProCodeByEna13code($sku_code);
         /** 确认父SKU */
         //判断加工单
         $map['id'] = $process_id;
@@ -548,6 +551,7 @@ class ProcessController extends CommonController {
         if (!IS_POST) {
             $this->msgReturn(false, '未知错误');
         }
+
         //实际加工数量
         $real_qty = I('post.real_qty');
         //加工单ID
@@ -563,13 +567,15 @@ class ProcessController extends CommonController {
         }
         //实际生产量是否合法
         if ($real_qty <= 0) {
-            $this->msgReturn(false, '请输入大于0的整数');
+            $this->msgReturn(false, '请输入大于0的数');
         }
-        $real_qty = intval($real_qty);
-        if ($real_qty != I('post.real_qty')) {
-            //非整型
-            $this->msgReturn(false, '请输入整型数字');
+
+        if (strlen(formatMoney($real_qty, 2, 1))>2) {
+            $mes = '本次加工量只能精确到两位小数点';
+            $this->msgReturn(0,$mes);
         }
+        $real_qty = formatMoney($real_qty, 2);
+
         //获取加工单关于此SKU的所有信息
         $Logic = D('Process', 'Logic');
         $process = $Logic->get_process_and_detail_unite($process_id, $sku_code, $real_qty);
@@ -758,7 +764,7 @@ class ProcessController extends CommonController {
         foreach($pro_infos_list as $pro_info){
             $pro_info_arr = explode("\t", $pro_info);
             $pro_codes[] = $pro_info_arr[0];
-            $purchase_infos[$pro_info_arr[0]]['pro_qty'] = $pro_info_arr[1];
+            $purchase_infos[$pro_info_arr[0]]['pro_qty'] = formatMoney($pro_info_arr[1], 2);
             $purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
         }
         

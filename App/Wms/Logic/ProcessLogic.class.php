@@ -94,7 +94,7 @@ class ProcessLogic {
             }
             $price += $param['price'] * $param['pro_qty'];
         }
-        $return['price'] = $price;
+        $return['price'] = formatMoney($price, 2);
         $return['status'] = true;
         $return['msg'] = '成功';
         return $return;
@@ -339,7 +339,7 @@ class ProcessLogic {
                     $format['detail'][$key . '_' . $k]['uom_name'] = $val['c_uom_name'];
                     $format['detail'][$key . '_' . $k]['wh_id'] = $process['wh_id'];
                     $format['detail'][$key . '_' . $k]['company_id'] = $val['company_id'];
-                    $format['detail'][$key . '_' . $k]['plan_qty'] = intval($val['plan_qty']);
+                    $format['detail'][$key . '_' . $k]['plan_qty'] = formatMoney($val['plan_qty'], 2);
                     $format['company_id'] = $val['company_id'];
                 }
             }
@@ -472,9 +472,9 @@ class ProcessLogic {
         $return = array_merge($res, $result);
         $return['ratio'] = $ratio;
         foreach ($return['ratio'] as &$value) {
-            $value['plan_qty'] = $return['plan_qty'] * $value['ratio'];
-            $value['real_qty'] = $return['real_qty'] * $value['ratio'];
-            $value['true_qty'] = $real_qty * $value['ratio'];
+            $value['plan_qty'] = formatMoney($return['plan_qty'] * $value['ratio'], 2);
+            $value['real_qty'] = formatMoney($return['real_qty'] * $value['ratio'], 2);
+            $value['true_qty'] = formatMoney($real_qty * $value['ratio'], 2);
             $value['pro_code'] = $value['c_pro_code'];
             unset($value['p_pro_code']);
         }
@@ -773,9 +773,9 @@ class ProcessLogic {
             $detail['pro_name'] = $value['pro_name'];
             $detail['pro_attrs'] = $value['pro_attrs'];
             $detail['price'] = 0;
-            $detail['order_qty'] = $value['plan_qty'];
+            $detail['order_qty'] = formatMoney($value['plan_qty'], 2);
             $detail['status'] = 1; //待生产
-            $detail['delivery_qty'] = 0;
+            $detail['delivery_qty'] = formatMoney('0', 2);
             $detail['created_time'] = get_time();
             $detail['created_user'] = session('user.uid');
             $detail['updated_time'] = get_time();
@@ -988,15 +988,16 @@ class ProcessLogic {
         unset($map);
         $map['pid'] = $id;
         $map['pro_code'] = $data['pro_code'];
-        //计算单价
+        //计算单价 @todo 单价 pm liuyonghao=>价格抹掉 
         $res = $assist->where($map)->find();
         $price_unit = ($res['price'] * $res['real_qty'] + $price) / ($res['real_qty'] + $data['true_qty']);
         if ($res['status'] != 2) {
             $detail['status'] = 2;
         }
         $detail['real_qty'] = $data['true_qty'] + $res['real_qty'];
-        if ($price_unit != sprintf('%.2f', $price_unit)) {
-            $detail['price'] = sprintf('%.2f', $price_unit);
+        //
+        if ($price_unit != formatMoney($price_unit, 2)) {
+            $detail['price'] = formatMoney($price_unit, 2);
         }
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
