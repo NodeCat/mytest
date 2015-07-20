@@ -9,7 +9,7 @@ class StockController extends CommonController {
             'pro_name' => '货品名称',
             'uom_name' => '计量单位',
             'guarantee_period' => '保质期',
-            'product_date' => '入库日期',
+            'product_date' => '生产日期',
             'location_code' => '库位',
             'batch' => '批次',
             'stock_qty' => '在库数量',
