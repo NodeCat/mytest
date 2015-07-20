@@ -147,7 +147,7 @@ function checkForm(){
                 }else if(data[item].invoice_method_code == 0){
                     html += '<td><a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/'+data[item].id+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a></td>';
                 }else{
-                    html += '<td><a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/'+data[item].fid+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a></td>';
+                    html += '<td><a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/PurchaseInDetail/index/erp_purchase_in_detail.purchase_code/'+data[item].code+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a></td>';
                 }
                 html += '</tr>';
                 i++;

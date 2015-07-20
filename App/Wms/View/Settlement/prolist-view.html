@@ -31,8 +31,10 @@
                 </if>
             </td>
             <td style="width:10%;">
-                <if condition="$vo.order_type neq 3">
-                <a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/{$vo.pid}.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i></a>
+                <if condition="$vo.order_type eq 1">
+                    <a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/Purchase/view/id/{$vo.pid}.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i></a>
+                <elseif condition="$vo.order_type eq 2" />
+                    <a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/PurchaseInDetail/index/erp_purchase_in_detail.purchase_code/{$vo.order_code}.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i></a>
                 <else />
                     <a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" href="/PurchaseRefund/view/id/{$vo.refund_id}.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i></a>
                 </if>
