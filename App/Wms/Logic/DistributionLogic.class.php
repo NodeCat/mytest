@@ -939,9 +939,12 @@ class DistributionLogic {
                 return $res;
             } else {
                 //该配送单所有配送单详情状态
+                unset($map);
+                $map['pid'] = $params['dist_id'];
+                $map['is_deleted'] = 0;
                 $detail_status = $M->table('stock_wave_distribution_detail')
                     ->field('status')
-                    ->where(array('pid' => $params['dist_id']))
+                    ->where($map)
                     ->select();
                 //所有配送单详情均为该状态时，修改配送单主表状态
                 $flag = 1;
