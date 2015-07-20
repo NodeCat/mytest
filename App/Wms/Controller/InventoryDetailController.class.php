@@ -11,8 +11,8 @@ class InventoryDetailController extends CommonController {
             'diff_qty' => '差异量',
             'uom_name' => '计量单位',
             );
-	//设置列表页选项
-	protected function before_index() {
+    //设置列表页选项
+    protected function before_index() {
         $id = I('id');
         //根据inventory_detail 的id 查询对应的inventory信息
         $map['id'] = $id;
@@ -58,25 +58,25 @@ class InventoryDetailController extends CommonController {
     }
 
     //lists方法执行前，执行该方法
-	protected function before_lists(&$M){
-		//根据inventory_id 查询对应code
-		$inventory_id = I('id');
+    protected function before_lists(&$M){
+        //根据inventory_id 查询对应code
+        $inventory_id = I('id');
         $map['id'] = $inventory_id;
-		$inventory_code = M('stock_inventory')->where($map)->getField('code');
+        $inventory_code = M('stock_inventory')->where($map)->getField('code');
         unset($map);
-		$map['inventory_code'] = $inventory_code;
-		$M->where($map)->order('stock_inventory_detail.id');
+        $map['inventory_code'] = $inventory_code;
+        $M->where($map)->order('stock_inventory_detail.id');
     }
 
     //lists方法执行后，执行该方法
-	protected function after_lists(&$data){
-		//整理数据项
-		foreach($data as $key => $data_detail){
+    protected function after_lists(&$data){
+        //整理数据项
+        foreach($data as $key => $data_detail){
             if($data_detail['pro_qty'] || $data_detail['status'] == 'done'){
                 $data[$key]['pro_qty'] = (empty($data[$key]['pro_qty'])) ? 0 : $data[$key]['pro_qty'];
                 $data[$key]['diff_qty'] = $data_detail['pro_qty'] - $data_detail['theoretical_qty'];
             }
-		}
+        }
         //添加pro_name字段
         $data = A('Pms','Logic')->add_fields($data,'pro_name');
 
@@ -148,6 +148,20 @@ class InventoryDetailController extends CommonController {
             $data['status'] = 'confirm';
             M('stock_inventory')->where($map)->save($data);
             unset($data);
+
+            //遍历所有盘点详情，如果所有盘点没有差异，则更新盘点单为没有差异
+            $map['inventory_code'] = $inventory_code;
+            $inventory_detail_infos = M('stock_inventory_detail')->where($map)->select();
+            unset($map);
+            $is_diff = 0;
+            foreach($inventory_detail_infos as $inventory_detail_info){
+                if($inventory_detail_info['pro_qty'] != $inventory_detail_info['theoretical_qty']){
+                    $is_diff = 1;
+                }
+            }
+            $map['code'] = $inventory_code;
+            M('stock_inventory')->where($map)->save(array('is_diff'=>$is_diff));
+            unset($map);
         }
 
         $this->ajaxReturn(array('status'=>1));
