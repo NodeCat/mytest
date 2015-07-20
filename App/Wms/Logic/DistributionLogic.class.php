@@ -915,7 +915,7 @@ class DistributionLogic {
      * @param array $map [dist_id,status]
      */
     public function set_dist_status($params = array()) {
-        if(!empty($params['dist_id'] && !empty($params['status']))) {
+        if(!empty($params['dist_id']) && !empty($params['status'])) {
             $map['id'] = $params['dist_id'];
             switch($params['status']) {
                 case '1'://已装车对应配送单状态2:已发运
@@ -932,18 +932,20 @@ class DistributionLogic {
             $M = M('stock_wave_distribution');
             //配送单是否已为需要更新的状态
             $dist = $M->field('id')->where($map)->find();
-            if($dist) {
+            if ($dist) {
                 $res = array(
                     'status' => 0,
                     'msg'    => '状态已更新'
                 );
                 return $res;
-            } 
-            else {
+            } else {
                 //该配送单所有配送单详情状态
+                unset($map);
+                $map['pid'] = $params['dist_id'];
+                $map['is_deleted'] = 0;
                 $detail_status = $M->table('stock_wave_distribution_detail')
                     ->field('status')
-                    ->where(array('pid' => $params['dist_id']))
+                    ->where($map)
                     ->select();
                 //所有配送单详情均为该状态时，修改配送单主表状态
                 $flag = 1;
