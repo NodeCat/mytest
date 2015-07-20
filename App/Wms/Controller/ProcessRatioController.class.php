@@ -38,10 +38,26 @@ class ProcessRatioController extends CommonController {
 	                'title' => '创建人',
 	                'query_type' => 'eq',
 	                'control_type' => 'text',
-	                'value' => 'user.id,name',
+	                'value' => '',
 	        ),
 	        
     );
+	
+	public function after_search(&$map){
+	    if (array_key_exists('erp_process_sku_relation.created_user', $map)) {
+	        $where['nickname'] = $map['erp_process_sku_relation.created_user'][1];
+	        $result = M('user')->where($where)->select();
+	        if (empty($result)) {
+	            unset($map['erp_process_sku_relation.created_user']);
+	        }
+	        $ids = array();
+	        foreach ($result as $value) {
+	            $ids[] = $value['id'];
+	        }
+	        unset($map['erp_process_sku_relation.created_user']);
+	        $map['erp_process_sku_relation.created_user'] = array('in', $ids);
+	    }
+	}
 	
 	/**
 	 * 定义页面格局
