@@ -67,9 +67,8 @@
 		<input type="button" value="删除线覆盖物" onClick="javascript:polyline.setMap(null)"/>
 		<input type="button" value="测距" onClick="javascript:ruler.turnOn()"/>  
 	</div>
-	
-	
 </div>
+
 </body>
 </html>
 <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=67f642a47ca5d2d0b4c4a272baeda00f"></script>
@@ -79,8 +78,10 @@
 		var map = new AMap.Map("mapContainer",{
 				resizeEnable: true,
 			  	view: new AMap.View2D({
-		      	//center:new AMap.LngLat(116.397428,39.90923),//地图中心点
-		      	zoom:13//地图显示的缩放级别
+			  	<if condition="count($address) neq 0">
+		      	center:new AMap.LngLat("{$address[0]['lng']}","{$address[0]['lat']}"),//地图中心点
+		      	</if>
+		      	zoom:13,//地图显示的缩放级别
 		     }),
 		});	
 		//添加线覆盖物
@@ -117,7 +118,6 @@
 			marker{$i}.setMap(map);
 			marker{$i}.setTitle("{$addr['address']}");
 			</volist>
-			//marker.setTitle('我是地图中心点哦~');  //在地图上添加点
 		})();
 	  // 测距
 		map.plugin(["AMap.RangingTool"],function(){ 
