@@ -390,6 +390,7 @@ class SettlementController extends CommonController
             }
         }
 
+        //更新结算单为已结算状态
         $data['status'] = '2';
         $data['settlement_time'] = get_time();
         $data['settlement_user'] = UID;
@@ -404,15 +405,17 @@ class SettlementController extends CommonController
         $purchase = array();        //采购单
         $stock    = array();        //入库单
         $refund   = array();        //退款单
+        $stock_amount    = 0;       //记录入库单已结算金额
 
         foreach($settlement_detail as $key => $val){
             if( $val['order_type'] == 1 ){
-                $purchase[] = $val['order_code'];
+                $purchase[]       = $val['order_code'];
             } else if ( $val['order_type'] == 2 ){
-                $stock[]  = $val['stock_id'];
-                $stock_purchase[] = $val['order_code'];
+                $stock[]          = $val['stock_id'];               //入库单ID
+                $stock_purchase[] = $val['order_code'];             //采购单code
+                $stock_amount    += $val['total_amount'];
             } else {
-                $refund[] = $val['order_code'];
+                $refund[]         = $val['order_code'];
             }
         }
 
@@ -432,9 +435,13 @@ class SettlementController extends CommonController
             M('erp_purchase_in_detail')->where($map)->data($data)->save();
             unset($map);
 
+            //更新采购单状态为已结算状态
             $map['code']    = array('in', implode(',', $stock_purchase));
             $data['status'] = '99';
             M('stock_purchase')->where($map)->data($data)->save();
+
+            //更新采购单已结算金额
+            M('stock_purchase')->where($map)->setInc('paid_amount',$stock_amount);
             unset($map);
             unset($data);
         }
@@ -453,7 +460,8 @@ class SettlementController extends CommonController
         $this->ajaxReturn($data);
     }
 
-    public function printPage() {
+    public function printPage()
+    {
         $id = I('get.id/d');
 
         //查询结算单对应的单据详细信息，用于更新对应单据状态使用
@@ -474,7 +482,8 @@ class SettlementController extends CommonController
     }
 
     //在search方法执行后 执行该方法
-    protected function after_search(&$map){
+    protected function after_search(&$map)
+    {
         //获得页面提交过来的采购单号
         if(array_key_exists('erp_settlement.purchase_code', $map)){
             //根据采购单号 查询结算单号
