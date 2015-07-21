@@ -7,7 +7,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-  			<th>单据号</th><th>付款方式</th><th>采购时间</th><th>结算金额</th><th>操作</th>
+  			<th>单据号</th><th>单据类型</th><th>付款方式</th><th>采购时间</th><th>结算金额</th><th>操作</th>
   		</thead>
   		<tbody>
       <volist name="pros" id="vo">
@@ -15,10 +15,18 @@
             <td style="width:50%;">{$vo.order_code}</td>
             <td>
                 <switch name="vo.order_type" >
+                    <case value="1" break="1">采购单</case>
+                    <case value="2" break="1">入库单</case>
+                    <case value="3" break="1">冲红单</case>
+                    <case value="4" break="1">退货单</case>
+                </switch>
+            </td>
+            <td>
+                <switch name="vo.order_type" >
                     <case value="1" break="1">预付款</case>
                     <case value="2" break="1">货到付款</case>
-                    <case value="3" break="1">冲红单</case>
-                    <case value="4" break="1">退款单</case>
+                    <case value="3" break="1">预付款</case>
+                    <case value="4" break="1">货到付款</case>
                 </switch>
             </td>
             <td  style="width:10%;" class="text-left p_qty">
