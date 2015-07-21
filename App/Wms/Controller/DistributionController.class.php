@@ -8,6 +8,8 @@ class DistributionController extends CommonController {
     	    'status' => array(
     	        '1' => '未发运',
     	        '2' => '已发运',
+    	        '3' => '已配送',
+    	        '4' => '已结算',
         )
     );
     protected $columns = array (
@@ -22,6 +24,12 @@ class DistributionController extends CommonController {
             'status' => '状态',
     );
     protected $query   = array (
+            'stock_wave_distribution.dist_code' => array(
+                    'title' => '配送单号',
+                    'query_type' => 'eq',
+                    'control_type' => 'text',
+                    'value' => ''
+            ),
             'stock_wave_distribution.order_type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',
@@ -40,6 +48,8 @@ class DistributionController extends CommonController {
                     'value' => array(
                         '1' => '未发运',
                         '2' => '已发运',
+                        '3' => '已配送',
+                        '4' => '已结算',
                     ),
             ),
             'stock_wave_distribution.order_id' => array(
@@ -404,6 +414,7 @@ class DistributionController extends CommonController {
                     $merge[$v['pro_code']] = $v;
                 } else {
                     $merge[$v['pro_code']]['order_qty'] += $v['order_qty'];
+                    $merge[$v['pro_code']]['delivery_qty'] += $v['delivery_qty'];
                 }
                 unset($merge[$key]);
             }
@@ -521,13 +532,14 @@ class DistributionController extends CommonController {
         if (empty($pass_ids) && empty($reduce_ids)) {
             $this->msgReturn(false, '没有待复核的出库单');
         }
+
         if (!empty($wavein_ids) || !empty($pick_ids)) {
             //波次中或带分拣出库单
             $unpass_ids = implode(',', $wavein_ids) . '|' . implode(',', $pick_ids);
             $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=wave'));
         } elseif (!empty($make_ids)) {
             //弹出没有分拣的出库单
-            if (!empty($confirm)) {
+            if ($confirm == 'confirm') {
                 //继续操作
                 //删除此配送单下的这些出库单
                 $merge = $make_ids;
@@ -549,13 +561,14 @@ class DistributionController extends CommonController {
                 }
                 unset($map);
                 unset($data);
+                $pass_reduce_ids = array_merge($pass_ids,$reduce_ids);
                 //更新配送单中总件数 总条数 总行数 总金额
-                $map['id'] = array('in', $pass_ids);
+                $map['id'] = array('in', $pass_reduce_ids);
                 //获取出库单
                 $sur_info = $stock->where($map)->select();
                 unset($map);
-                $sur_detail = $D->get_out_detail($pass_ids); //通过审核的sku详情
-                $total['order_count'] = count($pass_ids); //总单数
+                $sur_detail = $D->get_out_detail($pass_reduce_ids); //通过审核的sku详情
+                $total['order_count'] = count($pass_reduce_ids); //总单数
                 $total['sku_count'] = 0; //总件数
                 $total['line_count'] = 0; //总行数
                 $total['total_price'] = 0; //总金额
@@ -579,13 +592,15 @@ class DistributionController extends CommonController {
                 $unpass_ids .= implode(',', $make_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
             }
-        } elseif (!empty($reduce_ids)) {
-            //弹出提示框
-            if (empty($confirm)) {
+        }
+        if (!empty($reduce_ids)) {
+            if ($confirm != 'confirm_reduce') {
+                //弹出提示框
                 $unpass_ids .= implode(',', $reduce_ids) . '|' . $post;
-                $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
+                $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=reduce'));
             }
         }
+
         //统计SKU数量扣减库存
         //获取库存充足的出库详情
         $pass_sku_detail = $D->get_out_detail($pass_ids);
@@ -686,9 +701,6 @@ class DistributionController extends CommonController {
             $pass_ids_string = implode(',', $pass_ids);
             $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
             M()->execute($sql);
-            //修改采购退货已收货状态和实际收货量 liuguangping        
-            $distribution_logic = A('PurchaseOut','Logic');        
-            $distribution_logic->upPurchaseOutStatus($pass_ids);
         }
         
         if(!empty($reduce_ids)){
@@ -744,6 +756,10 @@ class DistributionController extends CommonController {
             unset($map);
         }
 
+        //修改采购退货已收货状态和实际收货量 liuguangping        
+        $distribution_logic = A('PurchaseOut','Logic');        
+        $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
+
         $this->msgReturn(true, '已完成', '', U('over'));
     }
     
@@ -756,7 +772,7 @@ class DistributionController extends CommonController {
         }
         $get = I('get.ids');
         $type = I('get.type');
-        if ($type == 'make') {
+        if ($type == 'make' || $type == 'reduce') {
             $get = explode('|', $get);
             $ids = array();
             $data = array();
@@ -811,6 +827,7 @@ class DistributionController extends CommonController {
         }
         $this->assign('confirm', $confirm);
         $this->assign('data', $data);
+        $this->assign('type', $type);
         $this->cur = '发运异常';
         C('LAYOUT_NAME','pda');
         $this->title = '发运异常';
@@ -1012,6 +1029,23 @@ class DistributionController extends CommonController {
            if (!$affect) {
                $this->msgReturn(false, '出库单状态更新失败');
            }
+        }
+        //通知hop订单状态改变为波次中
+        foreach($ids as $bill_out_id){
+            $map['id'] = $bill_out_id;
+            $bill_out_info = $stock_out->where($map)->find();
+            unset($map);
+
+            //如果是销售订单则通知hop接口
+            if($bill_out_info['order_type'] == 1){
+                $map['suborder_id'] = $bill_out_info['refer_code'];
+                $map['status'] = '11';
+                $map['cur']['name'] = session('user.username');
+                A('Common/Order','Logic')->set_status($map);
+                unset($map);
+            }
+            
+            unset($bill_out_info);
         }
         $msg = array();
         $msg['order_count'] = count($ids);

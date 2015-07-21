@@ -10,11 +10,16 @@
 <div class="alert alert-danger text-center hidden" role="alert"></div>
 <form class="form-horizontal form-ajax form-pda form-scan" action="/Distribution/over" method="post">
   <input type="hidden" name="dist_code" value="{$dist_code}">
+  <if condition="$type eq 'reduce'">
+  <input type="hidden" name="confirm" value="confirm_reduce">
+  <else />
   <input type="hidden" name="confirm" value="confirm">
+  </if>
   <eq name="confirm" value="yes">
   <div class="form-group">
       <label for="" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label"></label>
-      <label for="" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">存在状态为待生产或库存不足的出库单！</label>
+      <label for="" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">
+        存在状态为<eq name="type" value="make">待生产</eq><eq name="type" value="reduce">库存不足</eq>的出库单！</label>
   </div>
   </eq>
   <eq name="confirm" value="not">
@@ -43,7 +48,9 @@
 <eq name="confirm" value="yes">
 	<div class="form-group">
       <label for="" class="col-lg-4 col-md-4 col-sm-4 col-xs-4 control-label"></label>
-      <label for="" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">点击“继续出库”这些出库单将不会出库，是否确认出库？</label>
+      <label for="" class="col-lg-8 col-md-8 col-sm-8 col-xs-8 control-label">
+        <eq name="type" value="reduce">点击“继续出库”这些出库单将会按照现有PACK发货区的实际数量进行出库，是否确认出库？</eq>
+        <eq name="type" value="make">点击“继续出库”这些出库单将不会出库，并从车单中删除，是否确认出库？</eq></label>
   </div>
   <div class="form-group">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">

@@ -203,6 +203,8 @@ class PurchaseOutLogic{
                 continue;
             }
             $M = M('stock_bill_out');
+            $stock_bill_out_detail = M('stock_bill_out_detail');
+            $purchase_out_detail = M('stock_purchase_out_detail');
             $map = array();
             $where = array();
             $map['id'] = $out_id;
@@ -222,9 +224,22 @@ class PurchaseOutLogic{
                         $where = array();
                         $where['rtsg_code'] = $purchaseCode;
                         $id = $purchase_out->where($where)->getField('id');
-                        //这里只有全部出完，否则就一个也不出
-                        $sql = "UPDATE stock_purchase_out_detail SET real_return_qty = plan_return_qty,updated_time='".get_time()."' WHERE pid=".$id;
-                        if(M()->execute($sql)){
+                        unset($map);
+                        $map['pid'] = $out_id;
+                        $map['is_deleted'] = 0;
+                        //修改采购退货单实际出库量
+                        $detail = $stock_bill_out_detail->field('batch_code,pro_code,delivery_qty')->where($map)->select();
+                        if($detail){
+                            foreach ($detail as $vals) {
+                                unset($map);
+                                $map['pro_code'] = $vals['pro_code'];
+                                $map['batch_code'] = $vals['batch_code'];
+                                $map['pid'] = $id;
+                                $saveDetail = array();
+                                $saveDetail['updated_time'] = get_time();
+                                $saveDetail['real_return_qty'] = $vals['delivery_qty'];
+                                $purchase_out_detail->where($map)->save($saveDetail);
+                            }
                             $return = TRUE;
                         }else{
                             $where = array();

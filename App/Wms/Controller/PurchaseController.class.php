@@ -680,6 +680,8 @@ class PurchaseController extends CommonController {
         	}elseif($flg == 'error'){
             	$parma['stock_status'] = 'unqualified';
        		}
+       		$area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
+       		$parma['no_in_location_area_code'] = $area_name;
     		$pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
     		$result[$key]['stock_qty'] = $pro_qty['sum'];
     	}

@@ -15,13 +15,14 @@ class TmsController extends \Common\Controller\AuthController{
                     $this->msgReturn('0','查询失败，未找到该单据');
                 }
             }
-            
+            $wipe_zero_sum = 0;
             unset($map);
             $map['dist_id'] = $dist['id'];
             $map['itemsPerPage'] = $dist['order_count'];
             $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
             $A = A('Common/Order','Logic');
             $orders = $A->order($map);
+            $dist_logic = A('Tms/Dist','Logic');
             foreach ($orders as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
@@ -51,6 +52,11 @@ class TmsController extends \Common\Controller\AuthController{
                 }
                 if($val['actual_price'] > 0) {
                     $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'];
+                    if($val['pay_status'] != '已付款'){
+                        $old_value = $val['pay_for_price'];
+                        $val['pay_for_price'] = $dist_logic->wipeZero($val['pay_for_price']);
+                        $wipe_zero_sum += round($old_value - $val['pay_for_price'],2);
+                    }
                 }
                 else {
                     $val['pay_for_price'] = 0 ;
@@ -74,6 +80,8 @@ class TmsController extends \Common\Controller\AuthController{
                 }
                 
             }
+            //抹零总计
+            $dist['wipe_zero_sum'] = $wipe_zero_sum;
             //dump($orders);
             $this->assign('dist', $dist);
             $this->assign('data', $orders);
@@ -90,6 +98,7 @@ class TmsController extends \Common\Controller\AuthController{
         $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
         $A = A('Common/Order','Logic');
         $orders = $A->order($map);
+        $dist_logic = A('Tms/Dist','Logic');
         if(empty($orders)) {
             $this->msgReturn('0','结算失败，未找到该配送单中的订单。');
         }
@@ -121,7 +130,7 @@ class TmsController extends \Common\Controller\AuthController{
                 }
             }
             $map['status']  = '1';//已完成
-            $map['deal_price'] = $val['pay_for_price'];
+            $map['deal_price'] = $dist_logic->wipeZero($val['pay_for_price']);
             $order_ids[] = $val['id'];
             $map['suborder_id'] = $val['id'];
             $map['cur']['name'] = 'fms-'.session('user.username');

@@ -82,17 +82,16 @@
           <case value="已回款" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
             data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <case value="已退货" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
             data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <default />
           <a onclick="check(this)" class="list-group-item  panel-footer collapsed"
-          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false"
-          data-parent="#orders" aria-controls="info_{$vo.id}">
+          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
         </switch>
         <!--{$vo.order_type_cn}-->
         <span class="order-id">
@@ -180,9 +179,6 @@
                     <span class="input-group-addon">
                       {$v.close_unit}
                     </span>
-                    <!-- <input type="number" name="price_sum[]" min="0" class="form-control
-                    p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
-                    -->
                     <span class="input-group-addon">
                       ¥
                       <span class="p_sum">
@@ -268,10 +264,10 @@
                         该订单已网上支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                  value="{$vo.deal_price}" readonly>
                     <else/>
                       <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                  value="{$vo.deal_price}" readonly>
                    </if>
                 </switch>
               </div>

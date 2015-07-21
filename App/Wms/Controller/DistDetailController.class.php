@@ -7,7 +7,8 @@ class DistDetailController extends CommonController {
 	        'code' => '出库单号',
             'line' => '订单线路',
             'address' => '送货地址',
-            'deliver_date' => '送货时间',
+            //'deliver_date' => '送货时间',
+            'user_id' => '客户id',
             'name' => '货品名称',
             'attrs' => '规格',
             'quantity' => '数量',
@@ -67,7 +68,7 @@ class DistDetailController extends CommonController {
         
         //分配线路
         $D = D('Distribution', 'Logic');
-        $line = $D->format_line();
+        $line = $D->format_line(-1, session('user.wh_id'));
         $this->query['line']['value'] = $line;
     }
     //显示数据列表

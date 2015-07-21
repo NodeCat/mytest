@@ -503,7 +503,7 @@ class StockLogic{
         //减待上架库存 增加已上量
         $map['refer_code'] = $refer_code;
         $map['pro_code'] = $pro_code;
-        $map['pro_uom'] = $pro_uom;
+        //$map['pro_uom'] = $pro_uom;
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
         unset($map);
@@ -534,7 +534,7 @@ class StockLogic{
         $stock_move_data = $stock_move->create($stock_move_data);
         $stock_move->data($stock_move_data)->add();
 
-        return ture;
+        return true;
     }
 
     /**
@@ -1002,6 +1002,7 @@ class StockLogic{
     *    'pro_name' => 'xxxx',
     *    'batch_code'=>'xxxx',
     *    'location_code' => 'xxxx',
+    *    'no_location_code'=> array('DownGrade,PACK')
     *    'stock_status' => 'xxxxx',
     *    
     * )
@@ -1013,6 +1014,7 @@ class StockLogic{
         $batch_code = $params['batch_code'];
         $pro_name = $params['pro_name'];
         $location_code = $params['location_code'];
+        $no_in_location_area_code = $params['no_in_location_area_code'];
         $stock_status = $params['stock_status'];
 
         $map = array();
@@ -1041,11 +1043,22 @@ class StockLogic{
         if($location_code){
             $location_map['code'] = array('LIKE','%'.$location_code.'%');
             $location_ids = M('Location')->where($location_map)->getField('id',true);
+
             if(empty($location_ids)){
                 $location_ids = array(0);
             }
 
             $map['stock.location_id'] = array('in',$location_ids);
+        }
+        //排斥库位 liuguangping
+        if($no_in_location_area_code){
+            //升级方法 liuguangpng 
+            $location_ids = A('Location','Logic')->getLocationIdByAreaName($no_in_location_area_code);
+            if(empty($location_ids)){
+                $location_ids = array(0);
+            }
+
+            $map['stock.location_id'] = array('not in',$location_ids);
         }
 
         if(!empty($stock_status)){

@@ -2,6 +2,7 @@
 namespace Wms\Controller;
 use Think\Controller;
 class ProcessRatioController extends CommonController {
+    private $p_pro_code = '';
     //列表显示定义
 	protected $columns = array (
 	      'company_id' => '所属系统',
@@ -33,7 +34,34 @@ class ProcessRatioController extends CommonController {
 	                'control_type' => 'getField',
 	                'value' => 'company.id,name',
 	        ),
+	        'erp_process_sku_relation.created_user' => array(
+	                'title' => '创建人',
+	                'query_type' => 'eq',
+	                'control_type' => 'text',  
+	                'value' => '',
+	        ),
+	        
     );
+	
+	public function after_search(&$map){
+	    if (array_key_exists('erp_process_sku_relation.created_user', $map)) {
+	        $where['nickname'] = $map['erp_process_sku_relation.created_user'][1];
+	        $result = M('user')->where($where)->select();
+	        if (empty($result)) {
+	            unset($map['erp_process_sku_relation.created_user']);
+	        }
+	        $ids = array();
+	        foreach ($result as $value) {
+	            $ids[] = $value['id'];
+	        }
+	        unset($map['erp_process_sku_relation.created_user']);
+	        if (!empty($ids)) {
+	           $map['erp_process_sku_relation.created_user'] = array('in', $ids);
+	        } else {
+	            $map['erp_process_sku_relation.created_user'] = array('eq', null);
+	        }
+	    }
+	}
 	
 	/**
 	 * 定义页面格局
@@ -73,44 +101,46 @@ class ProcessRatioController extends CommonController {
 	 * 查看详情
 	 */
 	public function before_edit(&$data) {
-	    //获取所有比例关系
-	    $p_code = $data['p_pro_code'];
-	    $M = M('erp_process_sku_relation');
-	    $map['p_pro_code'] = $p_code;
-	    $ratio = $M->where($map)->select();
-	    
-	    unset($map);
-	    $map['id'] = $data['created_user'];
-	    $user = M('user');
-	    $name = $user->where($map)->find();
-	    $data['created_user'] = $name['nickname'];
-	    $code = array();
-	    $code[] = $data['p_pro_code'];
-	    foreach ($ratio as $val) {
-	        $code[] = $val['c_pro_code'];
-	    }
-	    //调用Pms接口查询sku信息
-	    $pms = D('Pms', 'Logic');
-	    $sku_info = $pms->get_SKU_field_by_pro_codes($code);
-	    foreach ($sku_info as $key => $value) {
-	        if ($key == $data['p_pro_code']) {
-	            $data['p_name'] = $value['name'];
-	            $data['p_attrs'] = $value['pro_attrs_str'];
-	            $data['uom_name'] = $value['uom_name'];
-	        } else {
-	            //查询所有子sku
-	            foreach ($ratio as $v) {
-	                if ($key == $v['c_pro_code']) {
-	                    $data['c_pros'][] = array(
-	                    	'c_code' => $v['c_pro_code'],
-	                        'c_name' => $value['name'],
-	                        'c_attrs' => $value['pro_attrs_str'],
-	                        'c_ratio' => $v['ratio'],
-	                        'c_uom_name' => $value['uom_name'],
-	                    );
-	                }
-	            }
-	        }
+	    if (ACTION_NAME == 'view') {
+        	    //获取所有比例关系
+        	    $p_code = $data['p_pro_code'];
+        	    $M = M('erp_process_sku_relation');
+        	    $map['p_pro_code'] = $p_code;
+        	    $ratio = $M->where($map)->select();
+        	    
+        	    unset($map);
+        	    $map['id'] = $data['created_user'];
+        	    $user = M('user');
+        	    $name = $user->where($map)->find();
+        	    $data['created_user'] = $name['nickname'];
+        	    $code = array();
+        	    $code[] = $data['p_pro_code'];
+        	    foreach ($ratio as $val) {
+        	        $code[] = $val['c_pro_code'];
+        	    }
+        	    //调用Pms接口查询sku信息
+        	    $pms = D('Pms', 'Logic');
+        	    $sku_info = $pms->get_SKU_field_by_pro_codes($code);
+        	    foreach ($sku_info as $key => $value) {
+        	        if ($key == $data['p_pro_code']) {
+        	            $data['p_name'] = $value['name'];
+        	            $data['p_attrs'] = $value['pro_attrs_str'];
+        	            $data['uom_name'] = $value['uom_name'];
+        	        } else {
+        	            //查询所有子sku
+        	            foreach ($ratio as $v) {
+        	                if ($key == $v['c_pro_code']) {
+        	                    $data['c_pros'][] = array(
+        	                    	'c_code' => $v['c_pro_code'],
+        	                        'c_name' => $value['name'],
+        	                        'c_attrs' => $value['pro_attrs_str'],
+        	                        'c_ratio' => $v['ratio'],
+        	                        'c_uom_name' => $value['uom_name'],
+        	                    );
+        	                }
+        	            }
+        	        }
+        	    }
 	    }
 	}
 	
@@ -128,9 +158,17 @@ class ProcessRatioController extends CommonController {
         	    if (count($post['pros']) < 2) {
         	        $this->msgReturn(0, '请添加一个子SKU');
         	    }
-        	    
+        	    $M = D('ProcessRatio');
         	    //去除隐藏域
         	    unset($post['pros'][0]);
+        	    $map['p_pro_code'] = $post['p_pro_code_hidden'];
+        	    $map['is_deleted'] = 0;
+        	    $affected = $M->where($map)->find();
+        	    if (!empty($affected)) {
+        	        //此比例关系已存在
+        	        $this->msgReturn(false, '此物料清单已存在');
+        	    }
+        	    unset($map);
 
         	    //叠加同类子SKU
         	    $new_pros = array();
@@ -142,7 +180,7 @@ class ProcessRatioController extends CommonController {
         	        }
         	    }
         	    $post['pros'] = $new_pros;
-        	    $M = D('ProcessRatio');
+        	    
         	    //创建物料清单
         	    $info = array();
         	    foreach ($post['pros'] as $key => $value) {
@@ -158,15 +196,6 @@ class ProcessRatioController extends CommonController {
         	        //子SKU父SKU不可相同
         	        if ($value['pro_code'] == $post['p_pro_code_hidden']) {
         	            $this->msgReturn(0, '创建规则错误');
-        	        }
-        	        $map['p_pro_code'] = $post['p_pro_code_hidden'];
-        	        $map['c_pro_code'] = $value['pro_code'];
-        	        $map['ratio'] = $value['pro_qty'];
-        	        $map['company_id'] = $post['company_id'];
-        	        $affected = $M->where($map)->find();
-        	        if (!empty($affected)) {
-        	            //此比例关系已存在
-        	            continue;
         	        }
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
@@ -236,31 +265,57 @@ class ProcessRatioController extends CommonController {
 	}
 	
 	/**
+	 * 编辑
+	 */
+	public function change() {
+	    $post = I('post.');
+	    $processDetail = M('erp_process_detail');
+	    $map['p_pro_code'] = $post['old_p_code'];
+	    $this->p_pro_code = $post['old_p_code'];
+	    $processSku = $processDetail->where($map)->select();
+	    if (!empty($processSku)) {
+	        foreach ($processSku as $value) {
+	            $processStatus = M('erp_process')->where(array('id'=>$value['pid']))->find();
+	            if ($processStatus['status'] == 5) {
+	                continue;
+	            }
+	            if ($value['real_qty'] < $value['plan_qty']) {
+	                $this->msgReturn(false, '此物料清单正在使用中请勿编辑');
+	            }
+	        }
+	    }
+	    $this->edit();
+	}
+	
+	/**
 	 * 编辑处理 （非数据处理 比例关系是否符合编辑条件处理）
 	 */
 	public function before_save($M) {
-	    if (empty($M->p_pro_code)) {
-	        $this->msgReturn(false, '请输入父SKU编号');
+	    if (ACTION_NAME == 'change') {
+        	    if (empty($M->p_pro_code)) {
+        	        $this->msgReturn(false, '请输入父SKU编号');
+        	    }
+        	    if (empty($M->c_pro_code)) {
+        	        $this->msgReturn(false, '请输入子SKU编号');
+        	    }
+        	    if (empty($M->company_id)) {
+        	        $this->msgReturn(false, '请选择所属系统');
+        	    }
+        	    if (empty($M->ratio)) {
+        	        $this->msgReturn(false, '请输入比例关系');
+        	    }
+        	    if ($M->p_pro_code == $M->c_pro_code) {
+        	        $this->msgReturn(false, '父SKU和子SKU不可相同');
+        	    }
+        	    if ($this->p_pro_code != $M->p_pro_code) {
+        	        $map['p_pro_code'] = $M->p_pro_code;
+        	        $map['is_deleted'] = 0;
+            	    $have = M('erp_process_sku_relation')->where($map)->find();
+            	    if (!empty($have)) {
+            	        $this->msgReturn(false, '此物料清单已存在');
+            	    }
+        	    }
 	    }
-	    if (empty($M->c_pro_code)) {
-	        $this->msgReturn(false, '请输入子SKU编号');
-	    }
-	    if (empty($M->company_id)) {
-	        $this->msgReturn(false, '请选择所属系统');
-	    }
-	    if (empty($M->ratio)) {
-	        $this->msgReturn(false, '请输入比例关系');
-	    }
-	    $process_ratio = M('erp_process');
-        $sql = "select id from erp_process where status in ('pass', 'make')
-                and real_qty < plan_qty
-                and p_pro_code = " . $M->p_pro_code . " limit 1";
-        $affected = $process_ratio->query($sql);
-        if (!empty($affected)) {
-            //比例关系正在使用
-            $this->msgReturn(false, '比例关系正在使用中请勿编辑');
-        }
-        return;
 	} 
 	
 	/**
@@ -270,21 +325,24 @@ class ProcessRatioController extends CommonController {
 	    if (empty($data)) {
 	        return;
 	    }
-	    $process = M('erp_process');
 	    $process_ratio = M('erp_process_sku_relation');
 	    foreach ($data as $value) {
 	        $map['id'] = $value;
 	        $p_code = $process_ratio->where($map)->find();
 	        unset($map);
-	        $sql = "select id from erp_process where status in ('pass', 'make') 
-	                and real_qty < plan_qty 
-	                and p_pro_code = " . $p_code['p_pro_code'] . " limit 1";
-	        $affected = $process->query($sql);
-	        if (!empty($affected)) {
-	            //比例关系正在使用
-	            $this->msgReturn(false, '比例关系正在使用中请勿删除');
+	        $map['p_pro_code'] = $p_code['p_pro_code'];
+	        $processSku = M('erp_process_detail')->where($map)->select();
+	        if (!empty($processSku)) {
+	            foreach ($processSku as $value) {
+	                $processStatus = M('erp_process')->where(array('id'=>$value['pid']))->find();
+	                if ($processStatus['status'] == 5) {
+	                    continue;
+	                }
+	                if ($value['real_qty'] < $value['plan_qty']) {
+	                    $this->msgReturn(false, '此物料清单正在使用中请勿删除');
+	                }
+	            }
 	        }
 	    }
-	    return;
 	}
 }

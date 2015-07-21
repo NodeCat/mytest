@@ -79,6 +79,11 @@ class IndexController extends Controller {
                         session('user',$user);
                         $this->redirect('delivery');
                     }else{
+                        if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                            $userid['period'] = '上午';
+                        } else {
+                            $userid['period'] = '下午';
+                        }
                         $M->add($userid);//否则就签到
                         session('user',$user);
                         $this->redirect('delivery');
@@ -263,6 +268,11 @@ class IndexController extends Controller {
                 $data['userid'] = $userid['id'];
                 unset($M);
                 $M=M('TmsSignList');
+                if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                    $data['period'] = '上午';
+                } else {
+                    $data['period'] = '下午';
+                }
                 $M->data($data)->add();
                 $this->redirect('delivery');
 
@@ -311,6 +321,7 @@ class IndexController extends Controller {
             $A = A('Common/Order','Logic');
             $orderList = $A->order($map);
             $this->orderCount = count($orderList);
+            $dist_logic = A('Tms/Dist','Logic');
             foreach ($orderList as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
@@ -339,6 +350,8 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
+                $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
@@ -527,10 +540,14 @@ class IndexController extends Controller {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
                     $map['userid']       = $user_data['id'];
+                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                        $map['period'] = '上午';
+                    } else {
+                        $map['period'] = '下午';
+                    }
                     $M->add($map);
                     unset($map);
                     }
-
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
@@ -547,7 +564,7 @@ class IndexController extends Controller {
 
         //只显示当天的记录
         $map['mobile'] = session('user.mobile');
-        $this->userid  = M('tms_user')->field('id')->where($map)->find();
+        $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
         $map['status'] = '1';
         $start_date    = date('Y-m-d',NOW_TIME);
         $end_date      = date('Y-m-d',strtotime('+1 Days'));
@@ -725,7 +742,5 @@ class IndexController extends Controller {
         $geo_arrays =json_encode($geo_array,JSON_UNESCAPED_UNICODE);
         $this->ajaxReturn($geo_arrays);
     }
-   
- 
 
 }
