@@ -73,4 +73,4 @@ ALTER TABLE `stock_bill_out` CHANGE `total_amount` `total_amount` DECIMAL(18,2) 
 
 #库存调整单
 ALTER TABLE `stock_adjustment_detail` CHANGE `origin_qty` `origin_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '原数量';
-ALTER TABLE `stock_adjustment_detail` CHANGE `adjusted_qty` `adjusted_qty` DECIMAL(10) NOT NULL DEFAULT '0.00' COMMENT '调整量';
+ALTER TABLE `stock_adjustment_detail` CHANGE `adjusted_qty` `adjusted_qty` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '调整量';

@@ -752,12 +752,12 @@ class PurchaseController extends CommonController {
     		foreach ($pros['plan_return_qty']  as $pank => $valp) {
     			$mes = '';
     			$pro_codemes = $pros['pro_code'][$pank];
-    			if($valp == ''){
-    				$mes = $pro_codemes . '采购数量不能为空';
+    			/*if($valp == ''){
+    				$mes = $pro_codemes . '退货量数量不能为空';
 					$this->msgReturn(0,$mes);
-    			}
+    			}*/
 				if (strlen(formatMoney($valp, 2, 1))>2) {
-					$mes = $pro_codemes . '采购数量只能精确到两位小数点';
+					$mes = $pro_codemes . '退货量只能精确到两位小数点';
 					$this->msgReturn(0,$mes);
 				}
 
