@@ -49,8 +49,6 @@ class SignInApi extends CommApi
     }
 
     public function uploadImg($img) {
-        import("Common.Lib.HttpCurl");
-        $this->request = new \HttpCurl();
         $url = "http://img.dachuwang.com/upload/" + $img['name'];
         $file = array(
             'name' => $img['tmp_name'],
@@ -62,14 +60,45 @@ class SignInApi extends CommApi
             'Charset'         => 'UTF-8',
             'Connection'      => 'Keep-Alive',
         );
-        $res = $this->request->post(
+        $arg = file_get_contents($img['tmp_name']);
+        $res = $this->post(
             $url,
-            $args, 
-            $options = array('post_json' => false, 'header' => $header),
+            $arg, 
+            $options = array('header' => $header),
             $urlencode = false,
             $file
         );
         dump($file);
         dump($res);
+    }
+
+    public function post($url, $arg, $options = array(), $urlencode = false, $file = array()){
+        import("Common.Lib.HttpRequest");
+        $httpRequest = new \HttpRequest($url);
+        $httpRequest->set_method("POST");
+        $httpRequest->post_fields = $arg;
+        if ($file) {
+            $httpRequest->add_post_file($file['name'], $file['dir']);
+        }
+        // timeout
+        if(isset($options['timeout'])){
+            $httpRequest->set_timeout($options['timeout']);
+        }else{
+            $httpRequest->set_timeout(8000);
+        }
+        if(isset($options['connect_timeout'])){
+            $httpRequest->set_connect_timeout($options['connect_timeout']);
+        }else{
+            $httpRequest->set_connect_timeout(8000);
+        }
+
+        if(isset($options['header'])){
+            foreach($options['header'] as $key => $value){
+                $httpRequest->add_header($key,$value);
+            }
+        }
+        $httpRequest->send();
+        $response = $httpRequest->get_response_content();
+        return $response;
     }
 }
