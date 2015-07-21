@@ -61,13 +61,14 @@ margin-top: 10px;
 </style>
 
 <script type="text/javascript">
+(function(){
 if(typeof HostApp != "undefined") {
   $("#notice").removeClass('hidden');  
-  (function(){
-      <if condition="$msg eq '提货成功'">
-        HostApp.startLocate("{$userid['id']}");
-        HostApp.toast('计程开始,请不要退出');
-      </if>
-  })();
-}
+    <if condition="$msg eq '提货成功'">
+      HostApp.startLocate("{$userid['id']}");
+      HostApp.toast('计程开始,请不要退出');
+    </if>
+  }
+})();
+
 </script>
