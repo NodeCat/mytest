@@ -177,12 +177,13 @@ $(function(){
             var payment_type = $(this).nextAll("input[name=payment_type]").val();
             var amount = parseInt($(this).nextAll("input[name=paid_amount]").val());
             postData[i] = id+'_'+status+'_'+payment_type;
-            if(status == 'norefund'){
+            if(status == 'norefund' || status == 'wait'){
                 paid_amount -= amount;
             }else{
                 paid_amount += amount;
             }
         });
+
         if(postData.length <= 0){
             alert('请选择要结算的订单！');
             return false;

@@ -25,7 +25,7 @@
               {$vo.purchase_time}
             </td>
             <td style="width:10%;">
-                <if condition="$vo.order_type eq 3 AND $vo.order_type eq 4">
+                <if condition="$vo.order_type eq 3 OR $vo.order_type eq 4">
                     -{$vo.total_amount}
                 <else />
                     {$vo.total_amount}
