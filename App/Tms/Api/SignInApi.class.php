@@ -57,6 +57,7 @@ class SignInApi extends CommApi
             'Connection'      => 'Keep-Alive',
         );
         $arg = file_get_contents($img['tmp_name']);
+        dump($arg);
         $res = $this->post(
             $url,
             $arg, 
