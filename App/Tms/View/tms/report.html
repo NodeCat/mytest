@@ -10,5 +10,15 @@
   </a>
 </volist>
 </div>
+<br/>
+<botton id="finished" class='btn btn-primary btn-lg btn-block'>结算运费</botton>
 </div>
-
+<script type="text/javascript">
+if(typeof HostApp == "undefined") {
+  $("#finished").addClass('hidden');  
+}
+$('#finished').click(function(){
+  HostApp.stopLocate();
+  HostApp.toast('配送完成');
+})
+</script>

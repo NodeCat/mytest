@@ -108,7 +108,7 @@ class DispatchController extends Controller{
                     continue;
                 }
             if ($i==0) {
-                $lines .= $val['line_name'];// 把路线加在一起
+                $lines = $val['line_name'];// 把路线加在一起
                 $i++;
             } else {
                 $lines .= '、'. $val['line_name'];
