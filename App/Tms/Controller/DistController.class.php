@@ -231,7 +231,6 @@ class DistController extends Controller {
         $deal_price  = $fdata['real_sum'];
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity,$weight ,$price_unit);
-        $re = array('status' => 0);
         if($re['status'] === 0) {
             $M = M('tms_sign_in');
             //该出库单签收状态
@@ -302,7 +301,7 @@ class DistController extends Controller {
             if(intval($val) > 0) {
                 $row['id']= $val;
                 $row['actual_price'] = $price_unit[$key];
-                $row['actual_quantity'] = empty($weight[$key])?$quantity[$key]:$weight[$key];
+                $row['actual_quantity'] = isset($weight[$key]) ? $weight[$key]: $quantity[$key];
                 $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
                 $map['order_details'][] = $row;
             }

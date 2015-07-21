@@ -11,8 +11,6 @@ class SignInApi extends CommApi
     {
         $suborder_id = I('post.order_id/d',0);
         $img = $_FILES['image'];
-        dump($_FILES);
-        die();
         if (empty($suborder_id) || empty($img)) {
             $re = array(
                 'status' => -1,
@@ -20,6 +18,7 @@ class SignInApi extends CommApi
             );
             $this->ajaxReturn($re);
         }
+        $this->ajaxReturn(array('status' => 0));
         $path = $this->uploadImg($img);
         if ($path) {
             $map['suborder_id'] = $suborder_id;
