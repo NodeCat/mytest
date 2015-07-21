@@ -503,4 +503,12 @@ class DistController extends Controller {
         $this->ajaxReturn($re);
     }
 
+    public function test() {
+        if(IS_POST) {
+            dump($_FILES);
+        }else{
+            $this->display('tms:test');
+        }
+    }
+
 }
