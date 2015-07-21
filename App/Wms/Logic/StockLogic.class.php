@@ -943,6 +943,7 @@ class StockLogic{
                     //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
                     if(strtotime($dest_stock_info['product_date']) > strtotime($src_stock_info['product_date']) || $dest_stock_info['product_date'] == '0000-00-00 00:00:00'){
                         $data['product_date'] = (empty($src_stock_info['product_date'])) ? date('Y-m-d') : $src_stock_info['product_date'];
+                        $stock = D('Stock');
                         $data = $stock->create($data,2);
                         $res = $stock->where($map)->save($data);
                         unset($data);
