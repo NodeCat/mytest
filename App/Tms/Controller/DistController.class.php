@@ -12,38 +12,64 @@ class DistController extends Controller {
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
-            //$map['created_time'] = array('between',$start_date.','.$end_date);
+            $map['created_time'] = array('between',$start_date.','.$end_date);
             $M = M('tms_delivery');
-            $dist = $M->field('id,mobile')->where($map)->find();
+            $delivery = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
+            unset($map['dist_id']);
+            $map['mobile'] = session('user.mobile');
+            $delivery_all = $M->field('id,mobile,dist_id,order_count')->where($map)->select();//取出当前司机所有配送单信息
             unset($map);
-            if(!empty($dist)) {//若该配送单已被认领
-                if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
+            if(!empty($delivery)) {//若该配送单已被认领
+                if($delivery['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                     $this->error = '提货失败，该单据您已提货';
                 }
-                else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
-                    $map['id'] = $dist['id'];
-                    $data['status'] = '0';
-                    $M->where($map)->save($data);
+                else {
+                    //如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
+                    $map['dist_id'] = $id;
+                    $map['order'] = array('created_time' => 'DESC');
+                    $bills = A('Tms/Dist', 'Logic')->billOut($map);
+                    $orders = $bills['orders'];
+                    unset($map);
+                    foreach ($orders as $key => $value) {
+                        if($value['order_info']['status_cn'] != "已装车") {
+                            $status = '1';//只要一单不是以装车,就停止
+                            break;
+                        }
+                        else {
+                            $status = '2';
+                        }
+                    }
+                    if($status == '2') {
+                        //如果别人提的还是已装车，那就还可以提
+                        $map['id'] =$delivery['id'];
+                        $data['status'] = '0';
+                        $M->where($map)->save($data);
+                    }
+                    else {
+                        // 如果别人提了，并且只要一单不是以装车，就不能提了
+                        $this->error="该配送单已被他人提走并且在配送中,不能被认领";
+                    }
+                    unset($map);
                 }
-                unset($map);
             }
-
             //查询该配送单的信息
             $wA = A('Wms/Distribution','Logic');
             $dist = $wA->distInfo($id);
-            //if($id != $dist['dist_number']) {
             if(empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if($dist['status'] == '2') {//已发运的单据不能被认领
+            if($dist['status'] == '2') {
+                //已发运的单据不能被认领
                 //$this->error = '提货失败，该单据已发运';
             }
             $ctime = strtotime($dist['created_time']);
-            if($ctime < strtotime($start_date) || $ctime > strtotime($end_date)) {
-                //$this->error = '提货失败，该配送单已过期';
+            $start_date1 = date('Y-m-d',strtotime('-1 Days'));
+            $end_date1 = date('Y-m-d',strtotime('+1 Days'));
+            if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
+                $this->error = '提货失败，该配送单已过期';
             }
-
+            //添加提货数据
             if(empty($this->error)) {
                 $data['dist_id']      = $dist['id'];
                 $data['dist_code']    = $dist['dist_code'];
@@ -56,19 +82,52 @@ class DistController extends Controller {
                 $data['created_time'] = get_time();
                 $data['updated_time'] = get_time();
                 $data['status']       = '1';
-                $cA = A('Common/Order','Logic');//实例化Common下的OrderLogic
-                $lines = $cA->line(array('line_ids'=>array($dist['line_id'])));
-                $data['line_name'] = $lines[0]['name'];
+                //实例化Common下的OrderLogic
+                $cA = A('Common/Order','Logic');
+                if (!isset($orders) || empty($orders)) {
+                    $map['dist_id'] = $dist['id'];
+                    $map['order'] = array('created_time' => 'DESC');
+                    $bills = A('Tms/Dist', 'Logic')->billOut($map);
+                    $orders = $bills['orders'];
+                    unset($map);
+                }
+                //遍历每个订单的取出路线id
+                foreach ($orders as $v) {
+                    $line_id[] = $v['line_id'];
+                }
+                $line_id = array_unique($line_id);//重复的去掉
+                $lines = $cA->line(array('line_ids'=>$line_id));//取出所有路线
+                // 把路线连接起来
+                foreach ($lines as $key => $val) {
+                    if ($key==0) {
+                        $line_names = $val['name'];
+                    } else {
+                        $line_names .= '/' . $val['name'];
+                    }
+                }
+                $data['line_name'] = $line_names;//写入devilery
                 $citys = $cA->city();
                 $data['city_id'] = $citys[$dist['city_id']];
                 //添加一条记录到tms_delivery
                 $res = $M->add($data);
-                unset($map);
-                $map['dist_id'] = $dist['id'];
-                $map['order'] = array('created_time' => 'DESC');
-                $bills = A('Tms/Dist', 'Logic')->billOut($map);
-                $orders = $bills['orders'];
-                unset($map);
+                //判断是否已结款完成
+                foreach ($delivery_all as $va) {
+                    unset($map);
+                    $map['dist_id'] = $va['dist_id'];
+                    $map['order'] = array('created_time' => 'DESC');
+                    $bill_outs = A('Tms/Dist', 'Logic')->billOut($map);
+                    $ords = $bill_outs['orders'];
+                    foreach ($ords as $v) {
+                        if($v['order_info']['status_cn'] != "已完成") {
+                            $status = '3';//只要有一个订单不是已完成，
+                            break 2;
+                        }
+                        else {
+                            $status = '4';// 已结款完成
+                        }
+                    }
+                }
+
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
@@ -79,22 +138,49 @@ class DistController extends Controller {
                 unset($map);
                 if($res) {
                     $this->msg = "提货成功";
+                    $M = M('TmsUser');                    
+                    $map['mobile'] = session('user.mobile');
+                    $user_data = $M->field('id')->where($map)->order('created_time DESC')->find(); 
+                    unset($map);
+                    unset($M);
+                    $M = M('TmsSignList');
+                    // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
+                    $status = 4;
+                    if($status=='4'){
+                    $map['updated_time'] = $data['updated_time'];
+                    $map['created_time'] = $data['created_time'];
+                    $map['userid']       = $user_data['id'];
+                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                        $map['period'] = '上午';
+                    } else {
+                        $map['period'] = '下午';
+                    }
+                    $M->add($map);
+                    unset($map);
+                    }
+                    $map['created_time'] = array('between',$start_date.','.$end_date);
+                    $map['userid']       =  $user_data['id'];
+                    $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                    $map['delivery_time'] = $data['created_time'];//加入提货时间
+                    $map['id']            = $sign_id['id'];
+                    $M->save($map); 
+                    unset($map);
                 }
                 else {
                     $this->error = "提货失败";
                 }
             }
         }
-
         //只显示当天的记录
         $map['mobile'] = session('user.mobile');
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
+        $map['status'] = '1';
+        $start_date    = date('Y-m-d',NOW_TIME);
+        $end_date      = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->data = M('tms_delivery')->where($map)->select();
+        $this->data  = M('tms_delivery')->where($map)->select();
         $this->title = '提货扫码';
         $this->display('tms:delivery');  
-
     }
 
     //出库单列表
@@ -127,7 +213,6 @@ class DistController extends Controller {
                 foreach ($orders as &$val) {
                     //获取支付状态的中文
                     $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
-                    $val['pay_status_code'] = $val['order_info']['pay_status'];
                     $val['pay_status'] = $s;
                     $val['order_info']['pay_status'] = $s;
                     //从订单获取字段到出库单
@@ -184,7 +269,7 @@ class DistController extends Controller {
                 $this->dist_id = $res['dist_id'];
                 $this->data = $lists;
             } else {
-                $this->error ='数据不存在';
+                $this->error ='没有该配送单数据';
             }
             //提货单ID和订单ID，用于签收后自动展开
             $this->id   = $id;
