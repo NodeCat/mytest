@@ -147,6 +147,7 @@ class ProcessLogic {
             return $return;
         }
         
+        $product_date = date('Y-m-d');
         $Stock = A('Stock', 'Logic');
         $return = $Stock->adjustStockByShelves(
                 $data['wh_id'],
@@ -156,7 +157,8 @@ class ProcessLogic {
                 $data['pro_code'],
                 $data['pro_qty'],
                 '',
-                'qualified'
+                'qualified',
+                $product_date
         );
         
         return $return;
@@ -220,6 +222,7 @@ class ProcessLogic {
         if (empty($pro_code)) {
             return $return;
         }
+
         $code_arr = $this->get_ratio_like_pro_code($pro_code, $limit);
         if (empty($code_arr)) {
             return $return;
@@ -951,6 +954,7 @@ class ProcessLogic {
         $detail['done_qty'] = $data['true_qty'] + $res['done_qty'];
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
+        $detail['product_date'] = date('Y-m-d');
         if ($assist->create($detail)) {
             $affect = $assist->where($map)->save();
         }
@@ -1001,6 +1005,7 @@ class ProcessLogic {
         }
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
+        $detail['product_date'] = date('Y-m-d');
         if ($assist->create($detail)) {
             $affect = $assist->where($map)->save();
         }
