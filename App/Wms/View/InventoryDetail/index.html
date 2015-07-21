@@ -45,11 +45,19 @@ $(function(){
 				var _inventory_detail_id = $(this).parent().prev().prev().prev().prev().prev().find('input').attr('id');
 				//计算差异量
 				//当前填写实盘量的值
-				var _pro_qty = $(this).val();
+				var _pro_qty = parseFloat($(this).val());
+				var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+			    if (!reg.test(_pro_qty)){
+			      alert('退货量只能精确到小数点两位');
+			      $(this).val('0.00');
+			      return false;
+			    }
 				//原数量
 				var _theoretical_qty = $(this).parent().prev().text();
+
 				//差异量
-				var _diff_qty = _pro_qty - _theoretical_qty;
+				var _diff_qty = (parseFloat(_pro_qty)-parseFloat(_theoretical_qty)).toFixed(2);  
+								
 				//更变差异量
 				$(this).parent().next().text(_diff_qty);
 
