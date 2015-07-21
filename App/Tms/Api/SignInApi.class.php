@@ -61,7 +61,7 @@ class SignInApi extends CommApi
         $res = $this->post(
             $url,
             $arg, 
-            array('header' => $header),
+            array('header' => $header)
         );
         dump($file);
         dump($res);
