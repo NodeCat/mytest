@@ -100,6 +100,7 @@ class SettlementController extends CommonController
         $code           = I('q');
         $partnerMode    = M('Partner');
         $where['name']  = array('like', '%'.$code.'%');
+        $where['is_deleted'] = 0;
         $res            = $partnerMode->field('id, name')->where($where)->select();
 
         if (empty($res)) {
@@ -176,7 +177,7 @@ class SettlementController extends CommonController
             ' left join erp_purchase_refund on erp_purchase_refund.code=erp_settlement_detail.order_code',
             ' left join stock_purchase_out on stock_purchase_out.rtsg_code=erp_settlement_detail.order_code'
         );
-        //获取结算单详情列表
+
         $field  =  'erp_settlement_detail.*, stock_purchase.id as pid, erp_purchase_refund.id as refund_id, stock_purchase_out.id as stockout_id';
         $where  = "erp_settlement_detail.code='{$data['code']}'";
         $pros   = $M->field($field)->join($join)->where($where)->select();
