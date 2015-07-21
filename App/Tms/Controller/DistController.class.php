@@ -227,7 +227,7 @@ class DistController extends Controller {
                     $val['deliver_fee']     = $val['order_info']['deliver_fee'];
                     $val['final_price']     = $val['order_info']['final_price'];
                     $val['receivable_sum']  = $val['order_info']['final_price'];
-                    $val['real_sum']        = $A->formateSum($val['order_info']['final_price']);
+                    $val['real_sum']        = $A->wipeZero($val['order_info']['final_price']);
                     $val['sign_msg']        = $val['order_info']['sign_msg'];
                     $val['user_id']         = $val['order_info']['user_id'];
                     //收获地址坐标
@@ -341,7 +341,7 @@ class DistController extends Controller {
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
-        $deal_price = $A->formateSum($receivable_sum);
+        $deal_price = $A->wipeZero($receivable_sum);
         $sign_msg = I('post.sign_msg', '' ,'trim');
         //签收表主表数据
         $fdata = array(
