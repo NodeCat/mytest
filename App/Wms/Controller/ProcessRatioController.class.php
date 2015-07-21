@@ -188,8 +188,8 @@ class ProcessRatioController extends CommonController {
         	            $this->msgReturn(0, '请选择子SKU');
         	            return;
         	        }
-        	        if ($value['pro_qty'] < 1) {
-        	            $this->msgReturn(0, '数量不可小于1');
+        	        if ($value['pro_qty'] < 0) {
+        	            $this->msgReturn(0, '数量不可小于零');
         	            return;
         	        }
 
