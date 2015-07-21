@@ -120,6 +120,13 @@ $(function(){
     return false;
   });
   
+  $('.input-pda').on('keydown' , function(e){
+
+    if(e.keyCode == 13){
+
+      return false ;
+    }
+  });
   $('.form_datetime').datepicker({
       language:  'zh-CN',
       weekStart: 1,
