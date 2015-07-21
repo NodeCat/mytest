@@ -77,7 +77,7 @@ class CommonController extends AuthController {
                         break;
                     case 'between'://区间匹配
                         //边界值+1
-                        if(check_data_is_valid($condition[$key]) || check_data_is_valid($condition[$key.'_1'])){
+                        if(check_data_is_valid($condition[$key]) && check_data_is_valid($condition[$key.'_1'])){
                             $condition[$key.'_1'] = date('Y-m-d',strtotime($condition[$key.'_1']) + 86400);
                         }elseif(is_numeric($condition[$key.'_1'])){
                             $condition[$key.'_1'] = $condition[$key.'_1'] + 1;
@@ -178,7 +178,6 @@ class CommonController extends AuthController {
         //先根据控制器名称获取对应的表名
         $M = D(CONTROLLER_NAME);
         $table = $M->tableName;
-        
         if(empty($table)) {
             $table = strtolower(CONTROLLER_NAME);
         }
