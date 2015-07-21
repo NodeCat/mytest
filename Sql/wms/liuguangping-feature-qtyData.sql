@@ -13,6 +13,7 @@ ALTER TABLE `stock_bill_in_detail` CHANGE `unqualified_qty` `unqualified_qty` DE
 ALTER TABLE `stock_bill_in_detail` CHANGE `receipt_qty` `receipt_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '实际收货数量';
 
 #采购入库单
+ALTER TABLE `stock_bill_in` CHANGE `type` `type` VARCHAR(45) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '1采购到货单2加工入库单3客退入库单4调拨入库单5领用入库单' COMMENT '单据类型入库 in出库 out移库 move';
 ALTER TABLE `erp_purchase_in_detail` CHANGE `pro_qty` `pro_qty` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0' COMMENT '入库数量';
 ALTER TABLE `erp_purchase_in_detail` CHANGE `price_subtotal` `price_subtotal` DECIMAL(18,2) UNSIGNED NOT NULL DEFAULT '0.00' COMMENT '小计';
 ALTER TABLE `erp_purchase_in_detail` CHANGE `status` `status` VARCHAR(45) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '支付状态:paid 已支付nopaid:待支付';

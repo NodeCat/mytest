@@ -391,9 +391,9 @@ class StockInController extends CommonController {
 
 		$data['qtyForPrepare'] = $qtyForPrepare;
 		//预计收获量
-		$data['expected_qty_total'] = sprintf('%.2f',$expected_qty_total);
+		$data['expected_qty_total'] = formatMoney($expected_qty_total, 2);
 		//已收总量
-		$data['receipt_qty_total'] = sprintf('%.2f',$receipt_qty_total);
+		$data['receipt_qty_total'] = formatMoney($receipt_qty_total, 2);
 
 		//$data['qtyForOn'] =$qtyForIn;
 	}

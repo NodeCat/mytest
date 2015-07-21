@@ -22,7 +22,7 @@
           {$vo.expected_qty}
         </td>
         <td style="width:10%;"  class="text-left">
-          {:sprintf('%.2f',$vo['prepare_qty'] + $vo['done_qty'])}
+          {:formatMoney($vo['prepare_qty'] + $vo['done_qty'], 2)}
         </td>
         <td style="width:10%;"  class="text-left">
           {$vo.price_unit}
