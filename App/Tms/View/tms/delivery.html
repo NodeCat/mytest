@@ -61,7 +61,7 @@ margin-top: 10px;
 </style>
 
 <script type="text/javascript">
-(function(){
+$(function(){
 if(typeof HostApp != "undefined") {
   $("#notice").removeClass('hidden');  
     <if condition="$msg eq '提货成功'">
@@ -69,6 +69,6 @@ if(typeof HostApp != "undefined") {
       HostApp.toast('计程开始,请不要退出');
     </if>
   }
-})();
+});
 
 </script>
