@@ -69,6 +69,7 @@ class DistLogic {
                 break;
             case 1:
                 $s = '已付款';
+                break;
             default:
                 $s = '';
                 break;

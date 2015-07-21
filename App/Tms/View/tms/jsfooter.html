@@ -76,7 +76,7 @@
       		//计算实收金额，累加所有的小计，并减去优惠金额
       		var deal_sum = 0;
       		obj.parents('.order').find('.p_sum').each(function(index,item){
-      		  deal_sum = accAdd(deal_sum, $(item).text());
+      		  deal_sum = accAdd(deal_sum, $.trim($(item).text()));
       		});
       		deal_sum = accSub(deal_sum, minus);
       		obj.parents('.order').find('.p_deal').val(deal_sum);
