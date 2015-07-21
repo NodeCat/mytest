@@ -69,7 +69,7 @@ ALTER TABLE `erp_process_out_detail` CHANGE `real_qty` `real_qty` DECIMAL(18,2) 
 ALTER TABLE `stock_bill_out` CHANGE `total_qty` `total_qty` INT(11) NOT NULL DEFAULT '0.00' COMMENT '总件数';
 ALTER TABLE `stock_bill_out_detail` CHANGE `order_qty` `order_qty` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '订单量';
 ALTER TABLE `stock_bill_out_detail` CHANGE `delivery_qty` `delivery_qty` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '发货量';
-ALTER TABLE `stock_bill_in_container` CHANGE `qty` `qty` DECIMAL(18,2) NOT NULL COMMENT '出库量';
+ALTER TABLE `stock_bill_out_container` CHANGE `qty` `qty` DECIMAL(18,2) NOT NULL COMMENT '出库量';
 ALTER TABLE `stock_bill_out` CHANGE `total_amount` `total_amount` DECIMAL(18,2) NOT NULL DEFAULT '0.00' COMMENT '总金额';
 
 #库存调整单
