@@ -17,7 +17,7 @@ class IndexController extends Controller {
 
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject');
+            $action2 = array('delivery','orders','sign','reject','orderlist','report');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();

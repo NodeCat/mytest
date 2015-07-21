@@ -67,7 +67,7 @@ class DistController extends Controller {
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                //$this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if(empty($this->error)) {
@@ -477,6 +477,19 @@ class DistController extends Controller {
         $this->ajaxReturn($res);
     }
 
+    //司机当日收货统计
+    public function report() {
+
+        $map['mobile'] = session('user.mobile');
+        $map['status'] = '1';
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $this->data = M('tms_delivery')->where($map)->select();
+        $this->title = '今日订单总汇';
+        $this->display('tms:report');
+    }
+
     // 车单纬度统计
     public function orderList(){
 
@@ -564,7 +577,7 @@ class DistController extends Controller {
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
-        $this->display('tms:distInfo');
+        $this->display('tms:orderlist');
     }
 
     //保存客户签名
