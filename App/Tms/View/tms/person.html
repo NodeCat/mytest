@@ -56,6 +56,12 @@
     </select>
   </div>
 
+  <br />
+    <div class="input-group">
+      <span class="input-group-addon">打印设置</span>
+      <input type="text" autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="printer-name" name="" placeholder="选择打印机" readonly>
+      <a class="input-group-addon btn btn-default js-btn-set" onclick="settingPrinter()">修改</a>
+    </div>
   <br>
   </div>
  </div>
@@ -83,6 +89,27 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
+//打印设置
+function settingPrinter() {
+  if(typeof HostApp == "undefined") {
+    alert('使用打印功能请您先下载大厨网配送app.');
+  }
+  else {
+    HostApp.settingPrinter();
+  }
+}
+//获取打印机名字
+function getPrinterName() {
+  var  printerName = '选择打印机';
+  if(typeof HostApp != "undefined") {
+    if(HostApp.isBondPrinter()) {
+      printerName = HostApp.getBondPrinterName();
+    }
+  }
+  $('#printer-name').val(printerName);
+}
+getPrinterName();
+
   x=document.getElementById('f');
   (function(){
   // 车型

@@ -357,6 +357,8 @@ class IndexController extends Controller {
             $this->data = $orders;
         }
         $this->title = "客户签收";
+        //电子签名保存接口
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
