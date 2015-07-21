@@ -457,7 +457,7 @@ class IndexController extends Controller {
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                //$this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
             $map['dist_id'] = $id;
@@ -632,6 +632,7 @@ class IndexController extends Controller {
                         $A = A('Tms/List','Logic');
                         foreach ($bill_out_detail as $key => $val) {
                             $real_sign_qty = 0; //签收数量先置为0
+                            $batch = '';
                             unset($map);
                             $map['bill_out_id'] = $val['pid'];
                             //若没有签收详情
@@ -653,10 +654,12 @@ class IndexController extends Controller {
                                     if(!empty($sign_data)){
                                         $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
                                     }
+                                    $batch = $A->get_long_batch($dist_code,$val['pro_code']);
                                     break;
                                 case '3':
                                     //若已经拒收
                                     $real_sign_qty = 0;
+                                    $batch = $A->get_lasted_batch($dist_code,$val['pro_code']);
                                     break;
                                 case '4':
                                     //若是已经完成
@@ -688,7 +691,7 @@ class IndexController extends Controller {
                             $container['refer_code'] = $bill['code'];   //关联客退入库单号
                             $container['pro_code'] = $val['pro_code'];
                             //获得最久远的批次号
-                            $container['batch'] = $A->get_long_batch($dist_code,$val['pro_code']);
+                            $container['batch'] = $batch;
                             $container['wh_id'] = $bill['wh_id'];
                             //获取去收货区库位
                             $loc = M('location');
