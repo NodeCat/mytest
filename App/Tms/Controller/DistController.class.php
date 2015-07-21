@@ -506,6 +506,7 @@ class DistController extends Controller {
         $arrays=array();    //回仓列表的数组
         unset($map);
         $map['id'] = $res['dist_id'];
+        $map['is_deleted'] = 0;
         //总订单数
         $order_count = M('stock_wave_distribution')->field('order_count')->where($map)->find();
         if(empty($order_count)){
@@ -514,20 +515,21 @@ class DistController extends Controller {
         $all_orders = $order_count['order_count'];
         unset($map);
         //查询条件为配送单id
-        $map['dist_id'] = $res['dist_id'];
+        $map['pid'] = $res['dist_id'];
+        $map['is_deleted'] = 0;
         //根据配送单id查询签收表
-        $sign_data = M('tms_sign_in')->where($map)->select();
+        $sign_data = M('stock_wave_distribution_detail')->where($map)->select();
         //若查出的签收信息非空
         if(!empty($sign_data)){   
                 for($n = 0; $n < count($sign_data); $n++){
-                    if($sign_data[$n]['status'] == 2){
+                    if($sign_data[$n]['status'] == 3){
                         $unsign_orders++;   //拒收单数加1
-                    }elseif($sign_data[$n]['status'] == 1){
+                    }elseif($sign_data[$n]['status'] == 2){
                         $sign_orders++; //已签收单数加1
                     }
                     unset($map);
                     $map['pid'] = $sign_data[$n]['id'];
-                    //根据出库单id查询出所有出库单详情信息
+                    //根据配送单详情id查询出所有订单的签收详情信息
                     $sign_in_detail = M('tms_sign_in_detail')->where($map)->select();
                     if(!empty($sign_in_detail)){
                         
@@ -537,15 +539,8 @@ class DistController extends Controller {
                             //配送数量
                             $delivery = M('stock_bill_out_detail')->where($map)->find();
                             $delivery_qty = $delivery['delivery_qty']; 
-                            //如果计量单位和计价单位相等就取签收数量
-                            if($sign_in_detail[$i]['measure_unit'] == $sign_in_detail[$i]['charge_unit']){
-                                $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
-                                $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
-                            //如果计量单位和计价单位不相等就取签收重量
-                            }else{
-                                $sign_qty = $sign_in_detail[$i]['real_sign_wgt']; //签收重量
-                                $unit = $sign_in_detail[$i]['charge_unit']; //计价单位
-                            }
+                            $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
+                            $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
                             $quantity = $delivery_qty - $sign_qty; //回仓数量
                             if($quantity > 0){
                                 $key  = $delivery['pro_code'];    //sku号
@@ -569,7 +564,7 @@ class DistController extends Controller {
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
-        $this->display('tms:orderlist');
+        $this->display('tms:distInfo');
     }
 
     //保存客户签名
