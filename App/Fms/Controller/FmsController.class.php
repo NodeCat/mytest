@@ -272,12 +272,13 @@ class FmsController extends \Common\Controller\AuthController{
             if($value['actual_price'] > 0) {
                 //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费
                 $value['pay_for_price'] = $value['actual_price'] - $value['minus_amount'] - $value['pay_reduce'] + $value['deliver_fee'];
-                
-                $old_value = $value['pay_for_price'];
-                //抹零处理
-                $value['pay_for_price'] = $Dist_Logic->wipeZero($value['pay_for_price']);
-                //抹零总计
-                $wipe_zero_sum += round($old_value - $value['pay_for_price'],2);
+                if($value['pay_status'] != '已付款'){
+                    $old_value = $value['pay_for_price'];
+                    //抹零处理
+                    $value['pay_for_price'] = $Dist_Logic->wipeZero($value['pay_for_price']);
+                    //抹零总计
+                    $wipe_zero_sum += round($old_value - $value['pay_for_price'],2);
+                }
             }
             else {
                 //应收总计
