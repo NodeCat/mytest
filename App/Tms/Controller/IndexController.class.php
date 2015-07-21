@@ -14,9 +14,10 @@ class IndexController extends Controller {
                 $this->redirect('logout');
             }
         }
+
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject','signature');
+            $action2 = array('delivery','orders','sign','reject');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();
@@ -78,6 +79,11 @@ class IndexController extends Controller {
                         session('user',$user);
                         $this->redirect('delivery');
                     }else{
+                        if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                            $userid['period'] = '上午';
+                        } else {
+                            $userid['period'] = '下午';
+                        }
                         $M->add($userid);//否则就签到
                         session('user',$user);
                         $this->redirect('delivery');
@@ -262,6 +268,11 @@ class IndexController extends Controller {
                 $data['userid'] = $userid['id'];
                 unset($M);
                 $M=M('TmsSignList');
+                if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                    $data['period'] = '上午';
+                } else {
+                    $data['period'] = '下午';
+                }
                 $M->data($data)->add();
                 $this->redirect('delivery');
 
@@ -289,7 +300,6 @@ class IndexController extends Controller {
         //layout(false);
         $id = I('get.id',0);
         if(!empty($id)) {
-            $oid = I('get.oid',0);
             $M = M('tms_delivery');
             $res = $M->find($id);
             
@@ -345,13 +355,8 @@ class IndexController extends Controller {
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
-            //默认展开订单数据
-            $this->id   = $id;
-            $this->oid  = $oid;
-
         }
         $this->title = "客户签收";
-        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
@@ -455,7 +460,7 @@ class IndexController extends Controller {
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                //$this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
             $map['dist_id'] = $id;
@@ -534,10 +539,14 @@ class IndexController extends Controller {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
                     $map['userid']       = $user_data['id'];
+                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                        $map['period'] = '上午';
+                    } else {
+                        $map['period'] = '下午';
+                    }
                     $M->add($map);
                     unset($map);
                     }
-
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录

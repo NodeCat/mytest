@@ -12,6 +12,7 @@ class DispatchController extends Controller{
         'warehouse'    => '签到仓库',
         'created_time' => '第一次签到时间',
         'updated_time' => '最后签到时间',
+        'period'       => '时间段',
         'line_name'    => '线路',
         'sign_orders'  => '已签收',
         'unsign_orders'=> '已退货',
