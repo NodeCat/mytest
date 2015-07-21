@@ -50,10 +50,6 @@ class SignInApi extends CommApi
 
     public function uploadImg($img) {
         $url = "http://img.dachuwang.com/upload/" + $img['name'];
-        $file = array(
-            'name' => $img['tmp_name'],
-            'dir'  => dirname($img['tmp_name']),
-        );
         $boundary = '--********--';
         $header = array(
             'Content-Type'    => 'multipart/form-data;boundary=' . $boundary,
@@ -65,8 +61,6 @@ class SignInApi extends CommApi
             $url,
             $arg, 
             $options = array('header' => $header),
-            $urlencode = false,
-            $file
         );
         dump($file);
         dump($res);
