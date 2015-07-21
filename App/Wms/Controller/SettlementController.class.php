@@ -1,6 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
+ * 结算单业务处理
  * User: san77
  * Date: 15/7/14
  * Time: 上午10:32
@@ -176,6 +176,7 @@ class SettlementController extends CommonController
             ' left join erp_purchase_refund on erp_purchase_refund.code=erp_settlement_detail.order_code',
             ' left join stock_purchase_out on stock_purchase_out.rtsg_code=erp_settlement_detail.order_code'
         );
+        //获取结算单详情列表
         $field  =  'erp_settlement_detail.*, stock_purchase.id as pid, erp_purchase_refund.id as refund_id, stock_purchase_out.id as stockout_id';
         $where  = "erp_settlement_detail.code='{$data['code']}'";
         $pros   = $M->field($field)->join($join)->where($where)->select();
@@ -447,7 +448,7 @@ class SettlementController extends CommonController
         //更新采购单为已付款状态
         if ( !empty($purchase) ) {
             $map['code']    = array('in', implode(',', $purchase));
-            $data['status'] = '99';
+            $data['status'] = '43';
             M('stock_purchase')->where($map)->data($data)->save();
             unset($map);
             unset($data);
@@ -462,7 +463,7 @@ class SettlementController extends CommonController
 
             //更新采购单状态为已结算状态
             $map['code']    = array('in', implode(',', $stock_purchase));
-            $data['status'] = '99';
+            $data['status'] = '43';
             M('stock_purchase')->where($map)->data($data)->save();
 
             //更新采购单已结算金额
