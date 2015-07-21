@@ -56,6 +56,7 @@
     </select>
   </div>
 
+  <br>
   </div>
  </div>
  <div class="clearfix"></div>
@@ -82,35 +83,35 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
-    (function(){
-    x=document.getElementById('f');
-    // 车型
-        switch("{$data['car_type']}"){
-            <volist name='car.car_type' id='cars' key="k"> 
-                case "{$cars}": val="{$k}"-1;
-                break;
-            </volist>
-            default:val=0; 
-        }
-    x.car_type.options[val].selected=true;
-    // 平台
-    switch("{$data['car_from']}"){
-            <volist name='car.car_from' id='cars' key="k"> 
-                case "{$cars}": val="{$k}"-1;
-                break;
-            </volist>
-            default:val=0; 
-        }
-    x.car_from.options[val].selected=true; 
-    //仓库
-    switch("{$data['warehouse']}"){
-            <volist name='car.warehouse' id='storge' key="k"> 
-                case "{$storge}": val="{$k}"-1;
-                break;
-            </volist>
-            default:val=0; 
-        }
-    x.warehouse.options[val].selected=true;  
+  x=document.getElementById('f');
+  (function(){
+  // 车型
+      switch("{$data['car_type']}"){
+          <volist name='car.car_type' id='cars' key="k"> 
+              case "{$cars}": val="{$k}"-1;
+              break;
+          </volist>
+          default:val=0; 
+      }
+  x.car_type.options[val].selected=true;
+  // 平台
+  switch("{$data['car_from']}"){
+          <volist name='car.car_from' id='cars' key="k"> 
+              case "{$cars}": val="{$k}"-1;
+              break;
+          </volist>
+          default:val=0; 
+      }
+  x.car_from.options[val].selected=true; 
+  //仓库
+  switch("{$data['warehouse']}"){
+          <volist name='car.warehouse' id='storge' key="k"> 
+              case "{$storge}": val="{$k}"-1;
+              break;
+          </volist>
+          default:val=0; 
+      }
+  x.warehouse.options[val].selected=true;  
 })();
 
 </script>

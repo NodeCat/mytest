@@ -26,4 +26,5 @@ return array(
     'PMS_API'            => 'http://s.test3.dachuwang.com',
     'HOP_API_PATH'        => 'http://s.test3.dachuwang.com',
     'DACHUWANG_API_PATH'  => 'http://api.test3.dachuwang.com',
+    'TMS_API_PATH'        => 'http://api.tms.dev.dachuwang.com',
 );

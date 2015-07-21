@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class ProcessModel extends Model {
 
-    protected $insertFields = array('id','code','type','wh_id','plan_qty','real_qty','p_pro_code','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('code','type','wh_id','plan_qty','real_qty','p_pro_code','status','remark','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','code','type','wh_id','status','task', 'over_task', 'remark','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('code','type','wh_id','status','task', 'over_task', 'remark','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName = 'erp_process';
 
@@ -15,7 +15,7 @@ class ProcessModel extends Model {
 
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
-                array('created_user',UID,1,'string'),
+        array('created_user',UID,1,'string'),
         array('created_time','get_time',1,'function'),
         array('updated_user',UID,3,'string'),
         array('updated_time','get_time',3,'function'),
@@ -35,8 +35,10 @@ class ProcessModel extends Model {
             'join'=>array(
                 'inner join warehouse on erp_process.wh_id=warehouse.id ',
                 'inner join user u2 on erp_process.updated_user = u2.id',
+                'inner join user u1 on erp_process.created_user = u1.id',
                 ),
-            'field'=>'erp_process.*, warehouse.name as wh_name, u2.nickname as updated_user',
+            'field'=>'erp_process.*, warehouse.name as wh_id, u2.nickname as updated_user, u1.nickname as created_user
+                      ',
         ),
         'latest'=>array(
             'where'=>array('erp_process.is_deleted'=>'0'),

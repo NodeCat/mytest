@@ -1,94 +1,87 @@
 <div role="tabpanel">
   <!-- Nav tabs -->
+  <volist name="data['detail']" id="value" key="k">
   <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">父SKU信息</a></li>
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">加工任务{$k}</a></li>
   </ul>
 
   <!-- Tab panes -->
-  <div class="tab-content">
+  <div class="tab-content" style="margin-button:25px">
     <div role="tabpanel" class="tab-pane active" id="home">
       <table id="table-pro" class="data-table table table-bordere table-striped table-cond table-hover" style="">
       <thead>
-        <th>父SKU</th><th>产品名称</th><th>型号</th><th>计划加工量</th><th>实际加工量</th><th>计量单位</th>
+        <th></th><th>货号</th><th>名称</th><th>规格</th><th>计划加工量</th><th>实际加工量</th><th>计量单位</th>
       </thead>
       <tbody>
       <tr class="tr-tpl">
       <td style="width:10%;background: #fff;">
-        {$p_sku_info.pro_code}<!--<input type="text" name="p_sku_code" value="{$p_sku_info.pro_code}" class=" typeahead input-sm" readonly="">-->
-      </td>
-      <td  style="width:30%;background: #fff;">
-        {$p_sku_info.wms_name}
-      </td>
-      <td  style="width:30%;background: #fff;">
-      	{$p_sku_info.pro_attrs_str}
+      	父SKU
       </td>
       <td style="width:10%;background: #fff;">
-      	{$data.plan_qty}
+        {$value.p_pro_code}
+      </td>
+      <td  style="width:25%;background: #fff;">
+        {$value.p_pro_name}
+      </td>
+      <td  style="width:25%;background: #fff;">
+      	{$value.p_pro_attrs}
       </td>
       <td style="width:10%;background: #fff;">
-      	{$data.real_qty}
+      	{$value.plan_qty}
       </td>
       <td style="width:10%;background: #fff;">
-        {$p_sku_info.uom_name}
+      	{$value.real_qty}
+      </td>
+      <td style="width:10%;background: #fff;">
+        {$value.p_uom_name}
       </td>
       </tr>
-
-      </tbody>
+       <volist name="value['detail']" id="val" key="kk">
+      	  <tr class="tr-tpl">
+	      <td class="c_sku_index" index="{$kk}" style="width:10%;background: #fff;" rowspan="{:count($value['detail'])}">
+	      	子SKU
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	        {$val.c_pro_code}
+	      </td>
+	      <td  style="width:25%;background: #fff;">
+	        {$val.c_pro_name}
+	      </td>
+	      <td  style="width:25%;background: #fff;">
+	      	{$val.c_pro_attrs}
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	      	{$val.plan_qty}
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	      	{$val.real_qty}
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	        {$val.c_uom_name}
+	      </td>
+	      </tr>
+	    </volist>
+	  </tbody>
       </table>
     </div>
   </div>
-
+  </volist>
 </br>
 
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">子SKU信息</a></li>
-  </ul>
-
-  <!-- Tab panes -->
-  <div class="tab-content">
-    <div role="tabpanel" class="tab-pane active" id="home">
-      <table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
-      <thead>
-        <th>子SKU</th><th>产品名称</th><th>型号</th><!--<th>可能库存</th>--><th>计划加工量</th><th>实际加工量</th><th>计量单位</th>
-      </thead>
-      <tbody>
-      <volist name="c_sku_info" id="c_sku">
-      <tr class="tr-tpl">
-      <td style="width:10%; background: #fff;">
-      	{$c_sku.pro_code}
-      </td>
-      <td  style="width:30%;background: #fff;">
-      	{$c_sku.wms_name}
-      </td>
-      <td  style="width:30%;background: #fff;">
-      	{$c_sku.pro_attrs_str}
-      </td>
-      <!--<td style="width:10%;">
-        <input type="text" name="c_sku_stock_qty[]" value="{$c_sku.stock_qty}" class="typeahead form-control input-sm" readonly="">
-      </td>-->
-      <td style="width:10%;background: #fff;">
-      	{$data['plan_qty'] * $ratio[$c_sku['pro_code']]}
-      </td>
-      <td style="width:10%;background: #fff;">
-      	{$data['real_qty'] * $ratio[$c_sku['pro_code']]}
-      </td>
-      <td style="width:10%;background: #fff;">
-        {$c_sku.uom_name}
-      </td>
-      </tr>
-      </volist>
-
-      </tbody>
-      </table>
-    </div>
-  </div>
-
-
 </div>
-
-  </div>
 </div>
+</div>
+<script>
+	$(function() {
+		var td =  $('.c_sku_index');
+		console.log(td);
+		  td.each(function(i) {
+			  if ($(this).attr('index') > 1) {
+				  $(this).remove();
+			  }
+		  }) 
+	}) 
+</script>
 <style type="text/css">
 #table-pro input[type=text]{
   padding: 1px 10px;

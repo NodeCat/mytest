@@ -1,0 +1,1 @@
+ALTER TABLE  `tms_sign_list` ADD  `fee` DECIMAL( 18, 0 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '调度运费' AFTER  `department` ;
