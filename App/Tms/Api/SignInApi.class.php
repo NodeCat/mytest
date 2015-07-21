@@ -11,9 +11,7 @@ class SignInApi extends CommApi
     {
         $suborder_id = I('post.order_id/d',0);
         $img = $_FILES['image'];
-        $str = $GLOBALS['HTTP_RAW_POST_DATA'];
-        dump($str);
-        die();
+        dump($_FILES);
         if (empty($suborder_id) || empty($img)) {
             $re = array(
                 'status' => -1,
@@ -21,8 +19,7 @@ class SignInApi extends CommApi
             );
             $this->ajaxReturn($re);
         }
-        dump($img);
-        $path = $this->uploadImg($img);
+        // $path = $this->uploadImg($img);
         dump($path);die();
         if ($path) {
             $map['suborder_id'] = $suborder_id;
@@ -52,50 +49,27 @@ class SignInApi extends CommApi
     }
 
     public function uploadImg($img) {
+        import("Common.Lib.HttpCurl");
+        $this->request = new \HttpCurl();
         $url = "http://img.dachuwang.com/upload/" + $img['name'];
+        $file = array(
+            'name' => $img['tmp_name'],
+            'dir'  => dirname($img['tmp_name']),
+        );
         $boundary = '--********--';
         $header = array(
             'Content-Type'    => 'multipart/form-data;boundary=' . $boundary,
             'Charset'         => 'UTF-8',
             'Connection'      => 'Keep-Alive',
         );
-        $res = $this->post(
+        $res = $this->request->post(
             $url,
-            $arg, 
-            array('header' => $header)
+            $args, 
+            $options = array('post_json' => false, 'header' => $header),
+            $urlencode = false,
+            $file
         );
         dump($file);
         dump($res);
-        return $res;
-    }
-
-    public function post($url, $arg, $options = array(), $urlencode = false, $file = array()){
-        import("Common.Lib.HttpRequest");
-        $httpRequest = new \HttpRequest($url);
-        $httpRequest->set_method("POST");
-        $httpRequest->post_fields = $arg;
-        if ($file) {
-            $httpRequest->add_post_file($file['name'], $file['dir']);
-        }
-        // timeout
-        if(isset($options['timeout'])){
-            $httpRequest->set_timeout($options['timeout']);
-        }else{
-            $httpRequest->set_timeout(8000);
-        }
-        if(isset($options['connect_timeout'])){
-            $httpRequest->set_connect_timeout($options['connect_timeout']);
-        }else{
-            $httpRequest->set_connect_timeout(8000);
-        }
-
-        if(isset($options['header'])){
-            foreach($options['header'] as $key => $value){
-                $httpRequest->add_header($key,$value);
-            }
-        }
-        $httpRequest->send();
-        $response = $httpRequest->get_response_content();
-        return $response;
     }
 }
