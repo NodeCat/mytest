@@ -11,6 +11,9 @@ class SignInApi extends CommApi
     {
         $suborder_id = I('post.order_id/d',0);
         $img = $_FILES['image'];
+        $str = $GLOBALS['HTTP_RAW_POST_DATA'];
+        dump($str);
+        die();
         if (empty($suborder_id) || empty($img)) {
             $re = array(
                 'status' => -1,
@@ -56,8 +59,6 @@ class SignInApi extends CommApi
             'Charset'         => 'UTF-8',
             'Connection'      => 'Keep-Alive',
         );
-        $arg = file_get_contents($img['tmp_name']);
-        dump($arg);
         $res = $this->post(
             $url,
             $arg, 
