@@ -796,10 +796,6 @@ class PurchaseController extends CommonController {
 	    			}
 	    			array_push($addAll, $vals);
 	    		}
-<<<<<<< HEAD
-
-=======
->>>>>>> 3deb58c882b80c566982c2dc724da2ee38567e15
 	        	if(M('stock_purchase_out_detail')->addAll($addAll)){
 	        		//@todo插入出库单表 出库单详细表 已经迁了退货出库单的审核批准方法下面
 	        		$this->msgReturn('0','退货成功！','',U('PurchaseOut/view',array('id'=>$result)));
