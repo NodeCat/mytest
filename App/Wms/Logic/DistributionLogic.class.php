@@ -98,7 +98,7 @@ class DistributionLogic {
             $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
         }
         //获取出库单
-        $result = $M->where($map)->select();
+        $result = $M->where($map)->order('line_id,refer_code,created_time')->select();
         if (empty($result)) {
             $return['msg'] = '没有符合符号条件的订单';
             return $return;
