@@ -94,7 +94,7 @@ class PurchaseRefundController extends CommonController {
 			$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * intval($val['price_unit'] * 100) / 100;
 		}
 		$this->pros = $pros;
-		$this->refund_total = $refund_total;
+		$this->refund_total = formatMoney($refund_total, 2);
 	}
 
 	protected function after_lists(&$data){
@@ -110,7 +110,7 @@ class PurchaseRefundController extends CommonController {
 				foreach($purchase_refund_detail as $val){
 					$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * intval($val['price_unit'] * 100) / 100;
 				}
-				$data[$k]['refund_total'] = $refund_total;
+				$data[$k]['refund_total'] = formatMoney($refund_total, 2);
 			}
 		}
 	}

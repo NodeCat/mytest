@@ -87,7 +87,7 @@ class InventoryController extends CommonController {
 			$map['inventory_code'] = $data_detail['code'];
 			$count_location = M('stock_inventory_detail')->where($map)->count();
 			unset($map);
-			$data[$key]['count_location'] = $count_location;
+			$data[$key]['count_location'] = formatMoney($count_location, 2);
 		}
 
 	}
