@@ -100,8 +100,10 @@ class WaveLogic{
 	 * @return Boolean $result;
 	 * 
 	 */
-    public function line(){
-        $map['wh_id'] = session('user.wh_id');
+    public function line($wh_id = 0){
+        if ($wh_id > 0) {
+            $map['wh_id'] = $wh_id;
+        }
         $map['status'] = '1';
         $map['itemsPerPage'] = 1000;
         $A = A('Common/Order','Logic');

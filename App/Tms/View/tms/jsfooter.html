@@ -1,28 +1,4 @@
 <script type="text/javascript">
-    //签收刷新后跳到之前的订单打印位置 
-    var oid = "{$oid}";
-    if(oid !== '0') {
-        $("a[data-oid="+oid+"]").trigger('click');
-        $('#info_'+oid+'').addClass('in');
-        location.href = location.href + "#p_" + oid;
-    }
-    //打印小票
-    function ticketPrint(printStr, oid, url){
-      if(typeof HostApp == "undefined") {
-        alert('使用打印功能请您先下载大厨网配送app.');
-      }
-      else {
-        if(!HostApp.isBondPrinter()) {
-          HostApp.toast('请先去个人中心绑定打印机型号.');
-          return;
-        }
-        if(!printStr) {
-            HostApp.toast('打印内容不能为空');
-            return;
-        }
-        HostApp.printTicket(printStr,oid, url);
-      }
-    }
     function goToGaodeMap(lat, lng) {
       if (typeof HostApp == "undefined") {
         alert('使用导航功能请您先下载大厨网配送app.');
@@ -100,9 +76,11 @@
       		//计算实收金额，累加所有的小计，并减去优惠金额
       		var deal_sum = 0;
       		obj.parents('.order').find('.p_sum').each(function(index,item){
-      		  deal_sum = accAdd(deal_sum, $(item).text());
+      		  deal_sum = accAdd(deal_sum, $.trim($(item).text()));
       		});
       		deal_sum = accSub(deal_sum, minus);
+          //抹零处理
+          deal_sum = wipeZero(deal_sum);
       		obj.parents('.order').find('.p_deal').val(deal_sum);
       	}
 
@@ -149,9 +127,7 @@
                 } else {
                   HostApp.toast(msg.msg);
                 }
-                var action = "__ACTION__";
-                var url = action + "/id/{$id}/oid/"+oid;
-                location.href = url;
+                location.reload();
               } else {
                 alert_error(msg.msg);
               }
@@ -189,15 +165,6 @@
         });
       });
     });
-
-    $('.js-btn-print').on('click',function(){
-        var printStr = $(this).data('str');
-        var oid = $(this).data('id');
-        var url = "{$signature_url}";
-        oid = oid.toString();
-        printStr = JSON.stringify(printStr);
-        ticketPrint(printStr, oid, url);
-    })
 
     function check(x) {
       var val = $(x).children('#show').text();

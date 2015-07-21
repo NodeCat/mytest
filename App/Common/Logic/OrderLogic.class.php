@@ -113,6 +113,7 @@ class OrderLogic{
 	        $return['list'] = $res['orderlist'];
 	    } else {
 	        $return['msg'] = '没有符合条件的订单';
+	        $return['list'] = array();
 	    }
 	    return $return;
 	}
