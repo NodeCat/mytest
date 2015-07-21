@@ -215,7 +215,7 @@ class PurchaseController extends CommonController {
 			$row['pro_qty'] = $pros['pro_qty'][$j];
 			$row['pro_uom'] = $pros['pro_uom'][$j];
 			$row['price_unit'] = $pros['price_unit'][$j];
-			$row['price_subtotal'] = (($row['price_unit'] * 100) * $row['pro_qty'] / 100);
+			$row['price_subtotal'] = (intval($row['price_unit'] * 100) * $row['pro_qty'] / 100);
 			$data = $M->create($row);
 			//if(!empty($pros['id'][$j])) {
 				//$map['id'] = $pros['id'][$j];
@@ -451,7 +451,7 @@ class PurchaseController extends CommonController {
 			unset($v['pid']);
 			$v = D('PurchaseRefundDetail')->create($v);
 			$refund_purchase_data['detail'][] = $v;
-			$sum +=  (($val['price_unit'] * 100) * $val['qualified_qty'] / 100);
+			$sum +=  (intval($val['price_unit'] * 100) * $val['qualified_qty'] / 100);
 		}
 		if(empty($refund_purchase_data['detail'])){
 			$this->msgReturn(0,'已经全部收货成功，没有差异，不能生成冲红单');
