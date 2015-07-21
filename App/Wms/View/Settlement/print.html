@@ -64,7 +64,7 @@
     <tr>
         <td>{$vo.order_code}</td>
         <td>{$vo.purchase_time}</td>
-        <td><if condition="$vo.order_type eq 3">-</if>{$vo.total_amount}</td>
+        <td><if condition="$vo.order_type eq 3 OR $vo.order_type eq 4">-</if>{$vo.total_amount}</td>
     </tr>
 
     </volist>
