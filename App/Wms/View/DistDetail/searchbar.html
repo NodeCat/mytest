@@ -112,10 +112,11 @@
                     stype:$("select[name='query[stype]']").val(),
                     type:$("select[name='query[type]']").val(),
                     line:$("select[name='query[line]']").val(),
-                    date:$("select[name='query[date]']").val(),
+                    date:$("input[name='query[date]']").val(),
                     time:$("select[name='query[time]']").val()
                 },
                 success:function (msg) {
+                    content = "全部"；
                     var msg = eval('('+msg+')');    
                     $("select[name='query[line]']").children('option').each(function() {
                         var content = $(this).html();
@@ -136,6 +137,7 @@
 		$.ajax({
 	    		url:url,
 	    		success:function (msg) {
+                    content = "全部"；
 	    			var msg = eval('('+msg+')');	
 	    			/*if (!msg) {
 	    				alert('获取线路失败');

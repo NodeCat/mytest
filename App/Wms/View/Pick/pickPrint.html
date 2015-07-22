@@ -1,3 +1,8 @@
+{~$menu=W('Common/Menu/getlist')}
+<include file="Index:header"/>
+<body>
+<include file="Index:nav"/>
+<div class="wrapper">
 <div class="container-fluid">
   <style>
     @page{
@@ -5,9 +10,8 @@
     }
     .printpage {
       width: 100%;
-      margin: auto;
       font-size: 12px;
-      page-break-before:always;
+      page-break-before:avoid;
       page-break-inside:avoid;
       page-break-after:always
     }
@@ -108,6 +112,14 @@
 </div>
 </volist>
 </div>
+</div>
+  <include file="Index:modal"/>
+  <include file="Index:msg"/>
+  <include file="Index:footer"/>
+</body>
+</html>
+
+
 <script type="text/javascript">
 (function(){
   $(document).on('click','.all_count a',function(){
