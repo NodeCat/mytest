@@ -117,17 +117,18 @@
                 },
                 success:function (msg) {
                     var msg = eval('('+msg+')');   
-                    alert("$$$$$"+msg["sum"]) 
                     $("select[name='query[line]']").children('option').each(function() {
                         var content = $(this).html();
                         var value = $(this).val();
-                        content = "全部";
                         if (typeof(msg[value]) == 'undefined') {
-                            $(this).html(content+'(0)');
+                           //$(this).html(content+'(0)');
+                           $(this).html(content.slice(0,content.lastIndexOf("("))+"(0)")
                         } else {
-                            $(this).html(content+'('+msg[value]+')');
+                            //$(this).html(content+'('+msg[value]+')');
+                         $(this).html(content.slice(0,content.lastIndexOf("("))+'('+msg[value]+')')
                         }
                         if (value == '' && typeof(msg['sum']) != 'undefined') {
+                            content = "全部";
                             $(this).html(content+'('+msg["sum"]+')');
                         }
                     })
@@ -142,7 +143,6 @@
 	    				alert('获取线路失败');
 	    				return false;
 	    			}*/
-                    alert("#####"+msg["sum"])
 	    			$("select[name='query[line]']").children('option').each(function() {
 	    				var content = $(this).html();
 	    				var value = $(this).val();
