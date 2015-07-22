@@ -366,7 +366,9 @@ function f_mul($left,$right,$scale = 2){
     $multiple = intval($multiple);
 
     $result = intval($left * $multiple) * intval($right * $multiple);
-    $result = $result / ($multiple * $multiple);
+    $result = intval($result / $multiple);
+    $result = $result / $multiple;
+
 
     return $result;
 }
