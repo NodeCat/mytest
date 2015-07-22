@@ -45,7 +45,7 @@ class GpsTrackApi extends CommApi {
         $res = $D->save($map);// 把路程写入签到表和时间
         if($res) {
             $key=$sign_mg['id'].$sign_mg['mobile'];
-            S(md5($key),$data,0);
+            S(md5($key),$data,3600*24*5);
             $return = array('status' =>'1', 'message' => '成功');
             $this->ajaxReturn($return);
         } else {
