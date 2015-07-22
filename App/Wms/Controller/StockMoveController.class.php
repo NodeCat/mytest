@@ -141,7 +141,7 @@ class StockMoveController extends CommonController {
            return;
         }
         
-        $list['variable_qty'] = $data['variable_qty'];
+        $list['variable_qty'] = formatMoney($data['variable_qty'], 2);
         $list['dest_location_status'] = $dest_location['status'];
         $stock = A('Stock', 'Logic')->adjustStockByMoveNoBatchFIFO($list);
         //$stock = A('Stock', 'Logic')->adjustStockByMove($stock_info_list);

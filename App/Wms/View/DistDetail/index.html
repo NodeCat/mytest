@@ -57,7 +57,7 @@
 
 //加入配送单按钮
 $('#add-order').on('click',function(){
-		if($("#table-orders tr").length == 1){
+		if($("#table-orders tr").not(".hidden").length == 1){
 			alert('请选择订单');
 			return;
 		};
@@ -65,7 +65,10 @@ $('#add-order').on('click',function(){
 		var dorder = $('.table-summary .s-order').text();
 		var dcat = $('.table-summary .s-cat').text();
 		var dqty = $('.table-summary .s-qty').text();
-		var dline = $('#table-orders tr:eq(2)').find('.so-line').text();
+		var dline = $('#table-orders tr').map(function(){
+			if($(this).find('.so-line').length == 0 || $(this).hasClass('hidden'))return;
+			return $(this).find('.so-line').text();
+		}).get().join("/");
 		var list=$("#table-orders tr").map(function() {
 			if($(this).find('.so-id').length == 0 || $(this).hasClass('hidden'))return;
 			return $(this).find('.so-id').text();
@@ -78,6 +81,7 @@ $('#add-order').on('click',function(){
 			$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',true);
 			$(this).addClass('hidden');
 		});
+		$(".select-all").prop('disabled',true)
 		calc();
 });
 
@@ -101,7 +105,7 @@ $('#add-dist').on('click',function(){
       success: function(msg){
         $('#add-dist').prop('disabled', false);
         
-          alert(msg.msg);
+         // alert(msg.msg);
         
         
         if(msg.data != '' && msg.data != null ){
@@ -119,7 +123,7 @@ $('#add-dist').on('click',function(){
 		var id =$(this).parents('tr').attr('id');
 		$('#data-table #'+id).find('input[type=checkbox]').prop('disabled',false);
 		$('#data-table #'+id).find('input[type=checkbox]').prop('checked',false);
-
+		$(".select-all").attr('checked',false)
 		$(this).parents('tr').remove();
 		calc();
 	});
@@ -142,6 +146,7 @@ $('#add-dist').on('click',function(){
 			//找到tbody中的所有checkbox
 			$("#table-content tbody input[type='checkbox']").each(function(){
 				var tr = $(this).parents('tr');
+				var id = $(this).parents('tr').find('.order-id').val();
 				var row = new Array();
 				row['id'] = tr.find('.order-id').val();
 				row['user_id'] = tr.find('.order-user_id').val();
@@ -149,7 +154,12 @@ $('#add-dist').on('click',function(){
 				row['line'] = tr.find('.order-line').val();
 				row['cat'] = tr.find('.order-cat').val();
 				row['qty'] = tr.find('.order-qty').val();
-				addRow(row);
+				if($(".select-all").prop('checked')){
+					addRow(row);
+				}
+				else{
+					removeRow(id);	
+				}
 			});
 		}else{
 			if($(this).prop('checked') == true) {
@@ -164,6 +174,7 @@ $('#add-dist').on('click',function(){
 				addRow(row);
 			}
 			else {
+				$(".select-all").attr('checked',false)
 				var id = $(this).parents('tr').find('.order-id').val();
 				removeRow(id);
 			}

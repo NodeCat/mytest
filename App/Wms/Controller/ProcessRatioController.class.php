@@ -134,7 +134,7 @@ class ProcessRatioController extends CommonController {
         	                    	'c_code' => $v['c_pro_code'],
         	                        'c_name' => $value['name'],
         	                        'c_attrs' => $value['pro_attrs_str'],
-        	                        'c_ratio' => $v['ratio'],
+        	                        'c_ratio' => formatMoney($v['ratio'], 2),
         	                        'c_uom_name' => $value['uom_name'],
         	                    );
         	                }
@@ -188,10 +188,18 @@ class ProcessRatioController extends CommonController {
         	            $this->msgReturn(0, '请选择子SKU');
         	            return;
         	        }
-        	        if ($value['pro_qty'] < 1) {
-        	            $this->msgReturn(0, '数量不可小于1');
+        	        if ($value['pro_qty'] < 0) {
+        	            $this->msgReturn(0, '数量不可小于零');
         	            return;
         	        }
+
+                    //验证小数 liuguangping
+                    $mes = '';
+                    if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                        $mes = '数量只能精确到两位小数点';
+                        $this->msgReturn(0,$mes);
+                        return;
+                    }
         	        
         	        //子SKU父SKU不可相同
         	        if ($value['pro_code'] == $post['p_pro_code_hidden']) {
@@ -199,7 +207,7 @@ class ProcessRatioController extends CommonController {
         	        }
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
-        	        $info[$key]['ratio'] = $value['pro_qty'];
+        	        $info[$key]['ratio'] = formatMoney($value['pro_qty'], 2);
         	        $info[$key]['company_id'] = $post['company_id'];
         	        $info[$key]['created_user'] = session()['user']['uid'];
         	        $info[$key]['updated_user'] = session()['user']['uid'];
@@ -304,6 +312,12 @@ class ProcessRatioController extends CommonController {
         	    if (empty($M->ratio)) {
         	        $this->msgReturn(false, '请输入比例关系');
         	    }
+                //验证小数 liuguangping
+                $mes = '';
+                if (strlen(formatMoney($M->ratio, 2, 1))>2) {
+                    $mes = '数量只能精确到两位小数点';
+                    $this->msgReturn(false,$mes);
+                }
         	    if ($M->p_pro_code == $M->c_pro_code) {
         	        $this->msgReturn(false, '父SKU和子SKU不可相同');
         	    }

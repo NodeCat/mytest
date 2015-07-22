@@ -18,11 +18,12 @@ class DispatchController extends Controller{
         'unsign_orders'=> '已退货',
         'delivering'   => '配送中',
         'sign_finished'=> '已完成',
+        'distance'     => '总里程/km',
         'fee'          => '当天运费',
         'mark'         => '备注',
          
     );
-    protected $car=array(
+    protected $car = array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
         'warehouse'=>array(7=>'北京白盆窑仓库',6=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
@@ -33,6 +34,8 @@ class DispatchController extends Controller{
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
         $map['created_time'] = array('between',$start_date.','.$end_date);
+
+        //以仓库为单位的签到统计 
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
         $warehouse = I('post.warehouse/d', 0);
@@ -103,6 +106,41 @@ class DispatchController extends Controller{
         $this->assign('list',$sign_lists);
         $this->display('tms:driverlist'); 
     }
+
+    // 司机轨迹页面的的输出
+    public function showLine() {
+        $id = I('get.id');
+        $mobile = I('get.mobile');
+        $sign_msg = M('tms_sign_list')->find($id);
+        $map['status'] = '1';
+        $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
+        $map['mobile'] = $mobile ;
+        $line = M('tms_delivery')->field('line_name')->where($map)->select();
+        $i = 0;
+        foreach ($line as $val) {
+            if (empty($val['line_name'])) {// 配送路线为空就跳过
+                    continue;
+                }
+            if ($i==0) {
+                $lines = $val['line_name'];// 把路线加在一起
+                $i++;
+            } else {
+                $lines .= '、'. $val['line_name'];
+            }
+            
+        }
+        $this->lines = $lines;
+        $key    = $id.$mobile;
+        $location = S(md5($key));
+        $A = A('Tms/List','Logic');
+        $customerAddress = $A->getCustomerAddress($mobile,$id);
+        $this->time = $A->timediff($sign_msg['delivery_time'],$sign_msg['delivery_end_time']);
+        $this->distance = $sign_msg['distance'];
+        $this->assign('address',$customerAddress);
+        $this->assign('points',$location['points']);
+        $this->display('tms:line');
+    }
+
 
      //导出司机信息
     public function export() {

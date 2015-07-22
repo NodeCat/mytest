@@ -52,6 +52,12 @@ class PurchaseInDetailController extends CommonController {
                 'nopaid'=>'待支付'
             ),   
         ),
+        'erp_purchase_in_detail.id' => array (
+            'title' => '入库单号',
+            'query_type' => 'eq',
+            'control_type' => 'text',
+            'value' => '',
+        ),
 	);
 
     //设置列表页选项

@@ -23,7 +23,7 @@
 	        <input type="text" id="typeahead" placeholder="子SKU编号" class="pro_names typeahead form-control input-sm" autocomplete="off" >
 	    </td>
         <td  style="width:10%;">
-            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1" class="form-control input-sm text-left" autocomplete="off">
+            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1.00" class="form-control input-sm text-left pro_qty" autocomplete="off">
         </td>
         <!--<td style="width:10%;">
             <select name="pros[0][pro_uom]" class="form-control input-sm">
@@ -155,6 +155,21 @@ $('.tr-cur .pro_names').typeahead({
 	    }
 	});
 }
+/******liuguangping*******/
+var checkObj = {
+  chekInput:function(){
+    $(document).on('blur','#table-pro .tr-cur .pro_qty',function(){
+      var out_qty = parseFloat($(this).val());
+      var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+      if (!reg.test(out_qty)){
+        alert('计划加工量只能精确到小数点两位');
+        $(this).val('1.00');
+      }
+      
+    });
+  }
+};
+checkObj.chekInput();
 </script>
 
 <style type="text/css">
