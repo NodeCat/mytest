@@ -106,6 +106,7 @@
 	$(function() {
 		var url = "/Distribution/line_order_num";
         $('#btn-query').on('click',function(){
+            $("#data-table").children("tbody").html("");
             $.ajax({
                 url:url,
                 data:{
@@ -121,10 +122,8 @@
                         var content = $(this).html();
                         var value = $(this).val();
                         if (typeof(msg[value]) == 'undefined') {
-                           //$(this).html(content+'(0)');
                            $(this).html(content.slice(0,content.lastIndexOf("("))+"(0)")
                         } else {
-                            //$(this).html(content+'('+msg[value]+')');
                          $(this).html(content.slice(0,content.lastIndexOf("("))+'('+msg[value]+')')
                         }
                         if (value == '' && typeof(msg['sum']) != 'undefined') {
