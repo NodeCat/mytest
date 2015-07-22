@@ -105,6 +105,34 @@
 <script>
 	$(function() {
 		var url = "/Distribution/line_order_num";
+        $('#btn-query').on('click',function(){
+            $.ajax({
+                url:url,
+                data:{
+                    stype:$("select[name='query[stype]']").val(),
+                    type:$("select[name='query[type]']").val(),
+                    line:$("select[name='query[line]']").val(),
+                    date:$("select[name='query[date]']").val(),
+                    time:$("select[name='query[time]']").val()
+                },
+                success:function (msg) {
+                    var msg = eval('('+msg+')');    
+                    $("select[name='query[line]']").children('option').each(function() {
+                        var content = $(this).html();
+                        var value = $(this).val();
+                        
+                        if (typeof(msg[value]) == 'undefined') {
+                            $(this).html(content+'(0)');
+                        } else {
+                            $(this).html(content+'('+msg[value]+')');
+                        }
+                        if (value == '' && typeof(msg['sum']) != 'undefined') {
+                            $(this).html(content+'('+msg["sum"]+')');
+                        }
+                    })
+                }
+            });
+        });
 		$.ajax({
 	    		url:url,
 	    		success:function (msg) {
