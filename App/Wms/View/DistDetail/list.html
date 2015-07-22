@@ -37,11 +37,11 @@
           {~$values[$key]=$vo[$key]}
       </volist>
 
-      <volist name="columns" id="col" offset="0" length="4">
+      <volist name="columns" id="col" offset="0" length="5">
           <td rowspan="{$vo['line_total']}" index="{$k}">{$vo[$key]}</td>	
           {~$values[$key]=$vo[$key]}
       </volist>
-      <volist name="columns" id="col" offset="4">
+      <volist name="columns" id="col" offset="5">
           	  <td>{$detail[$key]}</td>
               {~$values[$key]=$detail[$key]}
       </volist>

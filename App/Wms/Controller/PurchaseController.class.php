@@ -8,16 +8,17 @@ class PurchaseController extends CommonController {
 			'1' => '货到付款',
 		),
 		'invoice_status' => array(
-			'0' => '未付款', 
+			'0' => '未付款',
 		),
 		'picking_status' => array(
-			'0' => '未入库', 
+			'0' => '未入库',
 		),
 		'status' => array(
 			'0' => '草稿',
 			'11'=>'待审核',
 			'13' => '已生效',
 			'23' => '已完成',
+            '43' => '已结算',
 			'04' => '已作废',
 			'14' => '已驳回'
 		)
@@ -31,22 +32,22 @@ class PurchaseController extends CommonController {
                 'overdue'   =>"过期退货",
                 'other'     =>"其他问题",
         );
-	
-	protected $columns = array (   
-		'id' => '',   
-		'code' => '采购单号',   
+
+	protected $columns = array (
+		'id' => '',
+		'code' => '采购单号',
 		//'in_code' =>'采购到货单号',
 		'warehouse_name' =>'仓库',
 		'partner_name' => '供应商',
 		'invoice_method' =>'付款方式',
-		'company_name' => '所属系统',  
-		'user_nickname' => '采购人',   
-		'created_time' => '采购时间', 
-		'status' => '单据状态',    
-		//'cat_total' => 'sku种数',  
-		//'qty_total' => '采购总数',   
+		'company_name' => '所属系统',
+		'user_nickname' => '采购人',
+		'created_time' => '采购时间',
+		'status' => '单据状态',
+		//'cat_total' => 'sku种数',
+		//'qty_total' => '采购总数',
 		'price_total' => '采购总金额',
-		'paid_amount' => '已结算金额',  
+		'paid_amount' => '已结算金额',
 	);
 	protected $query = array (
 		'stock_purchase.code' => array (
@@ -55,51 +56,51 @@ class PurchaseController extends CommonController {
 			'control_type' => 'text',
 			'value' => '',
 		),
-		'warehouse.id' =>    array (     
-			'title' => '仓库',     
-			'query_type' => 'eq',     
-			'control_type' => 'getField',     
-			'value' => 'Warehouse.id,name',   
+		'warehouse.id' =>    array (
+			'title' => '仓库',
+			'query_type' => 'eq',
+			'control_type' => 'getField',
+			'value' => 'Warehouse.id,name',
 		),
-		'stock_purchase.company_id' =>    array (     
-			'title' => '所属系统',     
-			'query_type' => 'eq',    
-			 'control_type' => 'getField',     
-			 'value' => 'Company.id,name',   
-		),   
-		'stock_purchase.partner_id' =>    array (     
-			'title' => '供应商',    
-			 'query_type' => 'eq',     
-			 'control_type' => 'refer',     
-			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',   
+		'stock_purchase.company_id' =>    array (
+			'title' => '所属系统',
+			'query_type' => 'eq',
+			 'control_type' => 'getField',
+			 'value' => 'Company.id,name',
 		),
-		'stock_purchase_detail.pro_code' =>    array (     
-			'title' => '货品编号',    
-			 'query_type' => 'eq',     
-			 'control_type' => 'text',     
-			 'value' => '',   
-		),   
-		'stock_purchase.created_user' =>    array (     
-			'title' => '采购人',     
-			'query_type' => 'eq',     
-			'control_type' => 'refer',     
-			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
+		'stock_purchase.partner_id' =>    array (
+			'title' => '供应商',
+			 'query_type' => 'eq',
+			 'control_type' => 'refer',
+			 'value' => 'stock_purchase-partner_id-partner-id,id,name,Partner/refer',
 		),
-		'stock_purchase.created_time' =>    array (    
-			'title' => '采购时间',     
-			'query_type' => 'between',     
-			'control_type' => 'datetime',     
-			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',   
+		'stock_purchase_detail.pro_code' =>    array (
+			'title' => '货品编号',
+			 'query_type' => 'eq',
+			 'control_type' => 'text',
+			 'value' => '',
+		),
+		'stock_purchase.created_user' =>    array (
+			'title' => '采购人',
+			'query_type' => 'eq',
+			'control_type' => 'refer',
+			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',
+		),
+		'stock_purchase.created_time' =>    array (
+			'title' => '采购时间',
+			'query_type' => 'between',
+			'control_type' => 'datetime',
+			'value' => 'stock_purchase-created_user-user-id,id,nickname,User/refer',
 		),
 		'stock_purchase.invoice_method' => array(
 			'title'=> '付款方式',
 			'query_type'=>'eq',
-			'control_type' => 'select',     
+			'control_type' => 'select',
 			 'value' => array(
 			 	'0' => '预付款',
 				'1' => '货到付款',
-			 ), 
-		),   
+			 ),
+		),
 
 	);
 	public function match_code() {
@@ -113,37 +114,37 @@ class PurchaseController extends CommonController {
         $this->_before_index();
         $this->edit();
     }
-	
+
 	public function _before_index() {
         $this->table = array(
             'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
-            'status'    => false, 
+            'status'    => false,
             'toolbar_tr'=> true,
             'statusbar' => true
         );
         $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            //'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+            //'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"),
             //'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
             //'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             //'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
             //'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
-            'edit'=>array('name'=>'edit', 'show' => false,'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => false,'new'=>'true'),
             'pass'=>array('name'=>'pass' ,'show' => false,'new'=>'true'),
             'reject'=>array('name'=>'reject' ,'show' => false,'new'=>'true'),
             'close'=>array('name'=>'close' ,'show' => false,'new'=>'true'),
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => false,'new'=>'true'),
             'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
         );
-        
+
         $this->toolbar =array(
             array('name'=>'add', 'show' =>isset($this->auth['add']),'new'=>'true'),
         );
         $this->status =array(
             array(
-                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])), 
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])),
                 array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
             ),
         );
@@ -169,7 +170,7 @@ class PurchaseController extends CommonController {
 		$M->invoice_status = '0';
 		$M->picking_status = '0';
 	}
-	
+
 	protected function before_save(&$M){
 		$M->status = '11';
 
@@ -190,18 +191,39 @@ class PurchaseController extends CommonController {
 
 	protected function after_save($pid){
 		$pros = I('pros');
-		if(ACTION_NAME=='edit'){
-			$pid = I('id');
+		
+		$n = count($pros['pro_code']);
+		if($n <2) {
+			$this->msgReturn(1,'','',U('view','id='.$pid));
+		}
+		//验证小数点 liuguangping
+		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
+			$mes = '';
+			$pro_code = $pros['pro_code'][$j];
+			if(empty($pro_code)) {
+				$mes = '第' . $j . '产品不能为空！';
+				continue;
+			}
+			if (strlen(formatMoney($pros['pro_qty'][$j], 2, 1))>2) {
+				$mes = $pro_code . '采购数量只能精确到两位小数点';
+				$this->msgReturn(0,$mes);
+			}
 
+			if (strlen(formatMoney($pros['price_unit'][$j], 2, 1))>2) {
+				$mes = $pro_code . '采购单价只能精确到两位小数点';
+				$this->msgReturn(0,$mes);
+			}
+		}
+
+		//如果编辑时删除
+		if (ACTION_NAME == 'edit') {
+			$pid = I('id');
 			//如果是edit 根据pid 删除所有相关的puchase_detail记录
 			$map['pid'] = $pid;
 			M('stock_purchase_detail')->where($map)->delete();
 			unset($map);
 		}
-		$n = count($pros['pro_code']);
-		if($n <2) {
-			$this->msgReturn(1,'','',U('view','id='.$pid));
-		}
+
 		$M = D('PurchaseDetail');
 		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
 			$row['pid'] = $pid ;
@@ -211,10 +233,10 @@ class PurchaseController extends CommonController {
 			}
 			$row['pro_name'] = $pros['pro_name'][$j];
 			$row['pro_attrs'] = $pros['pro_attrs'][$j];
-			$row['pro_qty'] = $pros['pro_qty'][$j];
+			$row['pro_qty'] = formatMoney($pros['pro_qty'][$j],2);
 			$row['pro_uom'] = $pros['pro_uom'][$j];
-			$row['price_unit'] = $pros['price_unit'][$j];
-			$row['price_subtotal'] = (($row['price_unit'] * 100) * $row['pro_qty'] / 100);
+			$row['price_unit'] = formatMoney($pros['price_unit'][$j],2);
+			$row['price_subtotal'] = formatMoney((intval($row['price_unit'] * 100 * $row['pro_qty'] )/ 100),2);
 			$data = $M->create($row);
 			//if(!empty($pros['id'][$j])) {
 				//$map['id'] = $pros['id'][$j];
@@ -269,8 +291,8 @@ class PurchaseController extends CommonController {
 
 		//view上方按钮显示权限
 		$this->toolbar_tr =array(
-			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
-            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"), 
+			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"),
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
@@ -285,6 +307,7 @@ class PurchaseController extends CommonController {
 				array('value'=>'0','title'=>'草稿','class'=>'warning'),
 				array('value'=>'21','title'=>'待入库','class'=>'primary'),
 				array('value'=>'31','title'=>'待上架','class'=>'info'),
+                array('value'=>'43','title'=>'已结算','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
 				array('value'=>'04','title'=>'已作废','class'=>''),
 			)
@@ -304,10 +327,10 @@ class PurchaseController extends CommonController {
 				//array('value'=>'33','title'=>'已上架','class'=>'success'),
 				//array('value'=>'30','title'=>'未上架','class'=>'success'),
 				//array('value'=>'41','title'=>'待付款','class'=>'success'),
-				//array('value'=>'43','title'=>'已结算','class'=>'success'),
+                '43'=> array('value'=>'43','title'=>'已结算','class'=>'success'),
 				//array('value'=>'40','title'=>'未付款','class'=>'success'),
 				//array('value'=>'53','title'=>'已完成','class'=>'success'),
-				'14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
+                '14'=> array('value'=>'14','title'=>'已驳回','class'=>'danger'),
 				'04'=> array('value'=>'04','title'=>'已作废','class'=>'warning')
 			)
 		);
@@ -329,7 +352,7 @@ class PurchaseController extends CommonController {
 			}
 		}
 		$this->pill = $pill;
-		
+
 	}
 	public function reject(){
 		$M = D(CONTROLLER_NAME);
@@ -337,7 +360,7 @@ class PurchaseController extends CommonController {
 		$id = I('get.'.$pk);
 		$map[$M->tableName.'.'.$pk] = $id;
 		$res = $M->field('code,status')->where($map)->find();
-		
+
 		if(empty($res) || ($res['status']!='0' && $res['status']!='11')) {
 			$this->msgReturn(0);
 		}
@@ -352,19 +375,19 @@ class PurchaseController extends CommonController {
 		$id = I('get.'.$pk);
 		$map[$M->tableName.'.'.$pk] = $id;
 		$res = $M->field('code,status')->where($map)->find();
-		
+
 		if(empty($res) || ($res['status']!='0' && $res['status']!='11' && $res['status']!='13')) {
 			$this->msgReturn(0);
 		}
 		else {
 			if($res['status'] == '11'){
-				$data['status'] = '04';		
+				$data['status'] = '04';
 			}
 			else{
 				$where['refer_code'] = $res['code'];
 				$in = M('stock_bill_in');
 				$res = $in->field('id')->where($where)->find();
-				
+
 				$A = A('StockIn','Logic');
 				$res = $A->haveCheckIn($res['id']);
 
@@ -396,7 +419,7 @@ class PurchaseController extends CommonController {
 			}
 		}
 		$res = $M->where($map)->save($data);
-	
+
 		$this->msgReturn($res);
 	}
 
@@ -426,6 +449,7 @@ class PurchaseController extends CommonController {
 		$M_rep_purchase_refund = D('PurchaseRefund');
 		$refund_purchase_data = $M_rep_purchase_refund->create($refund_purchase_data);
 
+
 		//根据到货单id获取到货详情
 		$map['refer_code'] = $refund_purchase_data['refer_code'];
 		$map['type'] = 1;//采购入库单类型id
@@ -449,15 +473,16 @@ class PurchaseController extends CommonController {
 			unset($v['pid']);
 			$v = D('PurchaseRefundDetail')->create($v);
 			$refund_purchase_data['detail'][] = $v;
-			$sum +=  (($val['price_unit'] * 100) * $val['qualified_qty'] / 100);
+			$sum +=  (intval($val['price_unit'] * 100) * $val['qualified_qty'] / 100);
 		}
 		if(empty($refund_purchase_data['detail'])){
 			$this->msgReturn(0,'已经全部收货成功，没有差异，不能生成冲红单');
 		}
-		$refund_purchase_data['for_paid_amount'] = $refund_purchase_data['price_total'] - $sum;
+		//精确两位 liuguangping
+		$refund_purchase_data['for_paid_amount'] = formatMoney($refund_purchase_data['price_total'] - $sum, 2);
 
 		$res = $M_rep_purchase_refund->relation(true)->add($refund_purchase_data);
-		
+
 		$this->msgReturn(1,'','',U('view','id='.$id['id']));
 	}
 
@@ -477,7 +502,7 @@ class PurchaseController extends CommonController {
 		$data['partner_id'] = $res['partner_id'];
 		$data['type'] = 1;
 		$Min = D('StockIn');
-		
+
 		$bill = $Min->create($data);
 		$bill['code'] = get_sn('in');
 		$bill['type'] = '1';
@@ -557,13 +582,13 @@ class PurchaseController extends CommonController {
         ->join('user on user.id = stock_purchase.created_user')
         ->where($map)
         ->field('stock_purchase.*, partner.name as partner_name, user.nickname as created_name, warehouse.name as wh_name')
-        ->find(); 
- 
+        ->find();
+
         $purchase_detail = M('stock_purchase_detail');
         unset($map);
         $map['pid'] = $id;
         $list = $purchase_detail->where($map)->select();
-       
+
         $column['purchase_code'] = $data['code'];
         $column['purchase_time'] = $data['created_time'];
         $column['print_time'] = get_time();
@@ -575,7 +600,7 @@ class PurchaseController extends CommonController {
         $column['warehouse'] = $data['wh_name'];
         $column['remark'] = $data['remark'];
         $column['purchase_detail'] = $list;
-        
+
     	layout(false);
     	$this->assign($column);
     	$this->display('Purchase:print');
@@ -619,7 +644,7 @@ class PurchaseController extends CommonController {
 			    <td style="width:10%;">
 			        <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价" value="'.$purchase_infos[$pro_code]['price_unit'].'" class="form-control input-sm text-left p_price">
 			    </td>
-			       
+
 			    <td style="width:10%;">
 			        <label type="text" class="text-left p_res">'.$purchase_infos[$pro_code]['price_unit'] * $purchase_infos[$pro_code]['pro_qty'].'</label>
 			    </td>
@@ -629,7 +654,7 @@ class PurchaseController extends CommonController {
 			    </td>
 			</tr>';
     	}
-    	
+
     	$this->msgReturn(1,'',array('html'=>$result));
     }
 
@@ -683,7 +708,7 @@ class PurchaseController extends CommonController {
        		$area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
        		$parma['no_in_location_area_code'] = $area_name;
     		$pro_qty = $stock_logic->getStockInfosByCondition($parma,1);
-    		$result[$key]['stock_qty'] = $pro_qty['sum'];
+    		$result[$key]['stock_qty'] = formatMoney($pro_qty['sum'], 2);
     	}
     	$this->data = $result;
     	$this->p_code = $p_code;
@@ -725,6 +750,21 @@ class PurchaseController extends CommonController {
     		if($num<=0){
     			$this->msgReturn('1','退货量为零不能退货');
     		}
+
+    		foreach ($pros['plan_return_qty']  as $pank => $valp) {
+    			$mes = '';
+    			$pro_codemes = $pros['pro_code'][$pank];
+    			/*if($valp == ''){
+    				$mes = $pro_codemes . '退货量数量不能为空';
+					$this->msgReturn(0,$mes);
+    			}*/
+				if (strlen(formatMoney($valp, 2, 1))>2) {
+					$mes = $pro_codemes . '退货量只能精确到两位小数点';
+					$this->msgReturn(0,$mes);
+				}
+
+    		}
+
     		$purchaseout = array();
     		$purchaseout['wh_id'] = $wh_id;
 			$purchaseout['partner_id'] = $partner_id;
@@ -756,11 +796,10 @@ class PurchaseController extends CommonController {
 	    			}
 	    			array_push($addAll, $vals);
 	    		}
-	    	
 	        	if(M('stock_purchase_out_detail')->addAll($addAll)){
 	        		//@todo插入出库单表 出库单详细表 已经迁了退货出库单的审核批准方法下面
 	        		$this->msgReturn('0','退货成功！','',U('PurchaseOut/view',array('id'=>$result)));
-	        		
+
 	        	}else{
 	        		//做处理如果详细插入失败，则删除退货单
 	        		$purchaseoutM->where(array('id'=>$result))->save(array('is_deleted'=>1));

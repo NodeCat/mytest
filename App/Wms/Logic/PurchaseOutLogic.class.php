@@ -152,7 +152,7 @@ class PurchaseOutLogic{
         foreach($addAll as $vals){
             $arrsum += $vals['price_unit']*$vals['plan_return_qty'];
         }
-        $addStockOut['total_amount'] = $arrsum;
+        $addStockOut['total_amount'] = formatMoney($arrsum, 2);
         $addStockOut['total_qty'] = count($addAll);
         $addStockOut['order_type'] = 1;
 

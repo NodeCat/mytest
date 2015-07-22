@@ -321,6 +321,7 @@ class IndexController extends Controller {
             $A = A('Common/Order','Logic');
             $orderList = $A->order($map);
             $this->orderCount = count($orderList);
+            $dist_logic = A('Tms/Dist','Logic');
             foreach ($orderList as &$val) {
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
@@ -349,11 +350,15 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
+                $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
         }
         $this->title = "客户签收";
+        //电子签名保存接口
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
@@ -456,6 +461,7 @@ class IndexController extends Controller {
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
+
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
                 $this->error = '提货失败，该配送单已过期';
             }
