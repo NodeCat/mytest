@@ -81,12 +81,6 @@ class SkuApi extends CommApi
         
         //根据SKU编号获取 实时在库量 实时可售量 平均采购价 平均销售价 拒收SKU数 SKU出库总数
         $SkuInfo = A('SkuInfo', 'Logic');
-        $quantity_inwarehouse     = 0; //实时在库量
-        $quantity_sale            = 0; //实时可售量
-        $average_buy_price        = 0; //平均采购价
-        $average_sale_price       = 0; //平均销售价
-        $out_warehouse_sku_counts = 0; //SKU出库量
-        $reject_sku_counts        = 0; //拒收SKU数量
         //将SKU分组 
         $newSkuCodeArr = array();
         $i = $k = 1;
