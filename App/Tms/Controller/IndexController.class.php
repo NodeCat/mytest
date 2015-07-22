@@ -323,6 +323,7 @@ class IndexController extends Controller {
             $this->orderCount = count($orderList);
             $dist_logic = A('Tms/Dist','Logic');
             foreach ($orderList as &$val) {
+                $final_sum = 0;
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
                 switch ($val['pay_status']) {
@@ -345,12 +346,23 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['actual_quantity'];   
                         $v['quantity'] = $v['actual_quantity'];
                         $v['sum_price'] = $v['actual_sum_price'];
+                        $final_sum += $v['actual_sum_price'];
                     }
                     else {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
-                $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
+                    $val['receivable_sum'] = $final_sum - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'];
+                } elseif ($val['status_cn'] == '已退货') {
+                    $val['receivable_sum'] = 0;
+                } else {
+                    $val['receivable_sum'] = $val['final_price'];
+                }
+                //抹零
+                if ($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
+                    $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                }
                 $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
