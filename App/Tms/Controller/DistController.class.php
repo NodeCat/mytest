@@ -535,7 +535,7 @@ class DistController extends Controller {
         $sign_data = M('stock_wave_distribution_detail')->where($map)->select();
         //若查出的签收信息非空
         if (!empty($sign_data)) { 
-        
+            $dist_logic = A('Tms/Dist','Logic');
             for ($n = 0; $n < count($sign_data); $n++) {
                 unset($map);
                 $map['pid'] = $sign_data[$n]['id'];
@@ -564,7 +564,8 @@ class DistController extends Controller {
                                     $sum_deal_price += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
                                 }
                             } 
-                        }   
+                        }
+                        $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);  
                         break;
 
                     case '3':
