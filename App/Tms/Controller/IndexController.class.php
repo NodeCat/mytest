@@ -357,6 +357,8 @@ class IndexController extends Controller {
             $this->data = $orders;
         }
         $this->title = "客户签收";
+        //电子签名保存接口
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
@@ -459,6 +461,7 @@ class IndexController extends Controller {
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
+
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
                 $this->error = '提货失败，该配送单已过期';
             }

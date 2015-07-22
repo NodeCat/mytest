@@ -91,10 +91,10 @@ class PurchaseRefundController extends CommonController {
 		foreach ($pros as $key => $val) {
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		
-			$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * ($val['price_unit'] * 100) / 100;
+			$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * intval($val['price_unit'] * 100) / 100;
 		}
 		$this->pros = $pros;
-		$this->refund_total = $refund_total;
+		$this->refund_total = formatMoney($refund_total, 2);
 	}
 
 	protected function after_lists(&$data){
@@ -108,9 +108,9 @@ class PurchaseRefundController extends CommonController {
 				//计算冲红金额
 				$refund_total = 0;
 				foreach($purchase_refund_detail as $val){
-					$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * ($val['price_unit'] * 100) / 100;
+					$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * intval($val['price_unit'] * 100) / 100;
 				}
-				$data[$k]['refund_total'] = $refund_total;
+				$data[$k]['refund_total'] = formatMoney($refund_total, 2);
 			}
 		}
 	}

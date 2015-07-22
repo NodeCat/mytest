@@ -83,8 +83,9 @@ class StockInLogic{
 	//$qty 本次上架量
 	//$location_code 上架库位
 	//$status 本次上架状态
-	public function on($inId,$code,$qty,$location_code,$status){
-		if(empty($inId) || empty($code)  || $location_code == '' || empty($status)) {
+	//$product_date 生产日期
+	public function on($inId,$code,$qty,$location_code,$status,$product_date){
+		if(empty($inId) || empty($code)  || $location_code == '' || empty($status) || empty($product_date)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
 		}
 		if(!is_numeric($qty)|| empty($qty)) {
@@ -150,7 +151,7 @@ class StockInLogic{
 		$batch   = $in['code'];
 		//管理批次号
 		get_batch($batch);
-		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status);
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
 		
 		if($res == true) {
 			$oned = $this->checkOn($inId); 
@@ -175,6 +176,14 @@ class StockInLogic{
 		if($status == 'unqualified'){
 			M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$qty);
 		}
+		//是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+        if(strtotime($line['product_date']) > strtotime($product_date) || $line['product_date'] == '0000-00-00 00:00:00'){
+            $stock_bill_in_detail = D('stock_bill_in_detail');
+            $data['product_date'] = $product_date;
+            $data = $stock_bill_in_detail->create($data,2);
+            $stock_bill_in_detail->where($map)->save($data);
+            unset($data);
+        }
 		unset($map);
 
 		if($res == true){
@@ -405,7 +414,7 @@ class StockInLogic{
 		$map['pro_code'] = $code;
 		$map['is_deleted'] = '0';
 		$detail = M('stock_bill_in_detail')
-		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty')
+		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty,product_date')
 		->group('pro_code')->where($map)->find();
 		return $detail;
 	}

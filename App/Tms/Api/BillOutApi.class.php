@@ -233,7 +233,6 @@ class BillOutApi extends CommApi {
         $tmp[] = $this->getPrintCommand('center');
         $tmp[] = $this->getUnderLine();
         $tmp[] = $this->getPrintCommand('print');
-
         return $tmp;
 
     }

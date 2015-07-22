@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class Stock_bill_in_detailModel extends Model {
 
-    protected $insertFields = array('id','wh_id','pid','pro_code','expected_qty','pro_name','prepare_qty','pro_attrs','done_qty','pro_uom','status','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('wh_id','pid','pro_code','expected_qty','pro_name','prepare_qty','pro_attrs','done_qty','pro_uom','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','wh_id','pid','pro_code','expected_qty','pro_name','prepare_qty','pro_attrs','done_qty','pro_uom','product_date','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('wh_id','pid','pro_code','expected_qty','pro_name','prepare_qty','pro_attrs','done_qty','pro_uom','product_date','status','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName='stock_bill_in_detail';
 

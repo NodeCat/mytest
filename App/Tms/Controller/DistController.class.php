@@ -421,7 +421,7 @@ class DistController extends Controller {
             if(intval($val) > 0) {
                 $row['id']= $val;
                 $row['actual_price'] = $price_unit[$key];
-                $row['actual_quantity'] = empty($weight[$key])?$quantity[$key]:$weight[$key];
+                $row['actual_quantity'] = isset($weight[$key]) ? $weight[$key]: $quantity[$key];
                 $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
                 $map['order_details'][] = $row;
             }

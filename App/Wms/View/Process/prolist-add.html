@@ -22,7 +22,7 @@
 	        <input type="text" id="typeahead" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" >
 	    </td>
         <td  style="width:10%;">
-            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1" class="form-control input-sm text-left" autocomplete="off">
+            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1.00" class="form-control input-sm text-left pro_qty" autocomplete="off">
         </td>
         <td style="width:10%;" class="text-center">
             <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
@@ -99,7 +99,6 @@ $('#table-pro').delegate('input','click',function(){
 
 });
 
-
 function typehead() {
 $('.tr-cur .pro_names').typeahead({ 
     display: 'name',
@@ -156,6 +155,22 @@ $('.tr-cur .pro_names').typeahead({
 	  });
 
 }
+
+/******liuguangping*******/
+var checkObj = {
+  chekInput:function(){
+    $(document).on('blur','#table-pro .tr-cur .pro_qty',function(){
+      var out_qty = parseFloat($(this).val());
+      var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+      if (!reg.test(out_qty)){
+        alert('计划加工量只能精确到小数点两位');
+        $(this).val('1.00');
+      }
+      
+    });
+  }
+};
+checkObj.chekInput();
 </script>
 
 <style type="text/css">

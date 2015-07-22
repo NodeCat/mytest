@@ -3,8 +3,8 @@ namespace Wms\Model;
 use Think\Model;
 class StockModel extends Model {
 
-    protected $insertFields = array('id','wh_id','location_id','pro_code','batch','status','stock_qty','assign_qty','prepare_qty','created_user','created_time','updated_user','updated_time','is_deleted');
-    protected $updateFields = array('id','wh_id','location_id','pro_code','batch','status','stock_qty','assign_qty','prepare_qty','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','wh_id','location_id','pro_code','batch','status','stock_qty','assign_qty','prepare_qty','product_date','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('id','wh_id','location_id','pro_code','batch','status','stock_qty','assign_qty','prepare_qty','product_date','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array();
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
@@ -36,7 +36,7 @@ class StockModel extends Model {
                 "inner join user u1 on stock.created_user = u1.id",
                 "inner join user u2 on stock.updated_user = u2.id",
                 "left join stock_batch on stock.batch=stock_batch.code",),
-"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.code as wh_code, warehouse.name as wh_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname,stock_batch.product_date",
+"field"=>"stock.*,location.name as location_name,location.code as location_code, warehouse.code as wh_code, warehouse.name as wh_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
         ),
         'latest'=>array(
             'where'=>array('stock.is_deleted'=>'0'),

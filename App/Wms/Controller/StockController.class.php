@@ -9,7 +9,7 @@ class StockController extends CommonController {
             'pro_name' => '货品名称',
             'uom_name' => '计量单位',
             'guarantee_period' => '保质期',
-            'product_date' => '入库日期',
+            'product_date' => '生产日期',
             'location_code' => '库位',
             'batch' => '批次',
             'stock_qty' => '在库数量',
@@ -270,6 +270,15 @@ class StockController extends CommonController {
 		}
 
 		if(I('editStockMove')){
+            if (I('stock_qty')<=0) {
+                $mes = '移动库存量不能小于零的数';
+                $this->msgReturn(0,$mes);
+            }
+            if (strlen(formatMoney(I('stock_qty'), 2, 1))>2) {
+                $mes = '移动库存量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);
+            }
+    
 			$src_location_id = I('src_location_id');
 			$dest_location_id = I('location_id');
 			if($src_location_id === $dest_location_id){
@@ -291,7 +300,7 @@ class StockController extends CommonController {
 			unset($res);
 
 			//库存移动
-			$variable_qty = I('stock_qty');
+			$variable_qty = formatMoney(I('stock_qty'), 2);
 			$params['variable_qty'] = $variable_qty;
 			$params['wh_id'] = I('wh_id');
 			$params['src_location_id'] = I('src_location_id');
