@@ -1019,7 +1019,7 @@ class DistributionLogic {
                 );
             } else {
                 return array(
-                    'status' => 0,
+                    'status' => -1,
                     'msg'    => '出库单数据不存在'
                 );
             }
