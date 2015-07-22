@@ -32,6 +32,7 @@ class SignInApi extends CommApi
         }
         chmod($file,0755);
         $res = $this->curl_upload_pic($file);
+        is_file($file) && unlink($file);
         if (!$res['url']) {
             $re = array(
                 'status' => -1,
@@ -73,12 +74,12 @@ class SignInApi extends CommApi
         $url = C('IMG_UPLOAD_PATH') . 'upload?bucket=shop';
         $fields['files'] = '@'.$file;
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url );
+        curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-        curl_setopt($ch, CURLOPT_POST, 1 );
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields );
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
         $result = curl_exec($ch);
         curl_close($ch);
-        return json_decode($result);
+        return json_decode($result, true);
     }
 }
