@@ -554,17 +554,19 @@ class IndexController extends Controller {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
                     $map['userid']       = $user_data['id'];
-                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                        $map['period'] = '上午';
-                    } else {
-                        $map['period'] = '下午';
-                    }
                     $M->add($map);
                     unset($map);
+                    unset($status);
                     }
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                    unset($map);
+                    if($dist['deliver_time']=='1') {
+                        $map['period'] = '上午';
+                    } elseif($dist['deliver_time']=='2') {
+                        $map['period'] = '下午';
+                    }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign_id['id'];
                     $M->save($map); 
