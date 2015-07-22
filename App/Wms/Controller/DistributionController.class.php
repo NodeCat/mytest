@@ -440,8 +440,18 @@ class DistributionController extends CommonController {
      * 线路订单量统计
      */
     public function line_order_num() {
+        //出库单类型
+        $params['stype'] = I('stype');
+        //订单类型
+        $params['type'] = I('type');
+        //线路
+        $params['line'] = I('line');
+        //日期
+        $params['date'] = I('date');
+        //时段
+        $params['time'] = I('time');
         $D = D('Distribution', 'Logic');
-        $list = $D->get_all_orders();
+        $list = $D->get_all_orders($params);
         if ($list['status'] == false || empty($list['list'])) {
             echo 0;
         } else {
