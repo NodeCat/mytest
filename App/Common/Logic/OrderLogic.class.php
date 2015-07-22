@@ -133,8 +133,6 @@ class OrderLogic{
 			);
 			return $res;
 		}
-		dump($params);
-		echo 'order';
 		$res = $this->get($url,$params);
 		return $res;
 

@@ -1010,7 +1010,6 @@ class DistributionLogic {
         $bM = M('stock_bill_out');
         $map['refer_code'] = $params['suborder_id'];
         $map['is_deleted'] = 0;
-        dump($params);
         $bill_out = $bM->field('id')->where($map)->find();
         if (empty($bill_out)) {
             return array(
@@ -1020,8 +1019,6 @@ class DistributionLogic {
         }
         unset($map);
         //更新到配送单详情
-        dump($bill_out);
-        echo 'tms';
         $dM = M('stock_wave_distribution_detail');
         $map['bill_out_id'] = $bill_out['id'];
         $data = array('signature' => $params['sign_img']);

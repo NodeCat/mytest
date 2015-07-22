@@ -33,14 +33,14 @@ class SignInApi extends CommApi
         chmod($file,0755);
         $res = $this->curl_upload_pic($file);
         is_file($file) && unlink($file);
-        if (!$res['url']) {
+        if (empty($res['files'][0]['saved_name'])) {
             $re = array(
                 'status' => -1,
                 'msg'    => '图片上传失败'
             );
             $this->ajaxReturn($re);
         }
-        $sign_path = $res['saved_path'];
+        $sign_path = $res['files'][0]['saved_name'];
         $map['suborder_id'] = $suborder_id;
         $map['sign_img'] = $sign_path;
 
@@ -48,8 +48,10 @@ class SignInApi extends CommApi
         $cA = A('Common/Order', 'Logic');
         $hs = $cA->saveSignature($map);
         //保存签名到配送单详情
-        $A = A('Wms/Dist', 'Logic');
+        $A = A('Wms/Distribution', 'Logic');
         $ts = $A->saveSignature($map);
+        dump($hs);
+        dump($ts);
         if ($ts['status'] === 0 && $hs['status'] === 0) {
             $re = array(
                 'status' => 0,
