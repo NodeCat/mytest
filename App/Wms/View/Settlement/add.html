@@ -135,16 +135,16 @@ function checkForm(){
                 html += '<td>'+data[item].warehouse_name+'</td>';
                 html += '<td>';
                 if(data[item].state == 'norefund'){
-                    html += '未收款';
+                    html += '冲红单</td><td>未收款';
                     href  = 'href="/PurchaseRefund/view/id/'+data[item].id;
                 }else if(data[item].state == 'wait'){
-                    html += '待收款';
+                    html += '退货单</td><td>待收款';
                     href  = 'href="/PurchaseOut/view/id/'+data[item].id;
                 }else if(data[item].invoice_method_code == 0){
-                    html += '预付款';
+                    html += '采购单</td><td>预付款';
                     href  = 'href="/Purchase/view/id/'+data[item].id;
                 }else{
-                    html += '货到付款';
+                    html += '入库单</td><td>货到付款';
                     href  = 'href="/PurchaseInDetail/index/erp_purchase_in_detail.purchase_code/'+data[item].code;
                 }
                 html += '</td><td>';
