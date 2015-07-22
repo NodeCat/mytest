@@ -320,3 +320,63 @@ function check_data_is_valid($str){
     return true;
 }
 
+/**
+* float加运算
+*/
+function f_add($left,$right,$scale = 2){
+    $left = floatval($left);
+    $right = floatval($right);
+    $scale = intval($scale);
+
+    $multiple = str_pad(1, $scale + 1 , 0);
+    $multiple = intval($multiple);
+
+    $result = intval($left * $multiple) + intval($right * $multiple);
+    $result = $result / $multiple;
+
+    return $result;
+}
+
+/**
+* float减运算
+*/
+function f_sub($left,$right,$scale = 2){
+    $left = floatval($left);
+    $right = floatval($right);
+    $scale = intval($scale);
+
+    $multiple = str_pad(1, $scale + 1 , 0);
+    $multiple = intval($multiple);
+
+    $result = intval($left * $multiple) - intval($right * $multiple);
+    $result = $result / $multiple;
+
+    return $result;
+}
+
+/**
+* float乘运算
+*/
+function f_mul($left,$right,$scale = 2){
+    $left = floatval($left);
+    $right = floatval($right);
+    $scale = intval($scale);
+
+    $multiple = str_pad(1, $scale + 1 , 0);
+    $multiple = intval($multiple);
+
+    $result = intval($left * $multiple) * intval($right * $multiple);
+    $result = intval($result / $multiple);
+    $result = $result / $multiple;
+
+
+    return $result;
+}
+
+/**
+* float除运算
+*/
+function f_div($left,$right,$scale = 2){
+    $resutl = bcdiv($left, $right, $scale);
+    return floatval($resutl);
+}
