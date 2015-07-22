@@ -179,9 +179,6 @@
                     <span class="input-group-addon">
                       {$v.close_unit}
                     </span>
-                    <!-- <input type="number" name="price_sum[]" min="0" class="form-control
-                    p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
-                    -->
                     <span class="input-group-addon">
                       ¥
                       <span class="p_sum">
@@ -238,16 +235,40 @@
                   <case value="已完成" break="0">
                   </case>
                   <case value="已回款" break="1">
-                    <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    <if condition="$vo.pay_status eq '已付款'">
+                      <span class="form-control p_deal">
+                        该订单已网上付款
+                      </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.deal_price}" readonly>
+                    <else/>
+                      <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.deal_price}" readonly>
+                   </if>
                   </case>
                   <case value="已退货" break="1">
-                    <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    <if condition="$vo.pay_status eq '已付款'">
+                      <span class="form-control p_deal">
+                        该订单已网上支付
+                      </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
                     value="0" readonly>
+                    <else/>
+                      <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="0" readonly>
+                    </if>
                   </case>
                   <default />
-                  <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                    <if condition="$vo.pay_status eq '已付款'">
+                      <span class="form-control p_deal">
+                        该订单已网上支付
+                      </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                  value="{$vo.deal_price}" readonly>
+                    <else/>
+                      <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                  value="{$vo.deal_price}" readonly>
+                   </if>
                 </switch>
               </div>
             </div>

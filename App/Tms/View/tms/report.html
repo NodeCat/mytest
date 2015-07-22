@@ -9,6 +9,16 @@
   <h4 class="list-group-item-heading">{$vo.dist_code}<br/>{$vo.line_name}</h4>
   </a>
 </volist>
+<br/>
+<botton id="finished" class='btn btn-primary btn-lg btn-block'>配送完成</botton>
 </div>
 </div>
-
+<script type="text/javascript">
+if(typeof HostApp == "undefined") {
+  $("#finished").addClass('hidden');  
+}
+$('#finished').click(function(){
+  HostApp.stopLocate();
+  HostApp.toast('配送完成');
+})
+</script>

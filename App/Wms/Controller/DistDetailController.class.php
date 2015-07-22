@@ -7,18 +7,19 @@ class DistDetailController extends CommonController {
 	        'code' => '出库单号',
             'line' => '订单线路',
             'address' => '送货地址',
-            'deliver_date' => '送货时间',
+            //'deliver_date' => '送货时间',
+            'user_id' => '客户id',
             'name' => '货品名称',
             'attrs' => '规格',
             'quantity' => '数量',
     );
     protected $query   = array (
-            /*'company_id' => array(
-                    'title' => '所属系统',
+            'stype' => array(
+                    'title' => '出库单类型',
                     'query_type' => 'eq',
                     'control_type' => 'getField',
-                    'value' => 'Company.id,name',
-            ),*/
+                    'value' => 'stock_bill_out_type.id,name',
+            ),
             'type' => array(
                     'title' => '订单类型',
                     'query_type' => 'eq',
@@ -36,12 +37,6 @@ class DistDetailController extends CommonController {
                     'control_type' => 'select',
                     'value' => '',
             ),
-            /*'wh_id' => array(
-                    'title' => '所属仓库',
-                    'query_type' => 'eq',
-                    'control_type' => 'getField',
-                    'value' => 'warehouse.id,name',
-            ),*/
             'date' => array(
                     'title' => '日期',
                     'query_type' => 'eq',
@@ -73,7 +68,7 @@ class DistDetailController extends CommonController {
         
         //分配线路
         $D = D('Distribution', 'Logic');
-        $line = $D->format_line();
+        $line = $D->format_line(-1, session('user.wh_id'));
         $this->query['line']['value'] = $line;
     }
     //显示数据列表

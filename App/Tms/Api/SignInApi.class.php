@@ -3,7 +3,7 @@ namespace Tms\Api;
 use Think\Controller;
 
 /**
- * 配送单接口
+ * TMS订单签收接口
  */
 class SignInApi extends CommApi
 {
@@ -18,10 +18,10 @@ class SignInApi extends CommApi
             );
             $this->ajaxReturn($re);
         }
-
-        $save_dir = './upload';
-        is_dir($save_dir) || mkdir($save_dir, 0755, true);
-        $filename = basename($img['name']);
+        $save_dir = TEMP_PATH;
+        is_dir($save_dir) || mkdir($save_dir, 0777, true);
+        $info = pathinfo($img['name']);
+        $filename = uniqid() . '.' . $info['extension'];
         $file = $save_dir . '/' . $filename;
         if (!move_uploaded_file($img['tmp_name'], $file)) {
             $re = array(
@@ -42,11 +42,13 @@ class SignInApi extends CommApi
         $sign_path = $res['saved_path'];
         $map['suborder_id'] = $suborder_id;
         $map['sign_img'] = $sign_path;
-        //保存签名到配送单详情 和 回调给订单
-        $A = A('Wms/Dist', 'Logic');
+
+        //签名图片回调给订单
         $cA = A('Common/Order', 'Logic');
-        $ts = $A->saveSignature($map);
         $hs = $cA->saveSignature($map);
+        //保存签名到配送单详情
+        $A = A('Wms/Dist', 'Logic');
+        $ts = $A->saveSignature($map);
         if ($ts['status'] === 0 && $hs['status'] === 0) {
             $re = array(
                 'status' => 0,
@@ -61,9 +63,14 @@ class SignInApi extends CommApi
         $this->ajaxReturn($re);
     }
 
-   public function curl_upload_pic($file)
-   {
-        $url = "http://img.dachuwang.com/upload?bucket=shop";
+    /**
+     * [curl_upload_pic curl上传一个图片到图片服务器]
+     * @param  [type] $file [文件名]
+     * @return [type]       [文件在服务器保存信息]
+     */
+    public function curl_upload_pic($file)
+    {
+        $url = C('IMG_UPLOAD_PATH') . 'upload?bucket=shop';
         $fields['files'] = '@'.$file;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url );

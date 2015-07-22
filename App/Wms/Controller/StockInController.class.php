@@ -19,7 +19,7 @@ class StockInController extends CommonController {
 			'21'=>'待收货',
 			'31'=>'待上架',
 			'33'=>'已上架',
-			'04'=>'已作废'
+			//'04'=>'已作废'
 		),
 	);
 	protected $columns = array (   
@@ -48,7 +48,12 @@ class StockInController extends CommonController {
 			'control_type' => 'text',     
 			'value' => 'Company.id,name',   
 		),  
-		
+		'stock_bill_in.pro_code' => array(
+		    'title' => '货号',
+		    'query_type' => 'eq',
+		    'control_type' => 'text',
+		    	'value' => '',
+		),
 		'warehouse.id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
@@ -93,6 +98,21 @@ class StockInController extends CommonController {
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
 		), 
 	);
+	public function after_search(&$map) {
+	    if (array_key_exists('stock_bill_in.pro_code',$map)) {
+	        $where['pro_code'] = $map['stock_bill_in.pro_code'][1];
+	        $result = M('stock_bill_in_detail')->where($where)->select();
+	        if (empty($result)) {
+	            unset($map['stock_bill_in.pro_code']);
+	        }
+	        $ids = array();
+	        foreach ($result as $value) {
+	            $ids[] = $value['pid'];
+	        }
+	        unset($map['stock_bill_in.pro_code']);
+	        $map['stock_bill_in.id'] = array('in', $ids);
+	    }
+	}
 	public function on($t='scan_incode'){
 		$this->cur = '上架';
 		if(IS_GET) {
@@ -134,9 +154,11 @@ class StockInController extends CommonController {
 				$qty = I('post.qty');
 				$location = I('post.location');
 				$status = I('post.status');
+				//生产日期
+				$product_date = I('post.product_date');
 
 				//上架逻辑
-				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
+				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status,$product_date);
 				if($res['res'] == true) {
 					//判断是否是采购入库
 					$map['id'] = $id;
@@ -162,7 +184,7 @@ class StockInController extends CommonController {
 						$data['stock_in_code'] = $bill_in_detail_info['code'];
 						$data['purchase_code'] = $bill_in_detail_info['refer_code'];
 						$data['pro_status'] = $status;
-						$data['price_subtotal'] = $bill_in_detail_info['price_unit'] * $qty;
+						$data['price_subtotal'] = intval($bill_in_detail_info['price_unit'] * 100) * $qty / 100;
 
 						if($bill_in_detail_info['invoice_method'] == 0){
 							$data['status'] = 'paid';
@@ -455,7 +477,7 @@ class StockInController extends CommonController {
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
 				'33'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
-				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger')
+				//'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger')
 			)
 		);
 		$M_bill_in = M('stock_bill_in');

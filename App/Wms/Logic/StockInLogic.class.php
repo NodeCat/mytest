@@ -83,8 +83,9 @@ class StockInLogic{
 	//$qty 本次上架量
 	//$location_code 上架库位
 	//$status 本次上架状态
-	public function on($inId,$code,$qty,$location_code,$status){
-		if(empty($inId) || empty($code)  || $location_code == '' || empty($status)) {
+	//$product_date 生产日期
+	public function on($inId,$code,$qty,$location_code,$status,$product_date){
+		if(empty($inId) || empty($code)  || $location_code == '' || empty($status) || empty($product_date)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
 		}
 		if(!is_numeric($qty)|| empty($qty)) {
@@ -150,7 +151,7 @@ class StockInLogic{
 		$batch   = $in['code'];
 		//管理批次号
 		get_batch($batch);
-		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status);
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
 		
 		if($res == true) {
 			$oned = $this->checkOn($inId); 
@@ -175,6 +176,14 @@ class StockInLogic{
 		if($status == 'unqualified'){
 			M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$qty);
 		}
+		//是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+        if(strtotime($line['product_date']) > strtotime($product_date) || $line['product_date'] == '0000-00-00 00:00:00'){
+            $stock_bill_in_detail = D('stock_bill_in_detail');
+            $data['product_date'] = $product_date;
+            $data = $stock_bill_in_detail->create($data,2);
+            $stock_bill_in_detail->where($map)->save($data);
+            unset($data);
+        }
 		unset($map);
 
 		if($res == true){
@@ -352,7 +361,15 @@ class StockInLogic{
 		return $in['qty_total'];
 	}
 
-	public function getQtyForOn($batch,$pro_code){
+	/**
+     * getQtyForOn 获取同一批次该商品的相应数量
+     * @param Int $wh_id 仓库id
+     * @param String $batch 批次
+     * @param String $pro_code 货物编码
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-13
+     */
+	public function getQtyForOn($batch,$pro_code,$wh_id = null){
 		/*$map['location_id'] = '0';
 		$map['pro_code'] = $pro_code;
 		$map['type'] = 'in';
@@ -360,14 +377,22 @@ class StockInLogic{
 		$map['batch'] = $batch;
 		$res = M('stock')->field('stock_qty,prepare_qty')->where($map)->find();
 		*/
+		$map = array();
+		if($wh_id !== null){
+			$map['wh_id'] = $wh_id;
+		}
 		$map['pro_code'] = $pro_code;
 		$map['refer_code'] = $batch;
 		$res = M('stock_bill_in_detail')->where($map)->find();
-		if(empty($res)) {
+		if(!$pro_code || !$batch || empty($res)) {
 			return 0;
 		}
 		else {
-			return $res['prepare_qty'];
+			if(isset($map['wh_id'])){
+				return $res['done_qty'];
+			}else{
+				return $res['prepare_qty'];
+			}
 		}
 	}
 
@@ -389,7 +414,7 @@ class StockInLogic{
 		$map['pro_code'] = $code;
 		$map['is_deleted'] = '0';
 		$detail = M('stock_bill_in_detail')
-		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty')
+		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty,product_date')
 		->group('pro_code')->where($map)->find();
 		return $detail;
 	}
@@ -408,4 +433,5 @@ class StockInLogic{
 		
 		return true;
 	}
+
 }

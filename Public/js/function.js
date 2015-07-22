@@ -131,3 +131,18 @@ function accDiv(arg1, arg2) {
 Number.prototype.div = function (arg) {
     return accDiv(this, arg);
 };
+
+/** 
+ ** 抹零处理函数，用来得到抹零后的结果
+ ** 说明：抹零规则，0.5以下抹去，0.5〜0.9保留，第二位小数四舍五入
+ ** 调用：wipeZero(arg)
+ ** 返回值：arg抹零处理的结果
+ **/
+function wipeZero(arg) {
+  if(accAdd(arg,0.5) < Math.ceil(arg)) {
+      arg = Math.floor(arg);
+  }
+  var num = new Number(arg);
+  arg = num.toFixed(1);
+  return arg.valueOf();
+}
