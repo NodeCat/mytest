@@ -143,7 +143,6 @@ class OrderLogic{
 		$res = $this->get($url,$map);
 		return $res;
 	}
-	
 	/**
 	 * 根据订单ID批量获取订单
 	 * @param array ids 订单id数组

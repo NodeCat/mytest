@@ -3,6 +3,7 @@
   <div class="panel-heading" style="padding:0px 15px;">
     <h3 class="panel-title">
       <include file="status-bar" />
+
       <div class="clearfix">
       </div>
     </h3>
@@ -12,45 +13,66 @@
       <div class="col-lg-6">
         <h3>
           账单 {$data['billing_info']['billing_num']}
-        </h3>
+          <neq name="data['billing_info']['status_code']" value="5">
+          <eq name="data['billing_info']['expire_status']" value="1">
+        <small>
         <span class="label label-danger">
       逾期未还
-    </span>
+      </span></small>
+      </eq>
+      </neq>
+        </h3>
       </div>
       <div class="col-lg-6">
+      <switch name="data['billing_info']['status_code']" >
+      
+      <case value="2" break="0"></case>
+      <case value="3" break="1">
+        <a href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 一键收款</a>
+      </case>
+      <case value="4" break="1">
+                <a href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 收款</a>
+      </case>
+      <case value="5" break="1"></case>
+      <default />
+      </switch>
+
         <div class="btn-group pull-right" role="group" aria-label="...">
+
           <a href="#" class="list-group-item">
             <div class="media-left">
               <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
-                <span class="glyphicon glyphicon-plane" aria-hidden="true">
+                <span class="glyphicon glyphicon-yen" aria-hidden="true">
                 </span>
               </div>
             </div>
             <div class="media-body">
               <h4 class="list-group-item-heading">
-                {$data.qty_total}
+                  {$data['billing_info']['total_price']}
               </h4>
               <p class="list-group-item-text">
-                总数量
+                  账单金额
               </p>
             </div>
           </a>
+          <eq name="data['billing_info']['status_code']" value="4">
           <a href="#" class="list-group-item">
             <div class="media-left">
               <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
-                <span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true">
+                <span class="glyphicon glyphicon-file" aria-hidden="true">
                 </span>
               </div>
             </div>
             <div class="media-body">
               <h4 class="list-group-item-heading">
-                {$data.price_total}
+                付款凭证
               </h4>
               <p class="list-group-item-text">
-                总金额
+                查看
               </p>
             </div>
           </a>
+          </eq>
         </div>
       </div>
     </div>
@@ -217,13 +239,14 @@
 </div>
 <div class="col-md-6">
 <br>
+<neq name="data.state" value="5">
     <div class="input-group">
         <input type="text" class="form-control input-l" placeholder="请输入工作人员备注信息">
         <span class="input-group-btn">
           <button class="btn btn-default btn-l" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加</button>
         </span>
       </div>
-
+</neq>
     
 </div>
 
