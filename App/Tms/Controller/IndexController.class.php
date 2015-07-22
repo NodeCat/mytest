@@ -354,11 +354,13 @@ class IndexController extends Controller {
                 }
                 if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                     $val['receivable_sum'] = $final_sum - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'];
+                } elseif ($val['status_cn'] == '已退货') {
+                    $val['receivable_sum'] = 0;
                 } else {
                     $val['receivable_sum'] = $val['final_price'];
                 }
                 //抹零
-                if($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
+                if ($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
                     $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
                 }
                 $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
