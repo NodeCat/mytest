@@ -50,8 +50,6 @@ class SignInApi extends CommApi
         //保存签名到配送单详情
         $A = A('Wms/Distribution', 'Logic');
         $ts = $A->saveSignature($map);
-        dump($hs);
-        dump($ts);
         if ($ts['status'] === 0 && $hs['status'] === 0) {
             $re = array(
                 'status' => 0,

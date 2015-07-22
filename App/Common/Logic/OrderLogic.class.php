@@ -125,7 +125,7 @@ class OrderLogic{
 	 */
 	public function saveSignature($params = array())
 	{
-		$url = 'suborder/set_sign_img';
+		$url = '/suborder/set_sign_img';
 		if (!isset($params['suborder_id']) || !isset($params['sign_img'])) {
 			$res = array(
 				'status' => 0,

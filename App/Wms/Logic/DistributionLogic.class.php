@@ -1012,10 +1012,17 @@ class DistributionLogic {
         $map['is_deleted'] = 0;
         $bill_out = $bM->field('id')->where($map)->find();
         if (empty($bill_out)) {
-            return array(
-                'status' => -1,
-                'msg'    => '出库单数据不存在'
-            );
+            if (VERSION === '2.0') {
+                return array(
+                    'status' => 0,
+                    'msg'    => 'WMS1.0版本'
+                );
+            } else {
+                return array(
+                    'status' => 0,
+                    'msg'    => '出库单数据不存在'
+                );
+            }
         }
         unset($map);
         //更新到配送单详情
