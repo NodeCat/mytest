@@ -10,8 +10,8 @@ class BillController extends \Wms\Controller\CommonController
 		
 		'billing_num' => '账单号',
 		'expire_time' => '结账截至日期',
-		'start_time' => '账单起始时间（包括）',
-		'end_time' => '账单结束日期（不包括该值）',
+		'theory_start' => '账单起始时间（包括）',
+		'theory_end' => '账单结束日期（不包括该值）',
 		'shop_name' => '店铺名称',
 		'mobile' => '店铺手机号',
 		'bd_name' => 'bd 名称',
@@ -99,6 +99,7 @@ class BillController extends \Wms\Controller\CommonController
     	$map['id'] = I('id');
     	$map['date'] = I('date');
     	$data = $A->billOrders($map);
+        dump($data);
     	$this->data = $data['list'];
     	$this->display();
     }

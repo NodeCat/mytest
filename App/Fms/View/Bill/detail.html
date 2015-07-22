@@ -1,11 +1,11 @@
       <div class="table-responsive">
           <h4>账单明细</h4>
-          <h4>7月1日 *日期逆序排列</h4>
+          <h4>7月1日</h4>
           <volist name="data" id="order">
           <table class="table table-bordered table-striped table-hover">
             <thead>
               <tr >
-                <td colspan="15">
+                <td colspan="14">
                    <span class="mr-10">订单编号：xxxxxxx </span>
                    <span class="mr-10">店铺名称：大饺子知春路分店 </span>
                    <button class="btn ml-10 mr-10 btn-info">已完成</button>
@@ -30,7 +30,7 @@
               </tr>
             </thead>
             <tbody>
-            <volist name="order['child'][0]" id="vo">
+            <volist name="order['child']" id="vo">
               <tr>
                 <td>{$vo.id}</td>
                 <td>{$vo.sku_number}</td>
@@ -46,27 +46,25 @@
                 <td>{$vo.}</td>
                 <td>{$vo.}</td>
                 <td>{$vo.}</td>
-                <td>{$vo.}</td>
-                <td>{$vo.}</td>
                 
               </tr>
             </volist>
               <tr>
                 <td class="text-center" colspan="8"></td>
                 <td class="text-center"  colspan="7">
-                  <h5><span class="mr-10">运费金额:￥188800.00 </span><span class="mr-10">优惠:￥1222200.00 </span><span class="mr-10">服务费:￥1100.00</span></h5>
+                  <span class="mr-10">运费金额:¥{$order.deliver_fee} </span><span class="mr-10">优惠:{$order.minus_amount} </span>
                 </td>
               </tr>
               <tr>
                 <td class="text-center" colspan="8"></td>
                 <td class="text-center"  colspan="7">
-                  <h5>订单金额总计：￥100000.00</h5>
+                  订单金额总计：¥{$order.final_price}
                 </td>
               </tr>
               <tr>
                 <td class="text-center" colspan="8"></td>
                 <td class="text-center"  colspan="7">
-                  <h5>应付金额总计：￥200000.00</h5>
+                  应付金额总计：￥{$order.total_price}
                 </td>
               </tr>
             </tbody>
