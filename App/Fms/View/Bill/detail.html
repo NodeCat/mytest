@@ -1,0 +1,75 @@
+      <div class="table-responsive">
+          <h4>账单明细</h4>
+          <h4>7月1日 *日期逆序排列</h4>
+          <volist name="data" id="order">
+          <table class="table table-bordered table-striped table-hover">
+            <thead>
+              <tr >
+                <td colspan="15">
+                   <span class="mr-10">订单编号：xxxxxxx </span>
+                   <span class="mr-10">店铺名称：大饺子知春路分店 </span>
+                   <button class="btn ml-10 mr-10 btn-info">已完成</button>
+                   <a href="#">查看电子签名</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center"><h5>序号</h5></td>
+                <td class="text-center"><h5>商品货号</h5></td>
+                <td class="text-center"><h5>商品名称</h5></td>
+                <td class="text-center"><h5>规格</h5></td>
+                <td class="text-center"><h5>单价(元/斤)</h5></td>
+                <td class="text-center"><h5>单价(元/件)</h5></td>
+                <td class="text-center"><h5>订货斤数</h5></td>
+                <td class="text-center"><h5>订货件数</h5></td>
+                <td class="text-center"><h5>收获件数</h5></td>
+                <td class="text-center"><h5>退货斤数</h5></td>
+                <td class="text-center"><h5>退货件数</h5></td>
+                <td class="text-center"><h5>订货金额</h5></td>
+                <td class="text-center"><h5>退货金额</h5></td>
+                <td class="text-center"><h5>应付金额</h5></td>
+              </tr>
+            </thead>
+            <tbody>
+            <volist name="order['child'][0]" id="vo">
+              <tr>
+                <td>{$vo.id}</td>
+                <td>{$vo.sku_number}</td>
+                <td>{$vo.name}</td>
+                <td>{$vo.spe}</td>
+                <td>{$vo.single_price}</td>
+                <td>{$vo.actual_price}</td>
+                <td>{$vo.quantity}</td>
+                <td>{$vo.actual_quantity}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                <td>{$vo.}</td>
+                
+              </tr>
+            </volist>
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  <h5><span class="mr-10">运费金额:￥188800.00 </span><span class="mr-10">优惠:￥1222200.00 </span><span class="mr-10">服务费:￥1100.00</span></h5>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  <h5>订单金额总计：￥100000.00</h5>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  <h5>应付金额总计：￥200000.00</h5>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          </volist>
+      </div>

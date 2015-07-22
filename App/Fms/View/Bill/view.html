@@ -1,0 +1,235 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+      <include file="status-bar" />
+      <div class="clearfix">
+      </div>
+    </h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-lg-6">
+        <h3>
+          账单 {$data['billing_info']['billing_num']}
+        </h3>
+        <span class="label label-danger">
+      逾期未还
+    </span>
+      </div>
+      <div class="col-lg-6">
+        <div class="btn-group pull-right hidden" role="group" aria-label="...">
+          <a href="#" class="list-group-item">
+            <div class="media-left">
+              <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+                <span class="glyphicon glyphicon-plane" aria-hidden="true">
+                </span>
+              </div>
+            </div>
+            <div class="media-body">
+              <h4 class="list-group-item-heading">
+                {$data.qty_total}
+              </h4>
+              <p class="list-group-item-text">
+                总数量
+              </p>
+            </div>
+          </a>
+          <a href="#" class="list-group-item">
+            <div class="media-left">
+              <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+                <span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true">
+                </span>
+              </div>
+            </div>
+            <div class="media-body">
+              <h4 class="list-group-item-heading">
+                {$data.price_total}
+              </h4>
+              <p class="list-group-item-text">
+                总金额
+              </p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          店铺名称
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_info']['shop_name']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          联系电话
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_info']['mobile']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          所属BD
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['bd_customer_info']['bd_name']} ({$data['bd_customer_info']['bd_mobile']})
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          账期
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['billing_info']['billing_cycle']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+      <div class="row">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          本账期
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['billing_info']['start_time']} - {$data['billing_info']['end_time']}
+          </label>
+        </div>
+      </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          结款日期
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['billing_info']['end_time']}
+          </label>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="table-responsive">
+      <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 总账单 </a></li>
+  </ul>
+      <table class="data-table table table-bordered table-striped table-condensed table-hover">
+        <thead>
+          <tr>
+            <td>
+                日期
+            </td>
+            <td>
+                订单金额
+            </td>
+            <td>
+                退款金额
+            </td>
+            <td>
+                应付金额
+            </td>
+            <td>
+                运费
+            </td>
+            <td>
+                优惠
+            </td>
+            <td>
+                应付金额总计
+            </td>
+            <td>
+                操作
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <volist name="data['order_list']" id="vo">
+            <tr>
+              <td>
+                {$vo.deliver_date}
+              </td>
+              <td>
+                {$vo.total_price}
+              </td>
+              <td>
+                {$vo.refuse_price}
+              </td>
+              <td>
+                {$vo.final_price}
+              </td>
+              <td>
+                {$vo.deliver_fee}
+              </td>
+              <td>
+                {$vo.minus_amount}
+              </td>
+              <td>
+                {$vo.deal_price}
+              </td>
+              <td>
+                <a data-href="{:U('detail', 'id='.$data['customer_info']['id'].'&date='.$vo['deliver_date'])}"
+                data-target="#modal-refer" data-toggle="modal" class="btn btn-xs btn-view"
+                data-title="查看" rel="tooltip" data-toggle="tooltip" data-trigger="hover"
+                data-placement="bottom">
+                  <i class="glyphicon glyphicon-zoom-in">
+                  </i>
+                </a>
+              </td>
+            </tr>
+          </volist>
+        </tbody>
+      </table>
+    </div>
+<br>
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 账单动态 </a></li>
+  </ul>
+<div class="row">
+<div class="col-md-6">
+    <table class="data-table table table-bordered table-condensed table-hover">
+      <thead>
+        <tr>
+        <th>日期</th><th>操作</th><th>人员</th>
+        </tr>
+      </thead>
+      <tbody>
+      <volist name="remarks" id="vo">
+        <tr>
+          <td>{$vo.created_time}</td><td>{$vo.content}</td><td>{$vo.role_name} {$vo.author_name}</td>
+        </tr>
+      </volist>
+      </tbody>
+    </table>
+
+</div>
+<div class="col-md-6">
+<br>
+    <div class="input-group">
+        <input type="text" class="form-control input-l" placeholder="请输入工作人员备注信息">
+        <span class="input-group-btn">
+          <button class="btn btn-default btn-l" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加</button>
+        </span>
+      </div>
+
+    
+</div>
+
+
+
+</div>
+  </div>
+</div>
+</form>
