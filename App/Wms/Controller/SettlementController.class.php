@@ -244,6 +244,7 @@ class SettlementController extends CommonController
                 'code'          => '单据号',
                 'partner_name'  => '供应商',
                 'warehouse'     => '仓库',
+                'order_type'    => '订单类型',
                 'payment_type'  => '付款类型',
                 'total_amount'  => '结算金额',
                 'created_time'  => '创建人'
