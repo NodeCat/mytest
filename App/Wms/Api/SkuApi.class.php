@@ -51,6 +51,7 @@ class SkuApi extends CommApi
         
         $CategoryLogic = A('Category', 'Logic');
         $InsalesLogic  = A('Insales', 'Logic');
+        $SkuInfo       = A('SkuInfo', 'Logic');
         
         //根据分类ID获取分类下所有三级分类ID 调用CategoryLogic下的getPidBySecondChild方法
         //请求条件
@@ -80,7 +81,7 @@ class SkuApi extends CommApi
         }
         
         //根据SKU编号获取 实时在库量 实时可售量 平均采购价 平均销售价 拒收SKU数 SKU出库总数
-        $SkuInfo = A('SkuInfo', 'Logic');
+        
         //将SKU分组 
         $newSkuCodeArr = array();
         $i = $k = 1;
@@ -178,6 +179,7 @@ class SkuApi extends CommApi
             $reject_sku_counts        += $returnSucess['list'][$key]['reject_sku_counts'];        //拒收SKU数量
             
         }
+        //汇总
         $returnSucess['total']['quantity_inwarehouse']     = $quantity_inwarehouse;
         $returnSucess['total']['quantity_sale']            = $quantity_sale;
         $returnSucess['total']['average_buy_price']        = $average_buy_price;
