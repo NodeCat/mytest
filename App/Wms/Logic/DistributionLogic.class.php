@@ -28,10 +28,6 @@ class DistributionLogic {
             return $return;
         }
         if ($post['stype'] == 1) {
-            if (empty($post['type'])) {
-                $return['msg'] = '请选择订单类型';
-                return $return;
-            }
             if (empty($post['date'])) {
                 $return['msg'] = '请选择配送时间';
                 return $return;
