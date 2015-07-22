@@ -116,12 +116,12 @@
                     time:$("select[name='query[time]']").val()
                 },
                 success:function (msg) {
-                    content = "全部"；
-                    var msg = eval('('+msg+')');    
+                    var msg = eval('('+msg+')');   
+                    alert("$$$$$"+msg["sum"]) 
                     $("select[name='query[line]']").children('option').each(function() {
                         var content = $(this).html();
                         var value = $(this).val();
-                        
+                        content = "全部";
                         if (typeof(msg[value]) == 'undefined') {
                             $(this).html(content+'(0)');
                         } else {
@@ -137,12 +137,12 @@
 		$.ajax({
 	    		url:url,
 	    		success:function (msg) {
-                    content = "全部"；
 	    			var msg = eval('('+msg+')');	
 	    			/*if (!msg) {
 	    				alert('获取线路失败');
 	    				return false;
 	    			}*/
+                    alert("#####"+msg["sum"])
 	    			$("select[name='query[line]']").children('option').each(function() {
 	    				var content = $(this).html();
 	    				var value = $(this).val();
