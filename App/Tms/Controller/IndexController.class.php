@@ -350,7 +350,10 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
-                $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                //抹零
+                if($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
+                    $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                }
                 $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
