@@ -38,7 +38,7 @@ return array(
     'DATA_CACHE_TYPE'   => 'redis',
     'REDIS_HOST'        => '127.0.0.1',
     'REDIS_PORT'        => 6379,
-    'DATA_CACHE_TIME'   => 60,
+    'DATA_CACHE_TIMEOUT'=> 0,
 
     //错误及日志
     'LOG_RECORD'         => true,
