@@ -158,12 +158,12 @@ class DistController extends Controller {
                     $M = M('TmsSignList');
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
                     if ($status=='4') {
-                    $map['updated_time'] = $data['updated_time'];
-                    $map['created_time'] = $data['created_time'];
-                    $map['userid']       = $user_data['id'];
-                    $M->add($map);
-                    unset($map);
-                    unset($status);
+                        $map['updated_time'] = $data['updated_time'];
+                        $map['created_time'] = $data['created_time'];
+                        $map['userid']       = $user_data['id'];
+                        $M->add($map);
+                        unset($map);
+                        unset($status);
                     }
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
