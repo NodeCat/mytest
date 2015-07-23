@@ -188,12 +188,12 @@ class DistController extends Controller {
           $this->error = '提货失败,提货码不能为空';
         }
         if (empty($this->error)) {
-        $map['mobile'] = session('user.mobile');
-        $userid  = M('tms_user')->field('id')->where($map)->find();
-        $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
-        } else{
-        $msg = $this->error;
-        $res = array('status' =>'0', 'message' =>$msg);
+            $map['mobile'] = session('user.mobile');
+            $userid  = M('tms_user')->field('id')->where($map)->find();
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            } else {
+                $msg = $this->error;
+                $res = array('status' =>'0', 'message' =>$msg);
         }
         $this->ajaxReturn($res);     
     }
