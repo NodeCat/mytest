@@ -1,13 +1,14 @@
 <script type="text/javascript">
+  var action = "__ACTION__";
   //签收刷新后跳到之前的订单打印位置 
     var oid = "{$oid}";
-    if(oid !== '0') {
+    if(parseInt(oid) > 0) {
         $("a[data-oid="+oid+"]").trigger('click');
         $('#info_'+oid+'').addClass('in');
-        location.href = location.href + "#p_" + oid;
+        location.href = action + "/id/{$id}/oid/"+oid+"#p_" + oid;
     }
     //打印小票
-    function ticketPrint(printStr, oid, url){
+    function ticketPrint(printStr, oid, url, bid, pagecount){
       if(typeof HostApp == "undefined") {
         alert('使用打印功能请您先下载大厨网配送app.');
       }
@@ -20,7 +21,7 @@
             HostApp.toast('打印内容不能为空');
             return;
         }
-        HostApp.printTicket(printStr,oid, url);
+        HostApp.printTicket(printStr,oid, url, bid, pagecount);
       }
     }
 
@@ -152,7 +153,8 @@
                 } else {
                   HostApp.toast(msg.msg);
                 }
-                location.reload();
+                var url = action + "/id/{$id}/oid/"+oid;
+                location.href = url;
               } else {
                 alert_error(msg.msg);
               }
@@ -192,12 +194,16 @@
     });
     
     $('.js-btn-print').on('click',function(){
-          var printStr = $(this).data('str');
-          var oid = $(this).data('id');
+          var printStr = $(this).data('str'),
+              oid = $(this).data('id'),
+              bid = $(this).data('bid'),
+              pagecount = 2;
           var url = "{$signature_url}";
           oid = oid.toString();
+          bid = bid.toString();
+          pagecount = parseInt(pagecount);
           printStr = JSON.stringify(printStr);
-          ticketPrint(printStr, oid, url);
+          ticketPrint(printStr, oid, url, bid, pagecount);
       })
 
     function check(x) {

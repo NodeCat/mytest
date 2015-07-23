@@ -1,0 +1,1 @@
+ALTER TABLE `stock_bill_out` CHANGE `order_type` `order_type` INT(11) NULL DEFAULT '0' COMMENT '1普通订单 2冻品订单 3水果爆款订单4水果订单 5蔬菜订单';
