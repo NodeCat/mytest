@@ -25,12 +25,14 @@ class ListLogic{
             $bill_out_ids = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
             //若查出的出库单id非空
             if(!empty($bill_out_ids)){   
-                $bill_out_ids = array_column($bill_out_id,'bill_out_id');
+                $bill_out_ids = array_column($bill_out_ids,'bill_out_id');
                 unset($map);
                 $map['id'] = array('in',$bill_out_ids);
+                $map['is_deleted'] = 0;
                 $codes = M('stock_bill_out')->field('code')->where($map)->select();
                 unset($map);
                 $map['refer_code'] = array('in',$codes); 
+                $map['is_deleted'] = 0;
                 $back_in = M('stock_bill_in')->where($map)->select();
                 if(!empty($back_in)){
                     $status = true;
