@@ -30,14 +30,17 @@ class ListLogic{
                 $map['id'] = array('in',$bill_out_ids);
                 $map['is_deleted'] = 0;
                 $codes = M('stock_bill_out')->field('code')->where($map)->select();
-                unset($map);
-                $map['refer_code'] = array('in',$codes); 
-                $map['is_deleted'] = 0;
-                $back_in = M('stock_bill_in')->where($map)->select();
-                if(!empty($back_in)){
-                    $status = true;
-                }else{      //如果没有查到相应的拒收入库单，直接返回FALSE
-                    $status = false;
+                if(!empty($codes)) {
+                    $codes = array_column($codes,'code');
+                    unset($map);
+                    $map['refer_code'] = array('in',$codes); 
+                    $map['is_deleted'] = 0;
+                    $back_in = M('stock_bill_in')->where($map)->select();
+                    if(!empty($back_in)) {
+                        $status = true;
+                    }else{      //如果没有查到相应的拒收入库单，直接返回FALSE
+                        $status = false;
+                    }
                 }
             }  
         }
