@@ -17,7 +17,7 @@ class IndexController extends Controller {
 
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject','orderList');
+            $action2 = array('delivery','orders','sign','reject','orderlist','report');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();
@@ -321,7 +321,9 @@ class IndexController extends Controller {
             $A = A('Common/Order','Logic');
             $orderList = $A->order($map);
             $this->orderCount = count($orderList);
+            $dist_logic = A('Tms/Dist','Logic');
             foreach ($orderList as &$val) {
+                $final_sum = 0;
                 //`pay_type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付方式：0货到付款（默认），1微信支付',
                 //`pay_status` tinyint(3) NOT NULL DEFAULT '0' COMMENT '支付状态：-1支付失败，0未支付，1已支付',
                 switch ($val['pay_status']) {
@@ -344,16 +346,31 @@ class IndexController extends Controller {
                         $val['quantity'] +=$v['actual_quantity'];   
                         $v['quantity'] = $v['actual_quantity'];
                         $v['sum_price'] = $v['actual_sum_price'];
+                        $final_sum += $v['actual_sum_price'];
                     }
                     else {
                         $val['quantity'] +=$v['quantity'];
                     }
                 }
+                if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
+                    $val['receivable_sum'] = $final_sum - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'];
+                } elseif ($val['status_cn'] == '已退货') {
+                    $val['receivable_sum'] = 0;
+                } else {
+                    $val['receivable_sum'] = $val['final_price'];
+                }
+                //抹零
+                if ($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
+                    $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
+                }
+                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
         }
         $this->title = "客户签收";
+        //电子签名保存接口
+        $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
         $this->display('tms:orders');
     }
 
@@ -456,6 +473,7 @@ class IndexController extends Controller {
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
+
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
                 //$this->error = '提货失败，该配送单已过期';
             }
@@ -536,17 +554,19 @@ class IndexController extends Controller {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
                     $map['userid']       = $user_data['id'];
-                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                        $map['period'] = '上午';
-                    } else {
-                        $map['period'] = '下午';
-                    }
                     $M->add($map);
                     unset($map);
+                    unset($status);
                     }
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                    unset($map);
+                    if($dist['deliver_time']=='1') {
+                        $map['period'] = '上午';
+                    } elseif($dist['deliver_time']=='2') {
+                        $map['period'] = '下午';
+                    }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign_id['id'];
                     $M->save($map); 

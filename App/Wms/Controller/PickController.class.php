@@ -189,6 +189,8 @@ class PickController extends CommonController {
               }
           }
       }
+      layout(false);
+
       $this->assign('list',$items);
 
       $this->display('Pick::pickPrint');  

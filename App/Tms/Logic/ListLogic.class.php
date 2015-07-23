@@ -70,6 +70,7 @@ class ListLogic{
      * 统计配送单的订单状态
      * @param  string  $dist_id  配送单id
      * @return array   $data     返回统计信息
+     * @author   jt
      */
 	public function deliveryCount($dist_id = '') {
 		if($dist_id == '') {
@@ -145,6 +146,89 @@ class ListLogic{
             $data['delivery_count'] = $list;//配送状态统计
             $data['back_lists'] = $back_lists;//退货清单统计
             return $data;
-    }	
+    }
+    
+    /**
+     * 获取司机配送客户的地址详情
+     * @param  string $mobile     司机电话号码
+     * @param  string $id         签到id（车次id）
+     * @return array  $geo_arrays 返回用户店铺位置信息
+     * @author   jt
+     */
+    public function getCustomerAddress($mobile,$id) {
+        //只显示当次配送的记录
+        $map['id']     = $id;
+        $sign_msg = M('tms_sign_list')->where($map)->find();
+        unset($map);
+        $map['mobile'] = $mobile;
+        $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
+        $map['status'] = '1';
+        $data = M('tms_delivery')->where($map)->select();
+        unset($map);
+        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+        $A = A('Common/Order','Logic');
+        $geo_array=array();
+        foreach ($data as $key => $value) {
+            // dump($value['dist_id']);
+            $map['dist_id'] = $value['dist_id'];
+            $map['itemsPerPage'] = $value['order_count'];
+            $orders = $A->order($map);
+            foreach ($orders as $keys => $values) {
+                $values['geo'] = json_decode($values['geo'],TRUE);
+                //如果地址为空的话跳过
+                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
+                    continue;
+                }
+                $geo = $values['geo'];
+                $geo['order_id'] = $value['id'];
+                $geo['user_id']  = $values['user_id'];
+                $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                // 只要有一单还没送完颜色就是0
+                if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                    if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                        $geo['color_type'] = 3;
+                    }
+                    else{
+                        $geo['color_type'] = 0;
+                    }      
+                }
+                else{
+                    $geo['color_type'] = 0;
+                }   
+                $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
+            }            
+        }
+        $geo_arrays  = array_values($geo_array);
+        return $geo_arrays;
+    }
+  
+  /**
+     * 计算两个时间的时间差
+     * @param  string $begin_time 开始时间
+     * @param  string $end_time   结束时间
+     * @return array  $res        返回时间差
+     * @author   jt
+     */
+    public function timediff($begin_time,$end_time) {
+        $begin_time = strtotime($begin_time);
+        $end_time   = strtotime($end_time);
+        if($begin_time < $end_time) {
+            $starttime = $begin_time;
+            $endtime   = $end_time;
+        }
+        else {
+        $starttime = $begin_time;
+        $endtime   = $begin_time;
+        }
+        $timediff = $endtime-$starttime;
+        $days = intval($timediff/86400);
+        $remain = $timediff%86400;
+        $hours = intval($remain/3600);
+        $remain = $remain%3600;
+        $mins = intval($remain/60);
+        $secs = $remain%60;
+        $res = array("day" => $days,"hour" => $hours,"min" => $mins,"sec" => $secs);
+        return $res;
+    }
 
 }

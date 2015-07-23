@@ -69,10 +69,26 @@ class DistLogic {
                 break;
             case 1:
                 $s = '已付款';
+                break;
             default:
                 $s = '';
                 break;
         }
         return $s;
+    }
+    
+    /** 
+ 	** 抹零处理函数，用来得到抹零后的结果
+ 	** 说明：抹零规则，0.5以下抹去，0.5〜0.9保留，第二位小数四舍五入
+ 	** @param float $price
+ 	** @return float $price抹零处理的结果
+ 	**/
+    public function wipeZero($price =0.0) 
+    {
+        if ($price + 0.5 < ceil($price)) {
+            $price = floor($price);
+        }
+        $price = round($price, 1);
+        return $price;
     }
 }

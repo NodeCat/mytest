@@ -105,6 +105,35 @@
 <script>
 	$(function() {
 		var url = "/Distribution/line_order_num";
+        $('#btn-query').on('click',function(){
+            $("#data-table").children("tbody").html("");
+            $.ajax({
+                url:url,
+                data:{
+                    stype:$("select[name='query[stype]']").val(),
+                    type:$("select[name='query[type]']").val(),
+                    line:$("select[name='query[line]']").val(),
+                    date:$("input[name='query[date]']").val(),
+                    time:$("select[name='query[time]']").val()
+                },
+                success:function (msg) {
+                    var msg = eval('('+msg+')');   
+                    $("select[name='query[line]']").children('option').each(function() {
+                        var content = $(this).html();
+                        var value = $(this).val();
+                        if (typeof(msg[value]) == 'undefined') {
+                           $(this).html(content.slice(0,content.lastIndexOf("("))+"(0)")
+                        } else {
+                         $(this).html(content.slice(0,content.lastIndexOf("("))+'('+msg[value]+')')
+                        }
+                        if (value == '' && typeof(msg['sum']) != 'undefined') {
+                            content = "全部";
+                            $(this).html(content+'('+msg["sum"]+')');
+                        }
+                    })
+                }
+            });
+        });
 		$.ajax({
 	    		url:url,
 	    		success:function (msg) {

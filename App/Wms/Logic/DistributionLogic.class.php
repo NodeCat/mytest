@@ -28,10 +28,6 @@ class DistributionLogic {
             return $return;
         }
         if ($post['stype'] == 1) {
-            if (empty($post['type'])) {
-                $return['msg'] = '请选择订单类型';
-                return $return;
-            }
             if (empty($post['date'])) {
                 $return['msg'] = '请选择配送时间';
                 return $return;
@@ -98,7 +94,7 @@ class DistributionLogic {
             $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
         }
         //获取出库单
-        $result = $M->where($map)->select();
+        $result = $M->where($map)->order('line_id,refer_code,created_time')->select();
         if (empty($result)) {
             $return['msg'] = '没有符合符号条件的订单';
             return $return;
@@ -587,17 +583,48 @@ class DistributionLogic {
     
     /**
      * 获取所有可加入配送单的出库单 并按线路ID统计数量
+     * 参数 $params = array(
+     * 'stype' => xxx  出库单类型
+     * 'type' => xxx 订单类型
+     * 'line' => xxx 线路
+     * 'date' => xxx 日期
+     * 'time' => xxx 时段
+     * );
+     * 
      * @return array
      */
-    public function get_all_orders() {
+    public function get_all_orders($params = array()) {
+        $stype = (empty($params['stype'])) ? array('in', array(1, 3, 4, 5)) : $params['stype'];
+
         $return = array('status' => false, 'msg' => '');
         
         $M = M('stock_bill_out');
-        $map['type'] = array('in', array(1, 3, 4, 5)); //类型 1销售出库 3 采购正品出库 4领用出库 5调拨出库
+        $map['type'] = $stype; //类型 1销售出库 3 采购正品出库 4领用出库 5调拨出库
         $map['status'] = 1; //状态 1带生产
         $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
         //$map['line_id'] = array('gt', 0); //线路ID > 0
+        if(!empty($params['type'])){
+            $map['order_type'] = $params['type'];
+        }
+        if(!empty($params['line'])){
+            $map['line_id'] = $params['line'];
+        }
+        if(!empty($params['date'])){
+            $map['create_time'] = array(array('like',$params['date'].'%'));
+        }
+        if(!empty($params['time'])){
+            switch($params['time']){
+                case 1:
+                    $map['delivery_ampm'] = 'am';
+                    break;
+                case 2:
+                    $map['delivery_ampm'] = 'pm';
+                    break;
+                default:
+                    break;
+            }
+        }
         
         $result = $M->where($map)->select();
         if (empty($result)) {

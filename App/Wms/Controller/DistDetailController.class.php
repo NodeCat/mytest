@@ -7,7 +7,8 @@ class DistDetailController extends CommonController {
 	        'code' => '出库单号',
             'line' => '订单线路',
             'address' => '送货地址',
-            'deliver_date' => '送货时间',
+            //'deliver_date' => '送货时间',
+            'user_id' => '客户id',
             'name' => '货品名称',
             'attrs' => '规格',
             'quantity' => '数量',
@@ -25,7 +26,6 @@ class DistDetailController extends CommonController {
                     'control_type' => 'select',
                     'value' => array(
                             '1' => '普通订单',
-                            '2' => '冻品订单',
                             '3' => '水果爆款订单',
                             '4' => '水果订单',
                     ),
