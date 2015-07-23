@@ -128,6 +128,7 @@ class SkuApi extends CommApi
             $returnSucess['list'][$key]['average_buy_price']        = 0;
             $returnSucess['list'][$key]['average_sale_price']       = 0;
             $returnSucess['list'][$key]['out_warehouse_sku_counts'] = 0;
+            $returnSucess['list'][$key]['reject_sku_counts']        = 0;
             
             foreach ($stockInArr as $indexIn => $stockInQty) {
                 //实时在库量
