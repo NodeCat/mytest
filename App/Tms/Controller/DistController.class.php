@@ -343,6 +343,8 @@ class DistController extends Controller {
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
+        $receivable_sum -= $orderInfo['info']['minus_amount'];
+        $receivable_sum += $orderInfo['info']['deliver_fee'];
         $deal_price = $A->wipeZero($receivable_sum);
         $sign_msg = I('post.sign_msg', '' ,'trim');
         //签收表主表数据
