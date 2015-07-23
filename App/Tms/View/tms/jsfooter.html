@@ -201,7 +201,7 @@
           var url = "{$signature_url}";
           oid = oid.toString();
           bid = bid.toString();
-          pagecount = pagecount.toString();
+          pagecount = parseInt(pagecount);
           printStr = JSON.stringify(printStr);
           ticketPrint(printStr, oid, url, bid, pagecount);
       })
