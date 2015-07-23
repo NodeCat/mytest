@@ -606,7 +606,7 @@ class DistributionController extends CommonController {
         if (!empty($reduce_ids)) {
             if ($confirm != 'confirm_reduce') {
                 //弹出提示框
-                $unpass_ids .= implode(',', $reduce_ids) . '|' . $post;
+                $unpass_ids .= '' . '|' . implode(',', $reduce_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=reduce'));
             }
         }
@@ -627,7 +627,6 @@ class DistributionController extends CommonController {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
-
         //整理库存不足的出库详情
         foreach ($reduce_sku_detail as $v) {
             $total_stock_qty = 0;
@@ -642,21 +641,21 @@ class DistributionController extends CommonController {
             foreach($stock_infos as $stock_info){
                 $total_stock_qty += $stock_info['stock_qty'] - $stock_info['assign_qty'];
             }
-
             //如果库存不足 记录下实际发货量
             $reduce_delivery_qty_list = array();
-            if($total_stock_qty < intval($v['order_qty'])){
+            if(intval($total_stock_qty) < intval($v['order_qty'])){
                 $v['order_qty'] = $total_stock_qty;
-                $reduce_delivery_qty_list[$v['pid']] = $total_stock_qty;
+                $reduce_delivery_qty_list[$v['id']] = $total_stock_qty;
+            } else {
+                $reduce_delivery_qty_list[$v['id']] = $v['order_qty'];
             }
-
             if (!isset($merg[$v['pro_code']])) {
                 $merg[$v['pro_code']] = $v;
             } else {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
-
+        
         //获取去拣货区库位
         $loc = M('location');
         $map['code'] = 'PACK';
@@ -726,8 +725,8 @@ class DistributionController extends CommonController {
             unset($data);
 
             //更新库存不充足的发货量
-            foreach($reduce_delivery_qty_list as $pid => $reduce_delivery_qty){
-                $map['pid'] = $pid;
+            foreach($reduce_delivery_qty_list as $key_id => $reduce_delivery_qty){
+                $map['id'] = $key_id;
                 $data['delivery_qty'] = $reduce_delivery_qty;
                 M('stock_bill_out_detail')->where($map)->save($data);
                 unset($map);
@@ -787,26 +786,26 @@ class DistributionController extends CommonController {
             $ids = array();
             $data = array();
             $dist_code = array_pop($get);
-            foreach ($get as $value) {
-                $ids[] = explode(',', $value);
-            }
+            //获取发运异常ID
+            $ids = explode(',', array_pop($get));
             //获取出库单号码
             $stock = M('stock_bill_out');
-            $map['id'] = array('in', $get);
-            $i = 0;
-            foreach ($ids as $key => $val) {
-                $map['id'] = array('in', $val);
+            if ($type == 'make') {
+                $map['id'] = array('in', $ids);
                 $res = $stock->where($map)->select();
                 foreach ($res as $value) {
-                    $data[$key]['out_code'][] = $value['code'];
+                    $data['make']['out_code'][] = $value['code'];
                 }
-                $data[$key]['count'] = count($res);
-                if ($i <= 0) {
-                    $data[$key]['type'] = 'make';
-                } else {
-                    $data[$key]['type'] = 'reduce';
+                $data['make']['count'] = count($res);
+                $data['make']['type'] = 'make';
+            } else {
+                $map['id'] = array('in', $ids);
+                $res = $stock->where($map)->select();
+                foreach ($res as $value) {
+                    $data['reduce']['out_code'][] = $value['code'];
                 }
-                $i++;
+                $data['reduce']['count'] = count($res);
+                $data['reduce']['type'] = 'reduce';
             }
             $confirm = 'yes'; //是否显示确认按钮 否
             $this->assign('dist_code', $dist_code);
