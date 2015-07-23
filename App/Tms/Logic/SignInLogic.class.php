@@ -41,7 +41,6 @@ class SignInLogic
             ->where($map)
             ->group('bod.pro_code')
             ->select();
-        dump($M->_sql());die();
         $res = array(
             'status' => 0,
             'list'   => $list
