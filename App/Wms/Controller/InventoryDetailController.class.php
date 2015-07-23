@@ -74,7 +74,7 @@ class InventoryDetailController extends CommonController {
         foreach($data as $key => $data_detail){
             if($data_detail['pro_qty'] || $data_detail['status'] == 'done'){
                 $data[$key]['pro_qty'] = (empty($data[$key]['pro_qty'])) ? 0 : $data[$key]['pro_qty'];
-                $data[$key]['diff_qty'] = $data_detail['pro_qty'] - $data_detail['theoretical_qty'];
+                $data[$key]['diff_qty'] = formatMoney($data_detail['pro_qty'] - $data_detail['theoretical_qty'], 2);
             }
         }
         //添加pro_name字段
@@ -108,14 +108,20 @@ class InventoryDetailController extends CommonController {
         if(empty($id)){
             $this->ajaxReturn(array('status'=>0,'msg'=>'id is empty'));
         }
-
-        $pro_qty = I('post.pro_qty');
-        $theoretical_qty = I('post.theoretical_qty');
+        //判断实盘数是否合法 liuguangping
+        $mes = '';
+        if (I('post.pro_qty') && strlen(formatMoney(I('post.pro_qty'), 2, 1))>2) {
+            $mes = '实盘量只能精确到两位小数点';
+            $this->msgReturn(0,$mes);
+        }
+        $pro_qty = formatMoney(I('post.pro_qty'), 2);
+        $theoretical_qty = formatMoney(I('post.theoretical_qty'), 2);
 
         //变更盘点详情状态
         $map['id'] = $id;
         $data['pro_qty'] = $pro_qty;
         $data['theoretical_qty'] = $theoretical_qty;
+
         $data['status'] = 'done';
         M('stock_inventory_detail')->where($map)->save($data);
         unset($data);

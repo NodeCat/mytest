@@ -184,7 +184,7 @@ class StockInController extends CommonController {
 						$data['stock_in_code'] = $bill_in_detail_info['code'];
 						$data['purchase_code'] = $bill_in_detail_info['refer_code'];
 						$data['pro_status'] = $status;
-						$data['price_subtotal'] = intval($bill_in_detail_info['price_unit'] * 100) * $qty / 100;
+						$data['price_subtotal'] = formatMoney(intval($bill_in_detail_info['price_unit'] * 100 * $qty) / 100,2);
 
 						if($bill_in_detail_info['invoice_method'] == 0){
 							$data['status'] = 'paid';
@@ -292,7 +292,6 @@ class StockInController extends CommonController {
 			if($type == 'input_qty') {
 				$qty = I('post.qty');
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
-
 				if($res['res'] == true) {
 					//有一件商品入库 更新到货单状态为 待上架
 					$upd_map['id'] = $id;
@@ -395,7 +394,7 @@ class StockInController extends CommonController {
 			//$pros[$key]['moved_qty'] = $qtyIn;
 			//$moved_qty_total += $qtyIn;
 			//预计收获量
-			$expected_qty_total += $val['pro_qty'];
+			$expected_qty_total += $val['expected_qty'];
 			//已收总量
 			$receipt_qty_total += $getQtyForReceipt;
 			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
@@ -414,9 +413,9 @@ class StockInController extends CommonController {
 
 		$data['qtyForPrepare'] = $qtyForPrepare;
 		//预计收获量
-		$data['expected_qty_total'] = $expected_qty_total;
+		$data['expected_qty_total'] = formatMoney($expected_qty_total, 2);
 		//已收总量
-		$data['receipt_qty_total'] = $receipt_qty_total;
+		$data['receipt_qty_total'] = formatMoney($receipt_qty_total, 2);
 
 		//$data['qtyForOn'] =$qtyForIn;
 	}
@@ -532,7 +531,7 @@ class StockInController extends CommonController {
                             ->where(array('pid' => $value['id']))
                             ->find();
                 $value['cat_total'] = $detail['cat_total']; //SKU总数
-                $value['qty_total'] = $detail['qty_total']; //总数量
+                $value['qty_total'] = formatMoney($detail['qty_total'], 2); //总数量
                 $value['sp_created_time'] = $value['created_time']; //创建时间
             }
         }
@@ -621,6 +620,12 @@ class StockInController extends CommonController {
             //sku数量为0
             if ($value['pro_qty'] <= 0) {
                 $this->msgReturn(0, '数量不可为0');
+                return;
+            }
+
+            if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                $mes = '数量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);
                 return;
             }
         }

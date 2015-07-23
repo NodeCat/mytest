@@ -59,6 +59,22 @@
     <a data-href="/StockIn/in.htm" class="btn-return btn btn-lg btn-default btn-block">返回</a>
   </div>
 </div>
-
+<script type="text/javascript">
+/******liuguangping*******/
+var checkObj = {
+  chekInput:function(){
+    $(document).on('blur','[name=real_qty]',function(){
+      var out_qty = parseFloat($(this).val());
+      var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+      if (!reg.test(out_qty)){
+        alert('父SKU本次加工量只能精确到小数点两位');
+        //$(this).val('1.00');
+      }
+      
+    });
+  }
+};
+checkObj.chekInput();
+</script>
 </form> 
 

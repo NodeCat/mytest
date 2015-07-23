@@ -145,22 +145,23 @@ class DistController extends Controller {
                     unset($M);
                     $M = M('TmsSignList');
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
-                    $status = 4;
                     if($status=='4'){
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
                     $map['userid']       = $user_data['id'];
-                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                        $map['period'] = '上午';
-                    } else {
-                        $map['period'] = '下午';
-                    }
                     $M->add($map);
                     unset($map);
+                    unset($status);
                     }
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                    unset($map);
+                    if($dist['deliver_time']=='1') {
+                        $map['period'] = '上午';
+                    } elseif($dist['deliver_time']=='2') {
+                        $map['period'] = '下午';
+                    }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign_id['id'];
                     $M->save($map); 
@@ -477,8 +478,21 @@ class DistController extends Controller {
         $this->ajaxReturn($res);
     }
 
+    //司机当日收货统计
+    public function report() {
+
+        $map['mobile'] = session('user.mobile');
+        $map['status'] = '1';
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $this->data = M('tms_delivery')->where($map)->select();
+        $this->title = '今日订单总汇';
+        $this->display('tms:report');
+    }
+
     // 车单纬度统计
-    public function orderList(){
+    public function orderList() {
 
         $id = I('get.id',0);
         if(empty($id)){
@@ -489,7 +503,7 @@ class DistController extends Controller {
             
         if(empty($res)) {
             $this->error = '未找到该提货纪录。';
-        }elseif($res['mobile'] != session('user.mobile')) {
+        } elseif ($res['mobile'] != session('user.mobile')) {
             $this->error ='不能查看该配送单，您的手机号码与提货人不符合。';
         }
         if(!empty($this->error)) {
@@ -502,69 +516,94 @@ class DistController extends Controller {
         $sign_orders    = 0;  //签收单统计
         $unsign_orders  = 0;  //拒收单统计
         $delivering     = 0;  //派送中订单数统计
+        $sign_finished  = 0;  //已完成订单数统计
         $sum_deal_price  = 0;   //回款数
         $arrays=array();    //回仓列表的数组
         unset($map);
         $map['id'] = $res['dist_id'];
+        $map['is_deleted'] = 0;
         //总订单数
         $order_count = M('stock_wave_distribution')->field('order_count')->where($map)->find();
-        if(empty($order_count)){
+        if(empty($order_count)) {
             $this->error('没有找到该配送单');
         }
         $all_orders = $order_count['order_count'];
         unset($map);
         //查询条件为配送单id
-        $map['dist_id'] = $res['dist_id'];
+        $map['pid'] = $res['dist_id'];
+        $map['is_deleted'] = 0;
         //根据配送单id查询签收表
-        $sign_data = M('tms_sign_in')->where($map)->select();
+        $sign_data = M('stock_wave_distribution_detail')->where($map)->select();
         //若查出的签收信息非空
-        if(!empty($sign_data)){   
-                for($n = 0; $n < count($sign_data); $n++){
-                    if($sign_data[$n]['status'] == 2){
-                        $unsign_orders++;   //拒收单数加1
-                    }elseif($sign_data[$n]['status'] == 1){
-                        $sign_orders++; //已签收单数加1
-                    }
-                    unset($map);
-                    $map['pid'] = $sign_data[$n]['id'];
-                    //根据出库单id查询出所有出库单详情信息
-                    $sign_in_detail = M('tms_sign_in_detail')->where($map)->select();
-                    if(!empty($sign_in_detail)){
+        if (!empty($sign_data)) { 
+            $dist_logic = A('Tms/Dist','Logic');
+            for ($n = 0; $n < count($sign_data); $n++) {
+                unset($map);
+                $map['pid'] = $sign_data[$n]['id'];
+                //根据配送单详情id查询出所有订单的签收详情信息
+                $sign_in_detail = M('tms_sign_in_detail')->where($map)->select();  
+                switch ($sign_data[$n]['status']) {
+                    case '2':
+                        $sign_orders++; //已签收订单数加1
                         
-                        for($i = 0; $i < count($sign_in_detail); $i++){
-                            unset($map);
-                            $map['id'] =  $sign_in_detail[$i]['bill_out_detail_id'];
-                            //配送数量
-                            $delivery = M('stock_bill_out_detail')->where($map)->find();
-                            $delivery_qty = $delivery['delivery_qty']; 
-                            //如果计量单位和计价单位相等就取签收数量
-                            if($sign_in_detail[$i]['measure_unit'] == $sign_in_detail[$i]['charge_unit']){
-                                $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
-                                $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
-                            //如果计量单位和计价单位不相等就取签收重量
-                            }else{
-                                $sign_qty = $sign_in_detail[$i]['real_sign_wgt']; //签收重量
-                                $unit = $sign_in_detail[$i]['charge_unit']; //计价单位
-                            }
-                            $quantity = $delivery_qty - $sign_qty; //回仓数量
-                            if($quantity > 0){
-                                $key  = $delivery['pro_code'];    //sku号
-                                $arrays[$key]['quantity'] =  $quantity; //回仓数量
-                                $arrays[$key]['name'] =  $delivery['pro_name'];   //sku名称
-                                $arrays[$key]['unit_id'] = $unit;   //单位
-                            }
-                            $sum_deal_price += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
-                        }
+                            for ($i = 0; $i < count($sign_in_detail); $i++) {
+                                if ($sign_in_detail[$i]['pid'] == $sign_data[$n]['id']) {
+                                    unset($map);
+                                    $map['id'] =  $sign_in_detail[$i]['bill_out_detail_id'];
+                                    //配送数量
+                                    $delivery = M('stock_bill_out_detail')->where($map)->select();
+                                    foreach ($delivery as $value) {
+                                        $delivery_qty = $value['delivery_qty']; 
+                                        $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
+                                        $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
+                                        $quantity = $delivery_qty - $sign_qty; //回仓数量
+                                        if($quantity > 0){
+                                            $key  = $value['pro_code'];    //sku号
+                                            $arrays[$key]['quantity'] =  $quantity; //回仓数量
+                                            $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
+                                            $arrays[$key]['unit_id'] = $unit;   //单位
+                                        }
+                                        if ($sign_data[$n]['pay_status'] != 1) {
+                                            $sum_deal_price += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
+                                        }
+                                    }
+                                }
+                            } 
                         
-                    }
+                        $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);  
+                        break;
+
+                    case '3':
+                        $unsign_orders++;   //已拒收订单数加1
+                        unset($map);
+                        $map['pid'] =  $sign_data[$n]['bill_out_id'];
+                        //配送数量
+                        $delivery = M('stock_bill_out_detail')->where($map)->select();
+                        foreach ($delivery as $value) {
+                            $key  = $value['pro_code'];    //sku号
+                            $arrays[$key]['quantity'] = $value['delivery_qty']; //回仓数量
+                            $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
+                            $arrays[$key]['unit_id'] = $value['measure_unit'];   //单位
+                        } 
+                        break;
+
+                    case '4':
+                        $sign_finished++;   //已完成订单数加1
+                        break;
                     
-                }  
+                    default:
+                        # code...
+                        break;
+                }
+                 
+            }  
         }
             
         $list['dist_id'] = $res['dist_id'];
         $list['sum_deal_price']  = $sum_deal_price;//回款数
         $list['sign_orders'] = $sign_orders;//已签收
         $list['unsign_orders'] = $unsign_orders;//未签收
+        $list['sign_finished']  = $sign_finished;  // 已完成
         $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
         $this->list = $list;
         $this->back_lists = $arrays;
