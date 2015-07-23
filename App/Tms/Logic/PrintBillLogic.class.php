@@ -50,7 +50,7 @@ class PrintBillLogic {
         //获取签收商品列表和拒收商品列表
         foreach($order['detail'] as $val) {
             //一个签收商品数据
-            if ($val['actual_quantity'] != 0) {
+            if ($val['actual_quantity'] > 0) {
                 $tmp_sign = array(
                     'name'             => $val['name'],
                     'actual_price'     => $val['single_price'],
@@ -67,10 +67,14 @@ class PrintBillLogic {
                     'sum_price' => 0,
                 );
             }
-            $sign[] = $tmp_sign;
+            if (is_array($tmp_sign)) {
+                $sign[] = $tmp_sign;
+            }
             if(is_array($tmp_refuse)) {
                 $refuse[] = $tmp_refuse;
             }
+            unset($tmp_sign);
+            unset($tmp_refuse);
         }
         $data['sign']   = $sign;
         $data['refuse'] = $refuse;
