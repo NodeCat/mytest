@@ -117,6 +117,27 @@ class OrderLogic{
 	    }
 	    return $return;
 	}
+
+	/**
+	 * [saveSignature 将客户电子签名回调给订单]
+	 * @param  array  $params [suborder_id,sign_img]
+	 * @return [type]         [description]
+	 */
+	public function saveSignature($params = array())
+	{
+		$url = '/suborder/set_sign_img';
+		if (!isset($params['suborder_id']) || !isset($params['sign_img'])) {
+			$res = array(
+				'status' => 0,
+				'msg'    => '参数有误'
+			);
+			return $res;
+		}
+		$res = $this->get($url,$params);
+		return $res;
+
+	}
+	
 	public function get($url,$map='') {
 		$url = $this->server . $url;
 		$map = json_encode($map);

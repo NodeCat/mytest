@@ -1,13 +1,11 @@
 <?php
-namespace Tms\Api;
-use Think\Controller;
+namespace Tms\Logic;
 
 /**
- * 配送单接口
+ * 打印小票
  */
-class BillOutApi extends CommApi {
+class PrintBillLogic {
 
-    private $model;
     private $max_len = 32;//打印机单行最大宽度
     protected function _initialize () {}
 
@@ -52,25 +50,31 @@ class BillOutApi extends CommApi {
         //获取签收商品列表和拒收商品列表
         foreach($order['detail'] as $val) {
             //一个签收商品数据
-            $tmp_sign = array(
-                'name'             => $val['name'],
-                'actual_price'     => $val['single_price'],
-                'actual_quantity'  => $val['actual_quantity'],
-                'actual_sum_price' => $val['actual_sum_price'],
-            );
+            if ($val['actual_quantity'] > 0) {
+                $tmp_sign = array(
+                    'name'             => $val['name'],
+                    'actual_price'     => $val['single_price'],
+                    'actual_quantity'  => $val['actual_quantity'],
+                    'actual_sum_price' => $val['actual_sum_price'],
+                );
+            }
             //一个拒收商品数据
-            if($val['actual_quantity'] < $val['quantity']) {
+            if($val['actual_quantity'] < $val['delivery_quantity']) {
                 $tmp_refuse = array(
                     'name'      => $val['name'],
                     'price'     => $val['price'],
-                    'quantity'  => $val['quantity'] - $val['actual_quantity'],
+                    'quantity'  => $val['delivery_quantity'] - $val['actual_quantity'],
                     'sum_price' => 0,
                 );
             }
-            $sign[] = $tmp_sign;
+            if (is_array($tmp_sign)) {
+                $sign[] = $tmp_sign;
+            }
             if(is_array($tmp_refuse)) {
                 $refuse[] = $tmp_refuse;
             }
+            unset($tmp_sign);
+            unset($tmp_refuse);
         }
         $data['sign']   = $sign;
         $data['refuse'] = $refuse;

@@ -1020,4 +1020,47 @@ class DistributionLogic {
         }
         return $res;
     }
+
+    /**
+     * [saveSignature 保存客户电子签名]
+     * @param  array  $params [订单ID:suborder_id,签名路径:sign_img]
+     * @return [type]         [description]
+     */
+    public function saveSignature($params = array()) {
+        if(!isset($params['suborder_id']) || !isset($params['sign_img'])) {
+            return array(
+                'status' => -1,
+                'msg'    => '参数有误'
+            );
+        }
+        //查出库单ID
+        $bM = M('stock_bill_out');
+        $map['refer_code'] = $params['suborder_id'];
+        $map['is_deleted'] = 0;
+        $bill_out = $bM->field('id')->where($map)->find();
+        if (empty($bill_out)) {
+            return array(
+                'status' => -1,
+                'msg'    => '出库单数据不存在'
+            );
+        }
+        unset($map);
+        //更新到配送单详情
+        $dM = M('stock_wave_distribution_detail');
+        $map['bill_out_id'] = $bill_out['id'];
+        $data = array('signature' => $params['sign_img']);
+        $ret = $dM->where($map)->save($data);
+        if ($ret) {
+            $res = array(
+                'status' => 0,
+                'msg'    => '已保存'
+            );
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '签名保存失败'
+            );
+        }
+        return $res;
+    }
 }

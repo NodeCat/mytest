@@ -26,9 +26,9 @@ class DistDetailController extends CommonController {
                     'control_type' => 'select',
                     'value' => array(
                             '1' => '普通订单',
-                            '2' => '冻品订单',
                             '3' => '水果爆款订单',
                             '4' => '水果订单',
+                            '5' => '蔬菜订单',
                     ),
             ),
             'line' => array(

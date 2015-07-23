@@ -113,7 +113,7 @@
       <td>{$vo.wh_id|getTableFieldById='warehouse','name',###}</td> 
       <td>{$vo.wh_id|getStockQtyByWpcode=$vo['pro_code'],###}</td> 
       <td>{$vo.wh_id|getDownOrderNum=$vo['pro_code'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
-      <td>{$vo.wh_id|getPurchaseNum=$vo['pro_code'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
+      <td>{$vo.purchase_num}</td>
       <td>{$vo.c_pro_code}</td>
       <td>{$vo.c_pro_code|getPronameByCode='name',###}</td>
       <td>{$vo.wh_id|getStockQtyByWpcode=$vo['c_pro_code'],###}</td>
