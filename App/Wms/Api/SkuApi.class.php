@@ -87,7 +87,8 @@ class SkuApi extends CommApi
         $i = $k = 1;
         foreach ($skuCodeArr as $value) {
             if ($i > $condition['itemspages'] * $k) {
-                $k++;$i++;
+                $k++;
+                $i++;
                 $newSkuCodeArr[$k][] = $value;
             } else {
                 $i++;
@@ -130,43 +131,27 @@ class SkuApi extends CommApi
             $returnSucess['list'][$key]['out_warehouse_sku_counts'] = 0;
             $returnSucess['list'][$key]['reject_sku_counts']        = 0;
             
-            foreach ($stockInArr as $indexIn => $stockInQty) {
-                //实时在库量
-                $trueIndexIn = intval(rtrim($indexIn, '#'));
-                if ($trueIndexIn == $skuCode) {
-                    $returnSucess['list'][$key]['quantity_inwarehouse'] = $stockInQty;
-                    unset($stockInArr[$indexIn]);
-                    break;
-                }
+            //实时在库量
+            $trueIndexIn = strval($skuCode) . '#';
+            if (!isset($stockInArr[$trueIndexIn])) {
+                $returnSucess['list'][$key]['quantity_inwarehouse'] = $stockInArr[$trueIndexIn];
             }
-            foreach ($stockSellInArr as $indexSell => $stockSellQty) {
-                //实时可售量
-                $trueIndexSell = intval(rtrim($indexSell, '#'));
-                if ($trueIndexSell == $skuCode) {
-                    $returnSucess['list'][$key]['quantity_sale'] =  $stockSellQty;
-                    unset($stockSellInArr[$indexSell]);
-                    break;
-                }
+            //实时可售量
+            $trueIndexSell = strval($skuCode) . '#';
+            if (!isset($stockInArr[$trueIndexSell])) {
+                $returnSucess['list'][$key]['quantity_sale'] = $stockInArr[$trueIndexSell];
             }
-            foreach ($salePriceArr as $indexSale => $saleQty) {
-                //平均采购价
-                $trueIndexSale = intval(rtrim($indexSale, '#'));
-                if ($trueIndexSale == $skuCode) {
-                    $returnSucess['list'][$key]['average_buy_price'] = $saleQty;
-                    unset($salePriceArr[$indexSale]);
-                    break;
-                }
+            //平均采购价
+            $trueIndexSale = strval($skuCode) . '#';
+            if (!isset($stockInArr[$trueIndexSale])) {
+                $returnSucess['list'][$key]['average_buy_price'] = $stockInArr[$trueIndexSale];
             }
-            foreach ($priceAndQtyArr as $indexPrice => $priceAndQtyVal) {
-                $trueIndexPrice = intval(rtrim($indexPrice, '#'));
-                if ($trueIndexPrice == $skuCode) {
-                    //平均销售价
-                    $returnSucess['list'][$key]['average_sale_price'] = $priceAndQtyVal['price'];
-                    //SKU出库量
-                    $returnSucess['list'][$key]['out_warehouse_sku_counts'] = $priceAndQtyVal['sum'];
-                    unset($priceAndQtyArr[$indexPrice]);
-                    break;
-                }
+            //平均销售价
+            //SKU出库量
+            $trueIndexPrice = strval($skuCode) . '#';
+            if (!isset($stockInArr[$trueIndexPrice])) {
+                $returnSucess['list'][$key]['average_sale_price'] = $stockInArr[$trueIndexPrice]['price'];
+                $returnSucess['list'][$key]['out_warehouse_sku_counts'] = $stockInArr[$trueIndexPrice]['sum'];
             }
             
             //拒收SKU数量
