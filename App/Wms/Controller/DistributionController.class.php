@@ -642,7 +642,6 @@ class DistributionController extends CommonController {
                 $total_stock_qty += $stock_info['stock_qty'] - $stock_info['assign_qty'];
             }
             //如果库存不足 记录下实际发货量
-            $reduce_delivery_qty_list = array();
             if(intval($total_stock_qty) < intval($v['order_qty'])){
                 $v['order_qty'] = $total_stock_qty;
                 $reduce_delivery_qty_list[$v['id']] = $total_stock_qty;
@@ -655,7 +654,6 @@ class DistributionController extends CommonController {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
-        
         //获取去拣货区库位
         $loc = M('location');
         $map['code'] = 'PACK';
