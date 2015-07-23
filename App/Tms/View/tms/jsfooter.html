@@ -199,6 +199,7 @@
               bid = $(this).data('bid');
           var url = "{$signature_url}";
           oid = oid.toString();
+          bid = bid.toString();
           printStr = JSON.stringify(printStr);
           ticketPrint(printStr, oid, url, bid);
       })
