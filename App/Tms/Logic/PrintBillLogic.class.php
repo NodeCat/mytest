@@ -1,13 +1,11 @@
 <?php
-namespace Tms\Api;
-use Think\Controller;
+namespace Tms\Logic;
 
 /**
- * 配送单接口
+ * 打印小票
  */
-class BillOutApi extends CommApi {
+class PrintBillLogic {
 
-    private $model;
     private $max_len = 32;//打印机单行最大宽度
     protected function _initialize () {}
 

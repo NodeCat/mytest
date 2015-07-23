@@ -364,7 +364,7 @@ class IndexController extends Controller {
                 if ($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
                     $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
                 }
-                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
+                $val['printStr'] = A('Tms/PrintBill', 'Logic')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;

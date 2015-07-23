@@ -265,7 +265,7 @@ class DistController extends Controller {
                         }
                     }
                     //获取打印小票要用的数据
-                    $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val['order_info']);
+                    $val['printStr'] = A('Tms/PrintBill', 'Logic')->printBill($val['order_info']);
                     $lists[$val['user_id']][] = $val;
                 }
                 $this->dist_id = $res['dist_id'];
