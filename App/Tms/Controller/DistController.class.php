@@ -6,7 +6,7 @@ class DistController extends Controller {
 	//司机提货
     public function delivery() {
         $id = I('post.code/d',0);
-        if(IS_GET) {
+        if (IS_GET) {
             //只显示当天的记录
             $map['mobile'] = session('user.mobile');
             $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
@@ -18,7 +18,7 @@ class DistController extends Controller {
             $this->title = '提货扫码';
             $this->display('tms:delivery');
             exit;
-        }elseif(IS_POST && !empty($id)) {
+        } elseif (IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
             //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
@@ -31,7 +31,7 @@ class DistController extends Controller {
             $map['mobile'] = session('user.mobile');
             $delivery_all = $M->field('id,mobile,dist_id,order_count')->where($map)->select();//取出当前司机所有配送单信息
             unset($map);
-            if(!empty($delivery)) {//若该配送单已被认领
+            if (!empty($delivery)) {//若该配送单已被认领
                 if($delivery['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                     $this->error = '提货失败，该单据您已提货';
                 }
@@ -51,7 +51,7 @@ class DistController extends Controller {
                             $status = '2';
                         }
                     }
-                    if($status == '2') {
+                    if ($status == '2') {
                         //如果别人提的还是已装车，那就还可以提
                         $map['id'] =$delivery['id'];
                         $data['status'] = '0';
@@ -67,11 +67,11 @@ class DistController extends Controller {
             //查询该配送单的信息
             $wA = A('Wms/Distribution','Logic');
             $dist = $wA->distInfo($id);
-            if(empty($dist)) {
+            if (empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if($dist['status'] == '2') {
+            if ($dist['status'] == '2') {
                 //已发运的单据不能被认领
                 //$this->error = '提货失败，该单据已发运';
             }
@@ -82,7 +82,7 @@ class DistController extends Controller {
                 $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
-            if(empty($this->error)) {
+            if (empty($this->error)) {
                 $data['dist_id']      = $dist['id'];
                 $data['dist_code']    = $dist['dist_code'];
                 $data['mobile']       = session('user.mobile');
@@ -148,7 +148,7 @@ class DistController extends Controller {
                     $res = $cA->set_status($map);
                 }
                 unset($map);
-                if($res) {
+                if ($res) {
                     $this->msg = "提货成功";
                     $M = M('TmsUser');                    
                     $map['mobile'] = session('user.mobile');
@@ -157,7 +157,7 @@ class DistController extends Controller {
                     unset($M);
                     $M = M('TmsSignList');
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
-                    if($status=='4'){
+                    if ($status=='4') {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
                     $map['userid']       = $user_data['id'];
@@ -169,9 +169,9 @@ class DistController extends Controller {
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
                     unset($map);
-                    if($dist['deliver_time']=='1') {
+                    if ($dist['deliver_time']=='1') {
                         $map['period'] = '上午';
-                    } elseif($dist['deliver_time']=='2') {
+                    } elseif ($dist['deliver_time']=='2') {
                         $map['period'] = '下午';
                     }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
@@ -187,7 +187,7 @@ class DistController extends Controller {
 
           $this->error = '提货失败,提货码不能为空';
         }
-        if(empty($this->error)){
+        if (empty($this->error)) {
         $map['mobile'] = session('user.mobile');
         $userid  = M('tms_user')->field('id')->where($map)->find();
         $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
