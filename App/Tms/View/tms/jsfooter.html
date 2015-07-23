@@ -5,7 +5,7 @@
     if(parseInt(oid) > 0) {
         $("a[data-oid="+oid+"]").trigger('click');
         $('#info_'+oid+'').addClass('in');
-        location.href = action + "/id/{$id}#p_" + oid;
+        location.href = action + "/id/{$id}/oid/"+oid+"#p_" + oid;
     }
     //打印小票
     function ticketPrint(printStr, oid, url, bid, pagecount){
