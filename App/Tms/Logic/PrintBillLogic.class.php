@@ -50,12 +50,14 @@ class PrintBillLogic {
         //获取签收商品列表和拒收商品列表
         foreach($order['detail'] as $val) {
             //一个签收商品数据
-            $tmp_sign = array(
-                'name'             => $val['name'],
-                'actual_price'     => $val['single_price'],
-                'actual_quantity'  => $val['actual_quantity'],
-                'actual_sum_price' => $val['actual_sum_price'],
-            );
+            if ($val['actual_quantity'] != 0) {
+                $tmp_sign = array(
+                    'name'             => $val['name'],
+                    'actual_price'     => $val['single_price'],
+                    'actual_quantity'  => $val['actual_quantity'],
+                    'actual_sum_price' => $val['actual_sum_price'],
+                );
+            }
             //一个拒收商品数据
             if($val['actual_quantity'] < $val['delivery_quantity']) {
                 $tmp_refuse = array(
