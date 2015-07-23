@@ -609,6 +609,18 @@ class IndexController extends Controller {
         }else{
             $this->error("没有找到相应的车单");
         }
+        unset($map);
+        unset($status);
+        $map['pid'] = $dist_id;
+        $map['is_deleted'] = 0;
+        $status = M('stock_wave_distribution_detail')->field('status')->where($map)->select();
+        foreach ($status as $value) {
+            if ($value['status'] == 2 || $value['status'] == 3) {
+                continue;
+            } else {
+                $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
+            }
+        }
         //获得配送单号
         $dist_code = M('stock_wave_distribution')->field('dist_code')->find($dist_id);
         $dist_code = $dist_code['dist_code'];
@@ -657,6 +669,7 @@ class IndexController extends Controller {
                             $real_sign_qty = 0; //签收数量先置为0
                             $batch = '';
                             unset($map);
+                            unset($status);
                             $map['bill_out_id'] = $val['pid'];
                             $map['is_deleted'] = 0;
                             //若没有签收详情
