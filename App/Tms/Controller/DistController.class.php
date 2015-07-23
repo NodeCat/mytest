@@ -267,18 +267,19 @@ class DistController extends Controller {
                             $v['quantity'] = $v['delivery_qty'];
                         }
                         //从订单详情获取SKU信息
-                        foreach ($val['order_info']['detail'] as $value) {
+                        foreach ($val['order_info']['detail'] as &$value) {
                             if($v['pro_code'] == $value['sku_number']) {
                                 $v['single_price']    = $value['single_price'];
                                 $v['close_unit']      = $value['close_unit'];
                                 $v['unit_id']         = $value['unit_id'];
                                 $v['sum_price']       = $v['sum_price'] ? $v['sum_price'] : $value['sum_price'];
                                 $v['order_detail_id'] = $value['id'];//获取订单详情ID，用于更新订单状态
+                                $value['delivery_quantity'] = $v['delivery_qty'];
                             }
                         }
                     }
-                    // 获取打印小票要用的数据
-                    $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val['order_info']);
+                    //获取打印小票要用的数据
+                    $val['printStr'] = A('Tms/PrintBill', 'Logic')->printBill($val['order_info']);
                     $lists[$val['user_id']][] = $val;
                 }
                 $this->dist_id = $res['dist_id'];
@@ -356,6 +357,8 @@ class DistController extends Controller {
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
+        $receivable_sum -= $orderInfo['info']['minus_amount'];
+        $receivable_sum += $orderInfo['info']['deliver_fee'];
         $deal_price = $A->wipeZero($receivable_sum);
         $sign_msg = I('post.sign_msg', '' ,'trim');
         //签收表主表数据
