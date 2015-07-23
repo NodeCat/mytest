@@ -399,7 +399,19 @@ class IndexController extends Controller {
     //司机提货
     public function delivery() {
         $id = I('post.code/d',0);
-        if(IS_POST && !empty($id)) {
+        if(IS_GET) {
+            //只显示当天的记录
+            $map['mobile'] = session('user.mobile');
+            $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
+            $map['status'] = '1';
+            $start_date    = date('Y-m-d',NOW_TIME);
+            $end_date      = date('Y-m-d',strtotime('+1 Days'));
+            $map['created_time'] = array('between',$start_date.','.$end_date);
+            $this->data  = M('tms_delivery')->where($map)->select();
+            $this->title = '提货扫码';
+            $this->display('tms:delivery');
+            exit;
+        } elseif (IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
             //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
@@ -443,9 +455,6 @@ class IndexController extends Controller {
                 }
                 unset($map);
             }
-
-            //查询该配送单的信息
-            //$map['dist_number'] = substr($id, 2);
             $map['id'] = $id;
             $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
@@ -564,19 +573,19 @@ class IndexController extends Controller {
                     $this->error = "提货失败";
                 }
             }
+        }else{
+
+          $this->error = '提货失败,提货码不能为空';
         }
-
-        //只显示当天的记录
+        if(empty($this->error)){
         $map['mobile'] = session('user.mobile');
-        $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
-        $map['status'] = '1';
-        $start_date    = date('Y-m-d',NOW_TIME);
-        $end_date      = date('Y-m-d',strtotime('+1 Days'));
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->data  = M('tms_delivery')->where($map)->select();
-        $this->title = '提货扫码';
-        $this->display('tms:delivery'); 
-
+        $userid  = M('tms_user')->field('id')->where($map)->find();
+        $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+        } else{
+        $msg = $this->error;
+        $res = array('status' =>'0', 'message' =>$msg);
+        }
+        $this->ajaxReturn($res);
     }
 
     /*
