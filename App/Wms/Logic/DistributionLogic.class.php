@@ -112,12 +112,10 @@ class DistributionLogic {
                 $return['msg'] = $order_info['msg'];
                 return $return;
             }
-            
             foreach ($order_info['list'] as $key => $val) {
                 //增加客服id 创建配送单使用
                 foreach ($result as $k => $v) {
                     if ($v['refer_code'] == $val['id']) {
-                        $result[$k]['map_pos'] = json_decode($val['geo'], true);
                         $result[$k]['user_id'] = $val['user_id'];
                         break;
                     }
@@ -160,7 +158,6 @@ class DistributionLogic {
             $return[$key]['address'] = $value['delivery_address']; //地址
             $return[$key]['deliver_date'] = $value['delivery_date'] . ' ' . $value['delivery_time'];//配送时间
             $return[$key]['line_total'] = count($value['detail']); //sku总数
-            $return[$key]['map_pos'] = $value['map_pos']; //坐标
             foreach ($value['detail'] as $k => $val) {
                 $return[$key]['sku_total'] += $val['order_qty']; //sku总数
                 $return[$key]['detail'][$k]['name'] = $val['pro_name']; //名称
