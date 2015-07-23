@@ -7,6 +7,10 @@ use Think\Controller;
  */
 class BillOutApi extends CommApi
 {
+    /**
+     * [skuStatis 统计SKU售卖信息]
+     * @param [type] [发货时间段:start_time,endtime,可选参数:warehouse_id]
+     */
     public function skuStatis()
     {
         $param = I('json.');
