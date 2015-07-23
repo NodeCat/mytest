@@ -615,6 +615,7 @@ class IndexController extends Controller {
         unset($map);
         //查询条件为配送单id
         $map['pid'] = $dist_id;
+        $map['is_deleted'] = 0;
         //根据配送单id查配送详情单里与出库单相关联的出库单id
         $bill_out_id = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
         //若查出的出库单id非空
@@ -623,6 +624,7 @@ class IndexController extends Controller {
             unset($map);
             //查询条件为出库单的id
             $map['id'] = array('in',$bill_out_id);
+            $map['is_deleted'] = 0;
             //根据出库单id查出出库单的所有信息
             $stock_bill_out = M('stock_bill_out')->where($map)->select();
             //若查出的出库单信息非空
@@ -631,21 +633,22 @@ class IndexController extends Controller {
                 for($n = 0; $n < count($stock_bill_out); $n++){
                     //创建客退入库单
                     unset($bill);
-                    $bill['refer_code'] = $stock_bill_out[$n]['id'];//关联单据为出库id
-                    $bill['code'] = get_sn('wms_back_in');   //生成客退入库单号
-                    $bill['type'] = '3';    //入库类型为客退入库单
+                    $bill['refer_code'] = $stock_bill_out[$n]['code'];//关联单据为出库单号
+                    $bill['code'] = get_sn('rejo');   //生成拒收入库单号
+                    $bill['type'] = '3';    //入库类型为拒收入库单
                     $bill['status'] = '21';     //待收货状态
                     $bill['batch_code'] = '';//get_batch($bill['code']); //获得批次
                     $bill['wh_id'] = $stock_bill_out[$n]['wh_id'];  //仓库id
                     $bill['company_id'] = $stock_bill_out[$n]['company_id'];   
                     $bill['partner_id'] = '';   //供应商
-                    $bill['type'] = 3;  //入库类型为客退入库单
+                    $bill['type'] = 7;  //入库类型为拒收入库单
                     $bill['created_user'] = 2;   //uid默认为2
                     $bill['created_time'] = get_time();
                     $bill['updated_user'] = 2;   //uid默认为2
                     $bill['updated_time'] = get_time();
                     unset($map);
                     $map['pid'] = $stock_bill_out[$n]['id'];
+                    $map['is_deleted'] = 0;
                     //根据出库单id查询出所有出库单详情信息
                     $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
                     if(!empty($bill_out_detail)){
@@ -655,9 +658,10 @@ class IndexController extends Controller {
                             $batch = '';
                             unset($map);
                             $map['bill_out_id'] = $val['pid'];
+                            $map['is_deleted'] = 0;
                             //若没有签收详情
                             $status = M('stock_wave_distribution_detail')->field('status')->where($map)->find();
-                            switch ($status) {
+                            switch ($status['status']) {
                                 case '0':
                                     //若是已分拨状态
                                     $this->error('此车单中有已分拨的订单，请提货并签收或拒收后再提出交货申请。');exit;
@@ -671,14 +675,16 @@ class IndexController extends Controller {
                                     unset($map);
                                     $map['bill_out_detail_id'] = $val['id'];
                                     $sign_data = M('tms_sign_in_detail')->where($map)->select();
-                                    if(!empty($sign_data)){
+                                    if(!empty($sign_data)) {
                                         $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
                                     }
+                                    //获得最久远的批次
                                     $batch = $A->get_long_batch($dist_code,$val['pro_code']);
                                     break;
                                 case '3':
                                     //若已经拒收
                                     $real_sign_qty = 0;
+                                    //获得最近的批次
                                     $batch = $A->get_lasted_batch($dist_code,$val['pro_code']);
                                     break;
                                 case '4':
@@ -697,41 +703,35 @@ class IndexController extends Controller {
                             $v['pro_code'] = $val['pro_code'];
                             $v['pro_name'] = $val['pro_name'];
                             $v['pro_attrs'] = $val['pro_attrs'];
-                            $v['pro_uom'] = $sign_data[0]['measure_unit'];     //计量单位
+                            $v['pro_uom'] = isset($val['measure_unit']) ? $val['measure_unit'] : '';     //计量单位
                             $v['expected_qty'] = $val['delivery_qty'] - $real_sign_qty; //写入预期入库数量
                             $v['prepare_qty'] = 0;
                             $v['done_qty'] = 0;
                             $v['wh_id'] = $bill['wh_id'];
-                            //$v['type'] = 'in';
-                            $v['refer_code'] = $val['pid']; //写入相关联的出库单id
+                            $v['refer_code'] = $bill['refer_code']; //写入相关联的出库单号
                             $v['pid'] = $bill['id'];
-                            $v['price_unit'] = $sign_data[0]['charge_unit'];  //计价单位
+                            $v['price_unit'] = isset($val['price']) ? $val['price'] : 0;  //单价
+                            $v['created_time'] = get_time();
+                            $v['updated_time'] = get_time();
+                            $v['created_user'] = 2;   //uid默认为2
+                            $v['updated_user'] = 2;   //uid默认为2
                             $bill['detail'][] = $v;
                             
-                            $container['refer_code'] = $bill['code'];   //关联客退入库单号
+                            $container['refer_code'] = $bill['code'];   //关联拒收入库单号
                             $container['pro_code'] = $val['pro_code'];
-                            //获得最久远的批次号
-                            $container['batch'] = $batch;
+                            $container['batch'] = isset($batch) ? $batch : '';
                             $container['wh_id'] = $bill['wh_id'];
-                            //获取去收货区库位
-                            $loc = M('location');
-                            $map['code'] = 'RECV';
-                            $map['wh_id'] = $bill['wh_id'];
-                            $location = $loc->field('id')->where($map)->find();
-                            unset($map);
-                            $map['pid'] = $location['id'];
-                            $location_id = $loc->field('id')->where($map)->find();
-                            $container['location_id'] = isset($location_id) ? $location_id : 0;
+                            $container['location_id'] = '';
                             $container['qty'] = $v['expected_qty'];
                             $container['created_time'] = get_time();
                             $container['updated_time'] = get_time();
                             $container['created_user'] = 2;   //uid默认为2
                             $container['updated_user'] = 2;   //uid默认为2
                             $M = M('stock_bill_in_container');
-                            $s = $M->add($container);    //写客退入库单详情表的详情表
+                            $s = $M->add($container);    //写入拒收入库单详情表的详情表
                         }  
                         if(!empty($bill['detail'])){
-                            $res = $Min->relation('detail')->add($bill); //写入客退入库单 
+                            $res = $Min->relation('detail')->add($bill); //写入拒收入库单 
                         }  
                     }       
                 }

@@ -608,7 +608,7 @@ class DistController extends Controller {
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
-        $this->display('tms:distInfo');
+        $this->display('tms:orderlist');
     }
 
     //保存客户签名
