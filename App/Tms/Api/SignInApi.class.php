@@ -75,7 +75,7 @@ class SignInApi extends CommApi
      */
     public function curl_upload_pic($file)
     {
-        $url = C('IMG_UPLOAD_PATH') . 'upload?bucket=shop';
+        $url = C('IMG_UPLOAD_PATH') . 'upload?bucket=tms';
         $fields['files'] = '@'.$file;
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
