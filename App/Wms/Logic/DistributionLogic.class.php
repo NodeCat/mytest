@@ -1013,8 +1013,8 @@ class DistributionLogic {
         $bill_out = $bM->field('id')->where($map)->find();
         if (empty($bill_out)) {
             return array(
-                'status' => 0,
-                'msg'    => 'WMS1.0版本'
+                'status' => -1,
+                'msg'    => '出库单数据不存在'
             );
         }
         unset($map);

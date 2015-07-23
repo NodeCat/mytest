@@ -355,6 +355,10 @@ class IndexController extends Controller {
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
+            //提货单ID和订单ID，用于签收后自动展开
+            $oid = I('get.oid/d',0);
+            $this->id  = $id;
+            $this->oid = $oid;
         }
         $this->title = "客户签收";
         //电子签名保存接口
