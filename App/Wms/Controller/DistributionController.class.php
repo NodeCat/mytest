@@ -606,7 +606,7 @@ class DistributionController extends CommonController {
         if (!empty($reduce_ids)) {
             if ($confirm != 'confirm_reduce') {
                 //弹出提示框
-                $unpass_ids .= '' . '|' . implode(',', $reduce_ids) . '|' . $post;
+                $unpass_ids .= implode(',', $reduce_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=reduce'));
             }
         }
