@@ -192,12 +192,13 @@
     });
     
     $('.js-btn-print').on('click',function(){
-          var printStr = $(this).data('str');
-          var oid = $(this).data('id');
+          var printStr = $(this).data('str'),
+              oid = $(this).data('id'),
+              bid = $(this).data('bid');
           var url = "{$signature_url}";
           oid = oid.toString();
           printStr = JSON.stringify(printStr);
-          ticketPrint(printStr, oid, url);
+          ticketPrint(printStr, oid, url, bid);
       })
 
     function check(x) {

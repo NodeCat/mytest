@@ -10,6 +10,7 @@ class SignInApi extends CommApi
     public function signature() 
     {
         $suborder_id = I('post.order_id/d',0);
+        $bill_out_id = I('post.bill_out_id/d',0);
         $img = $_FILES['image'];
         if ($suborder_id == 0 || !$img || $img['error'] != 0) {
             $re = array(
@@ -47,10 +48,13 @@ class SignInApi extends CommApi
         //签名图片回调给订单
         $cA = A('Common/Order', 'Logic');
         $hs = $cA->saveSignature($map);
+        $ts = array('status' => 0);
         //保存签名到配送单详情
-        $A = A('Wms/Distribution', 'Logic');
-        $ts = $A->saveSignature($map);
-        if ($ts['status'] === 0 && $hs['status'] === 0) {
+        if ($bill_out_id) {
+            $A = A('Wms/Distribution', 'Logic');
+            $ts = $A->saveSignature($map);
+        }
+        if ($hs['status'] === 0 && $ts['status'] === 0) {
             $re = array(
                 'status' => 0,
                 'msg'    => '签名保存成功'
