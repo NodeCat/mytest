@@ -343,7 +343,8 @@ class IndexController extends Controller {
                 $val['geo'] = json_decode($val['geo'],TRUE);
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
-                        $val['quantity'] +=$v['actual_quantity'];   
+                        $val['quantity'] +=$v['actual_quantity'];
+                        $v['delivery_quantity'] = $v['quantity'];
                         $v['quantity'] = $v['actual_quantity'];
                         $v['sum_price'] = $v['actual_sum_price'];
                         $final_sum += $v['actual_sum_price'];
