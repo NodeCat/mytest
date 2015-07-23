@@ -16,6 +16,7 @@
 <script type="text/javascript">
 $('#finished').click(function(){
   if(typeof HostApp == "undefined") {
+    alert('配送完成');
     return false;
   }
   HostApp.stopLocate();

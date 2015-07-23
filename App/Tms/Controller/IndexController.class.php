@@ -411,7 +411,19 @@ class IndexController extends Controller {
     //司机提货
     public function delivery() {
         $id = I('post.code/d',0);
-        if(IS_POST && !empty($id)) {
+        if (IS_GET) {
+            //只显示当天的记录
+            $map['mobile'] = session('user.mobile');
+            $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
+            $map['status'] = '1';
+            $start_date    = date('Y-m-d',NOW_TIME);
+            $end_date      = date('Y-m-d',strtotime('+1 Days'));
+            $map['created_time'] = array('between',$start_date.','.$end_date);
+            $this->data  = M('tms_delivery')->where($map)->select();
+            $this->title = '提货扫码';
+            $this->display('tms:delivery');
+            exit;
+        } elseif (IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
             //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
@@ -424,8 +436,8 @@ class IndexController extends Controller {
             $map['mobile'] = session('user.mobile');
             $dist_all = $M->field('id,mobile,dist_id,order_count')->where($map)->select();//取出当前司机所有配送单信息
             unset($map);
-            if(!empty($dist)) {//若该配送单已被认领
-                if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
+            if (!empty($dist)) {//若该配送单已被认领
+                if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                     $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
@@ -444,7 +456,7 @@ class IndexController extends Controller {
                             $status = '2';
                         }
                     }
-                    if($status == '2') {//如果别人提的还是已装车，那就还可以提
+                    if ($status == '2') {//如果别人提的还是已装车，那就还可以提
                         $map['id'] =$dist['id'];
                         $data['status'] = '0';
                         $M->where($map)->save($data);
@@ -455,9 +467,6 @@ class IndexController extends Controller {
                 }
                 unset($map);
             }
-
-            //查询该配送单的信息
-            //$map['dist_number'] = substr($id, 2);
             $map['id'] = $id;
             $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
@@ -467,14 +476,14 @@ class IndexController extends Controller {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if($dist['status'] == '2') {//已发运的单据不能被认领
+            if ($dist['status'] == '2') {//已发运的单据不能被认领
                 //$this->error = '提货失败，该单据已发运';
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
 
-            if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
+            if ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
                 $this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
@@ -483,7 +492,7 @@ class IndexController extends Controller {
             $map['itemsPerPage'] = $dist['order_count'];
             $orders = $A->order($map);
             unset($map);
-            if(empty($this->error)){
+            if (empty($this->error)) {
                 $data['dist_id'] = $dist['id'];
                 $data['dist_code'] = $dist['dist_number'];
                 $data['mobile'] = session('user.mobile');
@@ -550,46 +559,45 @@ class IndexController extends Controller {
                     unset($M);
                     $M = M('TmsSignList');
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
-                    if($status=='4'){
-                    $map['updated_time'] = $data['updated_time'];
-                    $map['created_time'] = $data['created_time'];
-                    $map['userid']       = $user_data['id'];
-                    $M->add($map);
-                    unset($map);
-                    unset($status);
+                    if ($status=='4') {
+                        $map['updated_time'] = $data['updated_time'];
+                        $map['created_time'] = $data['created_time'];
+                        $map['userid']       = $user_data['id'];
+                        $M->add($map);
+                        unset($map);
+                        unset($status);
                     }
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
                     unset($map);
-                    if($dist['deliver_time']=='1') {
+                    if ($dist['deliver_time']=='1') {
                         $map['period'] = '上午';
-                    } elseif($dist['deliver_time']=='2') {
+                    } elseif ($dist['deliver_time']=='2') {
                         $map['period'] = '下午';
                     }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign_id['id'];
                     $M->save($map); 
                     unset($map);
-                }
-                else {
+                } else {
                     $this->error = "提货失败";
                 }
             }
+        } else {
+          $this->error = '提货失败,提货码不能为空';
         }
-
-        //只显示当天的记录
-        $map['mobile'] = session('user.mobile');
-        $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
-        $map['status'] = '1';
-        $start_date    = date('Y-m-d',NOW_TIME);
-        $end_date      = date('Y-m-d',strtotime('+1 Days'));
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->data  = M('tms_delivery')->where($map)->select();
-        $this->title = '提货扫码';
-        $this->display('tms:delivery'); 
-
+        if (empty($this->error)) {
+            $map['mobile'] = session('user.mobile');
+            $userid  = M('tms_user')->field('id')->where($map)->find();
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            } else {
+                $msg = $this->error;
+                $res = array('status' =>'0', 'message' =>$msg);
+        }
+        $this->ajaxReturn($res);
     }
+
 
     /*
      * 功能：根据配送单id 生成相应的客退入库单
