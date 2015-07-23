@@ -441,7 +441,7 @@ class StockInController extends CommonController {
         $this->toolbar = array(
         	    array('name' => 'add', 'show' => $show && isset($this->auth['add']), 'new' => 'true'),
         );
-        
+        $this->search_addon = true;
     }
     public function pview() {
         $this->edit();
@@ -542,42 +542,46 @@ class StockInController extends CommonController {
     	$id = I('get.id');
 
     	//根据id 查询对应入库单
-    	$map['stock_bill_in.id'] = $id;
+    	$map['stock_bill_in.id'] = array('in',$id);
     	$bill_in = M('stock_bill_in')
     	->join('partner on partner.id = stock_bill_in.partner_id' )
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
+    	->where($map)->field('stock_bill_in.id, stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')
+    	->select();
     	unset($map);
 
-    	//根据pid 查询对应入库单详情
-    	$map['stock_bill_in_detail.pid'] = $id;
-    	$bill_in_detail_list = M('stock_bill_in_detail')
-    	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
-    	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
-        
-        $data['refer_code'] = $bill_in['code'];
-    	$data['remark'] = $bill_in['remark'];
-    	$data['print_time'] = get_time();
-    	$data['partner_name'] = $bill_in['partner_name'];
-    	$data['expecting_date'] = $bill_in['expecting_date'];
-    	$data['created_user_name'] = $bill_in['created_user_name'];
-    	$data['session_user_name'] = session('user.username');
-    	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
+    	foreach($bill_in as $key => $value){
+	    	//根据pid 查询对应入库单详情
+	    	$map['stock_bill_in_detail.pid'] = $value['id'];
+	    	$bill_in_detail_list = M('stock_bill_in_detail')
+	    	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
+	    	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')
+	    	->select();
+	        
+	        $data[$key]['refer_code'] = $value['code'];
+	    	$data[$key]['remark'] = $value['remark'];
+	    	$data[$key]['print_time'] = get_time();
+	    	$data[$key]['partner_name'] = $value['partner_name'];
+	    	$data[$key]['expecting_date'] = $value['expecting_date'];
+	    	$data[$key]['created_user_name'] = $value['created_user_name'];
+	    	$data[$key]['session_user_name'] = session('user.username');
+	    	$data[$key]['dest_wh_name'] = $value['dest_wh_name'];
 
-    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
-        //如果没有对应的条码号则使用内部货号作为条码号
-        foreach($bill_in_detail_list as &$val) {
-            if(empty($val['barcode'])) {
-               $val['barcode'] = $val['pro_code']; 
-            }
-        }
+	    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+	        //如果没有对应的条码号则使用内部货号作为条码号
+	        foreach($bill_in_detail_list as &$val) {
+	            if(empty($val['barcode'])) {
+	               $val['barcode'] = $val['pro_code']; 
+	            }
+	        }
+
+	        $data[$key]['bill_in_detail_list'] = $bill_in_detail_list;
+    	}
        
-    	$data['bill_in_detail_list'] = $bill_in_detail_list;
-
     	layout(false);
-    	$this->assign($data);
+    	$this->assign('result',$data);
     	$this->display('StockIn:print');
     }
     

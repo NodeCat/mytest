@@ -1,6 +1,18 @@
 <include file="Index:header"/>
+<style type="text/css">
+.printpage {
+  width:100%;
+  margin:auto;
+  font-size:12px;
+  page-break-before:avoid;
+  page-break-inside:avoid;
+  page-break-after:always
+}
+</style>
 <body>
-<div class="container">
+
+<volist name="result" id="vo">
+<div class="container printpage">
 
 <div class="row">
 <div class="text-center"><h3>到货单</h3></div>
@@ -10,12 +22,12 @@
 
 <div class="row">
 	<div class="text-center">
-		<div><h3>到货单号:{$refer_code}</h3></div>
+		<div><h3>到货单号:{$vo.refer_code}</h3></div>
 	</div>
 </div>
 
 <div class="row">
-    <img src="http://api.pda.dachuwang.com/barcode/get?text={$refer_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$vo.refer_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
 </div>
 
 <br/>
@@ -26,25 +38,25 @@
 
   <tbody>
   	<tr>
-  		<td>收货人</td><td>{$session_user_name}</td>
+  		<td>收货人</td><td>{$vo.session_user_name}</td>
   	</tr>
   	<tr>
-  		<td>到货时间</td><td>{$expecting_date}</td>
+  		<td>到货时间</td><td>{$vo.expecting_date}</td>
   	</tr>
   	<tr>
-  		<td>打印时间</td><td>{$print_time}</td>
+  		<td>打印时间</td><td>{$vo.print_time}</td>
   	</tr>
   	<tr>
-  		<td>供应商</td><td>{$partner_name}</td>
+  		<td>供应商</td><td>{$vo.partner_name}</td>
   	</tr>
   	<tr>
-  		<td>采购人</td><td>{$created_user_name}</td>
+  		<td>采购人</td><td>{$vo.created_user_name}</td>
   	</tr>
   	<tr>
-  		<td>目的仓库</td><td>{$dest_wh_name}</td>
+  		<td>目的仓库</td><td>{$vo.dest_wh_name}</td>
   	</tr>
   	<tr>
-  		<td>备注</td><td>{$remark}</td>
+  		<td>备注</td><td>{$vo.remark}</td>
   	</tr>
   </tbody>
 </table>
@@ -63,7 +75,7 @@
   </thead>
 
   <tbody>
-  	<volist name="bill_in_detail_list" id="bill_in_detail">
+  	<volist name="vo.bill_in_detail_list" id="bill_in_detail">
 	  	<tr>
 	  		<td style="width:5%;">{$bill_in_detail.pro_code}</td>
             <td style="width:25%;">
@@ -99,5 +111,6 @@
 </div>
 
 </div>
+</volist>
 </body>
 </html>
