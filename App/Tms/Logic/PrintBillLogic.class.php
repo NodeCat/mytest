@@ -57,11 +57,11 @@ class PrintBillLogic {
                 'actual_sum_price' => $val['actual_sum_price'],
             );
             //一个拒收商品数据
-            if($val['actual_quantity'] < $val['deliver_quantity']) {
+            if($val['actual_quantity'] < $val['delivery_quantity']) {
                 $tmp_refuse = array(
                     'name'      => $val['name'],
                     'price'     => $val['price'],
-                    'quantity'  => $val['deliver_quantity'] - $val['actual_quantity'],
+                    'quantity'  => $val['delivery_quantity'] - $val['actual_quantity'],
                     'sum_price' => 0,
                 );
             }
