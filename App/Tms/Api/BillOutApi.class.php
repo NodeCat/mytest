@@ -9,9 +9,9 @@ class BillOutApi extends CommApi
 {
     public function skuStatis()
     {
-        $start_time   = I('start_time/d', 0);
-        $end_time     = I('end_time/d', 0);
-        $warehouse_id = I('warehouse_id/d', 0);
+        $start_time   = I('post.start_time/d', 0);
+        $end_time     = I('post.end_time/d', 0);
+        $warehouse_id = I('post.warehouse_id/d', 0);
         if (empty($start_time) || empty($end_time)) {
             $res = array(
                 'status' => -1,
