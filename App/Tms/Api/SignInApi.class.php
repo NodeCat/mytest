@@ -97,7 +97,7 @@ class SignInApi extends CommApi
         $start_time   = isset($params['start_time']) ? $params['start_time'] : 0;
         $end_time     = isset($params['end_time']) ? $params['end_time'] : 0;
         $warehouse_id = isset($params['warehouse_id']) ? $params['warehouse_id'] : 0;
-        if (empty($start_time) || empty($end_time) || empty($warehouse_id)) {
+        if (empty($start_time) || empty($end_time)) {
             $res = array(
                 'status' => -1,
                 'msg'    => '参数错误'
