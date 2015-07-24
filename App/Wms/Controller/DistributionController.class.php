@@ -4,6 +4,8 @@ use Think\Controller;
 use Boris\ExportInspector;
 class DistributionController extends CommonController {
     
+    protected $order_type = array();
+    
     protected $filter = array(
     	    'status' => array(
     	        '1' => '未发运',
@@ -94,6 +96,8 @@ class DistributionController extends CommonController {
         /*$this->toolbar = array(
         	         array('name'=>'add', 'show' => trueisset($auth['view']),'new'=>'true', 'link' => 'DistDetail/index'),
         );*/
+        $this->query['stock_wave_distribution.order_type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
+        dump($this->query);exit;
     }
     
     public function index() {
