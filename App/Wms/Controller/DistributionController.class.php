@@ -94,6 +94,7 @@ class DistributionController extends CommonController {
         /*$this->toolbar = array(
         	         array('name'=>'add', 'show' => trueisset($auth['view']),'new'=>'true', 'link' => 'DistDetail/index'),
         );*/
+        $this->query['stock_wave_distribution.order_type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
     }
     
     public function index() {
@@ -972,12 +973,16 @@ class DistributionController extends CommonController {
                     unset($map);
                     foreach ($bill_out_codes as $val) {
                         $bill_out_code .= $val['code'] . ',';
+                        //查询具体哪些sku缺货
+                        $not_enough_info = A('Stock','Logic')->checkStockIsEnoughByOrderId($val['id']);
+                        $out_info[$val['code']] = implode(',',$not_enough_info['data']['not_enough_pro_code']);
                     }
                 }
+
                 $msg['pup_count'] = count($unids);
                 $msg['order_count'] = $count;
                 $msg['dist_id'] = $get;
-                $msg['out_code'] = $bill_out_code;
+                $msg['out_info'] = $out_info;
                 $this->msgReturn(true, '', $msg);
                 return;
             }

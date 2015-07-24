@@ -72,7 +72,7 @@ class WavePickingLogic{
                     //查看出库单中所有sku是否满足数量需求
                     $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
                     //如果不够 处理下一个订单
-                    if(!$is_enough){
+                    if($is_enough['status'] == 0){
                         //把订单状态置为待生产 拒绝标识改为2 缺货
                         $data['status'] = 1;
                         $data['refused_type'] = 2;

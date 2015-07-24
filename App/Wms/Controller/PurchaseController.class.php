@@ -151,149 +151,157 @@ class PurchaseController extends CommonController {
         );
         $this->search_addon = true;
     }
-    protected function before_add(&$M) {
-        $pros = I('pros');
 
-        //检查采购记录数
-        if(count($pros['pro_code']) == 1){
-            $this->msgReturn(0,'请至少采购一个产品');
-        }
-        //检查采购数量
-        foreach($pros['pro_qty'] as $pro_qty){
-            if($pro_qty == 0){
-                $this->msgReturn(0,'采购数量不能为0');
-            }
-        }
-        $M->type = 'purchase';
-        $M->code = get_sn('purchase');
-        $M->price_total = 0;
-        $M->qty_total = 0;
-        $M->cat_total = 0;
-        $M->invoice_status = '0';
-        $M->picking_status = '0';
-    }
+	protected function before_add(&$M) {
+		$pros = I('pros');
 
-    protected function before_save(&$M){
-        $M->status = '11';
+		//检查采购记录数
+		if(count($pros['pro_code']) == 1){
+			$this->msgReturn(0,'请至少采购一个产品');
+		}
+		//检查采购数量
+		foreach($pros['pro_qty'] as $pro_qty){
+			if($pro_qty == 0){
+				$this->msgReturn(0,'采购数量不能为0');
+			}
+		}
+		//检查是否有重复的sku
+		foreach($pros['pro_code'] as $pro_code){
+			$pros_count[$pro_code] += 1;
+			if($pros_count[$pro_code] > 1){
+				$this->msgReturn(0,'不能输入两个重复的sku：'.$pro_code);
+			}
+		}
+		$M->type = 'purchase';
+		$M->code = get_sn('purchase');
+		$M->price_total = 0;
+		$M->qty_total = 0;
+		$M->cat_total = 0;
+		$M->invoice_status = '0';
+		$M->picking_status = '0';
+	}
 
-        if(ACTION_NAME == 'edit'){
-            $pros = I('pros');
-            //检查采购记录数
-            if(count($pros['pro_code']) == 1){
-                $this->msgReturn(0,'请至少采购一个产品');
-            }
-            //检查采购数量
-            foreach($pros['pro_qty'] as $pro_qty){
-                if($pro_qty == 0){
-                    $this->msgReturn(0,'采购数量不能为0');
-                }
-            }
-        }
-    }
+	protected function before_save(&$M){
+		$M->status = '11';
 
-    protected function after_save($pid){
-        $pros = I('pros');
-        
-        $n = count($pros['pro_code']);
-        if($n <2) {
-            $this->msgReturn(1,'','',U('view','id='.$pid));
-        }
-        //验证小数点 liuguangping
-        for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
-            $mes = '';
-            $pro_code = $pros['pro_code'][$j];
-            if(empty($pro_code)) {
-                $mes = '第' . $j . '产品不能为空！';
-                continue;
-            }
-            if (strlen(formatMoney($pros['pro_qty'][$j], 2, 1))>2) {
-                $mes = $pro_code . '采购数量只能精确到两位小数点';
-                $this->msgReturn(0,$mes);
-            }
+		if(ACTION_NAME == 'edit'){
+			$pros = I('pros');
+			//检查采购记录数
+			if(count($pros['pro_code']) == 1){
+				$this->msgReturn(0,'请至少采购一个产品');
+			}
+			//检查采购数量
+			foreach($pros['pro_qty'] as $pro_qty){
+				if($pro_qty == 0){
+					$this->msgReturn(0,'采购数量不能为0');
+				}
+			}
+		}
+	}
 
-            if (strlen(formatMoney($pros['price_unit'][$j], 2, 1))>2) {
-                $mes = $pro_code . '采购单价只能精确到两位小数点';
-                $this->msgReturn(0,$mes);
-            }
-        }
+	protected function after_save($pid){
+		$pros = I('pros');
+		
+		$n = count($pros['pro_code']);
+		if($n <2) {
+			$this->msgReturn(1,'','',U('view','id='.$pid));
+		}
+		//验证小数点 liuguangping
+		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
+			$mes = '';
+			$pro_code = $pros['pro_code'][$j];
+			if(empty($pro_code)) {
+				$mes = '第' . $j . '产品不能为空！';
+				continue;
+			}
+			if (strlen(formatMoney($pros['pro_qty'][$j], 2, 1))>2) {
+				$mes = $pro_code . '采购数量只能精确到两位小数点';
+				$this->msgReturn(0,$mes);
+			}
 
-        //如果编辑时删除
-        if (ACTION_NAME == 'edit') {
-            $pid = I('id');
-            //如果是edit 根据pid 删除所有相关的puchase_detail记录
-            $map['pid'] = $pid;
-            M('stock_purchase_detail')->where($map)->delete();
-            unset($map);
-        }
+			if (strlen(formatMoney($pros['price_unit'][$j], 2, 1))>2) {
+				$mes = $pro_code . '采购单价只能精确到两位小数点';
+				$this->msgReturn(0,$mes);
+			}
+		}
 
-        $M = D('PurchaseDetail');
-        for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
-            $row['pid'] = $pid ;
-            $row['pro_code'] = $pros['pro_code'][$j];
-            if(empty($row['pro_code'])) {
-                continue;
-            }
-            $row['pro_name'] = $pros['pro_name'][$j];
-            $row['pro_attrs'] = $pros['pro_attrs'][$j];
-            $row['pro_qty'] = formatMoney($pros['pro_qty'][$j],2);
-            $row['pro_uom'] = $pros['pro_uom'][$j];
-            $row['price_unit'] = formatMoney($pros['price_unit'][$j],2);
-            $row['price_subtotal'] = formatMoney((intval($row['price_unit'] * 100 * $row['pro_qty'] )/ 100),2);
-            $data = $M->create($row);
-            //if(!empty($pros['id'][$j])) {
-                //$map['id'] = $pros['id'][$j];
-                //$res = $M->where($map)->save($data);
-            //}
-            //else {
-            $res = $M->add($data);
-            //}
-            if($res==false){
-                dump($pros);
-                dump($M->getError());
-                dump($M->_sql());
-                exit();
-            }
-        }
-        unset($map);
-        $field="count(*) as cat_total,sum(pro_qty) as qty_total,sum(price_subtotal) as price_total";
-        $map['pid'] = $pid;
-        $data = $M->field($field)->where($map)->group('pid')->find();
-        unset($map);
-        $where['id'] = $pid;
-        $M = D(CONTROLLER_NAME);
-        $M->where($where)->save($data);
-        unset($data);
+		//如果编辑时删除
+		if (ACTION_NAME == 'edit') {
+			$pid = I('id');
+			//如果是edit 根据pid 删除所有相关的puchase_detail记录
+			$map['pid'] = $pid;
+			M('stock_purchase_detail')->where($map)->delete();
+			unset($map);
+		}
 
-        $this->msgReturn(1,'','',U('view','id='.$pid));
-    }
-    protected function before_edit() {
-        $M = D('Purchase');
-        $id = I($M->getPk());
-        $map['pid'] = $id;
-        $pros = M('stock_purchase_detail')->where($map)->order('id desc')->select();
-        foreach ($pros as $key => $val) {
-            $pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
-        }
-        $this->pros = $pros;
+		$M = D('PurchaseDetail');
+		for ($i = $n-1,$j=$i;$i>0;$i--,$j--) {
+			$row['pid'] = $pid ;
+			$row['pro_code'] = $pros['pro_code'][$j];
+			if(empty($row['pro_code'])) {
+				continue;
+			}
+			$row['pro_name'] = $pros['pro_name'][$j];
+			$row['pro_attrs'] = $pros['pro_attrs'][$j];
+			$row['pro_qty'] = formatMoney($pros['pro_qty'][$j],2);
+			$row['pro_uom'] = $pros['pro_uom'][$j];
+			$row['price_unit'] = formatMoney($pros['price_unit'][$j],2);
+			$row['price_subtotal'] = formatMoney((intval($row['price_unit'] * 100 * $row['pro_qty'] )/ 100),2);
+			$data = $M->create($row);
+			//if(!empty($pros['id'][$j])) {
+				//$map['id'] = $pros['id'][$j];
+				//$res = $M->where($map)->save($data);
+			//}
+			//else {
+			$res = $M->add($data);
+			//}
+			if($res==false){
+				dump($pros);
+				dump($M->getError());
+				dump($M->_sql());
+				exit();
+			}
+		}
+		unset($map);
+		$field="count(*) as cat_total,sum(pro_qty) as qty_total,sum(price_subtotal) as price_total";
+		$map['pid'] = $pid;
+		$data = $M->field($field)->where($map)->group('pid')->find();
+		unset($map);
+		$where['id'] = $pid;
+		$M = D(CONTROLLER_NAME);
+		$M->where($where)->save($data);
+		unset($data);
 
-        //查找采购单是否有商品已经上架 liuguangping 20150709
-        $p_code = $M->where(array('id'=>$id))->getField('code');
-        //查找采购单和批次是否有东西上架
-        $where                   = array();
-        $where['status']      = '33';//上架
-        $where['is_deleted'] = 0;
-        $where['type']         = 1;//采购到货单
-        $where['refer_code'] = $p_code;
-        $purchase_in_code    = M('stock_bill_in')->where($where)->getField('code');
-        //有上架才能退货
-        if($purchase_in_code){
-            $this->purchase_in_code = TRUE;
-        }
+		$this->msgReturn(1,'','',U('view','id='.$pid));
+	}
+	protected function before_edit() {
+		$M = D('Purchase');
+		$id = I($M->getPk());
+		$map['pid'] = $id;
+		$pros = M('stock_purchase_detail')->where($map)->order('id desc')->select();
+		foreach ($pros as $key => $val) {
+			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
+		}
+		$this->pros = $pros;
+
+		//查找采购单是否有商品已经上架 liuguangping 20150709
+		$p_code = $M->where(array('id'=>$id))->getField('code');
+		//查找采购单和批次是否有东西上架
+		$where 			 	 = array();
+		$where['status'] 	 = '33';//上架
+		$where['is_deleted'] = 0;
+		$where['type']		 = 1;//采购到货单
+		$where['refer_code'] = $p_code;
+		$purchase_in_code    = M('stock_bill_in')->where($where)->getField('code');
+		//有上架才能退货
+		if($purchase_in_code){
+			$this->purchase_in_code = TRUE;
+		}
 
 
-        //view上方按钮显示权限
-        $this->toolbar_tr =array(
-            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
+		//view上方按钮显示权限
+		$this->toolbar_tr =array(
+			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
             'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"0,11,04,14"),
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"0,11"),
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
