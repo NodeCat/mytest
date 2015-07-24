@@ -164,6 +164,13 @@ class PurchaseController extends CommonController {
 				$this->msgReturn(0,'采购数量不能为0');
 			}
 		}
+		//检查是否有重复的sku
+		foreach($pros['pro_code'] as $pro_code){
+			$pros_count[$pro_code] += 1;
+			if($pros_count[$pro_code] > 1){
+				$this->msgReturn(0,'不能输入两个重复的sku：'.$pro_code);
+			}
+		}
 		$M->type = 'purchase';
 		$M->code = get_sn('purchase');
 		$M->price_total = 0;

@@ -189,7 +189,7 @@ class StockOutLogic{
         if(!$idsArr) return '';
         foreach($idsArr as $key=>$value){
             $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value, $loc_type, $batch_code);
-            if($is_enough){ 
+            if($is_enough['status'] == 1){ 
                 array_push($result['tureResult'], $value);
             }else{
                 $tablename = 'stock_bill_out';
