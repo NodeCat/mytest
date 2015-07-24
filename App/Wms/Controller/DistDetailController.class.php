@@ -70,6 +70,9 @@ class DistDetailController extends CommonController {
         $D = D('Distribution', 'Logic');
         $line = $D->format_line(-1, session('user.wh_id'));
         $this->query['line']['value'] = $line;
+        
+        $this->query['type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
+        
     }
     //显示数据列表
     protected function lists($template='') {

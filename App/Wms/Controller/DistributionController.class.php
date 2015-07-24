@@ -97,7 +97,6 @@ class DistributionController extends CommonController {
         	         array('name'=>'add', 'show' => trueisset($auth['view']),'new'=>'true', 'link' => 'DistDetail/index'),
         );*/
         $this->query['stock_wave_distribution.order_type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
-        dump($this->query);exit;
     }
     
     public function index() {

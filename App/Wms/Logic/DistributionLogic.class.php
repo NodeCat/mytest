@@ -724,6 +724,7 @@ class DistributionLogic {
         
         $url = $this->server;
         $result = $this->request->post($url);
+        $result = json_decode($result, true);
         if ($result['status'] == 0) {
             foreach ($result['res'] as $value) {
                 $return[$value['code']] = $value['msg'];
