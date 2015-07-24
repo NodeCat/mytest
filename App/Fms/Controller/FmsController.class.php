@@ -364,7 +364,7 @@ class FmsController extends \Common\Controller\AuthController{
         $map['id'] = $id;
         $map['is_deleted'] = 0;
         $m = M('stock_bill_out');
-        $bill_out = $m->where($map)->select();
+        $bill_out = $m->where($map)->find();
         if (!empty($bill_out)) {
             unset($map);
             //查询条件为出库单id
