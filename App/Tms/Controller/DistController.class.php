@@ -534,26 +534,35 @@ class DistController extends Controller {
         $unsign_orders  = 0;  //拒收单统计
         $delivering     = 0;  //派送中订单数统计
         $sign_finished  = 0;  //已完成订单数统计
-        $sum_deal_price  = 0;   //回款数
+        $sum_deal_price  = 0.0;   //回款数
         $arrays=array();    //回仓列表的数组
+        
+        $dist_logic = A('Tms/Dist','Logic');
+        //获得配送单列表
         unset($map);
         $map['id'] = $res['dist_id'];
-        $map['is_deleted'] = 0;
-        $distribution = M('stock_wave_distribution')->where($map)->select();
-        if(empty($distribution)) {
+        $dist_info = $dist_logic->distInfo($map);
+        if(empty($dist_info)) {
             $this->error('没有找到该配送单');exit;
         }
-        unset($map);
-        //查询条件为配送单id
-        $map['pid'] = $res['dist_id'];
-        $map['is_deleted'] = 0;
-        //根据配送单id查询配送单详情
-        $sign_data = M('stock_wave_distribution_detail')->where($map)->select();
+        
+        //获得所有出库单id 
+        $bill_out_ids = array_column($dist_info['detail'],'bill_out_id');
+        $bill_outs = array();
+        //查出所有配送单信息
+        foreach ($bill_out_ids as $value) {
+            //根据出库单id查出出库单信息
+            $bill_out = $dist_logic->bill_out_Info($value);
+            if(!empty($bill_out)){
+                $bill_outs[] = $bill_out;
+            }
+        }
+        //echo "$bill_outs:";dump($bill_outs);
+        $sign_data = $dist_info['detail']; 
         //若查出的签收信息非空
         if (!empty($sign_data)) { 
             //总订单数
             $all_orders = count($sign_data);
-            $dist_logic = A('Tms/Dist','Logic');
             for ($n = 0; $n < count($sign_data); $n++) {
                 unset($map);
                 $map['pid'] = $sign_data[$n]['id'];
@@ -563,48 +572,49 @@ class DistController extends Controller {
                 switch ($sign_data[$n]['status']) {
                     case '2':
                         $sign_orders++; //已签收订单数加1
-                        
-                            for ($i = 0; $i < count($sign_in_detail); $i++) {
-                                if ($sign_in_detail[$i]['pid'] == $sign_data[$n]['id']) {
-                                    unset($map);
-                                    $map['id'] =  $sign_in_detail[$i]['bill_out_detail_id'];
-                                    $map['is_deleted'] = 0;
-                                    //配送数量
-                                    $delivery = M('stock_bill_out_detail')->where($map)->select();
-                                    foreach ($delivery as $value) {
-                                        $delivery_qty = $value['delivery_qty']; 
-                                        $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
-                                        $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
-                                        $quantity = $delivery_qty - $sign_qty; //回仓数量
-                                        if($quantity > 0){
-                                            $key  = $value['pro_code'];    //sku号
-                                            $arrays[$key]['quantity'] +=  $quantity; //回仓数量
-                                            $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
-                                            $arrays[$key]['unit_id'] = $unit;   //单位
-                                        }
-                                        if ($sign_data[$n]['pay_status'] != 1) {
-                                            $sum_deal_price += $sign_qty * $sign_in_detail[$i]['price_unit'];  //回款
+                        for ($i = 0; $i < count($sign_in_detail); $i++) {
+                            if ($sign_in_detail[$i]['pid'] == $sign_data[$n]['id']) {
+                                $sign_qty = $sign_in_detail[$i]['real_sign_qty']; //签收数量
+                                $unit = $sign_in_detail[$i]['measure_unit']; //计量单位
+                                //找到配送数量
+                                foreach ($bill_outs as $value) {
+                                    if ($value['id'] == $sign_data[$n]['bill_out_id']) {
+                                        foreach ($value['detail'] as $val) {
+                                            if ($val['id'] == $sign_in_detail[$i]['bill_out_detail_id']) {
+                                                $delivery_qty = $val['delivery_qty']; //配送数量
+                                                $quantity = $delivery_qty - $sign_qty; //回仓数量
+                                                if($quantity > 0){
+                                                    $key  = $val['pro_code'];    //sku号
+                                                    $arrays[$key]['quantity'] +=  $quantity; //回仓数量
+                                                    $arrays[$key]['name'] =  $val['pro_name'];   //sku名称
+                                                    $arrays[$key]['unit_id'] = $unit;   //单位
+                                                }
+                                                if ($sign_data[$n]['pay_status'] != 1) {
+                                                    $sum_deal_price += f_mul($sign_qty, $sign_in_detail[$i]['price_unit']);  //回款
+                                                }
+                                            }
+                                            
                                         }
                                     }
-                                }
-                            } 
+                                }  
+                            }
+                        } 
                         
                         $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);  
                         break;
 
                     case '3':
                         $unsign_orders++;   //已拒收订单数加1
-                        unset($map);
-                        $map['pid'] =  $sign_data[$n]['bill_out_id'];
-                        $map['is_deleted'] = 0;
-                        //配送数量
-                        $delivery = M('stock_bill_out_detail')->where($map)->select();
-                        foreach ($delivery as $value) {
-                            $key  = $value['pro_code'];    //sku号
-                            $arrays[$key]['quantity'] += $value['delivery_qty']; //回仓数量
-                            $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
-                            $arrays[$key]['unit_id'] = $value['measure_unit'];   //单位
-                        } 
+                        foreach ($bill_outs as $value) {
+                            if ($value['id'] == $sign_data[$n]['bill_out_id']) {
+                                foreach ($value['detail'] as $val) {
+                                    $key  = $val['pro_code'];    //sku号
+                                    $arrays[$key]['quantity'] +=  $val['delivery_qty']; //回仓数量
+                                    $arrays[$key]['name'] =  $val['pro_name'];   //sku名称
+                                    $arrays[$key]['unit_id'] = $val['measure_unit'];   //单位    
+                                }
+                            }
+                        }  
                         break;
 
                     case '4':
