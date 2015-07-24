@@ -110,7 +110,7 @@
 		//在地图上标记点
 		(function addMarker(){
 			<volist name='address' id='addr'>
-				marker{$i} = new AMap.Marker({	
+				marker{$i} = new AMap.Marker({
 				//icon:"http://webapi.amap.com/images/marker_sprite.png",
 				//icon:"http://webapi.amap.com/images/custom_a_j.png",
 				position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
