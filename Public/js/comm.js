@@ -132,6 +132,30 @@ $(function () {
 		$(this).val($(this).attr('value'));
 	});
 
+	$('.a-ajax').on('click',function(){
+		var addr,params;
+		addr=$(this).data('href');
+		$.ajax({
+			url:addr,
+			type:'get',
+			cache : false,
+			async:true,
+			dataType:'json',
+			data:params,
+			success: function(msg){
+				alert(msg.msg);
+				if(msg.url != '' && msg.url != null ){
+		          setTimeout(function() {document.location=msg.url}, 0);
+		        }
+		        if(msg.data != '' && msg.data != null ){
+		            $('.content').html(msg.data);
+		        }
+			}
+		}); 
+		return false;
+	});
+
+
 init();
 
 $('.modal').on('shown.bs.modal', function (e) {

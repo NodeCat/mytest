@@ -28,10 +28,10 @@
       
       <case value="2" break="0"></case>
       <case value="3" break="1">
-        <a href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 一键收款</a>
+        <a data-href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="a-ajax btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 一键收款</a>
       </case>
       <case value="4" break="1">
-                <a href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 收款</a>
+                <a data-href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="a-ajax btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 收款</a>
       </case>
       <case value="5" break="1"></case>
       <default />
@@ -138,7 +138,7 @@
         </label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
           <label class="control-label label-field">
-            {$data['billing_info']['expire_time']}
+            {$data['billing_info']['pay_date']}
           </label>
         </div>
       </div>

@@ -9,15 +9,21 @@ class BillController extends \Wms\Controller\CommonController
 	protected $columns = array (
 		
 		'billing_num' => '账单号',
-		'expire_time' => '结账截至日期',
-		'theory_start' => '账单起始时间（包括）',
-		'theory_end' => '账单结束日期（不包括该值）',
+		'theory_start' => '帐期',
+        'billing_cycle' => '帐期长度',
+        'pay_date' => '结算日期',
+        'expire_status' => '逾期',
 		'shop_name' => '店铺名称',
 		'mobile' => '店铺手机号',
 		'bd_name' => 'bd 名称',
 		'bd_mobile' => 'bd 手机号',
-		'expire_status' => '逾期未付标记位',
 		'status' => '账单状态'
+    );
+    protected $filter = array (
+        'expire_status' => array(
+            '0' => '',
+            '1' => '逾期未付'
+        )
     );
     
 
@@ -159,7 +165,6 @@ class BillController extends \Wms\Controller\CommonController
     	$A = A('Common/Order', 'Logic');
     	$map['id'] = I('id');
     	$data = $A->billDetail($map);
-        $data['billing_info']['status_code']= '4';
         $data['state'] = $data['billing_info']['status_code'];
     	$this->data = $data;
     	$remarks = $A->billRemarkList($map);
@@ -193,9 +198,13 @@ class BillController extends \Wms\Controller\CommonController
         } else {
             $map['payment'] = '0';
         }
+
         $res = $A->billPay($map);
-        dump($res); exit();
-        $this->redirect('view',array('id'=>$map['id']));
+
+        $url = $res['status'] == '0' ? U('view',array('id'=>$map['id'])) : '';
+        $status = $res['status'] == '0' ? 1 : 0;
+
+        $this->msgReturn($status, $res['msg'].$res['status'], '', $url);
     }
 
     public function remark()
@@ -246,6 +255,9 @@ class BillController extends \Wms\Controller\CommonController
         $A = A('Common/Order', 'Logic');
         
         $data = $A->billList($map);
+        foreach ($data['list'] as &$val) {
+            $val['theory_start'] = $val['theory_start'] . ' - ' . $val['theory_end'];
+        }
         $this->pk = 'id';
         $this->assign('data', $data['list']); 
         $maps = $this->condition;

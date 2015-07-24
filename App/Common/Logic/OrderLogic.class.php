@@ -3,6 +3,7 @@ namespace Common\Logic;
 
 class OrderLogic{
 	protected $server = '';
+	public $debug = false;
 	protected $request ;
     public function __construct(){
     	$this->server = C('HOP_API_PATH');
@@ -157,7 +158,7 @@ class OrderLogic{
 	    $url = '/suborder/lists';
 	    $map = array('order_ids' => $ids, 'itemsPerPage' => count($ids));
 	    $res = $this->get($url,$map);
-	     
+
 	    if ($res['status'] == 0) {
 	        $return['status'] = true;
 	        $return['msg'] = '成功';
@@ -172,6 +173,9 @@ class OrderLogic{
 		$url = $this->server . $url;
 		$map = json_encode($map);
 		$res = $this->request->post($url,$map);
+		if($this->debug) {
+			dump($res);
+		}
 		$res = json_decode($res,true);
 
 		return $res;
