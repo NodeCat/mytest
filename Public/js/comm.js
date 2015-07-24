@@ -9,6 +9,7 @@ $(function () {
 	$('body').popover({
 	    selector: '[rel="popover"]'
 	});
+	$('[data-toggle="popover"]').popover()
     $(document).ajaxStart(function() {
 	  loading();
 	});
@@ -386,12 +387,19 @@ function init(){
 	    if(href==null || href == '') {
 	    	href = $(this).attr('href');
 	    }
-	    if(target ==null)return;
-	    $(target+ " .modal-body").load(href, function(response,status,xhr) { 
-	    	if (status == "success") {
-		        $(target).modal("show");
-		    }
-	    });
+	    if(target ==null){
+	    	$(target+ " .modal-body").load(href, function(response,status,xhr) { 
+		    	if (status == "success") {
+			        $(target).modal("show");
+			    }
+	    	});
+	    } else {
+	    	var content = $(this).data("content");
+	    	$(target+ " .modal-body").html($(content));
+	    	$(content).removeClass('hidden');
+	    	$(target).modal("show");
+	    }
+	    
 	    return false;
 	});
 
