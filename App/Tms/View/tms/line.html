@@ -108,6 +108,19 @@
 
     //在地图上标记点
     (function addMarker(){
+      //商家标记
+      <volist name='address' id='addr'>
+        marker{$i} = new AMap.Marker({
+        <if condition="$addr['color_type'] eq 3">
+        icon:"__PUBLIC__/img/over.png",
+        </if>
+        //icon:"http://webapi.amap.com/images/custom_a_j.png",
+        position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
+      });
+      marker{$i}.setMap(map);
+      marker{$i}.setTitle("{$addr['address']}");
+      </volist>
+      <if condition="$points neq NULL">
       //起点
       marker_start = new AMap.Marker({
         icon: new AMap.Icon({    
@@ -139,18 +152,7 @@
       });
       marker_end.setMap(map);
       marker_end.setTitle("结束时间:{$end['time']}");
-      //商家标记
-      <volist name='address' id='addr'>
-        marker{$i} = new AMap.Marker({
-        <if condition="$addr['color_type'] eq 3">
-        icon:"__PUBLIC__/img/over.png",
-        </if>
-        //icon:"http://webapi.amap.com/images/custom_a_j.png",
-        position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
-      });
-      marker{$i}.setMap(map);
-      marker{$i}.setTitle("{$addr['address']}");
-      </volist>
+      </if>
     })();
     // 测距
     map.plugin(["AMap.RangingTool"],function(){ 
