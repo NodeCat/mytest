@@ -576,7 +576,7 @@ class DistController extends Controller {
                                         $quantity = $delivery_qty - $sign_qty; //回仓数量
                                         if($quantity > 0){
                                             $key  = $value['pro_code'];    //sku号
-                                            $arrays[$key]['quantity'] =  $quantity; //回仓数量
+                                            $arrays[$key]['quantity'] +=  $quantity; //回仓数量
                                             $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                             $arrays[$key]['unit_id'] = $unit;   //单位
                                         }
@@ -598,7 +598,7 @@ class DistController extends Controller {
                         $delivery = M('stock_bill_out_detail')->where($map)->select();
                         foreach ($delivery as $value) {
                             $key  = $value['pro_code'];    //sku号
-                            $arrays[$key]['quantity'] = $value['delivery_qty']; //回仓数量
+                            $arrays[$key]['quantity'] += $value['delivery_qty']; //回仓数量
                             $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                             $arrays[$key]['unit_id'] = $value['measure_unit'];   //单位
                         } 
