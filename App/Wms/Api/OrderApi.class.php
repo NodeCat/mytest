@@ -77,8 +77,7 @@ class OrderApi extends CommApi{
         }
         
         $return = array('error_code' => '0', 'error_message' => 'succ' );
-        return true;
-        //$this->ajaxReturn($return);
+        $this->ajaxReturn($return);
     }
 
     //取消订单
