@@ -184,4 +184,25 @@ class SkuInfoLogic
         }*/
         return $return;
     }
+    
+    public function getTmsInfo($stime = 0, $etime = 0, $warehouseId = 0) {
+        $return = array();
+        
+        if (empty($stime) || empty($etime) || empty($warehouseId)) {
+            return $return;
+        }
+        $param = array(
+        	    'start_time'   => $stime,
+            'end_time'     => $etime,
+            'warehouse_id' => $warehouseId
+        );
+        $result = A('Tms/SignIn', 'Logic');
+        if ($result['status'] == 0) {
+            return $return;
+        }
+        if ($result['status'] == 1) {
+            $return = $result['list'];
+        }
+        return $return;
+    }
 }

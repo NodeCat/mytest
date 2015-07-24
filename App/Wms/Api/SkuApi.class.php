@@ -21,6 +21,9 @@ class SkuApi extends CommApi
      */
     public function skuStatistics()
     {
+        $SkuInfo       = A('SkuInfo', 'Logic');
+        $tmsInfo = $SkuInfo->getTmsInfo($condition['sitme'], $condition['etime'], $condition['warehouse_id']);
+        dump($tmsInfo);exit;
         $returnSucess = array('status' => 0, 'list' => array(), 'total' => array());
         $returnError  = array('code' => -1, 'msg' => 'Failed to get the data');
         
