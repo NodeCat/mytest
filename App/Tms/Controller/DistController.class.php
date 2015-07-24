@@ -539,24 +539,25 @@ class DistController extends Controller {
         unset($map);
         $map['id'] = $res['dist_id'];
         $map['is_deleted'] = 0;
-        //总订单数
-        $order_count = M('stock_wave_distribution')->field('order_count')->where($map)->find();
-        if(empty($order_count)) {
-            $this->error('没有找到该配送单');
+        $distribution = M('stock_wave_distribution')->where($map)->select();
+        if(empty($distribution)) {
+            $this->error('没有找到该配送单');exit;
         }
-        $all_orders = $order_count['order_count'];
         unset($map);
         //查询条件为配送单id
         $map['pid'] = $res['dist_id'];
         $map['is_deleted'] = 0;
-        //根据配送单id查询签收表
+        //根据配送单id查询配送单详情
         $sign_data = M('stock_wave_distribution_detail')->where($map)->select();
         //若查出的签收信息非空
         if (!empty($sign_data)) { 
+            //总订单数
+            $all_orders = count($sign_data);
             $dist_logic = A('Tms/Dist','Logic');
             for ($n = 0; $n < count($sign_data); $n++) {
                 unset($map);
                 $map['pid'] = $sign_data[$n]['id'];
+                $map['is_deleted'] = 0;
                 //根据配送单详情id查询出所有订单的签收详情信息
                 $sign_in_detail = M('tms_sign_in_detail')->where($map)->select();  
                 switch ($sign_data[$n]['status']) {
@@ -567,6 +568,7 @@ class DistController extends Controller {
                                 if ($sign_in_detail[$i]['pid'] == $sign_data[$n]['id']) {
                                     unset($map);
                                     $map['id'] =  $sign_in_detail[$i]['bill_out_detail_id'];
+                                    $map['is_deleted'] = 0;
                                     //配送数量
                                     $delivery = M('stock_bill_out_detail')->where($map)->select();
                                     foreach ($delivery as $value) {
@@ -594,6 +596,7 @@ class DistController extends Controller {
                         $unsign_orders++;   //已拒收订单数加1
                         unset($map);
                         $map['pid'] =  $sign_data[$n]['bill_out_id'];
+                        $map['is_deleted'] = 0;
                         //配送数量
                         $delivery = M('stock_bill_out_detail')->where($map)->select();
                         foreach ($delivery as $value) {
