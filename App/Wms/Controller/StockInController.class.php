@@ -324,8 +324,9 @@ class StockInController extends CommonController {
 						$map['code'] = $res['refer_code'];
 						$purchase_info = M('stock_purchase')->where($map)->find();
 
-						if($purchase_info['invoice_method'] == 1 && )
-						var_dump($purchase_info);exit;
+						if($purchase_info['invoice_method'] == 1 && floatval($purchase_info['paid_amount']) > 0){
+							$this->msgReturn(0,'采购单已结算，无法收货');
+						}
 					}
 					
 					if($res['status'] =='21' || $res['status'] =='22' || $res['status'] == '31' || $res['status'] =='32' || $res['status'] =='33') {
