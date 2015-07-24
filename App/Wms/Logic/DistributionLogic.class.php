@@ -571,6 +571,78 @@ class DistributionLogic {
     }
     
     /**
+     * 根据出库单ID 更新出库单备注及拒绝标示 波次号 
+     * @param array $ids 出库单id数组
+     * @param array $data 更新数据
+     */
+    public function updateStockInfoByIds($ids = array(), $wareId = 0) {
+        $return = false;
+        
+        if (empty($ids) || empty($wareId)) {
+            return $return;
+        }
+        $stockBillOutInfo = M('stock_bill_out')->where(array('id' => array('in', $ids)))->select();
+        $formatData = array();
+        foreach ($stockBillOutInfo as $value) {
+            $formatData[$value['id']] = $value;
+        }
+        foreach ($ids as $val) {
+            $remarks = $formatData[$val]['notes'];
+            $pos = strpos($remarks, '@@@@');
+            if ($pos !== false) {
+                if ($pos == 0) {
+                    $remarks = '';
+                } elseif ($pos > 0) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
+            }
+            $data['refused_type'] = 1;
+            $data['wave_id'] = $waveId;
+            $data['status'] = 3; //波次中
+            $data['notes'] = $remarks;
+            $affected = M('stock_bill_out')->where(array('id' => $val))->save($data);
+            if (!$affected) {
+                return $return;
+            }
+        }
+        
+        $return = true;
+        return $return;
+    }
+    /**
+     * 根据出库单ID检查缺货SKU货号 并更新出库单备注及拒绝标示
+     * @param array $ids 出库单id数组
+     * @param return
+     */
+    public function getReduceSkuCodesAndUpdate($ids = array()) {
+        $return = false;
+        
+        if (empty($ids)) {
+            return $return;
+        }
+        foreach ($ids as $value) {
+            $stockBillOutInfo = M('stock_bill_out')->where(array('id' => $value))->find();
+            $result = A('Stock', 'Logic')->checkStockIsEnoughByOrderId($value);
+            if ($result['status'] == 0) {
+                $remarks = $stockBillOutInfo['notes'];
+                $pos = strpos($remarks, '@@@@');
+                if ($pos != false) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
+                $data['notes'] = $remarks . '@@@@缺货SKU货号:' . implode(',', $result['data']['not_enough_pro_code']);
+                $data['refused_type'] = 2; //缺货
+                $map['id'] = $value;
+                $affected = M('stock_bill_out')->where($map)->save($data);
+                if (!$affected) {
+                    return $return;
+                }
+            }
+        }
+        $return = true;
+        return $return;
+    }
+    
+    /**
      * 获取出库但类型
      * @param int $id 类型ID
      */
