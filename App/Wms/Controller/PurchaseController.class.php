@@ -699,7 +699,6 @@ class PurchaseController extends CommonController {
     		$parma['pro_code']   = $vo['pro_code'];
     		$parma['wh_id']      = $wh_id;
     		$parma['batch_code'] = $vo['batch_code'];
-    		$parma['pro_code']   = $vo['pro_code'];
     		if($flg == 'success'){
             	$parma['stock_status'] = 'qualified';
         	}elseif($flg == 'error'){

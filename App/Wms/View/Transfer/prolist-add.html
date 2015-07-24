@@ -9,46 +9,39 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-bordere table-striped table-condensed table-hover" style="">
   		<thead>
-  			<th>产品名称</th>
-  			<th>计划加工量</th>
-  			<th>操作</th>
+  			<th>产品信息</th><th>计划调拨数量</th><th>操作</th>
   		</thead>
   		<tbody>
-        <tr class="hidden tr-tpl">
-        <td style="width:50%;">
-	        <input type="hidden" value="" name="pros[0][pro_code]" class="pro_code form-control input-sm" >
-	        <input type="hidden" value="" name="pros[0][pro_name]" class="pro_name form-control input-sm" >
-	        <input type="hidden" value="" name="pros[0][pro_attrs]" class="pro_attrs form-control input-sm" >
-	        <input type="text" id="typeahead" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" >
-	    </td>
-        <td  style="width:10%;">
-            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1.00" class="form-control input-sm text-left pro_qty" autocomplete="off">
-        </td>
+      <tr class="hidden tr-tpl">
+      <td style="width:50%;">
+      <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" >
+      <input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" >
+      <input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+      <input type="hidden" value="" name="pros[pro_uom][]" class="pro_uom form-control input-sm" >
+      <input type="text" placeholder="产品信息" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
+
+
+      <td  style="width:10%;">
+          <input type="text" sc="pro_qty" name="pros[pro_qty][]" placeholder="计划调拨量"  value="1.00"  autocomplete="off">
+      </td>
+
         <td style="width:10%;" class="text-center">
-            <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+          <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
         </td>
+
       </tr>
   			<tr>
-  				<td colspan="6"><a class="add-pro" href="#">添加一个产品</a></td>
+  				<td colspan="6"><a class="add-pro" href="javascript:void(0);">添加一个产品</a></td>
   			</tr>
   		</tbody>
   		</table>
     </div>
   </div>
+
+
 </div>
 
-  </div><!-- 
-	<div class="">
-	  <textarea name="pro_infos" id="pro_infos" class="form-control" rows="5" placeholder="批量添加，请从excel中直接粘贴，数据格式：货品号 采购数量 采购单价 中间请用tab分割，每行请回车"></textarea>
-	  </br>
-	  <a id="preview" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon"></span>批量添加预览</a>
-	</div>-->
-  <div class="row">
-    <div class="tab-content">
-      <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
-    </div>
   </div>
-
 </div>
 <style type="text/css">
 #table-pro input[type=text]{
@@ -61,10 +54,15 @@
 
 $(function(){
 
+$('#table-pro').delegate('.p_qty,.p_price','input',function(){
+    var qty = $(this).parents('tr').find('.p_qty').val();
+    var price = $(this).parents('tr').find('.p_price').val();
+    var price_total = accMul(qty,price);
+    $(this).parents('tr').find('.p_res').text(price_total); 
+});
+
 typehead();
-var i = 0;
 $('.add-pro').on('click',function(){
-	i++;
     var val = $('.tr-cur .pro_code').val();
     if(val == '' && val != null) {
       $('.tr-cur .pro_names').focus();
@@ -76,17 +74,12 @@ $('.add-pro').on('click',function(){
     tr.removeClass('tr-tpl');
     tr.addClass('tr-cur');
     tr.removeClass('hidden');
-    $('#table-pro tr:eq(2)').after(tr);
+    $('#table-pro tr:last').before(tr);
+    //$('#table-pro tbody').append(tr);
     typehead();
     $('#table-pro tr.tr-cur .pro_names').focus();
-    $('#table-pro tr:eq(3)').find('input:not(#typeahead)').each(function() {
-    		var old_name = $(this).attr('name');
-    		var new_name = old_name.replace('0', i);
-    		$(this).attr('name', new_name);
-    });
-    $('#table-pro tr:eq(3)').find('select').attr('name', 'pros[' + i + '][pro_uom]');
+    
 });
-
 
 $('#table-pro').delegate('.pro_names','focus',function(){
   $('.tr-active').removeClass('tr-active');
@@ -97,19 +90,25 @@ $('#table-pro').delegate('input','click',function(){
   $(this).select();
 });
 
+//删除操作
+$('.tab-content').delegate( '.btn-delete', 'click', function(){
+  $(this).closest('tr').remove();
+});
+
 });
 
 function typehead() {
-$('.tr-cur .pro_names').typeahead({ 
+
+$('#table-pro .pro_names').typeahead({ 
     display: 'name',
     val: 'val',
     items:10,
     ajax: {
-      url:"{:U('Process/match_code')}",
+      url:"{:U('Transfer/match_code')}",
       triggerLength: 1,
       method: 'post',
       preDispatch: function(data) {
-          return { 'q': data };
+          return { 'q': data ,'wh_id_out': $("#wh_id_out").val() };
       },
       preProcess: function(data) {
         var n =$.parseJSON(data);
@@ -124,53 +123,24 @@ $('.tr-cur .pro_names').typeahead({
         $('#table-pro .tr-active .pro_code').val(val['code']);
         $('#table-pro .tr-active .pro_name').val(val['name']);
         $('#table-pro .tr-active .pro_attrs').val(val['attrs']);
+        $('#table-pro .tr-active .pro_uom').val(val['unit_name']);
         $('.tr-active').removeClass('tr-active');
     }
-  	});
-	//删除操作
-	$('.tab-content').delegate( '.btn-delete', 'click', function(){
-	  $(this).closest('tr').remove();
-	});
-	
-	 //预览
-	  $('#preview').on('click',function(){
-	    var _pro_infos = $('#pro_infos').val();
-	    var _url = '/Process/preview';
-	    //提交数据到后端处理
-	    $.ajax({
-	      url:_url,
-	      type:'post',
-	      cache : false,
-	      dataType:'json',
-	      data:'pro_infos='+_pro_infos,
-	      success: function(json){
-	        if(json.status == 1){
-	          $('#table-pro tr:last').before(json.data.html);
-	          typehead();
-	        }else{
-	          alert(json.msg);
-	        }
-	      }
-	    });
-	  });
-
+  });
 }
 
-/******liuguangping*******/
-var checkObj = {
-  chekInput:function(){
-    $(document).on('blur','#table-pro .tr-cur .pro_qty',function(){
-      var out_qty = parseFloat($(this).val());
-      var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
-      if (!reg.test(out_qty)){
-        alert('计划加工量只能精确到小数点两位');
-        $(this).val('1.00');
-      }
-      
-    });
+  $(document).on('blur','[sc = pro_qty]',function(){
+
+  var out_qty = parseFloat($(this).val());
+  if(out_qty == 0.00){
+    alert('计划调拨量不能为零');
   }
-};
-checkObj.chekInput();
+  var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+  if (!reg.test(out_qty)){
+    alert('计划调拨量只能精确到小数点两位');
+  }
+
+  });
 </script>
 
 <style type="text/css">

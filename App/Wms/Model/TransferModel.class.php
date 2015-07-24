@@ -2,15 +2,14 @@
 namespace Wms\Model;
 use Think\Model;
 class TransferModel extends Model {
-    protected $insertFields = array('id','wh_id','partner_id','status','out_remark','receivables_state','out_type','rtsg_code','refer_code','remark','created_user','created_time','is_deleted');
-    protected $updateFields = array('wh_id','partner_id','status','out_remark','receivables_state','out_type','rtsg_code','refer_code','remark','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','trf_code','wh_id_out','wh_id_in','plan_cat_total','plan_qty_tobal','status','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $updateFields = array('trf_code','wh_id_out','wh_id_in','plan_cat_total','plan_qty_tobal','status','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
-    public $tableName='stock_purchase_out';
+    public $tableName='erp_transfer';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
-        array('wh_id','require','目标仓库不能为空',1,'regex',3),
-        array('partner_id','require','所属系统不能为空',1,'regex',3),
-        array('rtsg_code','require','退货单号不能为空',1,'regex',3),
+        array('wh_id_out','require','出库仓库不能为空',1,'regex',3),
+        array('wh_id_in','require','入库仓库不能为空',1,'regex',3),
     );
     //array(填充字段,填充内容,[填充条件,附加规则])
     protected $_auto = array (
@@ -28,17 +27,16 @@ class TransferModel extends Model {
     
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('stock_purchase_out.is_deleted'=>'0'),
-            'order'=>'stock_purchase_out.id DESC',
-            "join"=>array("inner join warehouse on stock_purchase_out.wh_id=warehouse.id",
-                "inner join user u1 on stock_purchase_out.created_user = u1.id",
-                "inner join user u2 on stock_purchase_out.updated_user = u2.id",
-                "left join partner on stock_purchase_out.partner_id = partner.id"),
-            "field"=>"stock_purchase_out.*,stock_purchase_out.status as state,partner.name as partnername, warehouse.code as wh_code, warehouse.name as wh_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
+            'where'=>array('erp_transfer.is_deleted'=>'0'),
+            'order'=>'erp_transfer.id DESC',
+            "join"=>array("inner join user u1 on erp_transfer.created_user = u1.id",
+                "inner join user u2 on erp_transfer.updated_user = u2.id",
+                "left join warehouse as w on erp_transfer.wh_id_out = w.id left join warehouse as w2 on erp_transfer.wh_id_in = w2.id"),
+            "field"=>"erp_transfer.*,erp_transfer.status as state,w.name as out_name, w2.name as in_name,u1.nickname as created_user_nickname,u2.nickname as updated_user_nickname",
         ),
         'latest'=>array(
-            'where'=>array('stock_purchase_out.is_deleted'=>'0'),
-            'order'=>'stock_purchase_out.updated_time DESC',
+            'where'=>array('erp_transfer.is_deleted'=>'0'),
+            'order'=>'erp_transfer.updated_time DESC',
         ),
 
 

@@ -1,91 +1,57 @@
 <div role="tabpanel">
-  <!-- Nav tabs -->
-  <volist name="data['detail']" id="value" key="k">
   <ul class="nav nav-tabs" role="tablist">
-    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">加工任务{$k}</a></li>
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">调拨单详细</a></li>
   </ul>
 
-  <!-- Tab panes -->
-  <div class="tab-content" style="margin-button:25px">
+  <div class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="home">
-      <table id="table-pro" class="data-table table table-bordere table-striped table-cond table-hover" style="">
-      <thead>
-        <th></th><th>货号</th><th>名称</th><th>规格</th><th>计划加工量</th><th>实际加工量</th><th>计量单位</th>
-      </thead>
-      <tbody>
-      <tr class="tr-tpl">
-      <td style="width:10%;background: #fff;">
-      	父SKU
-      </td>
-      <td style="width:10%;background: #fff;">
-        {$value.p_pro_code}
-      </td>
-      <td  style="width:25%;background: #fff;">
-        {$value.p_pro_name}
-      </td>
-      <td  style="width:25%;background: #fff;">
-      	{$value.p_pro_attrs}
-      </td>
-      <td style="width:10%;background: #fff;">
-      	{$value.plan_qty}
-      </td>
-      <td style="width:10%;background: #fff;">
-      	{$value.real_qty}
-      </td>
-      <td style="width:10%;background: #fff;">
-        {$value.p_uom_name}
-      </td>
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+  			<th>货品号</th><th>货品名称</th><th>规格</th><th>计量单位</th><th>计划调拨量</th><th>实际出库量</th><th>实际入库量</th>
+  		</thead>
+  		<tbody>
+      <volist name="data.detail" id="vo">
+        
+    <tr class="tr-cur">
+      <td style="width:10%;">{$vo.pro_code}</td>
+        <td  style="width:20%;" class="text-left p_qty">
+          {$vo.pro_name}
+        </td>
+        <td style="width:30%;">
+          {$vo.pro_attrs}
+        </td>
+        <td style="width:10%;">
+          {$vo.pro_uom}
+        </td>
+        <td style="width:10%;" class="text-left p_price">
+          {$vo.plan_transfer_qty}
+        </td>
+        <td style="width:10%;" class="text-left p_res">
+          {$vo.real_out_qty}
+        </td>
+        <td style="width:10%;" class="text-left p_res">
+          {$vo.real_in_qty}
+        </td>
+
       </tr>
-       <volist name="value['detail']" id="val" key="kk">
-      	  <tr class="tr-tpl">
-	      <td class="c_sku_index" index="{$kk}" style="width:10%;background: #fff;" rowspan="{:count($value['detail'])}">
-	      	子SKU
-	      </td>
-	      <td style="width:10%;background: #fff;">
-	        {$val.c_pro_code}
-	      </td>
-	      <td  style="width:25%;background: #fff;">
-	        {$val.c_pro_name}
-	      </td>
-	      <td  style="width:25%;background: #fff;">
-	      	{$val.c_pro_attrs}
-	      </td>
-	      <td style="width:10%;background: #fff;">
-	      	{$val.plan_qty}
-	      </td>
-	      <td style="width:10%;background: #fff;">
-	      	{$val.real_qty}
-	      </td>
-	      <td style="width:10%;background: #fff;">
-	        {$val.c_uom_name}
-	      </td>
-	      </tr>
-	    </volist>
-	  </tbody>
-      </table>
+        
+      </volist>
+
+  		</tbody>
+  		</table>
     </div>
   </div>
-  </volist>
-</br>
 
 </div>
-</div>
-</div>
-<script>
-	$(function() {
-		var td =  $('.c_sku_index');
-		console.log(td);
-		  td.each(function(i) {
-			  if ($(this).attr('index') > 1) {
-				  $(this).remove();
-			  }
-		  }) 
-	}) 
-</script>
+
 <style type="text/css">
 #table-pro input[type=text]{
-  padding: 1px 10px;
+  padding: 0px 10px;
   font-size: 13px;
 }
-
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
 </style>
