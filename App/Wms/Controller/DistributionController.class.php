@@ -4,8 +4,6 @@ use Think\Controller;
 use Boris\ExportInspector;
 class DistributionController extends CommonController {
     
-    protected $order_type = array();
-    
     protected $filter = array(
     	    'status' => array(
     	        '1' => '未发运',
