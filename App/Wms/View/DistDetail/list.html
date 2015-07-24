@@ -97,7 +97,7 @@ $(function() {
           
         }
    });
-
+   var markerArray = []; 
    function display(){
           var mapObj;
           // 地图初始化
@@ -113,11 +113,55 @@ $(function() {
                 position:markerPosition,
                 content:'<div class="mapIcon"  style="background:url(http://hop.test3.dachuwang.com/assets/images/will.png); color:red; width:45px; height:38px;text-align: right; padding-right: 5px;">'+"{$attrs.order_id}"+'</div>',
             });
-           marker.setMap(mapObj);
-        
+           markerArray.push(marker);
+           //markerArray[{$i}-1].setMap(mapObj);
         </volist>
-        
    }
+   $('#table-content').delegate('input[type=checkbox]','change',function(){
+    if($(this).hasClass('select-all')) {
+      //找到tbody中的所有checkbox
+      $("#table-content tbody input[type='checkbox']").each(function(){
+        // var tr = $(this).parents('tr');
+        // var id = $(this).parents('tr').find('.order-id').val();
+        // var row = new Array();
+        // row['id'] = tr.find('.order-id').val();
+        // row['user_id'] = tr.find('.order-user_id').val();
+        // row['adress'] = tr.find('.order-adress').val();
+        // row['line'] = tr.find('.order-line').val();
+        // row['cat'] = tr.find('.order-cat').val();
+        // row['qty'] = tr.find('.order-qty').val();
+        if($(".select-all").prop('checked')){
+
+          //addRow(row);
+        }
+        else{
+          //removeRow(id);  
+        }
+      });
+    }else{
+      if($(this).prop('checked') == true) {
+        // var tr = $(this).parents('tr');
+        // var row = new Array();
+        // row['id'] = tr.find('.order-id').val();
+        // row['user_id'] = tr.find('.order-user_id').val();
+        // row['adress'] = tr.find('.order-adress').val();
+        // row['line'] = tr.find('.order-line').val();
+        // row['cat'] = tr.find('.order-cat').val();
+        // row['qty'] = tr.find('.order-qty').val();
+        // addRow(row);
+      }
+      else {
+        // $(".select-all").attr('checked',false)
+        var id = $(this).parents('tr').find('.order-id').val();
+        alert(id);
+        // removeRow(id);
+      }
+    }
+    
+    calc();
+  });
+
+
   $.extend($.tablesorter.themes.bootstrap, {
     // these classes are added to the table. To see other table classes available,
     // look here: http://twitter.github.com/bootstrap/base-css.html#tables
