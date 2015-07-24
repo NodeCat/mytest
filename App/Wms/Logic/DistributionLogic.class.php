@@ -589,12 +589,17 @@ class DistributionLogic {
         foreach ($ids as $val) {
             $remarks = $formatData[$val]['notes'];
             $pos = strpos($remarks, '@@@@');
-            if ($pos) {
-                $data['notes'] = substr($remarks, 0, $pos);
+            if ($pos !== false) {
+                if ($pos == 0) {
+                    $remarks = '';
+                } elseif ($pos > 0) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
             }
             $data['refused_type'] = 1;
             $data['wave_id'] = $waveId;
             $data['status'] = 3; //波次中
+            $data['notes'] = $remarks;
             $affected = M('stock_bill_out')->where(array('id' => $val))->save($data);
             if (!$affected) {
                 return $return;
@@ -622,11 +627,7 @@ class DistributionLogic {
                 $remarks = $stockBillOutInfo['notes'];
                 $pos = strpos($remarks, '@@@@');
                 if ($pos != false) {
-                    if ($pos == 0) {
-                        $remarks = '';
-                    } elseif ($pos > 0) {
-                        $remarks = substr($remarks, 0, $pos);
-                    }
+                    $remarks = substr($remarks, 0, $pos);
                 }
                 $data['notes'] = $remarks . '@@@@缺货SKU货号:' . implode(',', $result['data']['not_enough_pro_code']);
                 $data['refused_type'] = 2; //缺货
