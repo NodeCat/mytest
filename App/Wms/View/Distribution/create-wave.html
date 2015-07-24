@@ -16,7 +16,7 @@
           <div>
             <div class="alert alert-danger" style="word-break: break-all;" role="alert">
                 有<strong>{{pup_count}}</strong> 个出库单因库存不足未加入波次！<br />
-				出库单号为:<strong>{{out_code}}</strong>
+				{{each out_info as value key}}出库单号为:<strong>{{key}}:缺货sku为{{value}}</strong><br />{{/each}}
             </div>
           </div>
 		  <div>
