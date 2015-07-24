@@ -317,30 +317,35 @@ class StockInController extends CommonController {
 				$map['is_deleted'] = 0;
 				$map['code'] = $code;
 				$res = M('stock_bill_in')->where($map)->find();
+				unset($map);
 				if(!empty($res)) {
-					if(true){
-						if($res['status'] =='21' || $res['status'] =='22' || $res['status'] == '31' || $res['status'] =='32' || $res['status'] =='33') {
-							$data['id'] = $res['id'];
-							$data['code'] = $res['code'];
-							$data['title'] = '扫描货品';
-							$this->assign($data);
-							layout(false);
-							$this->msg = '查询成功。';
-							$this->title = '扫描货品';
-							$data = $this->fetch('StockIn:in-scan-procode');
-							$this->msgReturn(1,'查询成功。',$data);
-						}
-						/*if($res['status'] == '31' || $res['status'] =='32') {
-							$this->msgReturn(0,'查询失败，该单据已入库。');
-						}*/
-						if($res['status'] == '53'){
-							$this->msgReturn(0,'查询失败，该单据已完成。');
-						}
-						$this->msgReturn(0,'查询失败，该单据状态异常。');
+					if(!empty($res['refer_code'])){
+						//如果是销售到货单，货到付款，判断结算金额是否大于0，如果大于0则证明已经收过货，不让继续收货
+						$map['code'] = $res['refer_code'];
+						$purchase_info = M('stock_purchase')->where($map)->find();
+
+						if($purchase_info['invoice_method'] == 1 && )
+						var_dump($purchase_info);exit;
 					}
-					else {
-						$this->msgReturn(0,'查询失败，您没有权限。');
+					
+					if($res['status'] =='21' || $res['status'] =='22' || $res['status'] == '31' || $res['status'] =='32' || $res['status'] =='33') {
+						$data['id'] = $res['id'];
+						$data['code'] = $res['code'];
+						$data['title'] = '扫描货品';
+						$this->assign($data);
+						layout(false);
+						$this->msg = '查询成功。';
+						$this->title = '扫描货品';
+						$data = $this->fetch('StockIn:in-scan-procode');
+						$this->msgReturn(1,'查询成功。',$data);
 					}
+					/*if($res['status'] == '31' || $res['status'] =='32') {
+						$this->msgReturn(0,'查询失败，该单据已入库。');
+					}*/
+					if($res['status'] == '53'){
+						$this->msgReturn(0,'查询失败，该单据已完成。');
+					}
+					$this->msgReturn(0,'查询失败，该单据状态异常。');
 				}
 				else {
 					$this->msgReturn(0,'查询失败，未找到该单据。');
