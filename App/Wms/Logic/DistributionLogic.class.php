@@ -15,7 +15,7 @@ class DistributionLogic {
     public function __construct() {
         import('Common.Lib.HttpCurl');
         
-        $this->server = 'http://s.test3.dachuwang.com/order/get_order_split_config';
+        $this->server = C('HOP_API_PATH');
         $this->request = new \HttpCurl();
     }
     /**
@@ -722,7 +722,7 @@ class DistributionLogic {
     public function getOrderTypeByTms() {
         $return = array();
         
-        $url = $this->server;
+        $url = $this->server . '/order/get_order_split_config';
         $result = $this->request->post($url);
         $result = json_decode($result, true);
         if ($result['status'] == 0) {
