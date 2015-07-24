@@ -9,7 +9,15 @@ class DistributionLogic {
     
     public static $line = array(); //线路 （缓存线路）
     
+    private $server = '';
+    private $request;
     
+    public function __construct() {
+        import('Common.Lib.HttpCurl');
+        
+        $this->server = C('HOP_API_PATH');
+        $this->request = new \HttpCurl();
+    }
     /**
      * 订单筛选字段验证
      * @param array $post 筛选条件
@@ -707,6 +715,23 @@ class DistributionLogic {
         }
         
         $return = $pid;
+        return $return;
+    }
+    
+    /**
+     * 获取订单类型
+     */
+    public function getOrderTypeByTms() {
+        $return = array();
+        
+        $url = $this->server . '/order/get_order_split_config';
+        $result = $this->request->post($url);
+        $result = json_decode($result, true);
+        if ($result['status'] == 0) {
+            foreach ($result['res'] as $value) {
+                $return[$value['code']] = $value['msg'];
+            }
+        }
         return $return;
     }
     
