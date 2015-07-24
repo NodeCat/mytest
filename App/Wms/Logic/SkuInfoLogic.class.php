@@ -155,18 +155,19 @@ class SkuInfoLogic
         $map['stock_bill_out.delivery_date'] = array('gt', date('Y-m-d H:i:s', $stime));
         $map['stock_bill_out.delivery_date'] = array('lt', date('Y-m-d H:i:s', $etime));
         $stockOutDetail = M('stock_bill_out_detail')
-                              ->field('pro_code,price,delivery_qty')
+                              ->field('pro_code,SUM(delivery_qty) as qty')
                               ->join('stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid')
+                              ->group('pro_code')
                               ->where($map)->select();
         if (empty($stockOutDetail)) {
             return $return;
         }
         //按照SKU将数据分类
         foreach ($stockOutDetail as $key => $detail) {
-            $stockOutDetail[$detail['pro_code']][] = $detail;
-            unset($stockOutDetail[$key]);
+            $index = strval($detail['pro_code']) . '#';
+            $return[$index] = $detail['qty'];
         }
-        
+        /*
         foreach ($stockOutDetail as $k => $value) {
             $index = strval($k) . '#';
             $total_num   = 0; //总数量
@@ -180,7 +181,7 @@ class SkuInfoLogic
                 $return[$index]['sum'] = $total_num;
                 $return[$index]['price'] = bcdiv($total_price, $total_num, 2);
             }
-        }
+        }*/
         return $return;
     }
 }

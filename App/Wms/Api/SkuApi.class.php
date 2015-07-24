@@ -105,20 +105,20 @@ class SkuApi extends CommApi
             $priceAndQty    = $SkuInfo->calculateSellPrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $priceAndQtyArr = array_merge($priceAndQtyArr, $priceAndQty);
             //实时在库量
-            $stockIn        = $SkuInfo->getActualStockBySkuCode($skuCodes, $condition['warehouse_id']);
-            $stockInArr     = array_merge($stockInArr, $stockIn);
+            //$stockIn        = $SkuInfo->getActualStockBySkuCode($skuCodes, $condition['warehouse_id']);
+            //$stockInArr     = array_merge($stockInArr, $stockIn);
             //实时可售量
-            $stockSellIn    = $SkuInfo->getActualSellBySkuCode($skuCodes, $condition['warehouse_id']);
-            $stockSellInArr = array_merge($stockSellInArr, $stockSellIn);
+            //$stockSellIn    = $SkuInfo->getActualSellBySkuCode($skuCodes, $condition['warehouse_id']);
+            //$stockSellInArr = array_merge($stockSellInArr, $stockSellIn);
             //平均采购价
             $salePrice      = $SkuInfo->calculatePrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $salePriceArr   = array_merge($salePriceArr, $salePrice);
         }
         
-        $quantity_inwarehouse     = 0; //实时在库量
-        $quantity_sale            = 0; //实时可售量
+        //$quantity_inwarehouse     = 0; //实时在库量
+        //$quantity_sale            = 0; //实时可售量
         $average_buy_price        = 0; //平均采购价
-        $average_sale_price       = 0; //平均销售价
+        //$average_sale_price       = 0; //平均销售价
         $out_warehouse_sku_counts = 0; //SKU出库量
         $reject_sku_counts        = 0; //拒收SKU数量
         //遍历所有SKU 组合信息
