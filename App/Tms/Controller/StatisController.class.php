@@ -9,7 +9,7 @@
 namespace Tms\Controller;
 use Think\Controller;
 
-class StatisController extends Controller
+class StatisController extends \Common\Controller\AuthController
 {
 	private $charts = array(
 		'总平台数据'                   => 'pingtaishuju.saiku',

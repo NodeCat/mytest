@@ -8,6 +8,7 @@ return array(
     'API_TIME_DEVIATION'   => 300, //API请求时间戳与服务器时间戳的允许误差范围，单位秒，
     'USER_ALLOW_REGISTER'  => 'TRUE',
 
+    'LOAD_EXT_CONFIG' => array('QUEUE' => 'queue'),
 
     'DB_CHARSET'=>'utf8',// 数据库编码默认采用utf8
     //应用设置
@@ -20,7 +21,7 @@ return array(
     'TMPL_CACHE_ON'   => FALSE,  // 默认开启模板编译缓存 false 的话每次都重新编译模板
     'ACTION_CACHE_ON' => FALSE,  // 默认关闭Action 缓存
     'HTML_CACHE_ON'   => FALSE,
-    'DATA_CACHE_TIME' => 1,
+    'DATA_CACHE_TIME' => 0,
     //URL设置
     'URL_MODEL'            => 2,
     'URL_HTML_SUFFIX'    => 'htm',
@@ -31,14 +32,14 @@ return array(
     'DB_BIND_PARAM'    =>    true,
 
     //session设置
-    'SESSION_OPTIONS'    => array('expire'=>'36000'),
+    'SESSION_OPTIONS'    => array('expire'=>'144000'),
     //'SESSION_PREFIX'    =>'wms',
 
     //缓存设置
     'DATA_CACHE_TYPE'   => 'redis',
     'REDIS_HOST'        => '127.0.0.1',
     'REDIS_PORT'        => 6379,
-    'DATA_CACHE_TIME'=> 60,
+    'DATA_CACHE_TIMEOUT'   => 0,
 
     //错误及日志
     'LOG_RECORD'         => true,
