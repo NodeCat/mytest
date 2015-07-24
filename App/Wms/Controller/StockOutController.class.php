@@ -168,8 +168,7 @@ class StockOutController extends CommonController {
             $this->stock_out_type = $data; 
         }
         //修改线路value值
-        $lines = A('Wave','Logic')->line();
-        //dump($lines);die;
+        $lines = D('Distribution','Logic')->format_line(-1, session('user.wh_id'));
         $this->query['stock_bill_out.line_id']['value'] = $lines;
         $this->filter['line_id'] = $lines;
     }
