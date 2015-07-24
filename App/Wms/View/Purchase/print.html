@@ -1,6 +1,18 @@
 <include file="Index:header"/>
+<style type="text/css">
+.printpage {
+  width:100%;
+  margin:auto;
+  font-size:12px;
+  page-break-before:avoid;
+  page-break-inside:avoid;
+  page-break-after:always
+}
+</style>
 <body>
-<div class="container">
+
+<volist name="result" id="vo">
+<div class="container printpage">
 
 <div class="row">
 <div class="text-center"><h3>采购单</h3></div>
@@ -10,12 +22,12 @@
 
 <div class="row">
 	<div class="text-center">
-		<div><h3>采购单号:{$purchase_code}</h3></div>
+		<div><h3>采购单号:{$vo.purchase_code}</h3></div>
 	</div>
 </div>
 
 <div class="row">
-    <img src="http://api.pda.dachuwang.com/barcode/get?text={$purchase_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$vo.purchase_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
 </div>
 
 <br/>
@@ -26,31 +38,31 @@
 
   <tbody>
   	<tr>
-  		<td>采购时间</td><td>{$purchase_time}</td>
+  		<td>采购时间</td><td>{$vo.purchase_time}</td>
   	</tr>
   	<tr>
-  		<td>打印时间</td><td>{$print_time}</td>
+  		<td>打印时间</td><td>{$vo.print_time}</td>
   	</tr>
   	<tr>
-  		<td>供应商</td><td>{$partner}</td>
+  		<td>供应商</td><td>{$vo.partner}</td>
   	</tr>
   	<tr>
-  		<td>采购人员</td><td>{$purchaser}</td>
+  		<td>采购人员</td><td>{$vo.purchaser}</td>
   	</tr>
     <tr>
-  		<td>采购总数</td><td>{$purchase_qty}</td>
+  		<td>采购总数</td><td>{$vo.purchase_qty}</td>
   	</tr>
     <tr>
-  		<td>采购总金额</td><td>{$purchase_amount}</td>
+  		<td>采购总金额</td><td>{$vo.purchase_amount}</td>
   	</tr>
     <tr>
-  		<td>付款方式</td><td>{$purchase_pay}</td>
+  		<td>付款方式</td><td>{$vo.purchase_pay}</td>
   	</tr>
   	<tr>
-  		<td>目的仓库</td><td>{$warehouse}</td>
+  		<td>目的仓库</td><td>{$vo.warehouse}</td>
   	</tr>
   	<tr>
-  		<td>备注</td><td>{$remark}</td>
+  		<td>备注</td><td>{$vo.remark}</td>
   	</tr>
   </tbody>
 </table>
@@ -69,7 +81,7 @@
   </thead>
 
   <tbody>
-  	<volist name="purchase_detail" id="purchase_detail">
+  	<volist name="vo.purchase_detail" id="purchase_detail">
 	  	<tr>
 	  		<td>{$purchase_detail.pro_code}</td>
             <td>{$purchase_detail.pro_name}</td>
@@ -87,5 +99,6 @@
 </br>
 
 </div>
+</volist>
 </body>
 </html>

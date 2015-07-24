@@ -16,7 +16,8 @@ class PurchaseInDetailController extends CommonController {
 		'price_unit' => '单价',
 		'price_subtotal' => '小计',
 		'status' => '支付状态',
-        'updated_time' => '付款时间'
+        'updated_time' => '付款时间',
+        'created_time' => '入库时间',
     );
     protected $query   = array (
         'erp_purchase_in_detail.partner_name' => array (
@@ -57,6 +58,12 @@ class PurchaseInDetailController extends CommonController {
             'query_type' => 'eq',
             'control_type' => 'text',
             'value' => '',
+        ),
+        'erp_purchase_in_detail.created_time' =>    array (    
+            'title' => '下单时间',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => '',   
         ),
 	);
 

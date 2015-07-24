@@ -591,7 +591,7 @@ class StockLogic{
 
         //检查变化量是否大于总库存量，如果大于则报错
         foreach($src_stock_list as $src_stock){
-            $src_total_qty += $src_stock['stock_qty'];
+            $src_total_qty += $src_stock['stock_qty'] - $src_stock['assign_qty'];
         }
 
 

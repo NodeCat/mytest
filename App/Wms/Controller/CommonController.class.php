@@ -531,8 +531,17 @@ class CommonController extends AuthController {
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
+
+        if(empty($this->query)){
+            $this->assign('query',$setting['query']);
+        }
+        else {
+            $this->assign('query',$this->query);
+        }
+        $map = $this->search($this->query);//获取界面上传过来的查询条件
+
         $M  =  D(CONTROLLER_NAME);
-        $result = $M->scope('default')->select();
+        $result = $M->scope('default')->where($map)->select();
         $this->filter_list($result);
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;

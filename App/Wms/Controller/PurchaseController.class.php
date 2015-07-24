@@ -141,6 +141,7 @@ class PurchaseController extends CommonController {
 
         $this->toolbar =array(
             array('name'=>'add', 'show' =>isset($this->auth['add']),'new'=>'true'),
+            array('name'=>'export' ,'show' => isset($this->auth['export']),'new'=>'false'),
         );
         $this->status =array(
             array(
@@ -148,6 +149,7 @@ class PurchaseController extends CommonController {
                 array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
             ),
         );
+        $this->search_addon = true;
     }
 	protected function before_add(&$M) {
 		$pros = I('pros');
@@ -575,34 +577,37 @@ class PurchaseController extends CommonController {
         $id = I('get.id');
 
         $purchase = M('stock_purchase');
-        $map['stock_purchase.id'] = $id;
+        $map['stock_purchase.id'] = array('in',$id);
         $data = $purchase
         ->join('partner on partner.id = stock_purchase.partner_id' )
         ->join('warehouse on warehouse.id = stock_purchase.wh_id')
         ->join('user on user.id = stock_purchase.created_user')
         ->where($map)
         ->field('stock_purchase.*, partner.name as partner_name, user.nickname as created_name, warehouse.name as wh_name')
-        ->find();
+        ->select();
 
-        $purchase_detail = M('stock_purchase_detail');
-        unset($map);
-        $map['pid'] = $id;
-        $list = $purchase_detail->where($map)->select();
+        foreach($data as $key => $value){
+            $purchase_detail = M('stock_purchase_detail');
+            unset($map);
+            $map['pid'] = $value['id'];
+            $list = $purchase_detail->where($map)->select();
 
-        $column['purchase_code'] = $data['code'];
-        $column['purchase_time'] = $data['created_time'];
-        $column['print_time'] = get_time();
-        $column['partner'] = $data['partner_name'];
-        $column['purchase_pay'] = $this->filter['invoice_method'][$data['invoice_method']];
-        $column['purchase_qty'] = $data['cat_total'] . '种' . '/' . $data['qty_total'] . '件';
-        $column['purchase_amount'] = $data['price_total'];
-        $column['purchaser'] = $data['created_name'];
-        $column['warehouse'] = $data['wh_name'];
-        $column['remark'] = $data['remark'];
-        $column['purchase_detail'] = $list;
+            $result[$key]['purchase_code'] = $value['code'];
+            $result[$key]['purchase_time'] = $value['created_time'];
+            $result[$key]['print_time'] = get_time();
+            $result[$key]['partner'] = $value['partner_name'];
+            $result[$key]['purchase_pay'] = $this->filter['invoice_method'][$value['invoice_method']];
+            $result[$key]['purchase_qty'] = $value['cat_total'] . '种' . '/' . $value['qty_total'] . '件';
+            $result[$key]['purchase_amount'] = $value['price_total'];
+            $result[$key]['purchaser'] = $value['created_name'];
+            $result[$key]['warehouse'] = $value['wh_name'];
+            $result[$key]['remark'] = $value['remark'];
+            $result[$key]['purchase_detail'] = $list;
+        }
+        
 
     	layout(false);
-    	$this->assign($column);
+    	$this->assign('result',$result);
     	$this->display('Purchase:print');
     }
 
