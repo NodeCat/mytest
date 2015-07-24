@@ -139,7 +139,7 @@ class DistController extends Controller {
                         }
                     }
                 }
-
+                unset($map);
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
@@ -147,6 +147,10 @@ class DistController extends Controller {
                     $map['suborder_id'] = $val['refer_code'];
                     $res = $cA->set_status($map);
                 }
+                unset($map);
+                $map['status']  = '1';
+                $map['dist_id'] = $id;
+                A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
                 unset($map);
                 if ($res) {
                     $this->msg = "提货成功";
@@ -191,7 +195,7 @@ class DistController extends Controller {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
             $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
-            } else {
+        } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
         }

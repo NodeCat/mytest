@@ -272,7 +272,7 @@ class StockOutLogic{
         $map['id'] = array('in', $bill_out_ids);
         $map['is_deleted'] = 0;
         //排序条件
-        $order_conditions = isset($params['order']) ? $params['order'] : 'created_time DESC';
+        $order = isset($params['order']) ? $params['order'] : 'created_time DESC';
         //出库单列表
         $list = M('stock_bill_out')
             ->where($map)
