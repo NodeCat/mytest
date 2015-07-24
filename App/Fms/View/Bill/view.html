@@ -54,9 +54,12 @@
                   账单金额
               </p>
             </div>
-          </a>
-          <eq name="data['billing_info']['status_code']" value="4">
-          <a href="#" class="list-group-item">
+          </a>{~$data['billing_info']['payment_evidence']="http://wanzao2.b0.upaiyun.com/xbimg/1013/noral/usercontent/2011/12/17/111217163529346771.jpg"}
+          
+          <img id="img_evidence" class="hidden" src="{$data['billing_info']['payment_evidence']}">
+          <in name="data['billing_info']['status_code']" value="4,5">
+          <notempty name="data['billing_info']['payment_evidence']">
+          <a href="#" class="list-group-item" data-toggle="modal" data-target="#modal-refer" data-content="#img_evidence">
             <div class="media-left">
               <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
                 <span class="glyphicon glyphicon-file" aria-hidden="true">
@@ -64,6 +67,7 @@
               </div>
             </div>
             <div class="media-body">
+            
               <h4 class="list-group-item-heading">
                 付款凭证
               </h4>
@@ -72,7 +76,8 @@
               </p>
             </div>
           </a>
-          </eq>
+          </notempty>
+          </in>
         </div>
       </div>
     </div>
@@ -144,6 +149,7 @@
       </div>
     </div>
     <br>
+
     <div class="table-responsive">
       <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 总账单 </a></li>

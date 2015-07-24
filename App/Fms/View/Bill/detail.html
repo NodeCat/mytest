@@ -19,11 +19,15 @@
                 <td class="text-center"><h5>规格</h5></td>
                 <td class="text-center"><h5>单价(元/斤)</h5></td>
                 <td class="text-center"><h5>单价(元/件)</h5></td>
-                <td class="text-center"><h5>订货斤数</h5></td>
+
+                
                 <td class="text-center"><h5>订货件数</h5></td>
-                <td class="text-center"><h5>收获件数</h5></td>
-                <td class="text-center"><h5>退货斤数</h5></td>
+                <td class="text-center"><h5>收货件数</h5></td>
                 <td class="text-center"><h5>退货件数</h5></td>
+
+                <td class="text-center"><h5>订货斤数</h5></td>
+                <td class="text-center"><h5>退货斤数</h5></td>
+
                 <td class="text-center"><h5>订货金额</h5></td>
                 <td class="text-center"><h5>退货金额</h5></td>
                 <td class="text-center"><h5>应付金额</h5></td>
@@ -36,16 +40,19 @@
                 <td>{$vo.sku_number}</td>
                 <td>{$vo.name}</td>
                 <td>{$vo.spe}</td>
-                <td>{$vo.single_price}</td>
+                <td>{$vo['actual_price'] / $vo['net_weight']}</td>
                 <td>{$vo.actual_price}</td>
+
                 <td>{$vo.quantity}</td>
                 <td>{$vo.actual_quantity}</td>
-                <td>{$vo.}</td>
-                <td>{$vo.}</td>
-                <td>{$vo.}</td>
-                <td>{$vo.}</td>
-                <td>{$vo.}</td>
-                <td>{$vo.}</td>
+                <td>{$vo['quantity'] - $vo['actual_quantity']}</td>
+
+                <td>{$vo['quantity'] * $vo['net_weight']}</td>
+                <td>{$vo['quantity']* $vo['new_weight'] - $vo['actual_quantity'] * $vo['new_weight']}</td>
+
+                <td>{$vo['quantity'] * $vo['actual_price']}</td>
+                <td>{$vo['quantity'] * $vo['actual_price'] - $vo['actual_quantity'] * $vo['actual_price']}</td>
+                <td>{$vo.actual_sum_price}</td>
                 
               </tr>
             </volist>
