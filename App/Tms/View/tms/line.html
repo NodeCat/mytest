@@ -112,7 +112,7 @@
       <volist name='address' id='addr'>
         marker{$i} = new AMap.Marker({
         <if condition="$addr['color_type'] eq 3">
-        icon:"__PUBLIC__/img/over.png",
+        icon:"__PUBLIC__/img/red.png",
         </if>
         //icon:"http://webapi.amap.com/images/custom_a_j.png",
         position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
