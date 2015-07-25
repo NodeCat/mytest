@@ -75,15 +75,15 @@ class PurchasesController extends CommonController {
         $maps['wh_id']          = $wh_id;
         $maps['delivery_date']  = $delivery_date;
         $maps['delivery_ampm']  = $delivery_ampm;
-        
         foreach ($data as $key => $value) {
             $data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
-            if ($data[$key]['purchase_num'] < 0) {
-                unset($data[$key]);
-            }
             //解决不选日期和时间段是应该是根据空汇总
             $data[$key]['delivery_date'] = $delivery_date;
             $data[$key]['delivery_ampm'] = $delivery_ampm;
+            if ($data[$key]['purchase_num'] < 0) {
+                unset($data[$key]);
+            }
+
         }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
@@ -138,12 +138,13 @@ class PurchasesController extends CommonController {
         }
         foreach ($pro_codeArr as $key => $value) {
             $pro_codeArr[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
+            //解决不选日期和时间段是应该是根据空汇总
+            $pro_codeArr[$key]['delivery_date'] = $delivery_date;
+            $pro_codeArr[$key]['delivery_ampm'] = $delivery_ampm;
             if ($pro_codeArr[$key]['purchase_num'] < 0) {
                 unset($pro_codeArr[$key]);
             }
-                        //解决不选日期和时间段是应该是根据空汇总
-            $pro_codeArr[$key]['delivery_date'] = $delivery_date;
-            $pro_codeArr[$key]['delivery_ampm'] = $delivery_ampm;
+            
         }
         
 
