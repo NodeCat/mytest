@@ -11,12 +11,11 @@ class BillController extends \Wms\Controller\CommonController
 		'billing_num' => '账单号',
 		'theory_start' => '帐期',
         'billing_cycle' => '帐期长度',
-        'pay_date' => '结算日期',
-        'expire_status' => '逾期',
+        'pay_date' => '结款日期',
 		'shop_name' => '店铺名称',
-		'mobile' => '店铺手机号',
-		'bd_name' => 'bd 名称',
-		'bd_mobile' => 'bd 手机号',
+		'mobile' => '客户手机号',
+		'bd_name' => '所属BD',
+		'bd_mobile' => 'BD手机号',
 		'status' => '账单状态'
     );
     protected $filter = array (
@@ -31,7 +30,7 @@ class BillController extends \Wms\Controller\CommonController
         $this->table = array(
                 'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
                 'searchbar' => true, //是否显示搜索栏
-                'checkbox'  => true, //是否显示表格中的浮选款
+                'checkbox'  => false, //是否显示表格中的浮选款
                 'status'    => false,
                 'toolbar_tr'=> true,
                 'statusbar' => true
@@ -53,9 +52,12 @@ class BillController extends \Wms\Controller\CommonController
         //查询条件
         $A = A('Common/Order', 'Logic');
         $query = $A->billQuery();
+        
+        unset($query['area'][0]);
+
         $this->query = array(
         	'billing_cycle' => array(
-        		'title' => '账期',
+        		'title' => '账期长度',
         		'query_type' => 'eq',
                 'control_type' => 'select',
                 'value' => $query['billing_cycle']
@@ -67,16 +69,22 @@ class BillController extends \Wms\Controller\CommonController
                 'value' => $query['area']
             ),
             'bd' => array(
-        		'title' => 'bd列表',
+        		'title' => '所属BD',
         		'query_type' => 'eq',
                 'control_type' => 'select',
                 'value' => $query['bd']
             ),
-            'billing_status' => array(
+            'status' => array(
         		'title' => '账单状态',
         		'query_type' => 'eq',
                 'control_type' => 'select',
-                'value' => $query['billing_status']
+                'value' => $query['status']
+            ),
+            'expire_status' => array(
+                'title' => '是否逾期',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => $query['expire_status']
             ),
             'start_time' =>    array (    
 			'title' => '账单时间',     
@@ -144,7 +152,6 @@ class BillController extends \Wms\Controller\CommonController
                         break;
                 }
             }
-            
         }
         $condition = I('q');//对状态栏的特殊处理,状态栏中的各种状态按钮实际上是附加了各种status=1 这样的查询条件
          if(!empty($condition)){
@@ -178,6 +185,23 @@ class BillController extends \Wms\Controller\CommonController
     	$map['id'] = I('id');
     	$map['date'] = I('date');
     	$data = $A->billOrders($map);
+
+        foreach ($data['list'] as &$order) {
+            foreach ($order['child'] as &$vo) {
+                if(empty($vo['net_weight'])) {
+                    $vo['new_weight'] = 0;
+                }
+                $vo['pricePerW'] = round($vo['actual_price'] / $vo['net_weight'],2);
+                $vo['inW'] = $vo['quantity'] * $vo['net_weight'];
+                $vo['shW'] = $vo['actual_quantity'] * $vo['new_weight'];
+                $vo['juW'] = ($vo['quantity'] - $vo['actual_quantity']) * $vo['new_weight'];
+                $vo['inW'] = $vo['inW'] ? $vo['inW'] : '/';
+                $vo['shW'] = $vo['shW'] ? $vo['shW'] : '/';
+                $vo['juW'] = $vo['juW'] ? $vo['juW'] : '/';
+
+                $vo['pricePerW']  = $vo['pricePerW'] ? $vo['pricePerW'] : '/';
+            }
+        }
     	$this->data = $data['list'];
     	$this->display();
     }
@@ -198,13 +222,11 @@ class BillController extends \Wms\Controller\CommonController
         } else {
             $map['payment'] = '0';
         }
-
         $res = $A->billPay($map);
+        $url = $res['status'] == '0' ? U('view',array('id'=>$map[   'id'])) : '';
+        $status = $res['status'] == 0 ? 1 : 0;
 
-        $url = $res['status'] == '0' ? U('view',array('id'=>$map['id'])) : '';
-        $status = $res['status'] == '0' ? 1 : 0;
-
-        $this->msgReturn($status, $res['msg'].$res['status'], '', $url);
+        $this->msgReturn($status, $res['msg'], '', $url);
     }
 
     public function remark()
@@ -238,7 +260,8 @@ class BillController extends \Wms\Controller\CommonController
             $this->assign('query',$this->query);
         }
 
-        $map = $this->search($this->query);
+        $maps = $this->search($this->query);
+        $map = $maps;
         $p              = I("p",1);
         $page_size      = C('PAGE_SIZE');
         $map['currentPage'] = $p;
@@ -253,10 +276,19 @@ class BillController extends \Wms\Controller\CommonController
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换
         $A = A('Common/Order', 'Logic');
-        
+        if(isset($map['start_time'])) {
+            $map['start_time'] = strtotime($map['start_time']);
+        }
+        if(isset($map['end_time'])) {
+            $map['end_time'] = strtotime($map['end_time']);
+        }
+
         $data = $A->billList($map);
         foreach ($data['list'] as &$val) {
-            $val['theory_start'] = $val['theory_start'] . ' - ' . $val['theory_end'];
+            $val['theory_start'] = $val['theory_start'] . ' － ' . $val['theory_end'];
+            if ($val['expire_status'] == '1') {
+                $val['pay_date'] = $val['pay_date'] . '<span class="label label-danger">逾期未付</span>';
+            }
         }
         $this->pk = 'id';
         $this->assign('data', $data['list']); 

@@ -5,11 +5,13 @@
           <table class="table table-bordered table-striped table-hover">
             <thead>
               <tr >
-                <td colspan="14">
+                <td colspan="15">
                    <span class="mr-10">订单编号：{$order.order_number} </span>
                    <span class="mr-10">店铺名称：{$order.shop_name} </span>
                    <button class="btn ml-10 mr-10 btn-info">{$order.status_cn}</button>
-                   <a href="#">查看电子签名</a>
+                   {~$order['sign_img_url']="http://wanzao2.b0.upaiyun.com/xbimg/1013/noral/usercontent/2011/12/17/111217163529346771.jpg"}
+                   <img id="sign_img{$vo.order_number}" class="hidden" src="{$order.sign_img_url}">
+                   <a href="#" data-toggle="modal" data-target="#modal" data-content="#sign_img{$vo.order_number}">查看电子签名</a>
                 </td>
               </tr>
               <tr>
@@ -20,17 +22,16 @@
                 <td class="text-center"><h5>单价(元/斤)</h5></td>
                 <td class="text-center"><h5>单价(元/件)</h5></td>
 
-                
-                <td class="text-center"><h5>订货件数</h5></td>
-                <td class="text-center"><h5>收货件数</h5></td>
-                <td class="text-center"><h5>退货件数</h5></td>
-
                 <td class="text-center"><h5>订货斤数</h5></td>
-                <td class="text-center"><h5>退货斤数</h5></td>
-
+                <td class="text-center"><h5>订货件数</h5></td>
+                <td class="text-center"><h5>拒收斤数</h5></td>
+                <td class="text-center"><h5>拒收件数</h5></td>
+                <td class="text-center"><h5>收货斤数</h5></td>
+                <td class="text-center"><h5>收货件数</h5></td>
+                
                 <td class="text-center"><h5>订货金额</h5></td>
-                <td class="text-center"><h5>退货金额</h5></td>
-                <td class="text-center"><h5>应付金额</h5></td>
+                <td class="text-center"><h5>拒收金额</h5></td>
+                <td class="text-center"><h5>收货金额</h5></td>
               </tr>
             </thead>
             <tbody>
@@ -40,15 +41,16 @@
                 <td>{$vo.sku_number}</td>
                 <td>{$vo.name}</td>
                 <td>{$vo.spe}</td>
-                <td>{$vo['actual_price'] / $vo['net_weight']}</td>
+                <td>{$vo.pricePerW}</td>
                 <td>{$vo.actual_price}</td>
 
+                <td>{$vo['inW']}</td>
                 <td>{$vo.quantity}</td>
-                <td>{$vo.actual_quantity}</td>
+                <td>{$vo['juW']}</td>
                 <td>{$vo['quantity'] - $vo['actual_quantity']}</td>
-
-                <td>{$vo['quantity'] * $vo['net_weight']}</td>
-                <td>{$vo['quantity']* $vo['new_weight'] - $vo['actual_quantity'] * $vo['new_weight']}</td>
+                <td>{$vo['shW']}</td>
+                <td>{$vo.actual_quantity}</td>
+                
 
                 <td>{$vo['quantity'] * $vo['actual_price']}</td>
                 <td>{$vo['quantity'] * $vo['actual_price'] - $vo['actual_quantity'] * $vo['actual_price']}</td>
