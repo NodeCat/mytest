@@ -47,18 +47,18 @@ class StockOutController extends CommonController {
         'created_time' => '下单时间'
     );
     protected $query = array ( 
-         'stock_bill_out.code' =>    array (     
+        'stock_bill_out.code' =>    array (     
             'title' => '出库单号',     
             'query_type' => 'like',     
             'control_type' => 'text',     
             'value' => 'code',   
         ),
-         'stock_bill_out.wave_id' =>    array (     
+        'stock_bill_out.wave_id' =>    array (     
             'title' => '波次号',     
             'query_type' => 'eq',     
             'control_type' => 'text',     
             'value' => 'wave_id',   
-        ),  
+        ),
         'stock_bill_out.type' =>    array (     
             'title' => '出库单类型',     
             'query_type' => 'eq',     
@@ -81,9 +81,9 @@ class StockOutController extends CommonController {
             'control_type' => 'select',     
             'value' => array(
                 '1' => '普通订单',
-                '2' => '冻品订单',
                 '3' => '水果爆款订单',
-                '4' => '水果订单',    
+                '4' => '水果订单', 
+                '5' => '蔬菜订单',   
             ),   
         ), 
     	
@@ -147,7 +147,12 @@ class StockOutController extends CommonController {
             'control_type' => 'datetime',     
             'value' => '',   
         ), 
-        
+        'stock_bill_out.pro_code' =>    array (     
+            'title' => '货品号',     
+            'query_type' => 'eq',     
+            'control_type' => 'text',     
+            'value' => '',   
+        ),
     );
     public function __construct(){
         parent::__construct();
@@ -163,8 +168,7 @@ class StockOutController extends CommonController {
             $this->stock_out_type = $data; 
         }
         //修改线路value值
-        $lines = A('Wave','Logic')->line();
-        //dump($lines);die;
+        $lines = D('Distribution','Logic')->format_line(-1, session('user.wh_id'));
         $this->query['stock_bill_out.line_id']['value'] = $lines;
         $this->filter['line_id'] = $lines;
     }
@@ -188,6 +192,8 @@ class StockOutController extends CommonController {
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
             );
         $this->search_addon = true;
+        $this->query['stock_bill_out.order_type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
+        
     }
     protected function before_lists(){
 
@@ -458,18 +464,30 @@ class StockOutController extends CommonController {
         
     }
     protected function after_search(&$map) {
-        if(! empty($map['stock_bill_out.id'])) {
+        /*if(! empty($map['stock_bill_out.id'])) {
             $condition['pro_code'] = $map['stock_bill_out.id'][1];
             $ids = M('stock_bill_out_detail')->field('pid')->where($condition)->select();
             $arr = array_column($ids, 'pid');
             $str = implode(",", $arr);
             $map['stock_bill_out.id'][1] = $str;
-        }
+            unset($condition);
+        }*/
         //过滤波次NOT IS_NUMERIC
         if(array_key_exists('stock_bill_out.wave_id', $map)){
             if(!is_numeric($map['stock_bill_out.wave_id']['1'])){
                 $map['stock_bill_out.wave_id']['1'] = null;
             }
+        }
+        //按照详情中得货品号查询
+        if(!empty($map['stock_bill_out.pro_code'])){
+            $condition['pro_code'] = $map['stock_bill_out.pro_code'][1];
+            $ids = M('stock_bill_out_detail')->field('pid')->where($condition)->select();
+            $arr = array_column($ids, 'pid');
+            $str = implode(",", $arr);
+            $map['stock_bill_out.id'][0] = 'in';
+            $map['stock_bill_out.id'][1] = $str;
+            unset($condition);
+            unset($map['stock_bill_out.pro_code']);
         }
     }
     protected function before_delete($ids) {

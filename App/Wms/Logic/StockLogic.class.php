@@ -41,16 +41,18 @@ class StockLogic{
             $check_re = $this->outStockBySkuFIFOCheck($data);
             if($check_re['status'] != 1){
                 $is_enough = false;
+                $not_enough_pro_code[] = $check_re['data']['pro_code'];
             }
             unset($data);
 
-            //如果不够 直接返回
-            if(!$is_enough){
-                return false;
-            }
         }
 
-        return true;
+        //如果不够 直接返回
+        if(!$is_enough){
+            return array('status'=>0,'data'=>array('not_enough_pro_code'=>$not_enough_pro_code));
+        }
+
+        return array('status'=>1);
     }
 
     /**
@@ -208,7 +210,7 @@ class StockLogic{
         }
 
         if($stock_total < formatMoney($params['pro_qty'], 2)){
-            return array('status'=>0,'msg'=>'库存总量不足！');
+            return array('status'=>0,'msg'=>'库存总量不足！','data'=>array('pro_code'=>$params['pro_code']));
         }
 
         return array('status'=>1);
@@ -591,7 +593,7 @@ class StockLogic{
 
         //检查变化量是否大于总库存量，如果大于则报错
         foreach($src_stock_list as $src_stock){
-            $src_total_qty += $src_stock['stock_qty'];
+            $src_total_qty += $src_stock['stock_qty'] - $src_stock['assign_qty'];
         }
 
 

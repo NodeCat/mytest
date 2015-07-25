@@ -9,7 +9,15 @@ class DistributionLogic {
     
     public static $line = array(); //线路 （缓存线路）
     
+    private $server = '';
+    private $request;
     
+    public function __construct() {
+        import('Common.Lib.HttpCurl');
+        
+        $this->server = C('HOP_API_PATH');
+        $this->request = new \HttpCurl();
+    }
     /**
      * 订单筛选字段验证
      * @param array $post 筛选条件
@@ -116,6 +124,7 @@ class DistributionLogic {
                 //增加客服id 创建配送单使用
                 foreach ($result as $k => $v) {
                     if ($v['refer_code'] == $val['id']) {
+                        $result[$k]['map_pos'] = json_decode($val['geo'], true);
                         $result[$k]['user_id'] = $val['user_id'];
                         break;
                     }
@@ -158,6 +167,7 @@ class DistributionLogic {
             $return[$key]['address'] = $value['delivery_address']; //地址
             $return[$key]['deliver_date'] = $value['delivery_date'] . ' ' . $value['delivery_time'];//配送时间
             $return[$key]['line_total'] = count($value['detail']); //sku总数
+            $return[$key]['map_pos'] = $value['map_pos']; //坐标
             foreach ($value['detail'] as $k => $val) {
                 $return[$key]['sku_total'] += $val['order_qty']; //sku总数
                 $return[$key]['detail'][$k]['name'] = $val['pro_name']; //名称
@@ -561,6 +571,78 @@ class DistributionLogic {
     }
     
     /**
+     * 根据出库单ID 更新出库单备注及拒绝标示 波次号 
+     * @param array $ids 出库单id数组
+     * @param array $data 更新数据
+     */
+    public function updateStockInfoByIds($ids = array(), $wareId = 0) {
+        $return = false;
+        
+        if (empty($ids) || empty($wareId)) {
+            return $return;
+        }
+        $stockBillOutInfo = M('stock_bill_out')->where(array('id' => array('in', $ids)))->select();
+        $formatData = array();
+        foreach ($stockBillOutInfo as $value) {
+            $formatData[$value['id']] = $value;
+        }
+        foreach ($ids as $val) {
+            $remarks = $formatData[$val]['notes'];
+            $pos = strpos($remarks, '@@@@');
+            if ($pos !== false) {
+                if ($pos == 0) {
+                    $remarks = '';
+                } elseif ($pos > 0) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
+            }
+            $data['refused_type'] = 1;
+            $data['wave_id'] = $waveId;
+            $data['status'] = 3; //波次中
+            $data['notes'] = $remarks;
+            $affected = M('stock_bill_out')->where(array('id' => $val))->save($data);
+            if (!$affected) {
+                return $return;
+            }
+        }
+        
+        $return = true;
+        return $return;
+    }
+    /**
+     * 根据出库单ID检查缺货SKU货号 并更新出库单备注及拒绝标示
+     * @param array $ids 出库单id数组
+     * @param return
+     */
+    public function getReduceSkuCodesAndUpdate($ids = array()) {
+        $return = false;
+        
+        if (empty($ids)) {
+            return $return;
+        }
+        foreach ($ids as $value) {
+            $stockBillOutInfo = M('stock_bill_out')->where(array('id' => $value))->find();
+            $result = A('Stock', 'Logic')->checkStockIsEnoughByOrderId($value);
+            if ($result['status'] == 0) {
+                $remarks = $stockBillOutInfo['notes'];
+                $pos = strpos($remarks, '@@@@');
+                if ($pos != false) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
+                $data['notes'] = $remarks . '@@@@缺货SKU货号:' . implode(',', $result['data']['not_enough_pro_code']);
+                $data['refused_type'] = 2; //缺货
+                $map['id'] = $value;
+                $affected = M('stock_bill_out')->where($map)->save($data);
+                if (!$affected) {
+                    return $return;
+                }
+            }
+        }
+        $return = true;
+        return $return;
+    }
+    
+    /**
      * 获取出库但类型
      * @param int $id 类型ID
      */
@@ -705,6 +787,23 @@ class DistributionLogic {
         }
         
         $return = $pid;
+        return $return;
+    }
+    
+    /**
+     * 获取订单类型
+     */
+    public function getOrderTypeByTms() {
+        $return = array();
+        
+        $url = $this->server . '/order/get_order_split_config';
+        $result = $this->request->post($url);
+        $result = json_decode($result, true);
+        if ($result['status'] == 0) {
+            foreach ($result['res'] as $value) {
+                $return[$value['code']] = $value['msg'];
+            }
+        }
         return $return;
     }
     
@@ -1016,6 +1115,49 @@ class DistributionLogic {
             $res = array(
                 'status' => -1,
                 'msg'    => '配送单ID或状态不能为空'
+            );
+        }
+        return $res;
+    }
+
+    /**
+     * [saveSignature 保存客户电子签名]
+     * @param  array  $params [订单ID:suborder_id,签名路径:sign_img]
+     * @return [type]         [description]
+     */
+    public function saveSignature($params = array()) {
+        if(!isset($params['suborder_id']) || !isset($params['sign_img'])) {
+            return array(
+                'status' => -1,
+                'msg'    => '参数有误'
+            );
+        }
+        //查出库单ID
+        $bM = M('stock_bill_out');
+        $map['refer_code'] = $params['suborder_id'];
+        $map['is_deleted'] = 0;
+        $bill_out = $bM->field('id')->where($map)->find();
+        if (empty($bill_out)) {
+            return array(
+                'status' => -1,
+                'msg'    => '出库单数据不存在'
+            );
+        }
+        unset($map);
+        //更新到配送单详情
+        $dM = M('stock_wave_distribution_detail');
+        $map['bill_out_id'] = $bill_out['id'];
+        $data = array('signature' => $params['sign_img']);
+        $ret = $dM->where($map)->save($data);
+        if ($ret) {
+            $res = array(
+                'status' => 0,
+                'msg'    => '已保存'
+            );
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '签名保存失败'
             );
         }
         return $res;

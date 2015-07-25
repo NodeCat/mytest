@@ -17,7 +17,7 @@ class IndexController extends Controller {
 
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject');
+            $action2 = array('delivery','orders','sign','reject','orderlist','report');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();
@@ -343,7 +343,8 @@ class IndexController extends Controller {
                 $val['geo'] = json_decode($val['geo'],TRUE);
                 foreach ($val['detail'] as &$v) {
                     if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
-                        $val['quantity'] +=$v['actual_quantity'];   
+                        $val['quantity'] +=$v['actual_quantity'];
+                        $v['delivery_quantity'] = $v['quantity'];
                         $v['quantity'] = $v['actual_quantity'];
                         $v['sum_price'] = $v['actual_sum_price'];
                         $final_sum += $v['actual_sum_price'];
@@ -363,10 +364,14 @@ class IndexController extends Controller {
                 if ($val['status_cn'] != '已签收' && $val['status_cn'] != '已完成' && $val['status_cn'] != '已回款') {
                     $val['deal_price'] = $dist_logic->wipeZero($val['final_price']);
                 }
-                $val['printStr'] = A('Tms/billOut', 'Api')->printBill($val);
+                $val['printStr'] = A('Tms/PrintBill', 'Logic')->printBill($val);
                 $orders[$val['user_id']][] = $val;
             }
             $this->data = $orders;
+            //提货单ID和订单ID，用于签收后自动展开
+            $oid = I('get.oid/d',0);
+            $this->id  = $id;
+            $this->oid = $oid;
         }
         $this->title = "客户签收";
         //电子签名保存接口
@@ -411,7 +416,19 @@ class IndexController extends Controller {
     //司机提货
     public function delivery() {
         $id = I('post.code/d',0);
-        if(IS_POST && !empty($id)) {
+        if (IS_GET) {
+            //只显示当天的记录
+            $map['mobile'] = session('user.mobile');
+            $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
+            $map['status'] = '1';
+            $start_date    = date('Y-m-d',NOW_TIME);
+            $end_date      = date('Y-m-d',strtotime('+1 Days'));
+            $map['created_time'] = array('between',$start_date.','.$end_date);
+            $this->data  = M('tms_delivery')->where($map)->select();
+            $this->title = '提货扫码';
+            $this->display('tms:delivery');
+            exit;
+        } elseif (IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
             //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
@@ -424,8 +441,8 @@ class IndexController extends Controller {
             $map['mobile'] = session('user.mobile');
             $dist_all = $M->field('id,mobile,dist_id,order_count')->where($map)->select();//取出当前司机所有配送单信息
             unset($map);
-            if(!empty($dist)) {//若该配送单已被认领
-                if($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
+            if (!empty($dist)) {//若该配送单已被认领
+                if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                     $this->error = '提货失败，该单据您已提货';
                 }
                 else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
@@ -444,7 +461,7 @@ class IndexController extends Controller {
                             $status = '2';
                         }
                     }
-                    if($status == '2') {//如果别人提的还是已装车，那就还可以提
+                    if ($status == '2') {//如果别人提的还是已装车，那就还可以提
                         $map['id'] =$dist['id'];
                         $data['status'] = '0';
                         $M->where($map)->save($data);
@@ -455,9 +472,6 @@ class IndexController extends Controller {
                 }
                 unset($map);
             }
-
-            //查询该配送单的信息
-            //$map['dist_number'] = substr($id, 2);
             $map['id'] = $id;
             $A = A('Common/Order','Logic');
             $dist = $A->distInfo($map);
@@ -467,14 +481,14 @@ class IndexController extends Controller {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if($dist['status'] == '2') {//已发运的单据不能被认领
+            if ($dist['status'] == '2') {//已发运的单据不能被认领
                 //$this->error = '提货失败，该单据已发运';
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
 
-            if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
+            if ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
                 $this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
@@ -483,7 +497,7 @@ class IndexController extends Controller {
             $map['itemsPerPage'] = $dist['order_count'];
             $orders = $A->order($map);
             unset($map);
-            if(empty($this->error)){
+            if (empty($this->error)) {
                 $data['dist_id'] = $dist['id'];
                 $data['dist_code'] = $dist['dist_number'];
                 $data['mobile'] = session('user.mobile');
@@ -550,44 +564,45 @@ class IndexController extends Controller {
                     unset($M);
                     $M = M('TmsSignList');
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
-                    if($status=='4'){
-                    $map['updated_time'] = $data['updated_time'];
-                    $map['created_time'] = $data['created_time'];
-                    $map['userid']       = $user_data['id'];
-                    if(strtotime($map['created_time']) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                        $map['period'] = '上午';
-                    } else {
-                        $map['period'] = '下午';
-                    }
-                    $M->add($map);
-                    unset($map);
+                    if ($status=='4') {
+                        $map['updated_time'] = $data['updated_time'];
+                        $map['created_time'] = $data['created_time'];
+                        $map['userid']       = $user_data['id'];
+                        $M->add($map);
+                        unset($map);
+                        unset($status);
                     }
                     $map['created_time'] = array('between',$start_date.','.$end_date);
                     $map['userid']       =  $user_data['id'];
                     $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                    unset($map);
+                    if ($dist['deliver_time']=='1') {
+                        $map['period'] = '上午';
+                    } elseif ($dist['deliver_time']=='2') {
+                        $map['period'] = '下午';
+                    }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign_id['id'];
                     $M->save($map); 
                     unset($map);
-                }
-                else {
+                } else {
                     $this->error = "提货失败";
                 }
             }
+        } else {
+          $this->error = '提货失败,提货码不能为空';
         }
-
-        //只显示当天的记录
-        $map['mobile'] = session('user.mobile');
-        $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
-        $map['status'] = '1';
-        $start_date    = date('Y-m-d',NOW_TIME);
-        $end_date      = date('Y-m-d',strtotime('+1 Days'));
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->data  = M('tms_delivery')->where($map)->select();
-        $this->title = '提货扫码';
-        $this->display('tms:delivery'); 
-
+        if (empty($this->error)) {
+            $map['mobile'] = session('user.mobile');
+            $userid  = M('tms_user')->field('id')->where($map)->find();
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            } else {
+                $msg = $this->error;
+                $res = array('status' =>'0', 'message' =>$msg);
+        }
+        $this->ajaxReturn($res);
     }
+
 
     /*
      * 功能：根据配送单id 生成相应的客退入库单
@@ -608,8 +623,24 @@ class IndexController extends Controller {
             $this->error("没有找到相应的车单");
         }
         unset($map);
+        unset($status);
+        $map['pid'] = $dist_id;
+        $map['is_deleted'] = 0;
+        $status = M('stock_wave_distribution_detail')->field('status')->where($map)->select();
+        foreach ($status as $value) {
+            if ($value['status'] == 2 || $value['status'] == 3) {
+                continue;
+            } else {
+                $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
+            }
+        }
+        //获得配送单号
+        $dist_code = M('stock_wave_distribution')->field('dist_code')->find($dist_id);
+        $dist_code = $dist_code['dist_code'];
+        unset($map);
         //查询条件为配送单id
-        $map['stock_wave_distribution_detail.pid'] = $dist_id;
+        $map['pid'] = $dist_id;
+        $map['is_deleted'] = 0;
         //根据配送单id查配送详情单里与出库单相关联的出库单id
         $bill_out_id = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
         //若查出的出库单id非空
@@ -618,77 +649,117 @@ class IndexController extends Controller {
             unset($map);
             //查询条件为出库单的id
             $map['id'] = array('in',$bill_out_id);
+            $map['is_deleted'] = 0;
             //根据出库单id查出出库单的所有信息
             $stock_bill_out = M('stock_bill_out')->where($map)->select();
             //若查出的出库单信息非空
             if(!empty($stock_bill_out)){
+                $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
                 for($n = 0; $n < count($stock_bill_out); $n++){
-                    $bill_out_qty = 0;  //配送数量
-                    $real_sign_qty = 0; //实收数量
+                    //创建客退入库单
+                    unset($bill);
+                    $bill['refer_code'] = $stock_bill_out[$n]['code'];//关联单据为出库单号
+                    $bill['code'] = get_sn('rejo');   //生成拒收入库单号
+                    $bill['type'] = '3';    //入库类型为拒收入库单
+                    $bill['status'] = '21';     //待收货状态
+                    $bill['batch_code'] = '';//get_batch($bill['code']); //获得批次
+                    $bill['wh_id'] = $stock_bill_out[$n]['wh_id'];  //仓库id
+                    $bill['company_id'] = $stock_bill_out[$n]['company_id'];   
+                    $bill['partner_id'] = '';   //供应商
+                    $bill['type'] = 7;  //入库类型为拒收入库单
+                    $bill['created_user'] = 2;   //uid默认为2
+                    $bill['created_time'] = get_time();
+                    $bill['updated_user'] = 2;   //uid默认为2
+                    $bill['updated_time'] = get_time();
                     unset($map);
                     $map['pid'] = $stock_bill_out[$n]['id'];
+                    $map['is_deleted'] = 0;
                     //根据出库单id查询出所有出库单详情信息
                     $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
                     if(!empty($bill_out_detail)){
-                        for($i = 0; $i < count($bill_out_detail); $i++){
-                            $bill_out_qty += $bill_out_detail[$i]['delivery_qty'];  //累加出库单详情的配送数量  
-                        }
-                        $detail_id = array_column($bill_out_detail,'id');
-                        unset($map);
-                        //根据出库单详情表的id查询签收表的签收情况
-                        $map['bill_out_detail_id'] = array('in', $detail_id);
-                        $sign_data = M('tms_sign_in_detail')->where($map)->select();
-                        if(!empty($sign_data)){
-                            for($j = 0; $j < count($sign_data); $j++){  
-                                $real_sign_qty += $sign_data[$j]['real_sign_qty'];  //累加签收表里的实际签收数量
-                            }
-                        }else{
-                            $this->error("没有找到相应的签收单");
-                        }
-
-                    }else{
-                        $this->error("没有找到相应的订单");
-                    }
-                    //比较配送数量和实收数量
-                    $diff = $bill_out_qty - $real_sign_qty;
-                    if($diff > 0){
-                        //创建客退入库单
-                        $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
-                                            
-                        //$bill = $Min->create();
-                        $bill['refer_code'] = $stock_bill_out[$n]['id'];//关联单据为出库id
-                        $bill['code'] = get_sn('wms_back_in');   //生成客退入库单号
-                        $bill['type'] = '3';    //入库类型为客退入库单
-                        $bill['status'] = '21';     //待收货状态
-                        $bill['batch_code'] = get_batch($bill['code']); //获得批次
-                        $bill['wh_id'] = $stock_bill_out[$n]['wh_id'];  //仓库id
-                        $bill['company_id'] = $stock_bill_out[$n]['company_id'];   //
-                        $bill['partner_id'] = '';   //供应商
-                        $bill['type'] = 3;  //入库类型为客退入库单
-                        $bill['created_user'] = 2;   //uid默认为2
-                        $bill['created_time'] = get_time();
-                        
-                        if(!empty($bill_out_detail)){
+                        $A = A('Tms/List','Logic');
                         foreach ($bill_out_detail as $key => $val) {
+                            $real_sign_qty = 0; //签收数量先置为0
+                            $batch = '';
+                            unset($map);
+                            unset($status);
+                            $map['bill_out_id'] = $val['pid'];
+                            $map['is_deleted'] = 0;
+                            //若没有签收详情
+                            $status = M('stock_wave_distribution_detail')->field('status')->where($map)->find();
+                            switch ($status['status']) {
+                                case '0':
+                                    //若是已分拨状态
+                                    $this->error('此车单中有已分拨的订单，请提货并签收或拒收后再提出交货申请。');exit;
+                                    break;
+                                case '1':
+                                    //若是已装车状态
+                                    $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
+                                    break;
+                                case '2':
+                                    //若是已签收状态
+                                    unset($map);
+                                    $map['bill_out_detail_id'] = $val['id'];
+                                    $sign_data = M('tms_sign_in_detail')->where($map)->select();
+                                    if(!empty($sign_data)) {
+                                        $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
+                                    }
+                                    //获得最久远的批次
+                                    $batch = $A->get_long_batch($dist_code,$val['pro_code']);
+                                    break;
+                                case '3':
+                                    //若已经拒收
+                                    $real_sign_qty = 0;
+                                    //获得最近的批次
+                                    $batch = $A->get_lasted_batch($dist_code,$val['pro_code']);
+                                    break;
+                                case '4':
+                                    //若是已经完成
+                                    $this->error('此车单已经完成，无需交货。');exit;
+                                    break;
+                                default:
+                                    # code...
+                                    break;
+                            }
+                            
+                            //若没有退货
+                            if(($val['delivery_qty'] - $real_sign_qty) <= 0){
+                                continue;
+                            }
                             $v['pro_code'] = $val['pro_code'];
                             $v['pro_name'] = $val['pro_name'];
                             $v['pro_attrs'] = $val['pro_attrs'];
-                            $v['pro_uom'] = '';     //计量单位留空　
-                            $v['expected_qty'] = $diff; //写入预期入库数量
+                            $v['pro_uom'] = isset($val['measure_unit']) ? $val['measure_unit'] : '';     //计量单位
+                            $v['expected_qty'] = $val['delivery_qty'] - $real_sign_qty; //写入预期入库数量
                             $v['prepare_qty'] = 0;
                             $v['done_qty'] = 0;
                             $v['wh_id'] = $bill['wh_id'];
-                            //$v['type'] = 'in';
-                            $v['refer_code'] = $val['pid']; //写入相关联的出库单id
+                            $v['refer_code'] = $bill['refer_code']; //写入相关联的出库单号
                             $v['pid'] = $bill['id'];
-                            $v['price_unit'] = '';  //计价单位留空
+                            $v['price_unit'] = isset($val['price']) ? $val['price'] : 0;  //单价
+                            $v['created_time'] = get_time();
+                            $v['updated_time'] = get_time();
+                            $v['created_user'] = 2;   //uid默认为2
+                            $v['updated_user'] = 2;   //uid默认为2
                             $bill['detail'][] = $v;
-                        }                   
-                            $res = $Min->relation('detail')->add($bill); //写入客退入库单详情
                             
-                        }
-                        
-                    }
+                            $container['refer_code'] = $bill['code'];   //关联拒收入库单号
+                            $container['pro_code'] = $val['pro_code'];
+                            $container['batch'] = isset($batch) ? $batch : '';
+                            $container['wh_id'] = $bill['wh_id'];
+                            $container['location_id'] = '';
+                            $container['qty'] = $v['expected_qty'];
+                            $container['created_time'] = get_time();
+                            $container['updated_time'] = get_time();
+                            $container['created_user'] = 2;   //uid默认为2
+                            $container['updated_user'] = 2;   //uid默认为2
+                            $M = M('stock_bill_in_container');
+                            $s = $M->add($container);    //写入拒收入库单详情表的详情表
+                        }  
+                        if(!empty($bill['detail'])){
+                            $res = $Min->relation('detail')->add($bill); //写入拒收入库单 
+                        }  
+                    }       
                 }
             }else{
                 $this->error("没有找到相应的订单");

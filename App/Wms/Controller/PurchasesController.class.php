@@ -75,7 +75,13 @@ class PurchasesController extends CommonController {
         $maps['wh_id']          = $wh_id;
         $maps['delivery_date']  = $delivery_date;
         $maps['delivery_ampm']  = $delivery_ampm;
-
+        
+        foreach ($data as $key => $value) {
+            $data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $value['delivery_date'], $value['delivery_ampm'], $value['wh_id']);
+            if ($data[$key]['purchase_num'] < 0) {
+                unset($data[$key]);
+            }
+        }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);
@@ -127,6 +133,13 @@ class PurchasesController extends CommonController {
         if(!$pro_codeArr){
             $this->msgReturn(false, '导出数据为空！');
         }
+        foreach ($pro_codeArr as $key => $value) {
+            $pro_codeArr[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $value['delivery_date'], $value['delivery_ampm'], $value['wh_id']);
+            if ($pro_codeArr[$key]['purchase_num'] < 0) {
+                unset($pro_codeArr[$key]);
+            }
+        }
+        
 
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -154,7 +167,7 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
             $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
             $sheet->setCellValue('F'.$i, getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id']));
-            $sheet->setCellValue('G'.$i, getPurchaseNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id']));
+            $sheet->setCellValue('G'.$i, $value['purchase_num']);
             $sheet->setCellValue('H'.$i, $value['c_pro_code']);
             $sheet->setCellValue('I'.$i, getPronameByCode('name', $value['c_pro_code']));
             $sheet->setCellValue('J'.$i, getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']));

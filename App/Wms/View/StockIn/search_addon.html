@@ -1,0 +1,16 @@
+<div class="row">
+	<div class="form-group  col-lg-3">
+		<div class="col-lg-10 col-lg-offset-2">
+<a href="javascript:void(0);" data-target="#modal" role="button" data-title="打印" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="print-page">打印</a>
+
+		</div>
+	</div>
+</div>
+
+<script>
+$(document).on('click','#print-page',function(){
+  var ids = getChecked();
+  var url = "/StockIn/printpage?id="+ids;
+  window.open(url);
+});
+</script>

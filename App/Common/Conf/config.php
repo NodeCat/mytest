@@ -38,16 +38,17 @@ return array(
     'DATA_CACHE_TYPE'   => 'redis',
     'REDIS_HOST'        => '127.0.0.1',
     'REDIS_PORT'        => 6379,
-    'DATA_CACHE_TIME'   => 60,
+    'DATA_CACHE_TIME'=> 60,
 
     //错误及日志
     'LOG_RECORD'         => true,
     'LOG_LEVEL'          => 'EMERG,ALERT,CRIT,ERR',
     'SHOW_ERROR_MSG'     => TRUE,
-    'ERROR_MESSAGE'        => '页面错误！请稍后再试～',
-    'URL_404_REDIRECT'    => '',
+    'ERROR_MESSAGE'      => '页面错误！请稍后再试～',
+    'URL_404_REDIRECT'   => '',
 
     'DACHUWANG_API_PATH'  => 'http://api.dachuwang.com',
     'TMS_API_PATH'        => 'http://api.tms.dachuwang.com',
-    'BARCODE_PATH' => 'http://api.pda.dachuwang.com/barcode/get?text=',
+    'BARCODE_PATH'        => 'http://api.pda.dachuwang.com/barcode/get?text=',
+    'IMG_UPLOAD_PATH'     => 'http://img.dachuwang.com/'
 );

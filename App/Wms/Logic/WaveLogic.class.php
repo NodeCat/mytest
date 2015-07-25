@@ -244,7 +244,7 @@ class WaveLogic{
     	if(!$idsArr) return FALSE;
     	foreach($idsArr as $key=>$value){
     		$is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value);
-    		if(!$is_enough) return FALSE;
+    		if($is_enough['status'] == 0) return FALSE;
     	}
     	return TRUE;
     }
