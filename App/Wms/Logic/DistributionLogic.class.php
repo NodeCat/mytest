@@ -910,7 +910,7 @@ class DistributionLogic {
 
     /**
      * [set_dist_detail_status 根据配送单ID或出库单ID，修改配送单详情状态]
-     * @param array $map [bill_out_id,status]
+     * @param array $map [bill_out_id或dist_id,status]
      */
     public function set_dist_detail_status($params = array())
     {
@@ -1017,9 +1017,6 @@ class DistributionLogic {
         if(!empty($params['dist_id']) && !empty($params['status'])) {
             $map['id'] = $params['dist_id'];
             switch($params['status']) {
-                case '1'://已装车对应配送单状态2:已发运
-                    $status = '2';
-                    break;
                 case '2'://已签收对应配送单状态3:已配送
                     $status = '3';
                     break;
@@ -1073,25 +1070,22 @@ class DistributionLogic {
                             'status' => 0,
                             'msg'    => '配送单状态更新成功'
                         );
-                    }
-                    //失败的返回结果
-                    else {
+                    } else {
+                        //失败的返回结果
                         $res = array(
                             'status' => -1,
                             'msg'    => '配送单状态更新失败'
                         );
                         return $res;
                     }
-                }
-                else {
+                } else {
                     $res = array(
                         'status' => 0,
                         'msg'    => '当前状态无需更新'
                     );
                 }
             }
-        }
-        else {
+        } else {
             $res = array(
                 'status' => -1,
                 'msg'    => '配送单ID或状态不能为空'
