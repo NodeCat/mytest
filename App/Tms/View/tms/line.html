@@ -1,136 +1,171 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>司机配送路线</title>
-	<style type="text/css">
-		body{
-			margin:0;
-			height:100%;
-			width:100%;
-			position:absolute;
-		}
-		#container{
-			margin:0 10px;
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>司机配送路线</title>
+  <style type="text/css">
+    body{
+      margin:0;
+      height:100%;
+      width:100%;
+      position:absolute;
+    }
+    #container{
+      margin:0 10px;
+      margin-top:-20px;
 
 
-		}
-		#mapContainer{
-			top:0;
-			left:0;
-			right:0;
-			bottom:0;
-			width:80%;
-			height: 500px;
-		}
-		
-		#tip{
-			bottom:20px;
-			left:0;
-			height:80px;
-			font-size:12px;
-		}
-		
-		#tip input[type='button']{
-			margin-top:10px;
-			height:28px;
-			line-height:28px;
-			outline:none;
-			text-align:center;
-			padding-left:5px;
-			padding-right:5px;
-			color:#FFF;
-			background-color:#0D9BF2;
-			border:0;
-			border-radius: 3px;
-			margin-top:5px;
-			margin-left:5px;
-			cursor:pointer;
-			margin-right:10px;
-		}
-		h4 span{font-size: 16px;}
-	</style>
+    }
+    #mapContainer{
+      top:0;
+      left:0;
+      right:0;
+      bottom:0;
+      width:100%;
+      height:800px;
+    }
+    
+    #tip{
+      left:0;
+      height:40px;
+      font-size:12px;
+    }
+    
+    #tip input[type='button']{
+      margin-top:0px;
+      height:28px;
+      line-height:28px;
+      outline:none;
+      text-align:center;
+      padding-left:5px;
+      padding-right:5px;
+      color:#FFF;
+      background-color:#0D9BF2;
+      border:0;
+      border-radius: 3px;
+      margin-top:5px;
+      margin-left:5px;
+      cursor:pointer;
+      margin-right:10px;
+    }
+    h4 span{font-size: 16px;color:#00F;}
+  </style>
 </head>
 <body>
-	<div id="container">
-		<div>
-		<h4>
-			路线：<span>{$lines}</span></br>
-			客户量：<span>{:count($address)}</span></br>
-			总里程：<span>{$distance} km</span></br>
-			总耗时：<span>{$time.hour}小时{$time.min}分{$time.sec}秒<span>
-		</h4>
-	    </div>
-	<div id="mapContainer"></div>
-	<div id="tip">  
-		<input type="button" value="添加线覆盖物" onClick="javascript:polyline.setMap(map)"/>
-		<input type="button" value="删除线覆盖物" onClick="javascript:polyline.setMap(null)"/>
-		<input type="button" value="测距" onClick="javascript:ruler.turnOn()"/>  
-	</div>
+  <div id="container">
+    <div>
+    <h4>
+      客户量:<span>{:count($address)}</span>
+      总里程:<span>{$distance}km</span>
+      总耗时:<span>{$time.hour}小时{$time.min}分{$time.sec}秒</span></br>
+      路线:<span>{$lines}</span>
+    </h4>
+      </div>
+      <div id="tip">  
+    <input type="button" value="显示线路" onClick="javascript:polyline.setMap(map)"/>
+    <input type="button" value="隐藏线路" onClick="javascript:polyline.setMap(null)"/>
+    <input type="button" value="测量距离" onClick="javascript:ruler.turnOn()"/>  
+  </div>
+  <div id="mapContainer"></div>
 </div>
-
 </body>
 </html>
 <script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=67f642a47ca5d2d0b4c4a272baeda00f"></script>
-	<script type="text/javascript">
-		var polyline;
-		//初始化地图对象，加载地图
-		var map = new AMap.Map("mapContainer",{
-				resizeEnable: true,
-			  	view: new AMap.View2D({
-			  	<if condition="count($address) neq 0">
-		      	center:new AMap.LngLat("{$address[0]['lng']}","{$address[0]['lat']}"),//地图中心点
-		      	</if>
-		      	zoom:13,//地图显示的缩放级别
-		     }),
-		});	
-		//添加线覆盖物
-		(function addLine() {
-		   var lineArr = new Array();//创建线覆盖物节点坐标数组
-		   <volist name='points' id='point'>
-		   lineArr.push(new AMap.LngLat("{$point.lng}","{$point.lat}"));
-		   </volist>
-		   polyline = new AMap.Polyline({ 
-			   path:lineArr, //设置线覆盖物路径
-			   strokeColor:"#3366FF", //线颜色
-			   strokeOpacity:1, //线透明度 
-			   strokeWeight:3, //线宽
-			   strokeStyle:"solid", //线样式
-			   strokeDasharray:[10,5] //补充线样式 
-		   }); 
-		   polyline.setMap(map);
-		 })();
+  <script type="text/javascript">
+    var polyline;
+    //初始化地图对象，加载地图
+    var map = new AMap.Map("mapContainer",{
+        resizeEnable: true,
+          view: new AMap.View2D({
+          <if condition="count($address) neq 0">
+            center:new AMap.LngLat("{$address[0]['lng']}","{$address[0]['lat']}"),//地图中心点
+            </if>
+            zoom:13,//地图显示的缩放级别
+         }),
+    }); 
+    //添加线覆盖物
+    (function addLine() {
+       var lineArr = new Array();//创建线覆盖物节点坐标数组
+       <volist name='points' id='point'>
+       lineArr.push(new AMap.LngLat("{$point.lng}","{$point.lat}"));
+       </volist>
+       polyline = new AMap.Polyline({ 
+         path:lineArr, //设置线覆盖物路径
+         strokeColor:"#3366FF", //线颜色
+         strokeOpacity:1, //线透明度 
+         strokeWeight:3, //线宽
+         strokeStyle:"solid", //线样式
+         strokeDasharray:[10,5] //补充线样式 
+       }); 
+       polyline.setMap(map);
+     })();
 
-		//添加侧边控制条
-		map.plugin(["AMap.ToolBar"],function(){		
-		toolBar = new AMap.ToolBar();
-		map.addControl(toolBar);		
-		});
+    //添加侧边控制条
+    map.plugin(["AMap.ToolBar"],function(){   
+    toolBar = new AMap.ToolBar();
+    map.addControl(toolBar);    
+    });
 
-		//在地图上标记点
-		(function addMarker(){
-			<volist name='address' id='addr'>
-				marker{$i} = new AMap.Marker({	
-				//icon:"http://webapi.amap.com/images/marker_sprite.png",
-				//icon:"http://webapi.amap.com/images/custom_a_j.png",
-				position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
-			});
-			marker{$i}.setMap(map);
-			marker{$i}.setTitle("{$addr['address']}");
-			</volist>
-		})();
-	  // 测距
-		map.plugin(["AMap.RangingTool"],function(){ 
-	    	ruler = new AMap.RangingTool(map);
-		 	AMap.event.addListener(ruler,"end",function(e){
-			ruler.turnOff();
-			});
-		});
-		// 线路描边
-		(function addOutline(){
-		  polyline.setOptions({
-		    isOutline:true,
-		    outlineColor:"#000066"
-		  });
-		})();
-	</script>
+    //在地图上标记点
+    (function addMarker(){
+      //商家标记
+      <volist name='address' id='addr'>
+        marker{$i} = new AMap.Marker({
+        <if condition="$addr['color_type'] eq 3">
+        icon:"__PUBLIC__/img/red.png",
+        </if>
+        //icon:"http://webapi.amap.com/images/custom_a_j.png",
+        position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
+      });
+      marker{$i}.setMap(map);
+      marker{$i}.setTitle("{$addr['address']}");
+      </volist>
+      <if condition="$points neq NULL">
+      //起点
+      marker_start = new AMap.Marker({
+        icon: new AMap.Icon({    
+        image:"http://cache.amap.com/lbs/static/jsdemo002.png", 
+        size:new AMap.Size(40,40),
+        imageOffset: new AMap.Pixel(-334, -180),
+        }),
+        offset : {
+          x : -16,
+          y : -40
+        },
+        position:new AMap.LngLat("{$points[0]['lng']}","{$points[0]['lat']}"),
+      });
+      marker_start.setMap(map);
+      marker_start.setTitle("配送开始时间:{$points[0]['time']}");
+      //终点
+      marker_end = new AMap.Marker({
+        icon: new AMap.Icon({    
+        image:"http://cache.amap.com/lbs/static/jsdemo002.png", 
+        size:new AMap.Size(40,40),
+        imageOffset: new AMap.Pixel(-334, -134),
+        }),
+        offset : {
+          x : -16,
+          y : -40
+        },
+        {~$end = end($points)}
+        position:new AMap.LngLat("{$end['lng']}","{$end['lat']}"),
+      });
+      marker_end.setMap(map);
+      marker_end.setTitle("结束时间:{$end['time']}");
+      </if>
+    })();
+    // 测距
+    map.plugin(["AMap.RangingTool"],function(){ 
+        ruler = new AMap.RangingTool(map);
+      AMap.event.addListener(ruler,"end",function(e){
+      ruler.turnOff();
+      });
+    });
+    // 线路描边
+    (function addOutline(){
+      polyline.setOptions({
+        isOutline:true,
+        outlineColor:"#000066"
+      });
+    })();
+  </script>
