@@ -365,13 +365,15 @@ $(function() {
 		<volist name='list' id='attrs' key="kk">
 		  if (num == {$kk}) {
 			<volist name="attrs['map_pos']" id="pos">
+				<notempty name="pos.lng">
 			    var num;
 			   	num = String.fromCharCode(65+{$i}-1);
 			   	markerPoint += "mid,,"+num+":"+{$pos.lng}+","+{$pos.lat}+"|";
+			   	</notempty>
 			</volist>
 		  }
 		</volist>
-	});	
+	});
     markerPoint = markerPoint.slice(9,-1);
 	ImgBase = "http://restapi.amap.com/v3/staticmap?size=900*600&key=ee95e52bf08006f63fd29bcfbcf21df0&markers=";
 	Imgsrc = ImgBase + markerPoint;
