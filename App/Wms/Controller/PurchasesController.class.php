@@ -77,10 +77,13 @@ class PurchasesController extends CommonController {
         $maps['delivery_ampm']  = $delivery_ampm;
         
         foreach ($data as $key => $value) {
-            $data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $value['delivery_date'], $value['delivery_ampm'], $value['wh_id']);
+            $data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
             if ($data[$key]['purchase_num'] < 0) {
                 unset($data[$key]);
             }
+            //解决不选日期和时间段是应该是根据空汇总
+            $data[$key]['delivery_date'] = $delivery_date;
+            $data[$key]['delivery_ampm'] = $delivery_ampm;
         }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
