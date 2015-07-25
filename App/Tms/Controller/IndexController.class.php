@@ -649,7 +649,6 @@ class IndexController extends Controller {
                 $bill['pid'] = $dist_id;
                 $bill['refer_code'] = $stock_bill_out[$n]['code'];//关联单据为出库单号
                 $bill['code'] = get_sn('rejo');   //生成拒收入库单号
-                $bill['type'] = '3';    //入库类型为拒收入库单
                 $bill['status'] = '21';     //待收货状态
                 $bill['batch_code'] = '';//get_batch($bill['code']); //获得批次
                 $bill['wh_id'] = $stock_bill_out[$n]['wh_id'];  //仓库id
@@ -678,7 +677,7 @@ class IndexController extends Controller {
                                 break;
                             case '1':
                                 //若是已装车状态
-                                $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。1');exit;
+                                $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
                                 break;
                             case '2':
                                 //若是已签收状态
