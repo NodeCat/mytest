@@ -22,7 +22,7 @@ class GpsTrackApi extends CommApi {
         $sign_mg = $D->relation('TmsUser')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
         unset($map);
         $key = $sign_mg['id'].$sign_mg['mobile'];// 键名
-        if (intval($sign_mg['distance']) > 0) {
+        if (floatval($sign_mg['distance']) > 0) {
             $data_old = S(md5($key));
             $data['points'] = array_merge($data_old['points'],$data['points']);
         }
