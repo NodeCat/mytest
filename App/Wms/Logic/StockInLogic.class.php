@@ -434,4 +434,106 @@ class StockInLogic{
 		return true;
 	}
 
+	//加入入库单 @pass_reduce_ids 出库单id liuguangping @todoliuguangping
+	public function addWmsIn($pass_reduce_ids = array(539))
+	{
+		if (empty($pass_reduce_ids)) {
+			return false;
+		}
+		//查找出库单和出库单详细
+		$out_m = M('stock_bill_out_container');
+		$map['o.type'] = 5;//调拨单
+		$map['o.status'] = 2;//已出库
+		$map['o.id'] = array('in',$pass_reduce_ids);
+		$map['o.is_deleted'] = 0;
+		$map['d.is_deleted'] = 0;
+		$map['c.is_deleted'] = 0;
+		$out_m->join(' as c left join stock_bill_out as o on c.refer_code = o.code left join stock_bill_out_detail as d on d.pid=o.id')->where($map);
+		$out_m2 = clone $out_m;//深度拷贝，m2用来统计数量, m 用来select数据。
+		//插入stokc_bill_in_detail表
+		$out_container = $out_m->field('c.batch,c.pro_code,d.pro_name,d.pro_attrs,d.price,d.measure_unit,o.*')->select();
+		//插入stock_bill_in表 根据同一个调拨单，同一件商品和批次生产一张调拨单
+        $out_infos = $out_m2->field('c.batch,c.pro_code,o.*')->group('c.batch,o.refer_code')->select();
+
+		if (!$out_infos) {
+			return false;
+		}
+
+		$bill_in_m = M('stock_bill_in');
+		$bill_in_detail_m = M('stock_bill_in_detail');
+		//插入入库单
+		$stock_type = M('stock_bill_in_type');
+        $type_name = $stock_type->field('type')->where(array('id' => 4))->find();
+        $numbs = M('numbs');
+        $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
+		foreach ($out_infos as $key => $value) {
+			$bill_in = array();
+			$bill_in['code'] = get_sn($name['name']);
+
+			//根据调拨单获取获取入库单
+			$erp_transfer_m = M('erp_transfer');
+			$wh_id_in_m['trf_code'] = $value['refer_code'];
+			$erp_transfer_win = $erp_transfer_m->where($wh_id_in_m)->getField('wh_id_in');
+
+			$bill_in['wh_id'] = $erp_transfer_win?$erp_transfer_win:'';//入库仓库@todo
+			$bill_in['type'] = 4;
+			$bill_in['company_id'] = 1;
+			$bill_in['refer_code'] = $value['refer_code'];//调拨单
+			$bill_in['pid'] = 0;
+			$bill_in['batch_code'] = get_batch($value['batch']);
+			$bill_in['partner_id'] = 1;//供应商；@todoliuguangping
+			$bill_in['remark'] = '调拨入库单';
+			$bill_in['updated_time'] = get_time();
+			$bill_in['created_user'] = session('user.uid');
+			$bill_in['updated_user'] = session('user.uid');
+			$bill_in['created_time'] = get_time();
+			$bill_in['status'] = 21; //状态 21待入库
+
+			if($pid = $bill_in_m->add($bill_in)){
+				//插入出库单详细表
+				$detail = array();
+				$issetCode = array();
+				$i = 0;
+				foreach ($out_container as $ky => $val) {
+					if($bill_in['batch_code'] == $val['batch'] && $value['refer_code'] == $val['refer_code']) {
+						if (!isset($issetCode[$val['pro_code']])) {
+							//统计同一批次 ，调拨单，商品
+							$map['c.pro_code'] = $val['pro_code'];
+							$map['o.refer_code'] = $val['refer_code'];
+							$map['c.batch'] = $val['batch'];
+							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_bill_out as o on c.refer_code = o.code left join stock_bill_out_detail as d on d.pid=o.id')->where($map)->group('c.pro_code,c.batch,o.refer_code')->sum('c.qty');
+							$detail[$i]['wh_id'] = $bill_in['wh_id'];
+				            $detail[$i]['pid'] = $pid;
+				            $detail[$i]['refer_code'] = $bill_in['code']?$bill_in['code']:'';
+				            $detail[$i]['pro_code'] = $val['pro_code']? $val['pro_code']:'';
+				            $detail[$i]['pro_name'] = $val['pro_name']?$val['pro_name']:'';
+				            $detail[$i]['pro_attrs'] = $val['pro_attrs']?$val['pro_attrs']:'';
+				            $detail[$i]['batch'] = $val['batch'];
+				            $detail[$i]['expected_qty'] = $qty_out;
+				            $detail[$i]['pro_uom'] = $val['measure_unit']?$val['measure_unit']:'';
+				            $detail[$i]['price_unit'] = $val['price']?$val['price']:'';
+				            $detail[$i]['prepare_qty'] = 0;
+				            $detail[$i]['done_qty'] = 0;
+				            $detail[$i]['receipt_qty'] = 0;
+				            $detail[$i]['created_user'] = session('user.uid');
+				            $detail[$i]['updated_user'] = session('user.uid');
+				            $detail[$i]['created_time'] = date('Y-m-d H:i:s', time());
+				            $detail[$i]['updated_time'] = date('Y-m-d H:i:s', time());
+				            $i++;
+						}
+						$issetCode[$val['pro_code']] = 1;
+						
+					}
+				}
+				$bill_in_detail_m->addAll($detail);
+
+			}
+		}
+
+		return ture;
+
+        
+        
+	}
+
 }

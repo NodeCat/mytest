@@ -191,6 +191,9 @@ INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `a
 (NULL, 'index', '3', 'Wms', 'Wms', 'TransferIn', '', 'Wms/TransferIn/index', '', '', '调拨入库单', 1, 2, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
 (NULL, 'index', '4', 'Wms', 'Wms', 'TransferIn', 'index', 'Wms/TransferIn/index', '', '', '调拨入库单列表', 1, 433, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);
 
+#出库单加入批次
+ALTER TABLE `stock_bill_in_detail` ADD `batch` VARCHAR(45) NULL DEFAULT '' COMMENT '批次' AFTER `pro_attrs`;
+
 
 
 

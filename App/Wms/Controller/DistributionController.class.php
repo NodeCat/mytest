@@ -768,6 +768,16 @@ class DistributionController extends CommonController {
         $distribution_logic = A('PurchaseOut','Logic');        
         $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
 
+        //加入wms入库单 liuguangping
+        $stockin_logic = A('StockIn','Logic');        
+        $stockin_logic->addWmsIn($pass_reduce_ids);
+
+        //加入erp调拨入库单
+        $erp_stockin_logic = A('TransferLogicIn', 'Logic');
+        $erp_stockin_logic->addErpIn($pass_reduce_ids);
+
+        //加入erp入库单刘广平
+
         $this->msgReturn(true, '已完成', '', U('over'));
     }
     
