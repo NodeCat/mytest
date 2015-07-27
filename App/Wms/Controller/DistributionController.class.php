@@ -565,13 +565,17 @@ class DistributionController extends CommonController {
             
                 //驳回不符合条件的订单
                 $map['id'] = array('in', $merge);   
-                $data['status'] = 1; //状态 1 带生产
+                $data['status']   = 1; //状态 1 带生产
                 $data['dis_mark'] = 0; //未加入出库单
+                $data['wave_id']  = 0; //踢出波次
                 if ($stock->create($data)) {
                     $stock->where($map)->save();
                 }
                 unset($map);
                 unset($data);
+                //将待生产订单从波次中踢出
+                $affected = $D->updateStockWaveDetailByOutIds($merge);
+                
                 $pass_reduce_ids = array_merge($pass_ids,$reduce_ids);
                 //更新配送单中总件数 总条数 总行数 总金额
                 $map['id'] = array('in', $pass_reduce_ids);

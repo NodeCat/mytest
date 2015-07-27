@@ -571,14 +571,40 @@ class DistributionLogic {
     }
     
     /**
+     * 根据出库单ID将出库单从波次中踢出
+     * @param array $outIds 出库单ID数组（所有出库单必须属于同一个波次）
+     * @param int $waveId 波次ID
+     */
+    public function updateStockWaveDetailByOutIds($outIds = array()) {
+        $return = false;
+        
+        if (empty($outIds)) {
+            return $return;
+        }
+        
+        $map['stock_wave_detail.bill_out_id'] = array('in', $outIds);
+        $map['stock_bill_out.id'] = array('in', $outIds);
+        $data['stock_wave_detail.is_deleted'] = 1;
+        $affected = M('stock_wave_detail')
+                        ->where($map)
+                        ->join('stock_bill_out ON stock_bill_out.wave_id=stock_wave_detail.pid')
+                        ->save($data);
+        if ($affected) {
+            $return = true;
+        }
+        
+        return $return;
+    }
+    
+    /**
      * 根据出库单ID 更新出库单备注及拒绝标示 波次号 
      * @param array $ids 出库单id数组
      * @param array $data 更新数据
      */
-    public function updateStockInfoByIds($ids = array(), $wareId = 0) {
+    public function updateStockInfoByIds($ids = array(), $waveId = 0) {
         $return = false;
         
-        if (empty($ids) || empty($wareId)) {
+        if (empty($ids) || empty($waveId)) {
             return $return;
         }
         $stockBillOutInfo = M('stock_bill_out')->where(array('id' => array('in', $ids)))->select();
