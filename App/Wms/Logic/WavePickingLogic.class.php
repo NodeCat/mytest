@@ -80,6 +80,13 @@ class WavePickingLogic{
                         M('stock_bill_out')->where($map)->save($data);
                         unset($map);
                         unset($data);
+                        //将此订单踢出此波次 库存充足时 可加入其他波次继续分拣
+                        $data['is_deleted'] = 1;
+                        $map['bill_out_id'] = $bill_out_info['id'];
+                        $map['pid'] = $wave_id;
+                        M('stock_wave_detail')->where($map)->save($data);
+                        unset($map);
+                        unset($data);
                         continue;
                     }
                     //按照line_id 创建数组 OR 根据配送单号创建数组
