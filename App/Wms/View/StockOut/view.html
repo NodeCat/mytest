@@ -80,7 +80,7 @@
         <div class="form-group  col-lg-3">
             <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">送货时间</label>
             <div class="col-lg-8 col-sm-8 col-xs-8">
-            <label class="control-label label-field">{:date('Y-m-d',strtotime($data['delivery_date']))} {$data.delivery_time}</label>
+            <label class="control-label label-field"><eq name="data['delivery_date']" value="0000-00-00 00:00:00">无<else/>{:date('Y-m-d',strtotime($data['delivery_date']))} {$data.delivery_time}</eq></label>
             </div>
         </div>
         
