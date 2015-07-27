@@ -8,7 +8,7 @@ $api_where = array(                             //api接口时间
     'itemsPerPage' => $limit
 );
 
-define('WMS_API', 'http://s.test.dachuwang.com/sku/manage');
+define('WMS_API', 'http://s.dachuwang.com/sku/manage');
 
 //curl封装接口
 function http_post_data($url, $data_string) {
