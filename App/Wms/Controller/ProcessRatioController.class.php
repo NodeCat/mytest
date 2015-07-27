@@ -106,6 +106,7 @@ class ProcessRatioController extends CommonController {
         	    $p_code = $data['p_pro_code'];
         	    $M = M('erp_process_sku_relation');
         	    $map['p_pro_code'] = $p_code;
+        	    $map['is_deleted'] = 0;
         	    $ratio = $M->where($map)->select();
         	    
         	    unset($map);
