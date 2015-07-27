@@ -133,7 +133,7 @@
         <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="invoice_amount">发票金额</label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
         <label class="control-label label-field">
-            <input type="text" value="{$data.invoice_amount}" name="invoice_amount" class="form-control input-sm" />
+            <input type="text" value='<if condition="($data.invoice_amount gt 0)">{$data.invoice_amount}</if>' name="invoice_amount" class="form-control input-sm" />
             <input type="hidden" value="{$data.invoice_amount}" name="invoice_amount_hid"  />
         </label>
         </div>
