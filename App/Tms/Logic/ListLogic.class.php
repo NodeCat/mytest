@@ -56,7 +56,7 @@ class ListLogic{
         unset($map);
         $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
-        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->select();
+        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->find();
         
         return $batch['batch'];
     }
@@ -70,7 +70,7 @@ class ListLogic{
         unset($map);
         $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
-        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->select();
+        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->find();
         
         return $batch['batch'];
     }
