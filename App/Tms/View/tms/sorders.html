@@ -1,4 +1,6 @@
 <include file="Index:nav-cur" />
+
+
 <div class="col-xs-12">
     <div class="row-fluid">
         <div class="input-group">
@@ -125,6 +127,8 @@
         </a>
         <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.refer_code}">
           <form class="order">
+            <!-- 拒收选项 -->
+            <include file="tms:reject-box" />
             <input type="hidden" name="id" value="{$vo.refer_code}" />
             <input type="hidden" name="bid" value="{$vo.id}" />
 
@@ -280,6 +284,7 @@
   </div>
   <style type="text/css">
     hr{ margin-top: 10px; margin-bottom: 10px; } form.order ul.list-group{
-    margin-bottom: 0px; }
+    margin-bottom: 0px;}
   </style>
 <include file="tms:jsfooter" />
+

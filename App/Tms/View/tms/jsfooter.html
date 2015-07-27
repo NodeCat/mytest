@@ -165,32 +165,67 @@
         }
       });
 
-      $('.btn-reject').on('click',
-      function() {
-        var params = $(this).closest('form.order').serialize();
-        var addr = "{:U('reject')}";
-
-        $.ajax({
-          url: addr,
-          type: 'post',
-          cache: false,
-          dataType: 'json',
-          data: params,
-          success: function(msg) {
-            if (msg.status == '0') {
-              if (typeof HostApp == "undefined") {
-                alert(msg.msg);
-              } else {
-                HostApp.toast(msg.msg);
-              }
-
-              location.reload();
-            } else {
-              alert_error(msg.msg);
+      var rejectDialog = {
+        showRejectBox : function(obj) {
+          var reject_box = $('#reject-box'),
+              trans_bg   = $('#trans-bg');
+          trans_bg.show();
+          reject_box.show();
+          reject_box.focus();
+          $("a[data-action='saveReason']").on("click", function(e){
+            e.preventDefault();
+            var selectCase = $("input[name='reject_reason[]']:checked");
+            if(selectCase.length){
+              trans_bg.hide();
+              reject_box.hide();
+              rejectDialog.subReject(obj);
+            }else{
+              return false;
             }
-          }
-        });
+            
+
+          });
+          $("a[data-action='cancle']").on("click", function(e){
+            e.preventDefault();
+            trans_bg.hide();
+            reject_box.hide();
+          });
+          trans_bg.on("click", function(e){
+            e.preventDefault();
+            trans_bg.hide();
+            reject_box.hide();
+          })
+        },
+        subReject : function(obj) {
+          var params = obj.closest('form.order').serialize();
+          var addr = "{:U('reject')}";
+          $.ajax({
+            url: addr,
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            data: params,
+            success: function(msg) {
+              if (msg.status == '0') {
+                if (typeof HostApp == "undefined") {
+                  alert(msg.msg);
+                } else {
+                  HostApp.toast(msg.msg);
+                }
+                location.reload();
+              } else {
+                alert_error(msg.msg);
+              }
+            }
+          });
+        }
+      } 
+
+      $('.btn-reject').on('click',function() {
+        var _this = $(this);
+        rejectDialog.showRejectBox(_this);
       });
+
     });
     
     $('.js-btn-print').on('click',function(){
