@@ -687,7 +687,7 @@ class DistributionController extends CommonController {
         //更新配送详情状态为已完成
         $map['pid'] = $result['id'];
         $map['is_deleted'] = 0;
-        $data['status'] = 5; //已完成
+        $data['status'] = 5; //已发运
         if ($det->create($data)) {
             $det->where($map)->save();
         }
