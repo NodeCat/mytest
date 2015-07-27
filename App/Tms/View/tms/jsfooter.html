@@ -214,4 +214,21 @@
         $(x).children('#show').text('点击展开');
       }
     }
+
+    function checkValue(x) {
+      var val1 = $(x).data('value');
+      var val2 = $(x).val();
+      //val2 = val2.toString() 
+      //val2 = val2.replace(/[^\d\.]/g,'');
+      alert(val1);
+      if(val1 < val2){
+        alert('输入数量不能大于订单的数量，请重新输入');
+        /*if (typeof HostApp == "undefined") {
+          HostApp.toast('输入数量不能大于订单的数量，请重新输入');
+        }*/
+      
+      }
+      $(x).val(val2);
+    }
+
   </script>

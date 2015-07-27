@@ -174,7 +174,7 @@
                       </switch>
                       <else/>
                       <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
-                      placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                      placeholder="{$v.quantity}" data-value="{$v.quantity}" value="{$v.quantity}" onkeyup="checkValue(this)">
                     </eq>
                     <span class="input-group-addon">
                       {$v.close_unit}
