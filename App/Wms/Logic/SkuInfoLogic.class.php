@@ -34,8 +34,8 @@ class SkuInfoLogic
         //查询SKU采购信息
         $map['stock_purchase_detail.pro_code'] = array('in', $skuCodeArr);
         $map['stock_purchase_detail.is_deleted'] = 0;
-        $map['stock_purchase.created_time'] = array('gt', date('Y-m-d H:i:s', $stime));
-        $map['stock_purchase.created_time'] = array('lt', date('Y-m-d H:i:s', $etime));
+        $map['stock_purchase.expecting_date'] = array('gt', date('Y-m-d H:i:s', $stime));
+        $map['stock_purchase.expecting_date'] = array('lt', date('Y-m-d H:i:s', $etime));
         if ($warehouseId > 0) {
             $map['stock_purchase.wh_id'] = $warehouseId;
         }
@@ -72,14 +72,14 @@ class SkuInfoLogic
     }
     
     /**
-     * 根据SKU编号计算规定时间内平均销售价格及出库总数
+     * 根据SKU编号计算规定时间内出库总数
      * @param string $skuCode SKU编号
      * @param int $warehouse 仓库ID
      * @param int $stime 开始时间
      * @param int $etime 结束时间
      * @return 
      */
-    public function calculateSellPrice($skuCodeArr = array(), $warehouseId = 0, $stime = 0, $etime = 0)
+    public function stockSellQty($skuCodeArr = array(), $warehouseId = 0, $stime = 0, $etime = 0)
     {
         $return = array();
         

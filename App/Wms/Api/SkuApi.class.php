@@ -84,13 +84,13 @@ class SkuApi extends CommApi
         //将SKU分组 
         $newSkuCodeArr = array_chunk($skuCodeArr, $condition['itemspages']);
         //分组计算SKU信息
-        $priceAndQtyArr = array(); //SKU出库总数
+        $stockSellQtyArr = array(); //SKU出库总数
         $salePriceArr   = array(); //平均采购价
         $tmsInfo        = array(); //TMS数据 实际销售额 实际销售件数 拒收SKU数
         foreach ($newSkuCodeArr as $skuCodes) {
             //SKU出库总数
-            $priceAndQty    = $SkuInfo->calculateSellPrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
-            $priceAndQtyArr = array_merge($priceAndQtyArr, $priceAndQty);
+            $stockSellQty    = $SkuInfo->stockSellQty($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
+            $stockSellQtyArr = array_merge($stockSellQtyArr, $stockSellQty);
             //平均采购价
             $salePrice      = $SkuInfo->calculatePrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $salePriceArr   = array_merge($salePriceArr, $salePrice);
@@ -111,15 +111,14 @@ class SkuApi extends CommApi
             $returnSucess['list'][$key]['actual_sale_amount']       = 0;
             $returnSucess['list'][$key]['actual_sale_count']        = 0;
             
-            //平均采购价
-            $trueIndexSale = strval($skuCode) . '#';
-            if (isset($priceAndQtyArr[$trueIndexSale])) {
-                $returnSucess['list'][$key]['average_buy_price'] = $priceAndQtyArr[$trueIndexSale];
-            }
+            $index = strval($skuCode) . '#';
             //SKU出库量
-            $trueIndexPrice = strval($skuCode) . '#';
-            if (isset($salePriceArr[$trueIndexPrice])) {
-                $returnSucess['list'][$key]['out_warehouse_sku_counts'] = $salePriceArr[$trueIndexPrice]['sum'];
+            if (isset($stockSellQtyArr[$index])) {
+                $returnSucess['list'][$key]['out_warehouse_sku_counts'] = $stockSellQtyArr[$index];
+            }
+            //平均采购价
+            if (isset($salePriceArr[$index])) {
+                $returnSucess['list'][$key]['average_buy_price'] = $salePriceArr[$index];
             }
             
             if (isset($tmsInfo[$trueindex])) {
