@@ -1,8 +1,4 @@
 <?php
-$host      = '192.168.0.2';
-$user      = 'root';
-$pwd       = 'dachuwang';
-$db        = 'wms3';
 $startId   = 200;                               //开始ID
 $limit     = 200;                               //每次处理数据条数
 $snap_time = date('Y-m-d', strtotime('-1 day'));	//快照备份日期

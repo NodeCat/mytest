@@ -4,11 +4,14 @@ date_default_timezone_set('PRC');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 define('ROOT', __DIR__);
 
-include_once ROOT."/ezsql/ez_sql_core.php";
-include_once ROOT."/ezsql/ez_sql_mysqli.php";
-include_once ROOT."/ezsql/config.inc.php";
+include_once ROOT . "/ezsql/ez_sql_core.php";
+include_once ROOT . "/ezsql/ez_sql_mysqli.php";
+include_once ROOT . "/ezsql/config.inc.php";
 
-$db 	= new ezSQL_mysqli($user, $pwd, $db, $host);
+//引入配置文件
+$db_config = require(ROOT . "/../App/Wms/Conf/production.php");
+
+$db 	= new ezSQL_mysqli($db_config['DB_USER'], $db_config['DB_PWD'], $db_config['DB_NAME'], $db_config['DB_HOST']);
 //获取数据库中最大的ID
 $maxQuey= "SELECT MAX(id) FROM `stock` WHERE `is_deleted`='0' and `status`='qualified'";
 $maxId  = $db->get_var($maxQuey);
@@ -18,15 +21,15 @@ while ($startId < $maxId) {
     $insert_query = array();    //初始化本次插入数据库语句
     $pro_codes    = array();    //批次处理SKU号
     $insert_array = array();    //批次插入数据
-    $sku_array    = array();    //SKU接口处理后的数据    
-    
+    $sku_array    = array();    //SKU接口处理后的数据
+
     //获取stock库存表数据，并关联stock_bill_in_detail详情表，获取sku详细信息
     $query  = "SELECT a.id as id, a.wh_id as wh_id, a.pro_code as pro_code, a.batch as batch, b.price_unit as price_unit,(a.stock_qty-a.assign_qty) as stock_qty, a.status as status, b.pro_name as pro_name, b.pro_attrs as pro_attrs, b.pro_uom as pro_uom  FROM `stock` as a INNER JOIN stock_bill_in_detail as b ON b.pro_code=a.pro_code AND b.refer_code=a.batch AND b.is_deleted=0 WHERE a.`id`>$startId AND a.`is_deleted`='0' AND a.`status`='qualified' limit 200";
     $result = $db->get_results($query);
 
     if (empty($result)) {
         die('暂无数据备份');
-    } 
+    }
 
     foreach ($result as $val) {
         $pro_codes[]    = $val->pro_code;   //获取SKU，用于分类接口调用
@@ -79,7 +82,7 @@ while ($startId < $maxId) {
         $insert_array[$key]['category_name3'] = $sku_number[$val['pro_code']]['category_info']['third']['name'];
     }
 
-    foreach($insert_array as $item){
+    foreach ($insert_array as $item) {
         $insert_query_array[] = "('" . implode ( "','", $item ) . "')";
     }
 
