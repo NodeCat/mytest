@@ -1,0 +1,1 @@
+ALTER TABLE `stock_bill_in` modify column `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '配送单id' 
