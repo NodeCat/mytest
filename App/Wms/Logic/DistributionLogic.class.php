@@ -1026,8 +1026,8 @@ class DistributionLogic {
             }
             if (!$status) {
                 $res = array(
-                    'status' => -1,
-                    'msg'    => '状态码错误'
+                    'status' => 0,
+                    'msg'    => '没有对应状态需要更新'
                 );
                 return $res;
             }

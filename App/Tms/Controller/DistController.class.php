@@ -147,10 +147,10 @@ class DistController extends Controller {
                     $map['suborder_id'] = $val['refer_code'];
                     $res = $cA->set_status($map);
                 }
-                // unset($map);
-                // $map['status']  = '1';
-                // $map['dist_id'] = $id;
-                // A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
+                unset($map);
+                $map['status']  = '1';
+                $map['dist_id'] = $id;
+                A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
                 unset($map);
                 if ($res) {
                     $this->msg = "提货成功";
