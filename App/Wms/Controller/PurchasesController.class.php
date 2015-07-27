@@ -83,7 +83,6 @@ class PurchasesController extends CommonController {
             if ($data[$key]['purchase_num'] < 0) {
                 unset($data[$key]);
             }
-
         }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
