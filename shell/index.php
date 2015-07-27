@@ -11,7 +11,7 @@ include_once ROOT . "/ezsql/config.inc.php";
 //引入配置文件
 $db_config = require(ROOT . "/../App/Wms/Conf/production.php");
 
-$db 	= new ezSQL_mysqli($db_config['DB_USER'], $db_config['DB_PWD'], $db_config['DB_NAME'], $db_config['DB_HOST']);
+$db 	= new ezSQL_mysqli($db_config['DB_USER'], $db_config['DB_PWD'], $db_config['DB_NAME'], $db_config['DB_HOST'], 'utf8');
 //获取数据库中最大的ID
 $maxQuey= "SELECT MAX(id) FROM `stock` WHERE `is_deleted`='0' and `status`='qualified'";
 $maxId  = $db->get_var($maxQuey);
