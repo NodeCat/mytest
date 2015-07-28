@@ -50,6 +50,13 @@
 </div>
   </div>
 
+  <div class="">
+    <textarea name="pro_infos" id="pro_infos" class="form-control" rows="5" placeholder="批量添加，请从excel中直接粘贴，数据格式：货品号 入库数量 中间请用tab分割，每行请回车"></textarea>
+    </br>
+    <a id="preview" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon"></span>批量添加预览</a>
+  </div>
+  </br>
+
   <div class="row">
     <div class="tab-content">
       <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
@@ -140,6 +147,28 @@ $('.tr-cur .pro_names').typeahead({
 	  $(this).closest('tr').remove();
 	});
 }
+
+//预览
+$('#preview').on('click',function(){
+  var _pro_infos = $('#pro_infos').val();
+  var _url = '/StockIn/preview';
+  //提交数据到后端处理
+  $.ajax({
+    url:_url,
+    type:'post',
+    cache : false,
+    dataType:'json',
+    data:'pro_infos='+_pro_infos,
+    success: function(json){
+      if(json.status == 1){
+        $('#table-pro tr:last').before(json.data.html);
+        typehead();
+      }else{
+        alert(json.msg);
+      }
+    }
+  });
+});
 </script>
 
 <style type="text/css">
