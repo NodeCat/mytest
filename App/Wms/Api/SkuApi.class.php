@@ -87,10 +87,9 @@ class SkuApi extends CommApi
             $newSkuCodeArr = array_chunk($skuCodeArr, $condition['itemspages']);
         } else {
             //BI传递SKU编号 则优先使用SKU编号 （SKU数据格式保持统一）
-            $SkuCodeArr    = array($condition['sku_number']);
+            $skuCodeArr    = array($condition['sku_number']);
             $newSkuCodeArr = array(array($condition['sku_number']));
         }
-        
         //根据SKU编号获取 实际销售额 实际销售件数 平均采购价 拒收SKU数 SKU出库总数
         
         //分组计算SKU信息
