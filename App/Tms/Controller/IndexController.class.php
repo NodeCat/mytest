@@ -489,7 +489,7 @@ class IndexController extends Controller {
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
 
             if ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                //$this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
             $map['dist_id'] = $id;
