@@ -231,6 +231,7 @@ class ListLogic{
         }
         $customer_count = count($customer);
         $geo_arrays     = array_values($geo_array);
+        unset($data);
         $data['customer_count'] = $customer_count;
         $data['geo_arrays']     = $geo_arrays;
         return $data;
