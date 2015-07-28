@@ -609,7 +609,7 @@ class DistController extends Controller {
         $list['sign_orders'] = $sign_orders;//已签收
         $list['unsign_orders'] = $unsign_orders;//未签收
         $list['sign_finished']  = $sign_finished;  // 已完成
-        $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
+        $list['delivering'] = $all_orders - $sign_orders - $unsign_orders - $sign_finished;//派送中
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
