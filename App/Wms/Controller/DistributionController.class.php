@@ -98,12 +98,6 @@ class DistributionController extends CommonController {
     }
     
     public function index() {
-        $_POST['category_id1'] = 1;
-        $_POST['stime'] = 1430211284;
-        $_POST['etime'] = 1440752084;
-        $_POST['sku_number'] = 1000083;
-        $info = A('Sku', 'Api')->skuStatistics();
-        dump($info);exit;
         $this->before_index();
         $tem = IS_AJAX ? 'Table:list' : 'index';
         $this->lists($tem);
