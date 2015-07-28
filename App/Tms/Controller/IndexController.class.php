@@ -489,7 +489,7 @@ class IndexController extends Controller {
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
 
             if ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                //$this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
             $map['dist_id'] = $id;
@@ -776,11 +776,19 @@ class IndexController extends Controller {
         $A = A('Common/Order','Logic');
         $geo_array=array();
         foreach ($data as $key => $value) {
-            // dump($value['dist_id']);
             $map['dist_id'] = $value['dist_id'];
-            $map['itemsPerPage'] = $value['order_count'];
-            $orders = $A->order($map);
+            if (defined('VERSION')) {
+                $A = A('Tms/Dist','Logic');
+                $bills = $A->billOut($map);
+                $orders = $bills['orders'];
+            } else { 
+                $map['itemsPerPage'] = $value['order_count'];
+                $orders = $A->order($map);
+            }
             foreach ($orders as $keys => $values) {
+                if (defined('VERSION')) {
+                    $values = $values['order_info'];
+                }
                 $values['geo'] = json_decode($values['geo'],TRUE);
                 //如果地址为空的话跳过
                 if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {

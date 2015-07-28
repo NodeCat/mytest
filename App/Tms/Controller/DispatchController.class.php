@@ -130,13 +130,14 @@ class DispatchController extends Controller{
             
         }
         $this->lines = $lines;
-        $key    = $id.$mobile;
+        $key = $id.$mobile;
         $location = S(md5($key));
         $A = A('Tms/List','Logic');
         $customerAddress = $A->getCustomerAddress($mobile,$id);
         $this->time = $A->timediff($sign_msg['delivery_time'],$sign_msg['delivery_end_time']);
         $this->distance = $sign_msg['distance'];
-        $this->assign('address',$customerAddress);
+        $this->customer_count = $customerAddress['customer_count'];
+        $this->assign('address',$customerAddress['geo_arrays']);
         $this->assign('points',$location['points']);
         $this->display('tms:line');
     }
