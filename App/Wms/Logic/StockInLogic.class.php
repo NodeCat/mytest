@@ -202,10 +202,10 @@ class StockInLogic{
 				continue; //收货完成
 			} elseif ($qtycom <= $diffcom) {
 				//当可以上的量小于总共上的，则这次可以把可验收数量全部数量
-				$this->updateStockUpStatus($inId,$code,$qtyForCanIn,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak);
+				$this->updateStockUpStatus($inId,$code,$qtyForCanIn,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
 				$diff = f_sub($diff, $qtyForCanIn, 2);
 			} elseif ($qtycom > $diffcom) {
-				$this->updateStockUpStatus($inId,$code,$diff,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak);
+				$this->updateStockUpStatus($inId,$code,$diff,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
 				$diff = 0;
 			}
 
@@ -235,7 +235,7 @@ class StockInLogic{
 
 	}
 
-	public function updateStockUpStatus($inId,$code,$qty,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak){
+	public function updateStockUpStatus($inId,$code,$qty,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId){
 		//写库存
 		$line = $this->getLine($inId,$code);
 		$pro_code = $line['pro_code'];
@@ -243,7 +243,7 @@ class StockInLogic{
 		$pro_qty = $qty;
 		//管理批次号
 		get_batch($batch);
-		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$batch_bak);
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak);
 
 		//更新到货单详情 正品 残品 数量
 		$map['pid'] = $inId;

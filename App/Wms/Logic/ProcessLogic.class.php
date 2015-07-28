@@ -158,7 +158,8 @@ class ProcessLogic {
                 $data['pro_qty'],
                 '',
                 'qualified',
-                $product_date
+                $product_date,
+                $data['pid']
         );
         
         return $return;
@@ -516,7 +517,8 @@ class ProcessLogic {
             $return['wh_id'] = $data['wh_id'];
             $return['pro_code'] = $data['p_pro_code'];
             $return['pro_qty'] = $data['true_qty'];
-            $return['refer_code'] = $res['code']; //出库单号
+            $return['refer_code'] = $res['code']; 
+            $return['pid'] = $res['id']; 
             $return['location_id'] = $this->get_process_stock_id($this->mark, $mark, $data['wh_id']); //库位
         } elseif ($type == 'c') {
             //格式化子SKU
@@ -524,7 +526,8 @@ class ProcessLogic {
                 $return[$key]['wh_id'] = $data['wh_id'];
                 $return[$key]['pro_code'] = $value['c_pro_code'];
                 $return[$key]['pro_qty'] = $value['true_qty'];
-                $return[$key]['refer_code'] = $res['code']; //出库单号
+                $return[$key]['refer_code'] = $res['code'];
+                $return[$key]['pid'] = $res['id'];
                 $return[$key]['location_id'] = $this->get_process_stock_id($this->mark, $mark, $data['wh_id']); //库位
             }
         }
