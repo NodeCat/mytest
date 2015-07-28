@@ -121,6 +121,7 @@
             $(this).parents('.order').find('.p_deal').val(deal_sum);
         });
 
+      //签收逻辑
       $('.btn-sign').on('click',
       function() {
         real_quantity = $(this).parents('form.order').find('input.real');
@@ -164,14 +165,14 @@
           alert('签收数量不能为空');
         }
       });
-
+      
+      //拒收逻辑
       var rejectDialog = {
         showRejectBox : function(obj) {
           var reject_box = $('#reject-box'),
               trans_bg   = $('#trans-bg');
           trans_bg.show();
           reject_box.show();
-          reject_box.focus();
           $("a[data-action='saveReason']").on("click", function(e){
             e.preventDefault();
             var selectCase = $("input[name='reject_reason[]']:checked");
@@ -179,12 +180,12 @@
               trans_bg.hide();
               reject_box.hide();
               rejectDialog.subReject(obj);
+              selectCase.attr('checked',false);
             }else{
               return false;
             }
-            
-
           });
+
           $("a[data-action='cancle']").on("click", function(e){
             e.preventDefault();
             trans_bg.hide();
@@ -194,7 +195,7 @@
             e.preventDefault();
             trans_bg.hide();
             reject_box.hide();
-          })
+          });
         },
         subReject : function(obj) {
           var params = obj.closest('form.order').serialize();
@@ -216,16 +217,18 @@
               } else {
                 alert_error(msg.msg);
               }
+              return false;
             }
           });
         }
       } 
-
-      $('.btn-reject').on('click',function() {
+      //拒收按钮单击事件
+      $('.btn-reject').on('click',function(e) {
+        e.preventDefault();
         var _this = $(this);
         rejectDialog.showRejectBox(_this);
+        return false;
       });
-
     });
     
     $('.js-btn-print').on('click',function(){

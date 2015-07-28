@@ -38,7 +38,7 @@ class DistController extends Controller {
                 else {
                     //如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
                     $map['dist_id'] = $id;
-                    $map['order'] = array('created_time' => 'DESC');
+                    $map['order'] = 'created_time DESC';
                     $bills = A('Tms/Dist', 'Logic')->billOut($map);
                     $orders = $bills['orders'];
                     unset($map);
@@ -98,7 +98,7 @@ class DistController extends Controller {
                 $cA = A('Common/Order','Logic');
                 if (!isset($orders) || empty($orders)) {
                     $map['dist_id'] = $dist['id'];
-                    $map['order'] = array('created_time' => 'DESC');
+                    $map['order'] = 'created_time DESC';
                     $bills = A('Tms/Dist', 'Logic')->billOut($map);
                     $orders = $bills['orders'];
                     unset($map);
@@ -126,7 +126,7 @@ class DistController extends Controller {
                 foreach ($delivery_all as $va) {
                     unset($map);
                     $map['dist_id'] = $va['dist_id'];
-                    $map['order'] = array('created_time' => 'DESC');
+                    $map['order'] = 'created_time DESC';
                     $bill_outs = A('Tms/Dist', 'Logic')->billOut($map);
                     $ords = $bill_outs['orders'];
                     foreach ($ords as $v) {
@@ -140,6 +140,7 @@ class DistController extends Controller {
                     }
                 }
                 unset($map);
+
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
@@ -153,6 +154,7 @@ class DistController extends Controller {
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
                 unset($map);
                 if ($res) {
+                    $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
                     $M = M('TmsUser');                    
                     $map['mobile'] = session('user.mobile');
@@ -223,7 +225,7 @@ class DistController extends Controller {
             $this->dist = $res;
             //查询出库单列表
             $map['dist_id'] = $res['dist_id'];
-            $map['order'] = array('created_time' => 'DESC');
+            $map['order'] = 'created_time DESC';
             $A = A('Tms/Dist','Logic');
             $bills = $A->billOut($map);
             if($bills) {
@@ -424,7 +426,8 @@ class DistController extends Controller {
                 $status = $s['status'];
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
-            
+            //给母账户发送短信
+            $sres = A('Tms/SignIn', 'Logic')->sendParentAccountMsg($orderInfo['info']);
             $json = array('status' => $status, 'msg' => $msg);
             //status:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
@@ -462,11 +465,16 @@ class DistController extends Controller {
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
+        $orderInfo = $cA->getOrderInfoByOrderId($map['suborder_id']);
         if($res['status'] === 0) {
+            $sA = A('Tms/SignIn', 'Logic');
+            $reject_codes = I('post.reject_reason');
+            $reasons = $sA->getReasonByCode($reject_codes);
             unset($map);
             //签收表主表数据
             $fdata = array(
                 'sign_msg'       => I('post.sign_msg', '' ,'trim'),
+                'reject_reason'  => $reasons,
                 'status'         => 3,//拒收
                 'sign_time'      => get_time(),
                 'sign_driver'    => session('user.mobile'),
@@ -484,6 +492,10 @@ class DistController extends Controller {
                     'data' => $fdata,
                 );
                 $s = $wA->saveSignDataToDistDetail($datas);
+                //发送短信
+                if ($reasons) {
+                    $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
+                }
                 $res = array(
                     'status' => 0,
                     'msg'    => '更新成功'
