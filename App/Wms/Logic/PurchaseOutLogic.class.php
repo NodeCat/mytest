@@ -265,7 +265,7 @@ class PurchaseOutLogic{
                     //修改erp 出库单
                     if ($this->erpUpdateOut($bill_out_code, $out_id)) {
                         //添加erp出库单详细
-                        $this->insertErpContainer($bill_out_code);
+                        $this->insertErpContainer($out_id);
                         $return = true;
                     } else {
                         continue;
@@ -290,7 +290,7 @@ class PurchaseOutLogic{
         $return = false;
         $data['status'] = 'refunded';
         $data['updated_time'] = get_time();
-        $data['updated_user'] = UID;
+        $data['updated_user'] = session('user.uid');
         $map['trf_code'] = $transfer_code;
         $transfer_m = M('erp_transfer');
         $wms_out_detail = M('stock_bill_out_detail');
@@ -314,12 +314,12 @@ class PurchaseOutLogic{
                     $map['pid'] = $id;
                     $saveDetail = array();
                     $saveDetail['updated_time'] = get_time();
-                    $saveDetail['updated_user'] = UID;
-                    $saveDetail['stauts'] = 'refunded';
+                    $saveDetail['updated_user'] = session('user.uid');
+                    $saveDetail['status'] = 'refunded';
                     $saveDetail['real_out_qty'] = $vals['delivery_qty'];
                     $erp_transfer_detail_m->where($map)->save($saveDetail);
                 }
-                $return = true;
+                return true;
             }else{
                 $where = array();
                 $purSave = array();
@@ -339,11 +339,12 @@ class PurchaseOutLogic{
         $transfer_out_m = M('erp_transfer_out');
         $transfer_out_detail_m = M('erp_transfer_out_detail');
         $wms_out_detail = M('stock_bill_out_detail');
-        $
         $map = array();
         $data = array();
         $map['code'] = $bill_out_code;
-        $data['stauts'] = 'refunded';
+        $data['status'] = 'refunded';
+        $data['updated_time'] = get_time();
+        $data['updated_user'] = session('user.uid');
         if ($transfer_out_m->where($map)->save($data)) {
             $where = array();
             $where['code'] = $bill_out_code;
@@ -363,12 +364,12 @@ class PurchaseOutLogic{
                     $map['pid'] = $id;
                     $saveDetail = array();
                     $saveDetail['updated_time'] = get_time();
-                    $saveDetail['updated_user'] = UID;
-                    $saveDetail['stauts'] = 'refunded';
+                    $saveDetail['updated_user'] = session('user.uid');
+                    $saveDetail['status'] = 'refunded';
                     $saveDetail['real_out_qty'] = $vals['delivery_qty'];
-                    $erp_transfer_detail_m->where($map)->save($saveDetail);
+                    $transfer_out_detail_m->where($map)->save($saveDetail);
                 }
-                $return = true;
+                return true;
             }else{
                 $where = array();
                 $purSave = array();
@@ -383,16 +384,20 @@ class PurchaseOutLogic{
     }
 
     //写入ERP出库详细详细表
-    public function insertErpContainer($bill_out_code){
+    public function insertErpContainer($out_id){
         $stock_bill_out_container = M('stock_bill_out_container');
         $erp_bill_out_container = M('erp_transfer_out_container');
-        $map['refer_code'] = $bill_out_code;
-        $stock_container = $stock_bill_out_container->where($map)->select();
+        $map['wdd.bill_out_id'] = $out_id;
+        $map['wdd.status'] = 1;//已经装车
+        $map['wdd.is_deleted'] = 0;
+        $stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
+            left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
+            left join stock_bill_out as o on wdd.bill_out_id = o.id ')->where($map)->select();
         if($stock_container){
             $data = array();
             $process_logic = A('Process', 'Logic');
             foreach ($stock_container as $key => $value) {
-                $data[$key]['refer_code'] = $bill_out_code;
+                $data[$key]['refer_code'] = $value['code_refer'];
                 $data[$key]['pro_code'] = $value['pro_code'];
                 $data[$key]['batch'] = get_batch($value['batch']);
                 $data[$key]['price'] = $process_logic->get_price_by_sku($value['batch'], $value['pro_code']);//平均价
@@ -400,9 +405,9 @@ class PurchaseOutLogic{
                 $data[$key]['location_id'] = $value['location_id'];
                 $data[$key]['wh_id'] = $value['wh_id'];
                 $data[$key]['created_time'] = get_time();
-                $data[$key]['created_user'] = UID;
+                $data[$key]['created_user'] = session('user.uid');
                 $data[$key]['updated_time'] = get_time();
-                $data[$key]['updated_user'] = UID;
+                $data[$key]['updated_user'] = session('user.uid');
             }
             $erp_bill_out_container->addAll($data);
             return true;

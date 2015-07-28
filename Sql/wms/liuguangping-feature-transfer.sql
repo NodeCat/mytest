@@ -180,6 +180,8 @@ INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `modul
 (NULL, 'close', '4', 'Wms', 'Wms', 'Transfer', 'close', 'Wms/Transfer/close', '', '', '调拨单作废', '0', '428', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0')
 INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES 
 (NULL, 'view', '4', 'Wms', 'Wms', 'TransferOut', 'view', 'Wms/TransferOut/view', '', '', '调拨出库单详细', '0', '431', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0');
+INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES 
+(NULL, 'view', '4', 'Wms', 'Wms', 'TransferIn', 'view', 'Wms/TransferIn/view', '', '', '调拨入库单查看', '0', '433', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0');
 
 #调拨出库
 INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES

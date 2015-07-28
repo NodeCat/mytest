@@ -38,7 +38,7 @@ class TransferController extends CommonController
         'state' => '调拨状态'
     );
     protected $query   = array (
-        'erp_transfer.code' => array(
+        'erp_transfer.trf_code' => array(
                 'title' => '调拨单号',
                 'query_type' => 'eq',
                 'control_type' => 'text',
@@ -80,6 +80,7 @@ class TransferController extends CommonController
     protected $warehouseArr = array();
     //加入默认值
     public function __construct(){
+        //A('PurchaseOut','Logic')->insertErpContainer(552); echo "ddd";die;
         parent::__construct();
         //获得仓库信息
         $warehouse = M('warehouse')->field('id,name')->select();
