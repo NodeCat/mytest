@@ -54,46 +54,56 @@ class SkuApi extends CommApi
         
         //根据分类ID获取分类下所有三级分类ID 调用CategoryLogic下的getPidBySecondChild方法
         //请求条件
-        $param = array(
-        	   'top' => $condition['category_id1'],
-           'second' => 0,
-           'second_child' => 0,
-        ); 
-        if (!empty($condition['category_id2'])) {
-            $param['second'] = $condition['category_id2'];
-        }
-        if (!empty($condition['category_id3'])) {
-            $param['second_child'] = $condition['category_id3'];
-        }
-        //所有三级分类ID
-        $thirdCatIdArr = $CategoryLogic->getPidBySecondChild($param);
-        if (empty($thirdCatIdArr)) {
-            $returnError['msg'] = 'The Cat Have Not Data Info';
-            $this->ajaxReturn($returnError);
+        
+        $newSkuCodeArr = array(); //待查询的SKU编号数组
+        if (empty($condition['sku_number'])) {
+            //BI没有传递SKU编号 按照分类查询
+            $param = array(
+            	   'top' => $condition['category_id1'],
+               'second' => 0,
+               'second_child' => 0,
+            ); 
+            if (!empty($condition['category_id2'])) {
+                $param['second'] = $condition['category_id2'];
+            }
+            if (!empty($condition['category_id3'])) {
+                $param['second_child'] = $condition['category_id3'];
+            }
+            //所有三级分类ID
+            $thirdCatIdArr = $CategoryLogic->getPidBySecondChild($param);
+            if (empty($thirdCatIdArr)) {
+                $returnError['msg'] = 'The Cat Have Not Data Info';
+                $this->ajaxReturn($returnError);
+            }
+            
+            //根据所有三级分类ID获取所有SKU编号 调用InsalesLogic下的getSkuInfoByCategory方法
+            $skuCodeArr = $InsalesLogic->getSkuInfoByCategory($thirdCatIdArr);
+            if (empty($skuCodeArr)) {
+                $returnError['msg'] = 'The Cat Have Not SKU Code Data Info';
+                $this->ajaxReturn($returnError);
+            }
+            
+            //将SKU分组 
+            $newSkuCodeArr = array_chunk($skuCodeArr, $condition['itemspages']);
+        } else {
+            //BI传递SKU编号 则优先使用SKU编号 （SKU数据格式保持统一）
+            $SkuCodeArr    = array($condition['sku_number']);
+            $newSkuCodeArr = array(array($condition['sku_number']));
         }
         
-        //根据所有三级分类ID获取所有SKU编号 调用InsalesLogic下的getSkuInfoByCategory方法
-        $skuCodeArr = $InsalesLogic->getSkuInfoByCategory($thirdCatIdArr);
-        if (empty($skuCodeArr)) {
-            $returnError['msg'] = 'The Cat Have Not SKU Code Data Info';
-            $this->ajaxReturn($returnError);
-        }
+        //根据SKU编号获取 实际销售额 实际销售件数 平均采购价 拒收SKU数 SKU出库总数
         
-        //根据SKU编号获取 实时在库量 实时可售量 平均采购价 平均销售价 拒收SKU数 SKU出库总数
-        
-        //将SKU分组 
-        $newSkuCodeArr = array_chunk($skuCodeArr, $condition['itemspages']);
         //分组计算SKU信息
         $stockSellQtyArr = array(); //SKU出库总数
-        $salePriceArr   = array(); //平均采购价
-        $tmsInfo        = array(); //TMS数据 实际销售额 实际销售件数 拒收SKU数
+        $salePriceArr    = array(); //平均采购价
+        $tmsInfo         = array(); //TMS数据 实际销售额 实际销售件数 拒收SKU数
         foreach ($newSkuCodeArr as $skuCodes) {
             //SKU出库总数
             $stockSellQty    = $SkuInfo->stockSellQty($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $stockSellQtyArr = array_merge($stockSellQtyArr, $stockSellQty);
             //平均采购价
-            $salePrice      = $SkuInfo->calculatePrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
-            $salePriceArr   = array_merge($salePriceArr, $salePrice);
+            $salePrice       = $SkuInfo->calculatePrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
+            $salePriceArr    = array_merge($salePriceArr, $salePrice);
         }
         //TMS数据 实际销售额 实际销售件数 拒收SKU数
         $tmsInfo = $SkuInfo->getTmsInfo($condition['stime'], $condition['etime'], $condition['warehouse_id']);
