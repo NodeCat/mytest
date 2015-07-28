@@ -44,6 +44,7 @@ class StockInLogic{
 		//$detail['moved_qty'] = $detail['expected_qty'] - $this->getQtyForIn($inId,$code);
 		$detail['moved_qty'] = $this->getQtyForIn($inId,$code);
 		$detail['expected_qty'] = $detail['expected_qty'];
+		$detail['receipt_qty'] = $prepareOnQty;
 		return array('res'=>true,'data'=>$detail);
 	}
 
