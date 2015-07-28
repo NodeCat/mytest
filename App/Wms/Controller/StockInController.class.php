@@ -772,13 +772,13 @@ class StockInController extends CommonController {
         }
 
         //查询收货区库位
-        $map['code'] = 'RECV-01';
+        $map['code'] = '001-001';
         $map['wh_id'] = session('user.wh_id');
         $rev_location_info = M('location')->where($map)->find();
         unset($map);
 
         if(empty($rev_location_info['id'])){
-        	$this->msgReturn(0,'请添加收货区库位');
+        	$this->msgReturn(0,'请添加库位001-001');
         }
 
         //根据到货单查询相关SKU信息
