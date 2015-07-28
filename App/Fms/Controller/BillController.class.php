@@ -172,8 +172,10 @@ class BillController extends \Wms\Controller\CommonController
     	$A = A('Common/Order', 'Logic');
     	$map['id'] = I('id');
     	$data = $A->billDetail($map);
+        $store = $A->billStore($map);
         $data['state'] = $data['billing_info']['status_code'];
     	$this->data = $data;
+        $this->store = $store;
     	$remarks = $A->billRemarkList($map);
     	$this->remarks = $remarks['list'];
     	$this->display();
@@ -183,8 +185,14 @@ class BillController extends \Wms\Controller\CommonController
     {
     	$A = A('Common/Order', 'Logic');
     	$map['id'] = I('id');
-    	$map['date'] = I('date');
-    	$data = $A->billOrders($map);
+        $t = I('t');
+        if(empty($t)) {
+            $map['date'] = I('date');
+            $data = $A->billOrders($map);
+        }
+        else {
+            $data = $A->billStoreOrders($map);
+        }
 
         foreach ($data['list'] as &$order) {
             foreach ($order['child'] as &$vo) {
@@ -232,12 +240,32 @@ class BillController extends \Wms\Controller\CommonController
     public function remark()
     {
         $A = A('Common/Order', 'Logic');
+
+        if(IS_POST) {
+            $map['author_id'] = session('user.uid');
+            $map['author_name'] = session('user.username');
+            $map['role_id'] = session('user.role');
+            $map['role_name'] = session('user.role');
+            $map['content'] = I('remark');
+            $map['id'] = I('id');
+            $res = $A->billAddRemark($map);
+            unset($map);
+        }
+        
         $map['id'] = I('id');
         $data = $A->billDetail($map);
         $this->data = $data;
         $remarks = $A->billRemarkList($map);
-        $this->remarks = $remarks['list'];
-        $this->display();
+        foreach ($remarks['lists'] as &$value) {
+            $value['auth_name'] = $value['role_name'] . $value['auth_name'];
+        }
+        $data = $remarks['list'];
+        $this->columns = array(
+            'created_time' =>'日期',
+            'content' => '操作',
+            'role_name' => "名称"
+        );
+        $this->msgReturn('1',$res['msg'],$data);
     }
 
     //显示数据列表

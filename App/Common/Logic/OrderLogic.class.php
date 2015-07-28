@@ -43,6 +43,22 @@ class OrderLogic{
     	return $res;
     }
 
+    //账单详情中的订单列表
+    public function billStore($map = '')
+    {
+    	$url = '/billing/get_orders_of_store';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单详情
+    public function billStoreOrders($map = '')
+    {
+    	$url = '/billing/get_orders_of_store';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
 
     //添加账单备注
     public function billAddRemark($map = '')
