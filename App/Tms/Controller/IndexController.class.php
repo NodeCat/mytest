@@ -489,7 +489,7 @@ class IndexController extends Controller {
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
 
             if ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                //$this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
             $map['dist_id'] = $id;
@@ -725,6 +725,7 @@ class IndexController extends Controller {
                         $v['updated_time'] = get_time();
                         $v['created_user'] = 2;   //uid默认为2
                         $v['updated_user'] = 2;   //uid默认为2
+                        $v['batch'] = $batch;
                         $bill['detail'][] = $v;
                         
                         $container['refer_code'] = $bill['code'];   //关联拒收入库单号
