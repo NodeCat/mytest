@@ -27,12 +27,12 @@ class StockInLogic{
 			$bill_in_detail_m = M('stock_bill_in_detail');
 			$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC,sum(receipt_qty) as receipt_qty_sum')->where($map)->select();
 			if ($cate_qty_r) {
-				//$prepareOnQty = $cate_qty_r['0']['qtyforcaninc'];
+				$prepareOnQty = $cate_qty_r['0']['qtyforcaninc'];
 				$receipt_qty_sum =  $cate_qty_r['0']['receipt_qty_sum'];
 			}
 		}else{
 			$bill_in_detail_info = M('stock_bill_in_detail')->group('pro_code')->where($map)->find();
-			//$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
+			$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
 			$receipt_qty_sum =  $bill_in_detail_info['receipt_qty'];
 		}
 
