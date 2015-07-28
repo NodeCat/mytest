@@ -96,13 +96,7 @@ class StockInController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-		),
-		'stock_bill_in.pid' => array (     
-			'title' =>  '提货码',
-			'query_type' => 'eq',     
-			'control_type' => 'text',     
-			'value' => '',   
-		),  
+		), 
 	);
 	public function after_search(&$map) {
 	    if (array_key_exists('stock_bill_in.pro_code',$map)) {
@@ -281,7 +275,7 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$res = $A->getInQty($id,$code);
+				$res = $A->getInQty($id,$code,1);
 				if($res['res'] == true) {
 					$this->assign($res['data']);
 					layout(false);
