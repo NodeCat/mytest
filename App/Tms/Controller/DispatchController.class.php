@@ -91,7 +91,7 @@ class DispatchController extends Controller{
                 $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
                 $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
                 $value['delivering']    += $delivery['delivery_count']['delivering'];        
-                if(empty($val['line_name'])){// 配送路线为空就跳过
+                if (empty($val['line_name'])) {// 配送路线为空就跳过
                     continue;
                 }
                 $lines .= '［'. $val['line_name'].'］<br/>';// 把路线加在一起
@@ -101,6 +101,11 @@ class DispatchController extends Controller{
             }
             $value['line_name'] = $lines;// 保存路线
             $lines = NULL;// 清空上一配送单路线    
+        }
+        if (defined('VERSION')) {
+            $this->car['warehouse'] = array(8 =>'北京北仓');
+        } else {
+            unset($this->car['warehouse'][8]);
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
