@@ -74,11 +74,11 @@ class BillController extends \Wms\Controller\CommonController
                 'control_type' => 'select',
                 'value' => $query['bd']
             ),
-            'status' => array(
+            'billing_status' => array(
         		'title' => '账单状态',
         		'query_type' => 'eq',
                 'control_type' => 'select',
-                'value' => $query['status']
+                'value' => $query['billing_status']
             ),
             'expire_status' => array(
                 'title' => '是否逾期',
@@ -86,7 +86,7 @@ class BillController extends \Wms\Controller\CommonController
                 'control_type' => 'select',
                 'value' => $query['expire_status']
             ),
-            'start_time' =>    array (    
+            'theory_start' =>    array (    
 			'title' => '账单时间',     
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
@@ -118,7 +118,7 @@ class BillController extends \Wms\Controller\CommonController
                 $map[$key] = $condition[$key];
                 switch ($v['query_type']) {
                     case 'between'://区间匹配
-                        $map['end_time'] = $condition[$key.'_1'];
+                        $map['theory_end'] = $condition[$key.'_1'];
                     break;
                 }
                 continue;
