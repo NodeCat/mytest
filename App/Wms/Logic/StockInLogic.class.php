@@ -25,7 +25,7 @@ class StockInLogic{
 		//加入批次 liuguangping
 		if($batch_flg){
 			$bill_in_detail_m = M('stock_bill_in_detail');
-			$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC')->where($map)->select();
+			$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(receipt_qty)) as qtyForCanInC')->where($map)->select();
 			if ($cate_qty_r) {
 				$prepareOnQty = $cate_qty_r['0']['qtyforcaninc'];
 			}
@@ -42,7 +42,7 @@ class StockInLogic{
 		$detail['code'] = $in['code'];
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
 		//$detail['moved_qty'] = $detail['expected_qty'] - $this->getQtyForIn($inId,$code);
-		$detail['moved_qty'] = $this->getQtyForIn($inId,$code,$batch_flg);
+		$detail['moved_qty'] = $this->getQtyForIn($inId,$code);
 		$detail['expected_qty'] = $detail['expected_qty'];
 		return array('res'=>true,'data'=>$detail);
 	}
@@ -279,7 +279,7 @@ class StockInLogic{
 		//出库详细表中加入批次条件，有能一个sku_code对应两个批次
 		//首先判断用户要收货的数量是否大于总可验收数量；
 		$bill_in_detail_m = M('stock_bill_in_detail');
-		$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC')->where($map)->select();
+		$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(receipt_qty)) as qtyForCanInC')->where($map)->select();
 		$cate_qty = 0;
 		if ($cate_qty_r) {
 			$cate_qty = $cate_qty_r['0']['qtyforcaninc'];
@@ -290,14 +290,12 @@ class StockInLogic{
 
 		$bill_in_detail_info = M('stock_bill_in_detail')->where($map)->select();
 		$diff = $qty;//要上架的数量
-		$map['pid'] = $inId;
-		$map['pro_code'] = $code;
 		foreach ($bill_in_detail_info as $key => $value) {
 			if(intval($diff*100) <= 0){
 				break;
 			}
 			//可验收数量 = 预计数量 - 实际验收数
-			$qtyForCanIn = f_sub($value['expected_qty'], $value['prepare_qty'], 2);
+			$qtyForCanIn = f_sub($value['expected_qty'], $value['receipt_qty'], 2);
 			$qtycom = intval($qtyForCanIn*100);
 			$diffcom = intval($diff*100);
 			if ($qtycom == 0){
@@ -353,11 +351,6 @@ class StockInLogic{
 		if($batch){
 			$map['batch'] = $batch;
 		}
-		$line = $this->getLine($inId,$code,$bacth);
-		$pro_uom = $line['pro_uom'];
-		//$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
-		//根据pid + pro_code + pro_uom 更新stock_bill_in_detail expected_qty 减少 prepare_qty 增加
-		$map['pro_uom'] = $pro_uom;
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
 		//$res = M('stock_bill_in_detail')->where($map)->setDec('expected_qty',$qty);
@@ -518,7 +511,7 @@ class StockInLogic{
      * @author liuguangping@dachuwang.com
      * @since 2015-06-13
      */
-	public function getQtySum($pid,$pro_code,$wh_id = null){
+	public function getQtySum($pid,$pro_code){
 		$map = array();
 		if ($pid) {
 			$map['pid'] = $pid;
