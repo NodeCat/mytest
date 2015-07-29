@@ -57,6 +57,7 @@
             <th>总里程/km</th>
             <th>当次运费(元)</th>
             <th>备注</th>
+            <th>删除</th>
           </tr>
         <!--</thead>-->
         <tbody>
@@ -82,7 +83,11 @@
             </td>    
             <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>
-
+            <td>
+                <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
+                    <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
+                </if>
+            </td>
           </tr>
         </volist>
         </tbody>
@@ -152,5 +157,19 @@ function exp(){
     x.submit();
 }
 
+function delete_sign(x)
+{   
+    if (confirm('你确定要删除该记录吗')) {
+        var id = $(x).data('id');
+        $.post("{:U('deleteSign')}",{'id':id},function(res){
+            if (res.status == 1) {
+                alert(res.msg);
+                $(x).parents('tr').remove(); 
+            } else {
+                alert(res.msg);
+            }
+        });
+    }
+} 
 </script>
 

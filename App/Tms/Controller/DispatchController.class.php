@@ -24,7 +24,7 @@ class DispatchController extends Controller{
          
     );
     protected $car = array(
-        'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','微面'),
+        'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
         'warehouse'=>array(7=>'北京白盆窑仓库',8=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
     );
@@ -49,7 +49,7 @@ class DispatchController extends Controller{
             }
             $this->warehouse = $warehouse;
             $this->car_from  = $car_from;
-            $M=M('TmsUser');
+            $M = M('TmsUser');
             //按仓库把用户id取出来
             $user_ids = $M->field('id')->where($map1)->select();
             foreach ($user_ids as $value) {
@@ -64,7 +64,7 @@ class DispatchController extends Controller{
                 $map['userid'] = NULL;
             }
         }
-
+        $map['is_deleted'] = '0';
         //把对应仓库的用户签到信息取出来
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
@@ -197,6 +197,7 @@ class DispatchController extends Controller{
             }
         }
         //把对应仓库的用户签到信息取出来
+        $map['is_deleted'] = '0';
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($M);
         $M = M('tms_delivery');
@@ -343,6 +344,25 @@ class DispatchController extends Controller{
             'msg'    => '保存成功',
         );
         $this->ajaxReturn($re);
+    }
+
+    public function deleteSign()
+    {
+        $id = I('post.id');
+        $D  = D('TmsSignList');
+        $res = $D->where(array('id' => $id))-> save(array('is_deleted' => '1'));
+        if ($res) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '删除成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '删除失败',
+            );
+        }
+        $this->ajaxReturn($return);
     }
     
 }
