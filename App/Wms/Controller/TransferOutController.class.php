@@ -177,15 +177,17 @@ class TransferOutController extends CommonController
         $transfer_code = M('erp_transfer_out')->where($map)->getField('refer_code');
         $erp_out_container = M('erp_transfer_out_container');
         D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_out_detail');
+        $data['id'] = $id;
         foreach ($data['detail'] as $key => $value) {
             //获取父级和sku
             if ($transfer_code) {
                 unset($map);
                 $map['refer_code'] = $transfer_code;
                 $map['pro_code'] = $value['pro_code'];
-                $res = $erp_out_container->where($map)->group('refer_code,pro_code,batch')->select();
+                $res = $erp_out_container->where($map)->field('batch,pro_qty')->group('refer_code,pro_code,batch')->select();
                 $count = count($res);
                 $data['detail'][$key]['batch_count'] = $count;
+                $data['detail'][$key]['batch_infos'] = $res;
             } else {
                 $data['detail'][$key]['batch_count'] = '0';
             }

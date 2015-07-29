@@ -29,8 +29,9 @@
         <td style="width:10%;" class="text-left p_res">
           {$vo.real_out_qty}
         </td>
-        <td style="width:10%;" class="text-center p_res">
-          <a tabindex="0" class="label label-success ng-binding" role="button" data-toggle="popover" data-trigger="focus" data-placement="left" title="Dismissible popover" data-content="And here's some amazing content. It's very engaging. Right?">{$vo.batch_count}</a>
+        <td style="width:10%;" class="text-center batch" >
+          <a tabindex="0" class="label label-success ng-binding batch" els='mode_click' >{$vo.batch_count}</a>
+
         </td>
 
       </tr>
@@ -43,9 +44,16 @@
   </div>
 
 </div>
+
+<input type='hidden' id='transfer_id' value='{$data.id}'>
 <script type='text/javascript'>
 $(function(){
-  $('[data-toggle="popover"]').popover();
+
+  $(document).on('click','[els=mode_click]',function(){
+    var id = $(this).attr('attr');
+     $("#"+id).modal();
+  });
+
 });
 </script>
 <style type="text/css">

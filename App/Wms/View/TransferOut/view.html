@@ -55,6 +55,41 @@
 </div>
 <hr/>
 <include file="prolist-view" />
+<include file="dialog_view" />
 </div>
 </div>
 </form>
+<script type="text/javascript">
+
+  var alert_dialog = {
+  
+      close:function(){
+        this.hide();
+        //window.location.reload();
+      },
+      show:function(title, content){
+        title  = title?title:'提示框';
+        content = content?content:"<div class='row'>content</div>";
+        $('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').show();
+        $("#gridSystemModalLabelalert").html(title);
+        $(".lgo").html(content);
+      },
+      hide:function(){
+        $('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+        $('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+      }
+  };
+  //退货弹框
+  $(document).on('click','[attr = out]',function(){
+      var json = {};
+      json.title = "创建采购退货单";
+      json.successhref = "{:U('out',array($pk => $data[$pk],'flg'=>'success'))}";
+      json.errorhref = "{:U('out',array($pk => $data[$pk],'flg'=>'error'))}";
+
+      var html = template('dialog_out',json);
+      $('body').append(html);
+      return false;
+  });
+</script>
