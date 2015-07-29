@@ -993,13 +993,13 @@ class DistributionController extends CommonController {
         }
         unset($map);*/
         //获取配送单详情中符合条件的出库单
-        /*$map['bill_out_id'] = array('in', $ids);
+        $map['bill_out_id'] = array('in', $ids);
         $map['is_deleted'] = 0;
         $detail = M('stock_wave_distribution_detail')->where($map)->select();
-        if (empty($detail)) {
+        /*if (empty($detail)) {
             $this->msgReturn(false, '库存不足');
-        }
-        unset($map);*/
+        }*/
+        unset($map);
         //获取库存充足的订单详情
         $map['pid'] = array('in', $ids);
         $stock_detail = M('stock_bill_out_detail')->where($map)->select();
