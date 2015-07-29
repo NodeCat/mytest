@@ -87,7 +87,7 @@ class PurchasesController extends CommonController {
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //子Sku在库量
-            $c_qty = getStockQtyByWpcode($vo['c_pro_code'], $value['wh_id']);
+            $c_qty = getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']);
             //子sku总可用量 = 父在在库量 x 生产比例 + 子Sku在库量;
             $available_qty = f_add($c_qty_count, $c_qty);
             $data[$key]['available_qty'] = $available_qty;
@@ -163,7 +163,7 @@ class PurchasesController extends CommonController {
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //子Sku在库量
-            $c_qty = getStockQtyByWpcode($vo['c_pro_code'], $value['wh_id']);
+            $c_qty = getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']);
             //子sku总可用量 = 父在在库量 x 生产比例 + 子Sku在库量;
             $available_qty = f_add($c_qty_count, $c_qty);
             $pro_codeArr[$key]['available_qty'] = $available_qty;
