@@ -22,16 +22,19 @@ class StockInLogic{
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
 		$prepareOnQty = 0;
+		$receipt_qty_sum = 0;
 		//加入批次 liuguangping
 		if($batch_flg){
 			$bill_in_detail_m = M('stock_bill_in_detail');
-			$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC')->where($map)->select();
+			$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC,sum(receipt_qty) as receipt_qty_sum')->where($map)->select();
 			if ($cate_qty_r) {
 				$prepareOnQty = $cate_qty_r['0']['qtyforcaninc'];
+				$receipt_qty_sum =  $cate_qty_r['0']['receipt_qty_sum'];
 			}
 		}else{
 			$bill_in_detail_info = M('stock_bill_in_detail')->group('pro_code')->where($map)->find();
 			$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
+			$receipt_qty_sum =  $bill_in_detail_info['receipt_qty'];
 		}
 
 		if($prepareOnQty == 0) {
@@ -41,9 +44,9 @@ class StockInLogic{
 		$detail['id'] = $in['id'];
 		$detail['code'] = $in['code'];
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
-		//$detail['moved_qty'] = $detail['expected_qty'] - $this->getQtyForIn($inId,$code);
 		$detail['moved_qty'] = $this->getQtyForIn($inId,$code,$batch_flg);
 		$detail['expected_qty'] = $detail['expected_qty'];
+		$detail['receipt_qty'] = $receipt_qty_sum;
 		return array('res'=>true,'data'=>$detail);
 	}
 
@@ -63,16 +66,12 @@ class StockInLogic{
 		}
 
 		$in = M('stock_bill_in')->field('id,code,type,refer_code,status')->find($inId);
-
-		
-		//$qtyForOn = $this->getQtyForOn($in['code'],$code);
 		//liuguangping 改了，这方法是查待库存量
 		$qtyForOn = $this->getQtySum($in['id'],$code);
 		if(empty($qtyForOn)) {
 			return array('res'=>false,'msg'=>'该货品没有待上架量。');
 		}
 		
-
 		$detail['id'] = $in['id'];
 		$detail['code'] = $in['code'];
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
@@ -115,8 +114,6 @@ class StockInLogic{
 		}
 
 		$pid = $in['id'];
-
-		//$qtyForOn = $this->getQtyForOn($in['code'],$code);
 		//liuguangping 改了，这方法是查待库存量
 		$qtyForOn = $this->getQtySum($pid, $code);
 		if(empty($qtyForOn)) {
@@ -198,13 +195,20 @@ class StockInLogic{
 				continue; //收货完成
 			} elseif ($qtycom <= $diffcom) {
 				//当可以上的量小于总共上的，则这次可以把可验收数量全部数量
-				$this->updateStockUpStatus($inId,$code,$qtyForCanIn,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak);
+				$this->updateStockUpStatus($inId,$code,$qtyForCanIn,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
 				$diff = f_sub($diff, $qtyForCanIn, 2);
 			} elseif ($qtycom > $diffcom) {
-				$this->updateStockUpStatus($inId,$code,$diff,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak);
+				$this->updateStockUpStatus($inId,$code,$diff,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
 				$diff = 0;
 			}
 
+		}
+
+
+		//修改erp状态
+		$bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
+		if($bill_in_r['type'] == 4){
+			A('TransferIn','Logic')->updateTransferInStatus($bill_in_r['code'],'up');
 		}
 
 		//修改状态
@@ -231,7 +235,7 @@ class StockInLogic{
 
 	}
 
-	public function updateStockUpStatus($inId,$code,$qty,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak){
+	public function updateStockUpStatus($inId,$code,$qty,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId){
 		//写库存
 		$line = $this->getLine($inId,$code);
 		$pro_code = $line['pro_code'];
@@ -239,7 +243,7 @@ class StockInLogic{
 		$pro_qty = $qty;
 		//管理批次号
 		get_batch($batch);
-		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$batch_bak);
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak);
 
 		//更新到货单详情 正品 残品 数量
 		$map['pid'] = $inId;
@@ -264,6 +268,20 @@ class StockInLogic{
             unset($data);
         }
 
+        //修改erp_上架量
+		if ($inId) {
+			$bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
+			if($bill_in_r && $bill_in_r['type'] == '4'){
+				//调拨入库
+				$in_code = $bill_in_r['code'];
+				$batch = $batch;
+				$qty = $qty;
+				//$is_up = up 上架量 waiting 待上架
+				A('TransferIn','Logic')->updateStockInQty($in_code, $pro_code, $batch,$qty,$status,'up');
+
+			}
+		}
+
 	}
 
 	public function in($inId,$code,$qty) {
@@ -279,7 +297,7 @@ class StockInLogic{
 		//出库详细表中加入批次条件，有能一个sku_code对应两个批次
 		//首先判断用户要收货的数量是否大于总可验收数量；
 		$bill_in_detail_m = M('stock_bill_in_detail');
-		$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC')->where($map)->select();
+		$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(receipt_qty)) as qtyForCanInC')->where($map)->select();
 		$cate_qty = 0;
 		if ($cate_qty_r) {
 			$cate_qty = $cate_qty_r['0']['qtyforcaninc'];
@@ -290,14 +308,12 @@ class StockInLogic{
 
 		$bill_in_detail_info = M('stock_bill_in_detail')->where($map)->select();
 		$diff = $qty;//要上架的数量
-		$map['pid'] = $inId;
-		$map['pro_code'] = $code;
 		foreach ($bill_in_detail_info as $key => $value) {
 			if(intval($diff*100) <= 0){
 				break;
 			}
 			//可验收数量 = 预计数量 - 实际验收数
-			$qtyForCanIn = f_sub($value['expected_qty'], $value['prepare_qty'], 2);
+			$qtyForCanIn = f_sub($value['expected_qty'], $value['receipt_qty'], 2);
 			$qtycom = intval($qtyForCanIn*100);
 			$diffcom = intval($diff*100);
 			if ($qtycom == 0){
@@ -312,9 +328,7 @@ class StockInLogic{
 			}
 		}
 
-
 		unset($map);
-
 		if(intval($diff*100) == 0) {
 			$ined = $this->checkIn($inId);
 			// $ined == 2 不可以验收 待上架 等于1时候 可以验收
@@ -324,15 +338,16 @@ class StockInLogic{
 				$map['status'] = '21';
 				$map['is_deleted'] = 0;
 				M('stock_bill_in')->where($map)->save($data);
-				/*
-				unset($map);
-				unset($data);
-				$map['code'] = $in['refer_code'];
-				$data['status'] = '23';
-				M('stock_purchase')->where($map)->save($data);
-				*/
+				
 			}
 		}
+
+		//修改erp状态
+		$bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
+		if($bill_in_r && $bill_in_r['type'] == '4'){
+			A('TransferIn','Logic')->updateTransferInStatus($bill_in_r['code']);
+		}
+
 		if (intval($diff*100) == 0) {
 			$qtys = $qty;
 		}elseif(f_sub($cate_qty, $qty, 2) > 0) {
@@ -355,14 +370,27 @@ class StockInLogic{
 		}
 		$line = $this->getLine($inId,$code,$bacth);
 		$pro_uom = $line['pro_uom'];
-		//$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
 		//根据pid + pro_code + pro_uom 更新stock_bill_in_detail expected_qty 减少 prepare_qty 增加
 		$map['pro_uom'] = $pro_uom;
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
-		//$res = M('stock_bill_in_detail')->where($map)->setDec('expected_qty',$qty);
 		$res = M('stock_bill_in_detail')->where($map)->setInc('prepare_qty',$qty);
 		$res = M('stock_bill_in_detail')->where($map)->setInc('receipt_qty',$qty);
+
+		//修改erp_到货量
+		if ($inId) {
+			
+			$bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
+			if($bill_in_r && $bill_in_r['type'] == '4'){
+				//调拨入库
+				$in_code = $bill_in_r['code'];
+				$pro_code = $code;
+				$batch = $batch;
+				$qty = $qty;
+				A('TransferIn','Logic')->updateStockInQty($in_code, $pro_code, $batch, $qty);
+
+			}
+		}
 	}
 
 	//根据stock_bill_in_detail 检查是否已经有入库
@@ -373,7 +401,6 @@ class StockInLogic{
 			$map['pro_code'] = $pro_code;
 		}
 		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,expected_qty,prepare_qty,receipt_qty');
-
 		foreach($in as $k => $val){
 			//如果receipt_qty 已收量不为0 则认为是已经入库了
 			if($val['receipt_qty'] > 0){
@@ -392,27 +419,7 @@ class StockInLogic{
 		}
 		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,expected_qty,prepare_qty');
 		unset($map['pid']);
-		/*$row = reset($in);
-		$map['refer_code'] = $row['refer_code'];
-		$map['type'] = 'in';
-		$map['status'] = '0';
-		$moved = M('stock_move')->where($map)->group('pro_code')->getField('pro_code,sum(move_qty) as qty_total');
-
-		if(empty($moved)) {
-			return 0;
-		}
-		*/
-
 		foreach ($in as $key => $val) {
-			/*
-			if(array_key_exists($key, $moved)) {
-				if($val['qty_total'] != $moved[$key]) {
-					return 1;
-				}
-			}
-			else {
-				return 1;
-			}*/
 			if($val['expected_qty'] - $val['prepare_qty'] > 0){
 				return 1;
 			}
@@ -423,24 +430,15 @@ class StockInLogic{
 
 	public  function checkOn($inId,$pro_code=''){
 		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
-		//$map['location_id'] = '0';
 		if(!empty($pro_code)) {
 			$map['pro_code'] = $pro_code;
 		}
 		if($in['status']=='21') {
 			return 1;
 		}
-		/*$map['type'] = 'in';
-		$map['status'] = 'unknown';
-		$map['batch'] = $in['code'];
-		$res = M('stock')->where($map)->getField('pro_code,stock_qty,prepare_qty');
-		if(empty($res)) {
-			return 0;
-		}*/
 		//根据pid查询stock_bill_in_detail 所有记录的prepare_qty是否为0 如果为0 则上架完毕
 		$map['pid'] = $inId;
 		$res = M('stock_bill_in_detail')->where($map)->select();
-
 		foreach ($res as $key => $val) {
 			if($val['prepare_qty'] != 0 ){
 				return 1;
@@ -462,17 +460,6 @@ class StockInLogic{
 			return 0;
 		}
 		unset($map['pid']);
-		/*$map['refer_code'] = $in['refer_code'];
-		$map['type'] = 'in';
-		$map['status'] = '0';
-		$moved = M('stock_move')->field('pro_code,sum(move_qty) as qty_total')->group('pro_code')->where($map)->find();
-		*/
-		/*if(empty($moved)) {
-			return $in['qty_total'];
-		}
-		else{
-			return $in['qty_total'] - $moved['qty_total'];
-		}*/
 		return $in['qty_total'];
 	}
 
@@ -485,13 +472,6 @@ class StockInLogic{
      * @since 2015-06-13
      */
 	public function getQtyForOn($batch,$pro_code,$wh_id = null){
-		/*$map['location_id'] = '0';
-		$map['pro_code'] = $pro_code;
-		$map['type'] = 'in';
-		$map['status'] = 'unknown';
-		$map['batch'] = $batch;
-		$res = M('stock')->field('stock_qty,prepare_qty')->where($map)->find();
-		*/
 		$map = array();
 		if($wh_id !== null){
 			$map['wh_id'] = $wh_id;
@@ -518,7 +498,7 @@ class StockInLogic{
      * @author liuguangping@dachuwang.com
      * @since 2015-06-13
      */
-	public function getQtySum($pid,$pro_code,$wh_id = null){
+	public function getQtySum($pid,$pro_code){
 		$map = array();
 		if ($pid) {
 			$map['pid'] = $pid;
@@ -619,7 +599,6 @@ class StockInLogic{
 		foreach ($out_infos as $key => $value) {
 			$bill_in = array();
 			$bill_in['code'] = get_sn($name['name']);
-
 			//根据调拨单获取获取入库单
 			$wh_id_in_m['trf_code'] = $value['refer_code'];
 			$erp_transfer_win = $erp_transfer_m->where($wh_id_in_m)->getField('wh_id_in');

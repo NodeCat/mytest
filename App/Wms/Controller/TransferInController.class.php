@@ -67,7 +67,7 @@ class TransferInController extends CommonController
                 ),
         ),
         'erp_transfer_in.created_time' =>    array (    
-            'title' => '日期',     
+            'title' => '日期',
             'query_type' => 'between',     
             'control_type' => 'datetime',     
             'value' => 'created_time',   
@@ -150,7 +150,7 @@ class TransferInController extends CommonController
     protected function before_edit(&$data)
     {
         //详情数据处理
-        D('Transfer', 'Logic')->get_process_all_sku_detail($data, 'erp_transfer_in_detail');
+        D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_in_detail');
     }
     
     

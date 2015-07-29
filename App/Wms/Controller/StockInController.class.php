@@ -390,11 +390,12 @@ class StockInController extends CommonController {
 		$A = A('StockIn','Logic');
 		$qtyForPrepare = 0;
 		foreach ($pros as $key => $val) {
-			$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
+			//$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
 			//$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
 			$getQtyForReceipt = $A->getQtyForReceipt($id,$val['pro_code']);
 			
-			$qtyForPrepare += $qtyPrepare;
+			//$qtyForPrepare += $qtyPrepare;
+			$qtyForPrepare += $val['prepare_qty'];
 			//$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			//$pros[$key]['moved_qty'] = $qtyIn;

@@ -167,8 +167,31 @@ class TransferOutController extends CommonController
 
     protected function before_edit(&$data)
     {
-        //详情数据处理
-        D('Transfer', 'Logic')->get_process_all_sku_detail($data, 'erp_transfer_out_detail');
+        //批次详细
+        $id = I('get.id');
+        if (!$id) {
+            $this->error('0','请正确传值！');
+        }
+        $map['id'] = $id;
+        //调拨单为了查找erp_transfer_detail_container表
+        $transfer_code = M('erp_transfer_out')->where($map)->getField('refer_code');
+        $erp_out_container = M('erp_transfer_out_container');
+        D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_out_detail');
+        foreach ($data['detail'] as $key => $value) {
+            //获取父级和sku
+            if ($transfer_code) {
+                unset($map);
+                $map['refer_code'] = $transfer_code;
+                $map['pro_code'] = $value['pro_code'];
+                $res = $erp_out_container->where($map)->group('refer_code,pro_code,batch')->select();
+                $count = count($res);
+                $data['detail'][$key]['batch_count'] = $count;
+            } else {
+                $data['detail'][$key]['batch_count'] = '0';
+            }
+
+        }
+
     }
     
     

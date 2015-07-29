@@ -103,7 +103,82 @@ class TransferInLogic
         return true;
     }
 
-    //public function updateStatus
+    //修改收货数量 $in_code up,上架 receipt 收货
+    public function updateStockInQty($in_code, $pro_code, $batch, $qty, $status = null,$is_up = 'receipt'){
+        $erp_in_detail = M('erp_transfer_in_detail');
+        $erp_transfer_in = M('erp_transfer_in');
+        if (!$in_code || !$pro_code || !$batch || !$qty) {
+            return false;
+        }
+        $map = array();
+        $map['code'] = $in_code;
+        $map['is_deleted'] = 0;
+        $id = $erp_transfer_in->where($map)->getField('id');
+        if (!$id) {
+            return false;
+        }
+
+        unset($map);
+        $map['pid'] = $id;
+        $map['pro_code'] = $pro_code;
+        $map['batch_code'] = $batch;
+        if ($is_up == 'receipt') {
+            $erp_in_detail->where($map)->setInc('prepare_qty',$qty);
+            $erp_in_detail->where($map)->setInc('receipt_qty',$qty);
+        } elseif ($is_up == 'up') {
+            M('erp_transfer_in_detail')->where($map)->setDec('prepare_qty',$qty);
+            M('erp_transfer_in_detail')->where($map)->setInc('done_qty',$qty);
+            if($status == 'qualified'){
+                M('erp_transfer_in_detail')->where($map)->setInc('qualified_qty',$qty);
+            }
+            if($status == 'unqualified'){
+                M('erp_transfer_in_detail')->where($map)->setInc('unqualified_qty',$qty);
+            }
+        }
+
+    }
+
+    //修改erp状态
+    public function updateTransferInStatus($in_code, $is_up = 'receipt'){
+        $erp_in_detail = M('erp_transfer_in_detail');
+        $erp_transfer_in = M('erp_transfer_in');
+        if (!$in_code) {
+            return false;
+        }
+        $map = array();
+        $map['code'] = $in_code;
+        $map['is_deleted'] = 0;
+        $id = $erp_transfer_in->where($map)->getField('id');
+        unset($map);
+        $map['pid'] = $id;
+        if ($is_up == 'receipt' && $id) {
+            $in = $erp_in_detail->where($map)->field('receipt_qty')->select();
+            foreach ($in as $key => $val) {
+                if (intval($val['receipt_qty']*100) > 0){
+                    unset($map);
+                    $map['id'] = $id;
+                    $data['status'] = 'waitingup';
+                    M('erp_transfer_in')->where($map)->save($data);
+                    return 2;
+                }
+            }
+
+        } elseif ($is_up == 'up' && $id){
+            $in = $erp_in_detail->where($map)->field('done_qty')->select();
+            foreach ($in as $key => $val) {
+                if (intval($val['done_qty']*100) > 0){
+                    unset($map);
+                    $map['id'] = $id;
+                    $data['status'] = 'up';
+                    M('erp_transfer_in')->where($map)->save($data);
+                    return 2;
+                }
+            }
+        }
+        
+        
+        return 1;
+    }
 
 
 

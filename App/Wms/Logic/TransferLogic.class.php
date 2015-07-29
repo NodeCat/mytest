@@ -35,7 +35,7 @@ class TransferLogic
         }
     }
 
-    public function get_process_all_sku_detail(&$data, $table = 'erp_transfer_detail')
+    public function get_transfer_all_sku_detail(&$data, $table = 'erp_transfer_detail')
     {  
         if (empty($data)) {
             $data['detail'] = '';

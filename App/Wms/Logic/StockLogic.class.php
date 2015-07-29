@@ -465,7 +465,7 @@ class StockLogic{
      * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$batch_bak = ''){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak = ''){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
@@ -517,7 +517,7 @@ class StockLogic{
         unset($row);
 
         //减待上架库存 增加已上量
-        $map['refer_code'] = $refer_code;
+        $map['pid'] = $inId;
         $map['pro_code'] = $pro_code;
         //$map['pro_uom'] = $pro_uom;
         if ($batch_bak) {

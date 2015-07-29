@@ -80,7 +80,6 @@ class TransferController extends CommonController
     protected $warehouseArr = array();
     //加入默认值
     public function __construct(){
-        //A('PurchaseOut','Logic')->insertErpContainer(552); echo "ddd";die;
         parent::__construct();
         //获得仓库信息
         $warehouse = M('warehouse')->field('id,name')->select();
@@ -282,7 +281,7 @@ class TransferController extends CommonController
     {
         //调拨单详情数据处理
         $data['warehouseArr'] = $this->warehouseArr;
-        D('Transfer', 'Logic')->get_process_all_sku_detail($data);
+        D('Transfer', 'Logic')->get_transfer_all_sku_detail($data);
     }
 
     /**
