@@ -203,7 +203,7 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('C'.$i, getSkuInfoByCode('pro_attrs_str',$value['pro_code']));
             $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
             $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
-            $sheet->setCellValue('F'.$i, getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id']));
+            $sheet->setCellValue('F'.$i, formatMoney(getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id'])));
             //$sheet->setCellValue('G'.$i, $value['purchase_num']);
             $sheet->setCellValue('G'.$i, $value['c_pro_code']);
             $sheet->setCellValue('H'.$i, getPronameByCode('name', $value['c_pro_code']));
@@ -213,7 +213,6 @@ class PurchasesController extends CommonController {
             //$sheet->setCellValue('L'.$i, getProcessByCode($value['pro_code'], $value['wh_id'],$value['delivery_date'], $value['delivery_ampm'], $value['c_pro_code']));
             $sheet->setCellValue('L'.$i, $value['c_purchase_qty']);
         }
-        
         date_default_timezone_set("Asia/Shanghai");
         header("Content-Type: application/force-download");
         header("Content-Type: application/download");
