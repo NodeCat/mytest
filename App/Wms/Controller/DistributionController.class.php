@@ -957,6 +957,35 @@ class DistributionController extends CommonController {
 
         //对缺货订单不做处理
         $ids = array_merge($ids,$unids);
+        //调用hop接口查看订单是否被取消，如果被取消，则不加入波次
+        foreach($ids as $k => $bill_out_id){
+            $map['id'] = $bill_out_id;
+            $bill_out_info = $stock_out->where($map)->find();
+            unset($map);
+            //销售订单
+            if($bill_out_info['type'] == 1){
+                $order_id_list = array($bill_out_info['refer_code']);
+                $map = array('order_ids' => $order_id_list, 'itemsPerPage' => 1);
+                $order_lists = A('Common/Order','Logic')->order($map);
+                unset($map);
+                if(!empty($order_lists[0]['order_number']) && $order_lists[0]['status'] == 0){
+                    //订单被取消了，不能拉进波次
+                    unset($ids[$k]);
+                    //同时将出库单逻辑删除
+                    $map['id'] = $bill_out_id;
+                    $data['is_deleted'] = 1;
+                    $stock_out->where($map)->save($data);
+                    unset($map);
+                    unset($data);
+                    //同时在对应的车单上删除掉
+                    $map['bill_out_id'] = $bill_out_id;
+                    $data['is_deleted'] = 1;
+                    M('stock_wave_distribution_detail')->where($map)->save($data);
+                    unset($map);
+                    unset($data);
+                }
+            }
+        }
         $count = count($ids);
         /*if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
