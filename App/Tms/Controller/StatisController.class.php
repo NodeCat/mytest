@@ -22,8 +22,6 @@ class StatisController extends \Common\Controller\AuthController
 	);
 	private $saiku_tms = 'http://saiku.dachuwang.com/api.html?#query/open/tms/';
 
-	protected function _initialize() {}
-
 	/**
 	 * [index 统计结果]
 	 * @return [type] [description]
