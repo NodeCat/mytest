@@ -55,7 +55,7 @@
   <div id="container">
     <div>
     <h4>
-      客户量:<span>{:count($address)}</span>
+      客户量:<span>{$customer_count}</span>
       总里程:<span>{$distance}km</span>
       总耗时:<span>{$time.hour}小时{$time.min}分{$time.sec}秒</span></br>
       路线:<span>{$lines}</span>
@@ -111,7 +111,7 @@
       //商家标记
       <volist name='address' id='addr'>
         marker{$i} = new AMap.Marker({
-        <if condition="$addr['color_type'] eq 3">
+        <if condition="$addr['color_type'] eq 0">
         icon:"__PUBLIC__/img/red.png",
         </if>
         //icon:"http://webapi.amap.com/images/custom_a_j.png",
