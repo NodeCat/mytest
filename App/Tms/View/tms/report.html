@@ -10,8 +10,13 @@
   </a>
 </volist>
 <br/>
-<botton id="finished" class='btn btn-primary btn-lg btn-block'>配送完成</botton>
+<br/>
+<botton id="finished" class='btn btn-primary btn-lg btn-block'>我已回库</botton>
 </div>
+<div id="notice" style="color:red;font-size:110%">
+  <span>温馨提示：回到仓库后必须点击我已回库，否则影响运费结算</span>
+</div>
+<br/>
 </div>
 <script type="text/javascript">
 $('#finished').click(function(){
@@ -20,6 +25,5 @@ $('#finished').click(function(){
     return false;
   }
   HostApp.stopLocate();
-  HostApp.toast('配送完成');
-});
+  });
 </script>

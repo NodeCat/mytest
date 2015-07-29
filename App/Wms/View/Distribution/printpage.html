@@ -84,6 +84,7 @@
           <td></td>
         </tr>
       </table>
+      <php>unset($delivery_sku_count);unset($delivery_price_amount);</php>
     </div>
     <p>货品汇总</p>
     <div class="row sth_block">
@@ -117,6 +118,7 @@
             </tr>
           </tbody>
         </table>
+        <php>unset($delivery_sku_count_group);</php>
       </div>
       	
       	<div class="col-xs-6">
@@ -363,13 +365,15 @@ $(function() {
 		<volist name='list' id='attrs' key="kk">
 		  if (num == {$kk}) {
 			<volist name="attrs['map_pos']" id="pos">
+				<notempty name="pos.lng">
 			    var num;
 			   	num = String.fromCharCode(65+{$i}-1);
 			   	markerPoint += "mid,,"+num+":"+{$pos.lng}+","+{$pos.lat}+"|";
+			   	</notempty>
 			</volist>
 		  }
 		</volist>
-	});	
+	});
     markerPoint = markerPoint.slice(9,-1);
 	ImgBase = "http://restapi.amap.com/v3/staticmap?size=900*600&key=ee95e52bf08006f63fd29bcfbcf21df0&markers=";
 	Imgsrc = ImgBase + markerPoint;

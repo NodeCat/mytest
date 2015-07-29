@@ -78,7 +78,7 @@
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>
             <td>{$k.distance}</br>
-            <a href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
+            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
             <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>

@@ -44,7 +44,7 @@ class StockOutController extends CommonController {
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_date' => '送货时间',
-        'created_time' => '下单时间'
+        'op_date' => '下单时间'
     );
     protected $query = array ( 
         'stock_bill_out.code' =>    array (     

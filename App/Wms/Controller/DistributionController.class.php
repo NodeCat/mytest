@@ -565,13 +565,17 @@ class DistributionController extends CommonController {
             
                 //驳回不符合条件的订单
                 $map['id'] = array('in', $merge);   
-                $data['status'] = 1; //状态 1 带生产
+                $data['status']   = 1; //状态 1 带生产
                 $data['dis_mark'] = 0; //未加入出库单
+                $data['wave_id']  = 0; //踢出波次
                 if ($stock->create($data)) {
                     $stock->where($map)->save();
                 }
                 unset($map);
                 unset($data);
+                //将待生产订单从波次中踢出
+                $affected = $D->updateStockWaveDetailByOutIds($merge);
+                
                 $pass_reduce_ids = array_merge($pass_ids,$reduce_ids);
                 //更新配送单中总件数 总条数 总行数 总金额
                 $map['id'] = array('in', $pass_reduce_ids);
@@ -687,7 +691,7 @@ class DistributionController extends CommonController {
         //更新配送详情状态为已完成
         $map['pid'] = $result['id'];
         $map['is_deleted'] = 0;
-        $data['status'] = 1; //已完成
+        $data['status'] = 5; //已发运
         if ($det->create($data)) {
             $det->where($map)->save();
         }
@@ -924,17 +928,12 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '请选择一个配送单');
         }
         //配送单ID
-        $M = M('stock_wave_distribution');
-        $det = M('stock_wave_distribution_detail');
-        $wave_det = M('stock_wave_detail');
         $stock_out = M('stock_bill_out');
-        $stock_out_detail = M('stock_bill_out_detail');
-        $stockout_logic = D('StockOut', 'Logic');
         $D = D('Distribution', 'Logic');
         //获取配送单信息
         $map['id'] = array('in', $idarr);
         $map['is_deleted'] = 0;
-        $res = $M->where($map)->select();
+        $res = M('stock_wave_distribution')->where($map)->select();
         //是否发运
         if (empty($res)) {
             $this->msgReturn(false, '不存在的配送单');
@@ -998,7 +997,7 @@ class DistributionController extends CommonController {
         unset($map);
         //获取库存充足的订单详情
         $map['pid'] = array('in', $ids);
-        $stock_detail = $stock_out_detail->where($map)->select();
+        $stock_detail = M('stock_bill_out_detail')->where($map)->select();
         //创建波次和配送单关联数据
         $wave_info = array();
         $assist = array();
@@ -1032,15 +1031,16 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '创建波次失败');
         }
         //更新出库单状态为波次中
-        $map['id'] = array('in', $ids);
-        $data['status'] = 3; //波此中
-        $data['wave_id'] = $back;
-        $data['refused_type'] = 1;
-        if ($stock_out->create($data)) {
-           $affect = $stock_out->where($map)->save();
-           if (!$affect) {
-               $this->msgReturn(false, '出库单状态更新失败');
-           }
+        $affectedWave = $D->updateStockInfoByIds($ids, $back);
+        if (!$affectedWave) {
+            $this->msgReturn(false, '更新出库单失败');
+        }
+        //更新库存不足的出库单状态为缺货 并修改其备注
+        if (!empty($unids)) {
+            $affectedReduce = $D->getReduceSkuCodesAndUpdate($unids);
+            if (!$affectedReduce) {
+                $this->msgReturn(false, '更新出库单失败');
+            }
         }
         //通知hop订单状态改变为波次中
         foreach($ids as $bill_out_id){

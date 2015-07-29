@@ -38,6 +38,7 @@ class StockOutLogic{
         $data['delivery_ampm'] = $params['delivery_ampm'];
         $data['customer_realname'] = $params['customer_realname'];
         $data['delivery_address'] = $params['delivery_address'];
+        $data['op_date'] = $params['op_date'];
         $data['order_type'] = $params['order_type'];
         $data['created_time'] = date('Y-m-d H:i:s');
         $data['created_user'] = UID;
@@ -272,7 +273,7 @@ class StockOutLogic{
         $map['id'] = array('in', $bill_out_ids);
         $map['is_deleted'] = 0;
         //排序条件
-        $order_conditions = isset($params['order']) ? $params['order'] : 'created_time DESC';
+        $order = isset($params['order']) ? $params['order'] : 'created_time DESC';
         //出库单列表
         $list = M('stock_bill_out')
             ->where($map)
