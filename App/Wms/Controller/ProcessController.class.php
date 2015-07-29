@@ -658,7 +658,7 @@ class ProcessController extends CommonController {
                 if ($out_back['status'] == false) {
                     $this->msgReturn(false, $out_back['msg']);
                 }
-                $price += $out_back['price'];
+                $price = f_add($price, $out_back['price']);
             }
             /** 2---父SKU入库 */
             
@@ -692,7 +692,6 @@ class ProcessController extends CommonController {
             }
             
             /** 5---更新ERP端出库单 入库单 数据 */
-            $price = 0;
             //更新入库单(针对父SKU 无需循环 只有一个)
             $erporder_back_in = $Logic->update_in_stock_erp($process, $erp_in_id, $price);
             if (!$erporder_back_in) {
@@ -726,7 +725,7 @@ class ProcessController extends CommonController {
             if ($out_back['status'] == false) {
                 $this->msgReturn(false, $out_back['msg']);
             }
-            $price = $out_back['price'];
+            $price = formatMoney($out_back['price'], 2);
             
             /** 2---子SKU入库 */
             
