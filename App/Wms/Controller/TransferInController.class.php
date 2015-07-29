@@ -162,6 +162,7 @@ class TransferInController extends CommonController
                 $tmpArr = array();
                 $tmpArr['pid'] = $value['pid'];
                 $tmpArr['pro_code'] = $value['pro_code'];
+                $tmpArr['pro_name'] = $value['pro_name'];
                 $tmpArr['pro_attrs'] = $value['pro_attrs'];
                 $tmpArr['batch_code'] = $value['batch_code'];
                 $tmpArr['pro_uom'] = $value['pro_uom'];
