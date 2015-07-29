@@ -73,12 +73,14 @@ class SignInLogic
             }
         }
         //组合内容
+        //————测试代码————
+        $test_mobile = array('18701346697','18610172898','18810541785','15510652210');
         $content = "伙伴们，订单号：{$data['id']}，商圈：{$data['line']}，店铺名称：{$data['shop_name']}，";
         $content .= "客户姓名：{$data['realname']} 将产品{$products}拒收，";
         $content .= "拒收原因：{$reject_reason}，电话：{$data['mobile']} 。";
         $content .= "请在方便的时候给客户打个电话，了解具体情况，便于各部门改进工作，如果需要请联系在线部做进一步客情维护。";
         $map = array(
-            'mobile'   => $mobiles,
+            'mobile'   => $test_mobile,
             'content'  => $content,
             'sms_type' => 1,
             'delay'    => 0,
@@ -110,20 +112,22 @@ class SignInLogic
         //司机信息
         $driver_mobile = session('user.mobile');
         $driver_name   = mb_substr(session('user.username'), 0, 1);
+        //————测试代码————
+        $test_mobile = array('18701346697','18610172898','18810541785','15510652210');
         //组合短信内容
-        $content = "【大厨网】亲爱的老板，您在大厨网订购的产品已从库房发出，正朝您赶来，请耐心等待。";
+        $content = "亲爱的老板，您在大厨网订购的产品已从库房发出，正朝您赶来，请耐心等待。";
         $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491.";
         $cA = A('Common/Order', 'Logic');
         $map = array(
-            'mobile'   => $mobiles,
+            'mobile'   => $test_mobile,
             'content'  => $content,
             'sms_type' => 1,
-            'delay'    => 1200,
+            'delay'    => 5,
         );
         //如果队列中已经存在该配送单ID的消息，撤回
         if ($job_id = S(md5($id))) {
             $dmap = array('job_id' => $job_id);
-            $cA->SendPullMsg($dmap);
+            $pes = $cA->sendPullMsg($dmap);
         }
         //加入消息队列并缓存该job_id
         $res = $cA->sendPushMsg($map);
@@ -145,27 +149,46 @@ class SignInLogic
             );
         }
         $cA = A('Common/Order', 'Logic');
-        //请求母账户信息
-        $umap = array('customer_id' => $data['user_id']);
-        $parent = $cA->getParentAccountByCoustomerId($umap);
-        if (empty($parent['parent_mobile'])) {
-            return array(
-                'status' => 0,
-                'msg'    => '不存在母账户'
-            );
+        //测试用，上线时一定要删除
+        if ($data['user_id'] == 15232) {
+           //请求母账户信息
+           $umap = array('customer_id' => $data['user_id']);
+           // $umap = array('customer_id' => 15232);
+           $parent = $cA->getParentAccountByCoustomerId($umap);
+           if (is_array($parent)) {
+                //要发送的母账户手机号
+                if ($parent['data']['account_type'] == 1) {
+                    $mobile = $parent['data']['mobile'];
+                }
+                if ($parent['data']['account_type'] == 2) {
+                    $mobile = $parent['data']['parent_mobile'];
+                }
+                if (empty($mobile)) {
+                    return array(
+                       'status' => 0,
+                       'msg'    => '母账户手机号不存在'
+                    );
+                }
+                //组合信息内容
+                $content = "亲爱的老板，分店“{$data['shop_name']}”的产品已成功送达，完成签收，请您放心，";
+                $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491";
+                $map = array(
+                    'mobile'   => $mobile,
+                    'content'  => $content,
+                    'sms_type' => 1,
+                    'delay'    => 0
+                );
+                $res = $cA->sendPushMsg($map);
+                return $res;
+               
+           } else {
+                return array(
+                   'status' => 0,
+                   'msg'    => '不存在母账户'
+                );
+           }
+            
         }
-        //要发送的手机号
-        $mobile = $parent['parent_mobile'];
-        //组合信息内容
-        $content = "【大厨网】亲爱的老板，{$data['shop_name']}产品已成功送达，完成签收，请您放心，";
-        $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491";
-        $map = array(
-            'mobile'   => $mobile,
-            'content'  => $content,
-            'sms_type' => 1,
-            'delay'    => 0
-        );
-        $res = $cA->sendPushMsg($map);
-        return $res;
+        
     }
 }

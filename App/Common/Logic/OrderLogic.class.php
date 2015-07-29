@@ -158,7 +158,7 @@ class OrderLogic{
 	}
 
 	/**
-	 * [sendPullMsg 发送短信]
+	 * [sendPullMsg 撤回短信]
 	 * @param  array  $params [description]
 	 * @return [type]         [description]
 	 */
@@ -183,7 +183,7 @@ class OrderLogic{
 	 */
 	public function getParentAccountByCoustomerId($params = array())
 	{
-		$url = '';
+		$url = '/customer/get_parent_info';
 		if (empty($params['customer_id'])) {
 			$res = array(
 				'status' => -1,
