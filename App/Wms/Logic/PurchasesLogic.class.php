@@ -49,6 +49,7 @@ class PurchasesLogic{
                 
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 $where['d.pro_code'] = array('in',$pro_code);
+                $where['r.deleted'] = 0;
                 //$query = ""
                 $subQuery = $m->table('stock_bill_out_detail as d')
                             ->join('left join stock_bill_out as b on b.id=d.pid
@@ -92,7 +93,7 @@ class PurchasesLogic{
             $where['b.delivery_ampm'] = $delivery_ampm; 
         }
         $result = array();
-
+        $where['r.deleted'] = 0;
         $subQuery = $m->table('stock_bill_out_detail as d')
         ->join('left join stock_bill_out as b on b.id=d.pid
                 left join stock as s on d.pro_code=s.pro_code 
