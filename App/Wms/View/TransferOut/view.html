@@ -81,7 +81,7 @@
 </div>
 <hr/>
 <include file="prolist-view" />
-<include file="dialog_bath" />
+<include file="dialog_batch" />
 </div>
 </div>
 </form>
@@ -116,7 +116,7 @@
           var json = {};
           json.title = "批次明细";
           json.data = res.data;
-          var html = template('dialog_bath',json);
+          var html = template('dialog_batch',json);
           $('body').append(html);
         } else {
           alert(res.msg);
