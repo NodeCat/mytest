@@ -8,7 +8,7 @@ use Think\Controller;
 class OrderApi extends CommApi{
     //根据订单 创建出库单
     public function addBillOut(){
-        $order_ids = I('post.orderIds');
+        $order_ids = I('orderIds');
         if(empty($order_ids)){
             $return = array('error_code' => '101', 'error_message' => 'param is empty' );
             $this->ajaxReturn($return);
