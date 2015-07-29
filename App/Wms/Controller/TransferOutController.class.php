@@ -178,6 +178,8 @@ class TransferOutController extends CommonController
         $erp_out_container = M('erp_transfer_out_container');
         D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_out_detail');
         $data['id'] = $id;
+        $plan_qty = 0;//计划
+        $real_qty = 0;//实际
         foreach ($data['detail'] as $key => $value) {
             //获取父级和sku
             if ($transfer_code) {
@@ -187,13 +189,40 @@ class TransferOutController extends CommonController
                 $res = $erp_out_container->where($map)->field('batch,pro_qty')->group('refer_code,pro_code,batch')->select();
                 $count = count($res);
                 $data['detail'][$key]['batch_count'] = $count;
-                $data['detail'][$key]['batch_infos'] = $res;
             } else {
                 $data['detail'][$key]['batch_count'] = '0';
             }
+            $plan_qty = f_add($plan_qty,$value['plan_transfer_qty']);
+            $real_qty = f_add($real_qty,$value['real_out_qty']);
 
         }
+        $data['plan_qty'] = $plan_qty;//计划
+        $data['real_qty'] = $real_qty;//实际
 
+    }
+
+    //查看批次
+    public function transferBatch(){
+        $id = I('post.id');
+        $pro_code = I('post.procode');
+        if (!$id || !$pro_code) {
+            $this->error('0','请正确传值！');
+        }
+        $map = array();
+        $map['id'] = $id;
+        $transfer_code = M('erp_transfer_out')->where($map)->getField('refer_code');
+        if (!$transfer_code) {
+            $this->error('0','查询调拨出库单失败！');
+        }
+        unset($map);
+        $map['refer_code'] = $transfer_code;
+        $map['pro_code'] = $pro_code;
+        $erp_out_container = M('erp_transfer_out_container');
+        $res = $erp_out_container->where($map)->field('batch,pro_qty')->select();
+        if (!$res) {
+            $this->msgReturn(0,'未查询到批次');           
+        }
+        $this->msgReturn(1,'查询成功',$res);
     }
     
     

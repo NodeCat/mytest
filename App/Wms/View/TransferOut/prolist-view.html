@@ -30,8 +30,7 @@
           {$vo.real_out_qty}
         </td>
         <td style="width:10%;" class="text-center batch" >
-          <a tabindex="0" class="label label-success ng-binding batch" els='mode_click' >{$vo.batch_count}</a>
-
+          <a tabindex="0" href="javascript:void(0);" procode="{$vo.pro_code}" id="{$data.id}" class="label label-success ng-binding batch" els='mode_click' >{$vo.batch_count}</a>
         </td>
 
       </tr>
@@ -46,16 +45,6 @@
 </div>
 
 <input type='hidden' id='transfer_id' value='{$data.id}'>
-<script type='text/javascript'>
-$(function(){
-
-  $(document).on('click','[els=mode_click]',function(){
-    var id = $(this).attr('attr');
-     $("#"+id).modal();
-  });
-
-});
-</script>
 <style type="text/css">
 #table-pro input[type=text]{
   padding: 0px 10px;

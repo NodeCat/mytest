@@ -12,7 +12,33 @@
     <div class="row">
         <div class="col-lg-6"><h3>调拨出库单 {$data.code}</h3></div>
         <div class="col-lg-6">
-          <div class="btn-group pull-right" role="group" aria-label="..."></div>
+          <div class="btn-group pull-right" role="group" aria-label="...">
+
+             <a href="#" class="list-group-item">
+                <div class="media-left">
+                    <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+                      <span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="media-body">
+                  <h4 class="list-group-item-heading">{$data.plan_qty}</h4>
+                  <p class="list-group-item-text">计划出库量</p>
+              </div>
+              </a>
+
+              <a href="#" class="list-group-item">
+                <div class="media-left">
+                    <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+                      <span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true"></span>
+                    </div>
+                </div>
+                <div class="media-body">
+                  <h4 class="list-group-item-heading">{$data.real_qty}</h4>
+                  <p class="list-group-item-text">实际出库量</p>
+              </div>
+              </a>
+
+          </div>
         </div>
     </div>
 
@@ -55,10 +81,10 @@
 </div>
 <hr/>
 <include file="prolist-view" />
-<include file="dialog_view" />
 </div>
 </div>
 </form>
+<include file="dialog_bath" />
 <script type="text/javascript">
 
   var alert_dialog = {
@@ -82,14 +108,27 @@
       }
   };
   //退货弹框
-  $(document).on('click','[attr = out]',function(){
-      var json = {};
-      json.title = "创建采购退货单";
-      json.successhref = "{:U('out',array($pk => $data[$pk],'flg'=>'success'))}";
-      json.errorhref = "{:U('out',array($pk => $data[$pk],'flg'=>'error'))}";
+  $(document).on('click','[els=mode_click]',function(){
+      var procode = $(this).attr('procode');
+      var id = $(this).attr('id');
+      var callback = function(res){
+        if (res.status == 1) {
+          var json = {};
+          json.title = "批次明细";
+          json.data = res.data;
+          var html = template('dialog_bath',json);
+          $('body').append(html);
+        } else {
+          alert(res.msg);
+        }
+        
+        return false;
+      };
+      var param = {};
+      param.id = id;
+      param.procode = procode;
+      var url = "{:U('transferBatch')}";
+      $.post(url,param,callback);
 
-      var html = template('dialog_out',json);
-      $('body').append(html);
-      return false;
   });
 </script>

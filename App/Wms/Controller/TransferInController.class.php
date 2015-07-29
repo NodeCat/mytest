@@ -151,6 +151,14 @@ class TransferInController extends CommonController
     {
         //详情数据处理
         D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_in_detail');
+        $plan_qty = 0;//计划
+        $real_qty = 0;//实际
+        foreach ($data['detail'] as $key => $value) {
+            $plan_qty = f_add($plan_qty,$value['plan_in_qty']);
+            $real_qty = f_add($real_qty,$value['receipt_qty']);
+        }
+        $data['plan_qty'] = $plan_qty;//计划
+        $data['receipt_qty'] = $real_qty;//实际
     }
     
     

@@ -7,27 +7,25 @@
         <h4 class="modal-title" id="gridSystemModalLabelalert"> {{title}}</h4>
       </div>
       <div class="modal-body">
-        <div class="container-fluid lgo">
+        <div class="container-fluid"> 
           <div class="row">
-            <div class="col-md-12 col-lg-12 col-sm-12 text-center">{{title}}</div>
+            <div class="col-md-6 text-center">批次</div>
+            <div class="col-md-6 text-center">数量</div>
           </div>
-          <br>
+          <hr/>
+          {{each data as vo}}
           <div class="row">
-            <a href="{{successhref}}" class="btn btn-success btn-lg btn-block">采购正品退货</a>
+            <div class="col-md-6 text-center">{{vo.batch}}</div>
+            <div class="col-md-6 text-center">{{vo.pro_qty}}</div>
           </div>
-          <br>
-          <!--div class="row">
-            <a href="{{errorhref}}" class="btn btn-danger btn-lg btn-block">采购残品退货</a>
-          </div -->
+          <br/>
+          {{/each}}
         </div>
       </div>
-      {{if status}}
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal" onclick="alert_dialog.close();">确定</button>
-        <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
-      </div>
-      {{/if}}
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 </script>
+
+
+

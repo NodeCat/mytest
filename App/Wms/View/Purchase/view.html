@@ -187,7 +187,7 @@
       }
   };
   //退货弹框
-  $(document).on('click','[els = mode_click]',function(){
+  $(document).on('click','[els = mode_click]',function(){alert('ddd');
       var id = $(this).attr('transfer_id');
       var json = {};
       json.title = "创建采购退货单";
@@ -195,8 +195,11 @@
       json.errorhref = "{:U('out',array($pk => $data[$pk],'flg'=>'error'))}";
       var callback = function(res){
 
-      }
-      $.post('');
+      };
+      var prams = {};
+      prams.id = id;
+      var url = "{:U('readBatch')}";
+      $.post(url,prams,callback);
 
       var html = template('dialog_out',json);
       $('body').append(html);
