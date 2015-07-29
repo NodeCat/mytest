@@ -239,22 +239,37 @@ function auth_decrypt($data, $key){
 	}
 	return base64_decode($str);
 }
-function logs($id, $data, $action = ''){
+
+function logs($id = 0, $msg = '', $model = '', $action = '', $module = ''){
     $M = M('log');
-    if(empty($action)) {
-    	$M->action      = ACTION_NAME.'/'.CONTROLLER;
+    if (empty($model)) {
+        $M->model       = CONTROLLER_NAME;
     }
-	else {
-		$M->action = $action;
-	}
-	$M->content     = json_encode($data);
-	$M->pk          = $id;
+    if (empty($action)) {
+        $M->action = ACTION_NAME;
+    }
+    if (empty($module)) {
+        $M->module = MODULE_NAME;
+    }
+    $M->operate     = CONTROLLER_NAME . '/' . ACTION_NAME;
+    $M->pk          = $id;
+    $M->msg         = $msg;
 	$M->url 		= __SELF__;
-	$M->ip          =  get_client_ip();
-	$M->update_user = session('user.uid');
-	$M->update_time = get_time();
-    $M->add();
+	$M->ip          =  ip2long(get_client_ip());
+	$M->updated_user = session('user.uid');
+	$M->updated_time = get_time();
+    $res = $M->add();
 }
+
+function getlogs($model='', $id = 0) {
+    $map['model'] = $model;
+    $map['pk']    = $id;
+    $res = M()->table('log')->field('log.id,log.pk,log.msg,user.nickname user,log.updated_time optime')
+                ->join('user on user.id = log.updated_user')
+                ->where($map)->order('log.id desc')->select();
+    return $res;
+}
+
 function get_time(){
     return date('Y-m-d H:i:s',NOW_TIME);
 }
