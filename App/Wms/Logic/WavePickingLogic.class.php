@@ -73,13 +73,19 @@ class WavePickingLogic{
                     $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
                     //如果不够 处理下一个订单
                     if($is_enough['status'] == 0){
-                        //把订单状态置为待生产 拒绝标识改为2 缺货
+                        //把订单状态置为待生产 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
+                        $notes = '缺货的sku：';
+                        foreach($is_enough['data']['not_enough_pro_code'] as $not_enough_pro_code){
+                            $notes .= $not_enough_pro_code.',';
+                        }
                         $data['status'] = 1;
                         $data['refused_type'] = 2;
+                        $data['notes'] = $notes;
                         $map['id'] = $bill_out_info['id'];
                         M('stock_bill_out')->where($map)->save($data);
                         unset($map);
                         unset($data);
+                        unset($notes);
                         //将此订单踢出此波次 库存充足时 可加入其他波次继续分拣
                         $data['is_deleted'] = 1;
                         $map['bill_out_id'] = $bill_out_info['id'];
