@@ -951,7 +951,7 @@ class ProcessLogic {
         if ($res['status'] != 33) {
             $detail['status'] = 33;
         }
-        $detail['done_qty'] = $data['true_qty'] + $res['done_qty'];
+        //$detail['done_qty'] = $data['true_qty'] + $res['done_qty'];
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         $detail['product_date'] = date('Y-m-d');
