@@ -104,10 +104,7 @@ $('#add-dist').on('click',function(){
       data:{ids:order_ids},
       success: function(msg){
         $('#add-dist').prop('disabled', false);
-        
-         // alert(msg.msg);
-        
-        
+          alert(msg.msg);
         if(msg.data != '' && msg.data != null ){
            $('.alert').hide();
             //$('.content').html(msg.data);

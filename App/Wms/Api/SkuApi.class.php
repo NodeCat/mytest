@@ -130,7 +130,7 @@ class SkuApi extends CommApi
                 $returnSucess['list'][$key]['average_buy_price'] = $salePriceArr[$index];
             }
             
-            if (isset($tmsInfo[$trueindex])) {
+            if (isset($tmsInfo[$skuCode])) {
                 //拒收SKU数量
                 $returnSucess['list'][$key]['reject_sku_counts']  = $tmsInfo[$skuCode]['reject_sku_counts'];
                 //实际销售额

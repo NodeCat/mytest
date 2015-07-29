@@ -92,7 +92,7 @@ class ProcessLogic {
             if ($M->create($param)) {
                 $M->add();
             }
-            $price += $param['price'] * $param['pro_qty'];
+            $price = f_add($price, f_mul($param['price'], $param['pro_qty']));
         }
         $return['price'] = formatMoney($price, 2);
         $return['status'] = true;
@@ -124,16 +124,13 @@ class ProcessLogic {
         }
         unset($map);
         $map['pid'] = $pur['id'];
-        $result = M('stock_purchase_detail')->where($map)->select();
+        $map['pro_code'] = $sku_code;
+        $result = M('stock_purchase_detail')->where($map)->find();
         if (empty($result)) {
             return $return; 
         }
-        foreach ($result as $value) {
-            if ($value['pro_code'] == $sku_code) {
-                $return = $value['price_unit'];
-                break;
-            }
-        }
+        
+        $return = formatMoney($result['price_unit'], 2);
         return $return;
     }
     /**
@@ -352,7 +349,7 @@ class ProcessLogic {
                 if (!isset($format['detail'][$v['pro_code']])) {
                     $format['detail'][$v['pro_code']] = $v;
                 } else {
-                    $format['detail'][$v['pro_code']]['plan_qty'] += $v['plan_qty'];
+                    $format['detail'][$v['pro_code']]['plan_qty'] = f_add($format['detail'][$v['pro_code']]['plan_qty'], $v['plan_qty']);
                 }
                 unset($format['detail'][$index]);
             }
@@ -856,7 +853,7 @@ class ProcessLogic {
         if ($res['status'] != 2) {
             $detail['status'] = 2; //已出库
         }
-        $detail['delivery_qty'] = $res['delivery_qty'] + $data['true_qty'];
+        $detail['delivery_qty'] = f_add($res['delivery_qty'], $data['true_qty']);
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         if ($assist->create($detail)) {
@@ -901,7 +898,7 @@ class ProcessLogic {
         $map['pid'] = $id;
         $map['pro_code'] = $data['pro_code'];
         $res = $assist->where($map)->find();
-        $detail['real_qty'] = $res['real_qty'] + $data['true_qty'];
+        $detail['real_qty'] = f_add($res['real_qty'], $data['true_qty']);
         if ($res['status'] !=  2) {
             $detail['status'] = 2; //已出库
         }
@@ -995,15 +992,12 @@ class ProcessLogic {
         $map['pro_code'] = $data['pro_code'];
         //计算单价 @todo 单价 pm liuyonghao=>价格抹掉 
         $res = $assist->where($map)->find();
-        $price_unit = ($res['price'] * $res['real_qty'] + $price) / ($res['real_qty'] + $data['true_qty']);
+        $price_unit = f_add(f_mul($res['price'], $res['real_qty']), $price) / f_add($res['real_qty'], $data['true_qty']);
         if ($res['status'] != 2) {
             $detail['status'] = 2;
         }
-        $detail['real_qty'] = $data['true_qty'] + $res['real_qty'];
-        //
-        if ($price_unit != formatMoney($price_unit, 2)) {
-            $detail['price'] = formatMoney($price_unit, 2);
-        }
+        $detail['real_qty'] = f_add($data['true_qty'], $res['real_qty']);
+        $detail['price'] = formatMoney($price_unit, 2);
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         $detail['product_date'] = date('Y-m-d');
@@ -1045,14 +1039,14 @@ class ProcessLogic {
         $map['pid'] = $id;
         $map['p_pro_code'] = $data['p_pro_code'];
         $res = $assist->where($map)->find();
-        $detail['real_qty'] = $res['real_qty'] + $data['real_qty'];
+        $detail['real_qty'] = f_add($res['real_qty'], $data['real_qty']);
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         $affect = $assist->where($map)->save($detail);
         if (!$affect) {
             return $return;
         }
-        if ($detail['real_qty'] >= $res['plan_qty']) {
+        if ($detail['real_qty'] * 100 >= $res['plan_qty'] * 100) {
             //更新任务数
             $map['id'] = $id;
             $over = $main->where($map)->setInc('over_task', 1);
