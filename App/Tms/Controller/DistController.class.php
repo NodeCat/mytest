@@ -257,7 +257,10 @@ class DistController extends Controller {
                     foreach ($val['detail'] as &$v) {
                         if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                             //该出库单详情对应的签收数据
-                            $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
+                            $dmap['bill_out_detail_id'] = $v['id'];
+                            $dmap['is_deleted'] = 0;
+                            $sign_in_detail = $M->table('tms_sign_in_detail')->where($dmap)->find();
+                            unset($dmap);
                             $val['receivable_sum'] = $sign_in['receivable_sum'];
                             $val['real_sum'] = $sign_in['real_sum'];
                             $v['quantity']  = $sign_in_detail['real_sign_qty'];
@@ -408,8 +411,12 @@ class DistController extends Controller {
                     //更新签收数据
                     foreach ($cdata as $value) {
                         unset($value['created_time']);
+                        $dmap = array(
+                            'bill_out_detail_id' => $value['bill_out_detail_id'],
+                            'is_deleted' => 0
+                        );
                         M('tms_sign_in_detail')
-                            ->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))
+                            ->where($dmap)
                             ->save($value);
                     }
                 }
