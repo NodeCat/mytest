@@ -245,12 +245,22 @@ function logs($id = 0, $msg = '', $model = '', $action = '', $module = ''){
     if (empty($model)) {
         $M->model       = CONTROLLER_NAME;
     }
+    else {
+        $M->model = $model;
+    }
     if (empty($action)) {
         $M->action = ACTION_NAME;
+    }
+    else {
+        $M->action = $action;
     }
     if (empty($module)) {
         $M->module = MODULE_NAME;
     }
+    else {
+        $M->module = $module;
+    }
+
     $M->operate     = CONTROLLER_NAME . '/' . ACTION_NAME;
     $M->pk          = $id;
     $M->msg         = $msg;
