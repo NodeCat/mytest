@@ -954,11 +954,16 @@ class DistributionController extends CommonController {
         //去除空元素liuguangping
         $ids = array_filter($idsArr['trueResult']);
         $unids = array_filter($idsArr['falseResult']);
-        if(empty($ids)){
+
+        //对缺货订单不做处理
+        $ids = array_merge($ids,$unids);
+        $count = count($ids);
+        /*if(empty($ids)){
             $this->msgReturn(false, '库存不足，无法创建波次');
-        }
-        $count = count($ids) + count($unids); //库存不足的订单数量
-        if (count($unids) > 0) {
+        }*/
+        //$count = count($ids) + count($unids); 
+        //库存不足的订单数量
+        /*if (count($unids) > 0) {
             //弹出确认框
             $confirm = I('get.confirm');
             //确认之后将继续向下执行
@@ -986,15 +991,15 @@ class DistributionController extends CommonController {
                 return;
             }
         }
-        unset($map);
+        unset($map);*/
         //获取配送单详情中符合条件的出库单
-        $map['bill_out_id'] = array('in', $ids);
+        /*$map['bill_out_id'] = array('in', $ids);
         $map['is_deleted'] = 0;
         $detail = M('stock_wave_distribution_detail')->where($map)->select();
         if (empty($detail)) {
             $this->msgReturn(false, '库存不足');
         }
-        unset($map);
+        unset($map);*/
         //获取库存充足的订单详情
         $map['pid'] = array('in', $ids);
         $stock_detail = M('stock_bill_out_detail')->where($map)->select();
