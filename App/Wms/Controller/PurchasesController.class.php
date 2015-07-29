@@ -81,7 +81,7 @@ class PurchasesController extends CommonController {
             $data[$key]['delivery_date'] = $delivery_date;
             $data[$key]['delivery_ampm'] = $delivery_ampm;
             //父下单量
-            $down_qty = getDownOrderNum($value['pro_code'],$value['delivery_date'],$value['delivery_ampm'],$value['wh_id']);
+            $down_qty = getDownOrderNum($value['pro_code'],$delivery_date,$delivery_ampm,$value['wh_id']);
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
             //需要生产子的量 = 父在在库量 x 生产比例;
@@ -157,7 +157,7 @@ class PurchasesController extends CommonController {
             $pro_codeArr[$key]['delivery_date'] = $delivery_date;
             $pro_codeArr[$key]['delivery_ampm'] = $delivery_ampm;
             //父下单量
-            $down_qty = getDownOrderNum($value['pro_code'],$value['delivery_date'],$value['delivery_ampm'],$value['wh_id']);
+            $down_qty = getDownOrderNum($value['pro_code'],$delivery_date,$delivery_ampm,$value['wh_id']);
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
             //需要生产子的量 = 父在在库量 x 生产比例;
