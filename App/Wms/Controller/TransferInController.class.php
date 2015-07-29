@@ -153,12 +153,67 @@ class TransferInController extends CommonController
         D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_in_detail');
         $plan_qty = 0;//计划
         $real_qty = 0;//实际
+        $isset = array();
+        $data['group'] = array();
         foreach ($data['detail'] as $key => $value) {
+            if (!isset($isset[$value['pid'].'_'.$value['pro_code']])) {
+                $data[$value['pid'].'_'.$value['pro_code'].'_'.'plan_in_qty'] = $value['plan_in_qty'];
+                $data[$value['pid'].'_'.$value['pro_code'].'_'.'receipt_qty'] = $value['receipt_qty'];
+                $tmpArr = array();
+                $tmpArr['pid'] = $value['pid'];
+                $tmpArr['pro_code'] = $value['pro_code'];
+                $tmpArr['pro_attrs'] = $value['pro_attrs'];
+                $tmpArr['batch_code'] = $value['batch_code'];
+                $tmpArr['pro_uom'] = $value['pro_uom'];
+                array_push($data['group'], $tmpArr);
+                $isset[$value['pid'].'_'.$value['pro_code']] = 1;
+            } else {
+                $isset[$value['pid'].'_'.$value['pro_code']]+=1;
+                $data[$value['pid'].'_'.$value['pro_code'].'_'.'plan_in_qty'] = f_add($data[$value['pid'].'_'.$value['pro_code'].'_'.'plan_in_qty'], $value['plan_in_qty']);
+                $data[$value['pid'].'_'.$value['pro_code'].'_'.'receipt_qty'] = f_add($data[$value['pid'].'_'.$value['pro_code'].'_'.'batch_code'], $value['receipt_qty']);
+            }
             $plan_qty = f_add($plan_qty,$value['plan_in_qty']);
             $real_qty = f_add($real_qty,$value['receipt_qty']);
         }
+        foreach ($data['group'] as $ky => $val) {
+            if (isset($data[$val['pid'].'_'.$val['pro_code'].'_'.'plan_in_qty'])) {
+                $data['group'][$ky]['plan_in_qty'] = $data[$val['pid'].'_'.$val['pro_code'].'_'.'plan_in_qty'];
+            } else {
+                $data['group'][$ky]['plan_in_qty'] = 0;
+            }
+
+            if (isset($data[$val['pid'].'_'.$val['pro_code'].'_'.'receipt_qty'])) {
+                $data['group'][$ky]['receipt_qty'] = $data[$val['pid'].'_'.$val['pro_code'].'_'.'receipt_qty'];
+            } else {
+                $data['group'][$ky]['receipt_qty'] = 0;
+            }
+
+            if (isset($isset[$val['pid'].'_'.$val['pro_code']])) {
+                $data['group'][$ky]['batch_count'] = $isset[$val['pid'].'_'.$val['pro_code']];
+            } else {
+                $data['group'][$ky]['batch_count'] = 0;
+            }
+        }
         $data['plan_qty'] = $plan_qty;//计划
         $data['receipt_qty'] = $real_qty;//实际
+    }
+
+    //查看批次
+    public function transferBatch(){
+        $id = I('post.id');
+        $pro_code = I('post.procode');
+        if (!$id || !$pro_code) {
+            $this->error('0','请正确传值！');
+        }
+        $map = array();
+        $map['pid'] = $id;
+        $map['pro_code'] = $pro_code;
+        $erp_out_container = M('erp_transfer_in_detail');
+        $res = $erp_out_container->where($map)->field('receipt_qty,plan_in_qty,done_qty,prepare_qty,batch_code')->select();
+        if (!$res) {
+            $this->msgReturn(0,'未查询到批次');           
+        }
+        $this->msgReturn(1,'查询成功',$res);
     }
     
     
