@@ -1041,12 +1041,12 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '更新出库单失败');
         }
         //更新库存不足的出库单状态为缺货 并修改其备注
-        if (!empty($unids)) {
+        /*if (!empty($unids)) {
             $affectedReduce = $D->getReduceSkuCodesAndUpdate($unids);
             if (!$affectedReduce) {
                 $this->msgReturn(false, '更新出库单失败');
             }
-        }
+        }*/
         //通知hop订单状态改变为波次中
         foreach($ids as $bill_out_id){
             $map['id'] = $bill_out_id;
