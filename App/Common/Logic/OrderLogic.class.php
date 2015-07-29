@@ -21,12 +21,17 @@ class OrderLogic{
 		$res = $this->get($url,$map);
 		return $res['info'];
 	}
-
 	//根据客户id获取客户信息
 	public function customer($map=''){
 		$url = '/customer/view';
 		$res = $this->get($url,$map);
 		return $res['info'];
+	}
+	//设置订单的抹零和押金
+	public function setDeposit($map=''){
+		$url = '/suborder/set_deposit_and_neglect';
+		$res = $this->get($url,$map);
+		return $res;
 	}
 	//修改订单状态
 	public function set_status($map='') {
