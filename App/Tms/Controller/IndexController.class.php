@@ -629,7 +629,7 @@ class IndexController extends Controller {
         $res = A('Wms/StockOut', 'Logic')->bill_out_list($map);
         $stock_bill_out = $res['list'];
         foreach ($stock_bill_out as $value) {
-            if ($value['sign_status'] == 2 || $value['sign_status'] == 3) {
+            if ($value['sign_status'] == 2 || $value['sign_status'] == 3 || $value['sign_status'] == 4) {
                 continue;
             } else {
                 $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;

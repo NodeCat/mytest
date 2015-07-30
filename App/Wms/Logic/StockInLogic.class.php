@@ -22,7 +22,6 @@ class StockInLogic{
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
 		$prepareOnQty = 0;
-		$receipt_qty_sum = 0;
 		//加入批次 liuguangping
 		if($batch_flg){
 			$bill_in_detail_m = M('stock_bill_in_detail');
@@ -204,7 +203,6 @@ class StockInLogic{
 
 		}
 
-
 		//修改erp状态
 		$bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
 		if($bill_in_r['type'] == 4){
@@ -282,6 +280,7 @@ class StockInLogic{
 			}
 		}
 
+
 	}
 
 	public function in($inId,$code,$qty) {
@@ -329,6 +328,7 @@ class StockInLogic{
 		}
 
 		unset($map);
+
 		if(intval($diff*100) == 0) {
 			$ined = $this->checkIn($inId);
 			// $ined == 2 不可以验收 待上架 等于1时候 可以验收
@@ -358,7 +358,6 @@ class StockInLogic{
 		$line = $this->getLine($inId,$code);
 		return array('res'=>true,'msg'=>'数量：<strong>'.$qtys.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
 		
-
 	}
 
 	//修改状态和待入库量和实际收货量 $inId 入库单id $code pro_code商品编码 $diff要改变的数量 $batch 批次 liuguangping
@@ -623,7 +622,7 @@ class StockInLogic{
 				foreach ($out_container as $ky => $val) {
 					if($value['refer_code'] == $val['refer_code']) {
 						if (!isset($issetCode[$val['pro_code'].'-'.$val['batch']])) {
-							//统计同一批次 ，调拨单.商品
+							//统计同一批次 ，调拨单，商品
 							$map['c.pro_code'] = $val['pro_code'];
 							$map['o.refer_code'] = $val['refer_code'];
 							$map['c.batch'] = $val['batch'];
@@ -639,6 +638,7 @@ class StockInLogic{
 							if($val['pro_code']){
 								$out_detail = M('stock_bill_out_detail')->where($where)->find();
 							}
+
 							$detail[$i]['wh_id'] = $bill_in['wh_id'];
 				            $detail[$i]['pid'] = $pid;
 				            $detail[$i]['refer_code'] = $value['refer_code']?$value['refer_code']:'';

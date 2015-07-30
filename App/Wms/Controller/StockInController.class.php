@@ -96,13 +96,7 @@ class StockInController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-		),
-		'stock_bill_in.pid' => array (     
-			'title' =>  '提货码',
-			'query_type' => 'eq',     
-			'control_type' => 'text',     
-			'value' => '',   
-		),  
+		), 
 	);
 	public function after_search(&$map) {
 	    if (array_key_exists('stock_bill_in.pro_code',$map)) {
@@ -400,7 +394,6 @@ class StockInController extends CommonController {
 			//$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
 			$getQtyForReceipt = $A->getQtyForReceipt($id,$val['pro_code']);
 			
-			//$qtyForPrepare += $qtyPrepare;
 			$qtyForPrepare += $val['prepare_qty'];
 			//$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
