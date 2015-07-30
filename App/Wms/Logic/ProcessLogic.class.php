@@ -108,28 +108,37 @@ class ProcessLogic {
     public function get_price_by_sku($batch = '', $sku_code = '') {
         $return = 0;
         
+        
         if (empty($batch) || empty($sku_code)) {
             return $return;
         }
-        $map['code'] = $batch;
-        $res = M('stock_bill_in')->where($map)->find();
-        if (empty($res)) {
-            return $return;
+        $pos = str_pos($batch, 'ASN');
+        if ($pos !== false) {
+            //采购入库
+            $map['code'] = $batch;
+            $res = M('stock_bill_in')->where($map)->find();
+            if (empty($res)) {
+                return $return;
+            }
+            unset($map);
+            $map['code'] = $res['refer_code'];
+            $pur = M('stock_purchase')->where($map)->find();
+            if (empty($pur)) {
+                return $return;
+            }
+            unset($map);
+            $map['pid'] = $pur['id'];
+            $map['pro_code'] = $sku_code;
+            $result = M('stock_purchase_detail')->where($map)->find();
+            if (empty($result)) {
+                return $return; 
+            }
+        } else {
+            //加工入库
+            $map['batch']    = $batch;
+            $map['pro_code'] = $sku_code;
+            $result = M('erp_process_in_detail')->where($map)->find();
         }
-        unset($map);
-        $map['code'] = $res['refer_code'];
-        $pur = M('stock_purchase')->where($map)->find();
-        if (empty($pur)) {
-            return $return;
-        }
-        unset($map);
-        $map['pid'] = $pur['id'];
-        $map['pro_code'] = $sku_code;
-        $result = M('stock_purchase_detail')->where($map)->find();
-        if (empty($result)) {
-            return $return; 
-        }
-        
         $return = formatMoney($result['price_unit'], 2);
         return $return;
     }
