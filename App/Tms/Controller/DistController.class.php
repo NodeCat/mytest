@@ -563,11 +563,15 @@ class DistController extends Controller {
         if (!empty($bill_outs)) { 
             //总订单数
             $all_orders = count($bill_outs);
-            for ($n = 0; $n < count($bill_outs); $n++) { 
-                switch ($bill_outs[$n]['sign_status']) {
+            foreach ($bill_outs as $bill_out) { 
+                unset($map);
+                $map['bill_out_id'] = $bill_out['id'];
+                $map['is_deleted']  = 0;
+                $sign_data = M('stock_wave_distribution_detail')->where($map)->find();
+                switch ($bill_out['sign_status']) {
                     case '2':
                         $sign_orders++; //已签收订单数加1
-                        foreach ($bill_outs[$n]['detail'] as $value) {
+                        foreach ($bill_out['detail'] as $value) {
                             unset($map);
                             $map['bill_out_detail_id'] = $value['id'];
                             $map['is_deleted'] = 0;
@@ -582,16 +586,18 @@ class DistController extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            if ($sign_data[$n]['pay_status'] != 1) {
-                                $sum_deal_price += f_mul($sign_qty, $sign_in_detail['price_unit']);  //回款
+                            if ($sign_data['pay_status'] != 1) {
+                                $sum_deal_price += $sign_qty * $sign_in_detail['price_unit'];  //回款
                             }
                         }
-                        $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);  
+                        if ($sign_data['pay_status'] != 1) {
+                            $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);
+                        }  
                         break;
 
                     case '3':
                         $unsign_orders++;   //已拒收订单数加1
-                        foreach ($bill_outs[$n]['detail'] as $val) {
+                        foreach ($bill_out['detail'] as $val) {
                             $key  = $val['pro_code'];    //sku号
                             $arrays[$key]['quantity'] +=  $val['delivery_qty']; //回仓数量
                             $arrays[$key]['name'] =  $val['pro_name'];   //sku名称
