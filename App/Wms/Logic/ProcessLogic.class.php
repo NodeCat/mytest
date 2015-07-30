@@ -113,7 +113,7 @@ class ProcessLogic {
         if (empty($batch) || empty($sku_code)) {
             return $return;
         }
-        $pos = str_pos($batch, 'ASN');
+        $pos = strpos($batch, 'ASN');
         if ($pos !== false) {
             //采购入库
             $map['code'] = $batch;
