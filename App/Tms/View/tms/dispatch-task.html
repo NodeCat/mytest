@@ -1,0 +1,116 @@
+
+<div class="table-responsive" >
+    <form id="f" name="f" action="" method="post" class="form-inline">
+    <div class="input-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">请选择仓库</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select><select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">请选择仓库</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select><select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">请选择仓库</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select>
+        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 clearfix">
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择仓库</span>
+                <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">请选择仓库</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择平台</span>
+                <select autocomplete="off" class="form-control input-pda"  id="platform" name="car_from">
+                    <option value="0">请选择平台</option> 
+                    <volist name='car.car_from' id='plat'>
+                    <option value="{$plat}" <eq name="car_from" value="$plat">selected="true"</eq> >{$plat}</option>
+                    </volist>
+                </select>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                <span class="input-group-addon form-control" style="line-height:1.4;">选择日期</span>
+                <input type="txt" rel="datepicker" name="sign_date" value="{$start_date}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
+            </div>
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                <button class='btn btn-primary' onclick="select()" >查询</button>
+                <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
+            </div>
+        </div>
+        <div class=" col-lg-2 col-md-2 col-sm-2 col-xs-2">
+            <a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>
+        </div>
+    </div>
+
+  </form>      
+    <table class="table table-bordered" style="text-align:center">
+        <!--<thead align="center">-->
+          <tr style="text-align:center;">
+            <th>ID</th>
+            <th>司机姓名</th>
+            <th>联系电话</th>
+            <th>车牌号</th>
+            <th>车型</th>
+            <th>派车平台</th>
+            <th>签到仓库</th>
+            <th>第一次签到时间</th>
+            <th>最后签到时间</th>
+            <th>时间段</th>
+            <th>线路</th>
+            <th>已签收</th>
+            <th>已退货</th>
+            <th>配送中</th>
+            <th>已完成</th>
+            <th>总里程/km</th>
+            <th>当次运费(元)</th>
+            <th>备注</th>
+            <th>删除</th>
+          </tr>
+        <!--</thead>-->
+        <tbody>
+          <volist name='list' id="k">
+          <tr>
+            <th scope="row">{$k.userid}</th>
+            <td>{$k.username}</td>
+            <td>{$k.mobile}</td>
+            <td>{$k.car_num}</td>
+            <td>{$k.car_type}</td>
+            <td>{$k.car_from}</td>
+            <td>{$k.warehouse}</td>
+            <td>{$k.created_time}</td>
+            <td>{$k.updated_time}</td>
+            <td>{$k.period}</td>
+            <td>{$k.line_name}</td>               
+            <td>{$k.sign_orders}</td>
+            <td>{$k.unsign_orders}</td>
+            <td>{$k.delivering}</td>
+            <td>{$k.sign_finished}</td>
+            <td>{$k.distance}</br>
+            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
+            </td>    
+            <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
+            <td></td>
+            <td>
+                <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
+                    <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
+                </if>
+            </td>
+          </tr>
+        </volist>
+        </tbody>
+      </table>
+    </div>
+
+<script type="text/javascript">
+
+</script>
+
