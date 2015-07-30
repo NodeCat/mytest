@@ -1,79 +1,76 @@
 
 <div class="table-responsive" >
+    <h2 class="text-center">派车任务管理</h2>
+    <hr>
     <form id="f" name="f" action="" method="post" class="form-inline">
-    <div class="input-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <option value="0">请选择仓库</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select><select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <option value="0">请选择仓库</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select><select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <option value="0">请选择仓库</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select>
-        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 clearfix">
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
-                <span class="input-group-addon form-control" style="line-height:1.4;">选择仓库</span>
-                <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <option value="0">请选择仓库</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select>
-            </div>
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
-                <span class="input-group-addon form-control" style="line-height:1.4;">选择平台</span>
-                <select autocomplete="off" class="form-control input-pda"  id="platform" name="car_from">
-                    <option value="0">请选择平台</option> 
-                    <volist name='car.car_from' id='plat'>
-                    <option value="{$plat}" <eq name="car_from" value="$plat">selected="true"</eq> >{$plat}</option>
-                    </volist>
-                </select>
-            </div>
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
-                <span class="input-group-addon form-control" style="line-height:1.4;">选择日期</span>
-                <input type="txt" rel="datepicker" name="sign_date" value="{$start_date}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
-            </div>
-            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-                <button class='btn btn-primary' onclick="select()" >查询</button>
-                <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
-            </div>
+    <div class="form-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-9 col-md-9 col-sm-9 col-xs-9">
+            
+            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                <option value="0">选择仓库</option>
+                <volist name='car.warehouse' id='storge'>
+                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                </volist>
+            </select>&nbsp;
+            <input type="txt" rel="datepicker" name="sign_date" value="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择创建日期">&nbsp;
+            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                <option value="0">选择任务类型</option>
+                <volist name='car.warehouse' id='storge'>
+                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                </volist>
+            </select>&nbsp;
+            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                <option value="0">选择车型</option>
+                <volist name='car.warehouse' id='storge'>
+                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                </volist>
+            </select>&nbsp;
+            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                <option value="0">选择平台</option>
+                <volist name='car.warehouse' id='storge'>
+                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                </volist>
+            </select>&nbsp;
+            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                <option value="0">选择状态</option>
+                <volist name='car.warehouse' id='storge'>
+                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                </volist>
+            </select>&nbsp;
+            <input type="txt" class="form-control" placeholder="任意值检索（除运费）">&nbsp;
+            <button class='btn btn-primary' onclick="select()" >查询</button>
         </div>
-        <div class=" col-lg-2 col-md-2 col-sm-2 col-xs-2">
-            <a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>
+        <div class="text-center col-lg-3 col-md-3 col-sm-3 col-xs-3">
+            <a class='btn btn-info' href="{:U('addTask')}" target="_blank">新建任务</a>
+            <button class='btn btn-success pull-right' onclick="select()" >编辑运费</button>
         </div>
     </div>
-
-  </form>      
+  </form>
+  <br />      
+  <br />      
     <table class="table table-bordered" style="text-align:center">
         <!--<thead align="center">-->
           <tr style="text-align:center;">
-            <th>ID</th>
-            <th>司机姓名</th>
-            <th>联系电话</th>
-            <th>车牌号</th>
+            <th>序号</th>
+            <th>任务码</th>
+            <th>仓库</th>
+            <th>任务类型</th>
+            <th>申请时间</th>
+            <th>用车申请人</th>
+            <th>用车部门</th>
+            <th>期望用车时间</th>
+            <th>期望车型</th>
+            <th>预计费用(元)</th>
+            <th>部门审批人</th>
+            <th>物流审批人</th>
+            <th>平台</th>
             <th>车型</th>
-            <th>派车平台</th>
-            <th>签到仓库</th>
-            <th>第一次签到时间</th>
-            <th>最后签到时间</th>
-            <th>时间段</th>
-            <th>线路</th>
-            <th>已签收</th>
-            <th>已退货</th>
-            <th>配送中</th>
-            <th>已完成</th>
-            <th>总里程/km</th>
-            <th>当次运费(元)</th>
-            <th>备注</th>
-            <th>删除</th>
+            <th>司机姓名</th>
+            <th>司机手机号</th>
+            <th>运费(元)</th>
+            <th>里程(km)</th>
+            <th>状态</th>
+            <th>操作</th>
           </tr>
         <!--</thead>-->
         <tbody>
@@ -98,6 +95,7 @@
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
             <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
+            <td></td>
             <td></td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">

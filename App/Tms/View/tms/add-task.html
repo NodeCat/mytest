@@ -1,0 +1,147 @@
+
+<div class="table-responsive" >
+  <form action="" class="form-inline">      
+    <table class="table table-bordered">
+          <tr class="text-center">
+            <td colspan="4">
+              <div class="row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h2 class="text-center col-lg-4 col-md-4 col-md-offset-4 col-lg-offset-4">新建派车任务</h2>
+                <button class='btn btn-success col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="" >复制</button>
+                <button class='btn btn-primary col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="select()" >提交</button>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">任务名称(10字以内)：</label>
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                  <input type="text" class="form-control" style="width:100%;" placeholder="输入任务名称">
+                </div>
+              </div>
+            </td>
+            <td colspan="2">
+              <div class="form-group">
+                <label for="" class="control-label">任务码：</label>
+                <input type="txt" class="form-control" placeholder="" readonly>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">仓库：</label>
+                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                  <option value="0">选择状态</option>
+                  <volist name='car.warehouse' id='storge'>
+                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                  </volist>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">任务类型：</label>
+                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                  <option value="0">选择状态</option>
+                  <volist name='car.warehouse' id='storge'>
+                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                  </volist>
+                </select>
+              </div>
+            </td> 
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">用车申请人：</label>
+                <input type="txt" class="form-control" placeholder="">
+              </div>
+            </td> 
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">申请人联系方式：</label>
+                <input type="txt" class="form-control" placeholder="">
+              </div>
+            </td> 
+          </tr>
+          <tr>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">用车部门：</label>
+                <input type="txt" class="form-control" placeholder="">
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">期望用车时间：</label>
+                <input type="txt" rel="datepicker" name="sign_date" value="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择日期">
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">期望车型：</label>
+                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                  <option value="0">选择状态</option>
+                  <volist name='car.warehouse' id='storge'>
+                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                  </volist>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">预计运费(元)：</label>
+                <input type="txt" class="form-control" placeholder="" readonly>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="form-group">
+                <label for="" class="control-label">用车事由：</label>
+                <textarea class="form-control" rows="3"></textarea>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">备注(长期/临时)</label>
+                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                  <option value="0">选择状态</option>
+                  <volist name='car.warehouse' id='storge'>
+                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                  </volist>
+                </select>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="4">
+              <div class="form-group">
+                <label for="" class="control-label">选择记录点</label>
+                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">选择状态</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                  </select>&nbsp;
+                  <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                    <option value="0">选择状态</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                  </select>&nbsp;
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="4">
+              注：①申请最长期限为一个月，超出时限需重新申请；②申请用车3天（含）以上为长期申请
+            </td>
+          </tr>
+      </table>
+    </form>
+    </div>
+
+<script type="text/javascript">
+
+</script>
+
