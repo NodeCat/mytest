@@ -47,7 +47,6 @@ class SkuApi extends CommApi
         if (empty($condition['itemspages'])) {
             $condition['itemspages'] = C('PAGE_SIZE');
         }
-        
         $CategoryLogic = A('Category', 'Logic');
         $InsalesLogic  = A('Insales', 'Logic');
         $SkuInfo       = A('SkuInfo', 'Logic');
