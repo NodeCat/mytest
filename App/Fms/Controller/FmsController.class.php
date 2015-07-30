@@ -305,7 +305,7 @@ class FmsController extends \Common\Controller\AuthController{
             }
             elseif($value['status_cn'] == '已完成') {
                 //结算金额 ＋＝ 应收总计
-                $dist['pay_for_price_total'] += $value['pay_for_price'];
+                $dist['pay_for_price_total'] += $value['deal_price'];
             }
             elseif($value['status_cn'] == '已签收') {
                 //结算金额 ＋＝ 应收总计
