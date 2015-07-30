@@ -84,6 +84,7 @@ class ProcessLogic {
             $param['pro_qty'] = $value['qty'];
             $param['price'] = $this->get_price_by_sku($value['batch'], $data['pro_code']);
             $param['batch'] = $value['batch'];
+            $param['code'] = $value['refer_code'];
             $param['location_id'] = $value['location_id'];
             $param['created_time'] = get_time();
             $param['created_user'] = session('user.uid');
@@ -138,6 +139,7 @@ class ProcessLogic {
             $map['batch']    = $batch;
             $map['pro_code'] = $sku_code;
             $result = M('erp_process_in_detail')->where($map)->find();
+            $result['price_unit'] = $result['price'];
         }
         $return = formatMoney($result['price_unit'], 2);
         return $return;
