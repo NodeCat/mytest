@@ -11,7 +11,7 @@ class BillController extends \Wms\Controller\CommonController
 		'billing_num' => '账单号',
 		'theory_start' => '帐期',
         'billing_cycle' => '帐期长度',
-        'pay_date' => '结款日期',
+        'expire_time' => '结款日期',
 		'shop_name' => '店铺名称',
 		'mobile' => '客户手机号',
 		'bd_name' => '所属BD',
@@ -195,19 +195,25 @@ class BillController extends \Wms\Controller\CommonController
         }
 
         foreach ($data['list'] as &$order) {
+            $deal_price= 0;
             foreach ($order['child'] as &$vo) {
                 if(empty($vo['net_weight'])) {
                     $vo['new_weight'] = 0;
                 }
-                $vo['pricePerW'] = round($vo['actual_price'] / $vo['net_weight'],2);
+                $vo['pricePerW'] = round($vo['single_price'] / $vo['net_weight'],2);
                 $vo['inW'] = $vo['quantity'] * $vo['net_weight'];
                 $vo['shW'] = $vo['actual_quantity'] * $vo['new_weight'];
                 $vo['juW'] = ($vo['quantity'] - $vo['actual_quantity']) * $vo['new_weight'];
                 $vo['inW'] = $vo['inW'] ? $vo['inW'] : '/';
                 $vo['shW'] = $vo['shW'] ? $vo['shW'] : '/';
                 $vo['juW'] = $vo['juW'] ? $vo['juW'] : '/';
-
                 $vo['pricePerW']  = $vo['pricePerW'] ? $vo['pricePerW'] : '/';
+                $deal_price += $vo['actual_sum_price'];
+            }
+            if($deal_price > 0) {
+                $order['actual_price'] = $deal_price + $order['deliver_fee'] - $order['minus_amount']- $val['pay_reduce'];
+            } else {
+                $order['actual_price'] = 0 ;
             }
         }
     	$this->data = $data['list'];
@@ -315,7 +321,7 @@ class BillController extends \Wms\Controller\CommonController
         foreach ($data['list'] as &$val) {
             $val['theory_start'] = $val['theory_start'] . ' － ' . $val['theory_end'];
             if ($val['expire_status'] == '1') {
-                $val['pay_date'] = $val['pay_date'] . '<span class="label label-danger">逾期未付</span>';
+                $val['expire_time'] = $val['expire_time'] . '<span class="label label-danger">逾期未付</span>';
             }
         }
         $this->pk = 'id';

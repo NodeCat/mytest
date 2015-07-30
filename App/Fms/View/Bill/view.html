@@ -55,8 +55,7 @@
                   账单金额
               </p>
             </div>
-          </a>{~$data['billing_info']['payment_evidence']="http://wanzao2.b0.upaiyun.com/xbimg/1013/noral/usercontent/2011/12/17/111217163529346771.jpg"}
-          
+          </a>
           <img id="img_evidence" class="hidden" src="{$data['billing_info']['payment_evidence']}">
           <in name="data['billing_info']['status_code']" value="4,5">
           <notempty name="data['billing_info']['payment_evidence']">
@@ -144,7 +143,7 @@
         </label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
           <label class="control-label label-field">
-            {$data['billing_info']['pay_date']}
+            {$data['billing_info']['expire_time']}
           </label>
         </div>
       </div>
@@ -169,14 +168,18 @@
                 日期
             </td>
             <td>
+                下单金额
+            </td>
+            <td>
                 订货金额
             </td>
             <td>
                 拒收金额
             </td>
             <td>
-                收货金额
+                签收金额
             </td>
+            
             <td>
                 运费
             </td>
@@ -198,16 +201,19 @@
                 {$vo.deliver_date}
               </td>
               <td>
+                {$vo.final_price}
+              </td>
+              <td>
                 {$vo.total_price}
               </td>
               <td>
                 {$vo.refuse_price}
               </td>
               <td>
-                {$vo.final_price}
+                {$vo.sign_price}
               </td>
               <td>
-                {$vo.deliver_fee}
+                {$vo.actual_deliver_fee}
               </td>
               <td>
                 {$vo.minus_amount}
