@@ -146,7 +146,7 @@ class OrderController extends \Common\Controller\AuthController {
             }
             //抹零总计
             $bill_out['wipe_zero_sum'] = $wipe_zero_sum;
-            $logs = getlogs('stock_wave_distribution_detail',$sign_data['id']);
+            $logs = getlogs('dist_detail',$sign_data['id']);
             $this->assign('data',$bill_out);
             $this->assign('logs',$logs);
         }
@@ -176,7 +176,7 @@ class OrderController extends \Common\Controller\AuthController {
         $data['reject_reason'] = '';
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
         //写日志logs($id = 0, $msg = '', $model = '', $action = '', $module = ‘')
-        logs($bill_out_id,'重置为已装车状态'.'[财务'.session('user.username').']','stock_wave_distribution_detail');
+        logs($bill_out_id,'重置为已装车状态'.'[财务'.session('user.username').']','dist_detail');
 
         unset($map);
         $map['pid'] = $dist_detail_id;
@@ -209,19 +209,7 @@ class OrderController extends \Common\Controller\AuthController {
         $deposit_sum   = I('post.deposit_sum',0);
         $deal_price    = I('post.deal_price',0);
         $sign_msg      = I('post.sign_msg',0);
-        $status_cn     = I('post.status_cn','1');
-        switch ($status_cn) {
-            case '已签收':
-                $status_cn = '6';
-                break;
-            case '已完成':
-                $status_cn = '1';
-                break;
-            
-            default:
-                # code...
-                break;
-        }
+        
         if ($order_id && $bill_id) {
             $map['bill_out_id'] = $bill_id;
             $map['is_deleted']  = 0;
@@ -230,11 +218,11 @@ class OrderController extends \Common\Controller\AuthController {
             $data['wipezero']   = $wipe_zero_sum + $wipezero;
             $data['deposit']    = $deposit_sum + $deposit;
             $res = M('stock_wave_distribution_detail')->where($map)->save($data);
-            logs($bill_id,'修改订单实收金额，'.$sign_msg.'[财务'.session('user.username').']','stock_wave_distribution_detail');
+            logs($bill_id,'修改订单实收金额，'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
             if ($res) {
                 $A = A('Common/Order','Logic');
                 unset($map);
-                $map['status']  = $status_cn;
+                $map['status']  = '1'; //已完成
                 $map['deal_price'] = $deal_price - $wipezero - $deposit;
                 $map['suborder_id'] = $order_id;
                 $map['remark']      = $sign_msg;

@@ -162,14 +162,14 @@
       </div>
     </div>
   </form>
-  <if condition="(($data.status_cn eq '已完成') OR ($data.status_cn eq '已签收')) AND ($data.pay_status neq '已付款')">
+  <if condition="($data.status_cn eq '已完成') AND ($data.pay_status neq '已付款')">
     <form class="form-inline" action="{:U('Order/modify')}" method="POST">
       <input type="hidden" name="order_id" value="{$data.refer_code}" />
       <input type="hidden" name="bill_id" value="{$data.id}" />
       <input type="hidden" name="deposit_sum" value="{$data.deposit_sum}" />
       <input type="hidden" name="deal_price" value="{$data.deal_price}" />
       <input type="hidden" name="wipe_zero_sum" value="{$data.wipe_zero_sum}" />
-      <input type="hidden" name="status_cn" value="{$data.status_cn}" />
+      
       <div class="panel-footer ">
           <div class="form-group">
           <label class="" for="msg">备注</label>
