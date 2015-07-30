@@ -80,6 +80,9 @@ class TransferController extends CommonController
     protected $warehouseArr = array();
     //加入默认值
     public function __construct(){
+        //加入wms入库单 liuguangping
+        $stockin_logic = A('StockIn','Logic');        
+        $stockin_logic->addWmsIn(array('594'));
         parent::__construct();
         //获得仓库信息
         $warehouse = M('warehouse')->field('id,name')->select();

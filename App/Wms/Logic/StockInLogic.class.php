@@ -573,15 +573,13 @@ class StockInLogic{
 		$map['o.status'] = 2;//已出库
 		$map['o.id'] = array('in',$pass_reduce_ids);
 		$map['o.is_deleted'] = 0;
-		$map['d.is_deleted'] = 0;
 		$map['c.is_deleted'] = 0;
 		$out_m->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
 			left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-			left join stock_bill_out as o on wdd.bill_out_id = o.id 
-			left join stock_bill_out_detail as d on d.pid=o.id')->where($map);
+			left join stock_bill_out as o on wdd.bill_out_id = o.id')->where($map);
 		$out_m2 = clone $out_m;//深度拷贝
 		//插入stokc_bill_in_detail表
-		$out_container = $out_m->field('c.batch,c.pro_code,d.pro_name,d.pro_attrs,d.price,d.measure_unit,o.*')->select();
+		$out_container = $out_m->field('c.batch,c.pro_code,o.*')->select();
 		//插入stock_bill_in表 根据同一个调拨单，同一件商品和批次生产一张调拨单
         $out_infos = $out_m2->field('c.batch,c.pro_code,o.*')->group('o.refer_code')->select();
     
@@ -631,18 +629,26 @@ class StockInLogic{
 							$map['c.batch'] = $val['batch'];
 							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
 								left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-								left join stock_bill_out as o on wdd.bill_out_id = o.id 
-								left join stock_bill_out_detail as d on d.pid=o.id')->where($map)->sum('c.qty');
+								left join stock_bill_out as o on wdd.bill_out_id = o.id')->where($map)->sum('c.qty');
+							//查询出库商品的属性 同一个出库单只有唯一一个商品
+							$where = array();
+							$where['pid'] = $val['id'];
+							$where['pro_code'] = $val['pro_code'];
+							$where['is_deleted'] = 0;
+							$out_detail = array();
+							if($val['pro_code']){
+								$out_detail = M('stock_bill_out_detail')->where($where)->find();
+							}
 							$detail[$i]['wh_id'] = $bill_in['wh_id'];
 				            $detail[$i]['pid'] = $pid;
 				            $detail[$i]['refer_code'] = $value['refer_code']?$value['refer_code']:'';
 				            $detail[$i]['pro_code'] = $val['pro_code']? $val['pro_code']:'';
-				            $detail[$i]['pro_name'] = $val['pro_name']?$val['pro_name']:'';
-				            $detail[$i]['pro_attrs'] = $val['pro_attrs']?$val['pro_attrs']:'';
+				            $detail[$i]['pro_name'] = $out_detail['pro_name']?$out_detail['pro_name']:'';
+				            $detail[$i]['pro_attrs'] = $out_detail['pro_attrs']?$out_detail['pro_attrs']:'';
 				            $detail[$i]['batch'] = $val['batch'];
 				            $detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
-				            $detail[$i]['pro_uom'] = $val['measure_unit']?$val['measure_unit']:'';
-				            $detail[$i]['price_unit'] = $val['price']?$val['price']:'';
+				            $detail[$i]['pro_uom'] = $out_detail['measure_unit']?$out_detail['measure_unit']:'';
+				            $detail[$i]['price_unit'] = $out_detail['price']?$out_detail['price']:'';
 				            $detail[$i]['prepare_qty'] = 0;
 				            $detail[$i]['done_qty'] = 0;
 				            $detail[$i]['receipt_qty'] = 0;

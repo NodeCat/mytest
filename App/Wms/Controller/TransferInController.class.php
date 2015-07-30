@@ -171,7 +171,7 @@ class TransferInController extends CommonController
             } else {
                 $isset[$value['pid'].'_'.$value['pro_code']]+=1;
                 $data[$value['pid'].'_'.$value['pro_code'].'_'.'plan_in_qty'] = f_add($data[$value['pid'].'_'.$value['pro_code'].'_'.'plan_in_qty'], $value['plan_in_qty']);
-                $data[$value['pid'].'_'.$value['pro_code'].'_'.'receipt_qty'] = f_add($data[$value['pid'].'_'.$value['pro_code'].'_'.'batch_code'], $value['receipt_qty']);
+                $data[$value['pid'].'_'.$value['pro_code'].'_'.'receipt_qty'] = f_add($data[$value['pid'].'_'.$value['pro_code'].'_'.'receipt_qty'], $value['receipt_qty']);
             }
             $plan_qty = f_add($plan_qty,$value['plan_in_qty']);
             $real_qty = f_add($real_qty,$value['receipt_qty']);
@@ -197,6 +197,7 @@ class TransferInController extends CommonController
         }
         $data['plan_qty'] = $plan_qty;//计划
         $data['receipt_qty'] = $real_qty;//实际
+        //dump($data);die;
     }
 
     //查看批次
