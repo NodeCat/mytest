@@ -214,6 +214,10 @@ class OrderController extends \Common\Controller\AuthController {
         $sign_msg      = I('post.sign_msg',0);
         
         if ($order_id && $bill_id) {
+            //实例化模型
+            $model = M();
+            //启动事务
+            $model->startTrans();
             $map['bill_out_id'] = $bill_id;
             $map['is_deleted']  = 0;
             $dist_detail = M('stock_wave_distribution_detail')->where($map)->find();
@@ -224,24 +228,40 @@ class OrderController extends \Common\Controller\AuthController {
             $data['sign_msg']   = $sign_msg;
             $data['wipezero']   = $wipe_zero_sum + $wipezero;
             $data['deposit']    = $deposit_sum + $deposit;
-            $res = M('stock_wave_distribution_detail')->where($map)->save($data);
+            $res = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
             logs($bill_id,'修改订单实收金额，'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
-            if ($res) {
-                $A = A('Common/Order','Logic');
-                unset($map);
-                $map['status']  = '1'; //已完成
-                $map['deal_price'] = $deal_price - $wipezero - $deposit;
-                $map['suborder_id'] = $order_id;
-                $map['remark']      = $sign_msg;
-                $map['cur']['name'] = '财务'.session('user.username');
-                $res1 = $A->set_status($map);
-                unset($map);
-                $map['suborder_id'] = $order_id;
-                $map['deposit']     = $deposit_sum + $deposit;
-                $map['neglect_payment'] = $wipe_zero_sum + $wipezero;
-                $res2 = $A->setDeposit($map);
+            
+            $A = A('Common/Order','Logic');
+            $dist_M = M('stock_wave_distribution');
+            unset($map);
+            unset($data);
+            $map['id'] = $dist_detail['pid'];
+            $map['is_deleted'] = 0;
+            $dist_deal_price = $dist_M->where($map)->find();
+            $dist_deal_price = $dist_deal_price['deal_price'];
+            $data['deal_price'] = $dist_deal_price - $wipezero - $deposit;
+            $cn = $model->table('stock_wave_distribution')->where($map)->save($data);
+            unset($map);
+            $map['status']  = '1'; //已完成
+            $map['deal_price'] = $deal_price - $wipezero - $deposit;
+            $map['suborder_id'] = $order_id;
+            $map['remark']      = $sign_msg;
+            $map['cur']['name'] = '财务'.session('user.username');
+            $res1 = $A->set_status($map);
+            unset($map);
+            $map['suborder_id'] = $order_id;
+            $map['deposit']     = $deposit_sum + $deposit;
+            $map['neglect_payment'] = $wipe_zero_sum + $wipezero;
+            $res2 = $A->setDeposit($map);
+            if ($res && $cn) {
+                //提交事务
+                $model->commit();
                 $this->success('修改成功！',U('Order/index',array('id' => $order_id)),2);  
-            }
+            } else {
+                //回滚事务
+                $model->rollback();
+                $this->error('修改失败！');
+            } 
         }
     }
 
