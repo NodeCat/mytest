@@ -14,7 +14,7 @@ class FmsController extends \Common\Controller\AuthController{
             $array_result = $this->get_orders($id);
             $dist = $array_result['dist'];
             $orders = $array_result['orders'];
-
+            
             $this->assign('dist', $dist);
             $this->assign('data', $orders);
         }
@@ -81,6 +81,7 @@ class FmsController extends \Common\Controller\AuthController{
             unset($map);
             unset($data);
             $map['bill_out_id'] = $value['id'];
+            $map['is_deleted'] = 0;
             $data['status'] = 4; //已完成
             $data['real_sum'] = $value['pay_for_price'];
             $s = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
@@ -90,6 +91,7 @@ class FmsController extends \Common\Controller\AuthController{
         unset($map);
         unset($data);
         $map['id'] = $id;
+        $map['is_deleted'] = 0;
         $data['status'] = 4; //已结算
         $data['deal_price'] = $dist['pay_for_price_total'];
         $res = $model->table('stock_wave_distribution')->where($map)->save($data);
@@ -201,6 +203,7 @@ class FmsController extends \Common\Controller\AuthController{
            
             unset($map);
             $map['pid'] = $sign_data['id'];
+            $map['is_deleted'] = 0;
             //找到出库单的签收的所有详情信息
             $sign_data['detail'] = M('tms_sign_in_detail')->where($map)->select();
             //获得订单状态
@@ -339,10 +342,12 @@ class FmsController extends \Common\Controller\AuthController{
         if(empty($map)){
             return null;
         }
+        $map['is_deleted'] = 0;
         $dist = M('stock_wave_distribution')->where($map)->find();
         unset($map);
         //查询条件为配送单id
         $map['pid'] = $dist['id'];
+        $map['is_deleted'] = 0;
         //根据配送单id查配送详情单里与出库单相关联的出库单id
         $dist_detail = M('stock_wave_distribution_detail')->where($map)->select();
         $dist['detail'] = $dist_detail;
@@ -356,13 +361,19 @@ class FmsController extends \Common\Controller\AuthController{
         if(empty($id)){
             return null;
         }
-        $bill_out = M('stock_bill_out')->find($id);
-        unset($map);
-        //查询条件为出库单id
-        $map['pid'] = $id;
-        //根据配送单id查配送详情单里与出库单相关联的出库单id
-        $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
-        $bill_out['detail'] = $bill_out_detail;
+        $map['id'] = $id;
+        $map['is_deleted'] = 0;
+        $m = M('stock_bill_out');
+        $bill_out = $m->where($map)->find();
+        if (!empty($bill_out)) {
+            unset($map);
+            //查询条件为出库单id
+            $map['pid'] = $id;
+            $map['is_deleted'] = 0;
+            //根据配送单id查配送详情单里与出库单相关联的出库单id
+            $bill_out_detail = M('stock_bill_out_detail')->where($map)->select();
+            $bill_out['detail'] = $bill_out_detail;
+        }
         return $bill_out;
     }
     protected function get_status($status = 0){

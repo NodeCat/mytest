@@ -91,4 +91,5 @@ class DistLogic {
         $price = round($price, 1);
         return $price;
     }
+
 }

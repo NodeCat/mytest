@@ -48,8 +48,11 @@ $(function(){
 		var _pro_code = _condition[3];
 		var _status = $("select[name^='query']").val();
 		var _partner = _condition[0];
+		var _id = _condition[4];
+		var _created_time_start = _condition[5];
+		var _created_time_end = _condition[6];
 
-		window.location.href="/PurchaseInDetail/export?"+'purchase_code='+_purchase_code+'&stock_in_code='+_stock_in_code+'&pro_code='+_pro_code+'&status='+_status+'&partner='+_partner; 
+		window.location.href="/PurchaseInDetail/export?"+'purchase_code='+_purchase_code+'&stock_in_code='+_stock_in_code+'&pro_code='+_pro_code+'&status='+_status+'&partner='+_partner+'&id='+_id+'&created_time_start='+_created_time_start+'&created_time_end='+_created_time_end; 
 
 	});
 })

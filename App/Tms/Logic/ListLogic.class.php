@@ -56,7 +56,7 @@ class ListLogic{
         unset($map);
         $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
-        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->select();
+        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->find();
         
         return $batch['batch'];
     }
@@ -70,7 +70,7 @@ class ListLogic{
         unset($map);
         $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
-        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->select();
+        $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->find();
         
         return $batch['batch'];
     }
@@ -92,11 +92,18 @@ class ListLogic{
             $map['created_time'] = array('between',$start_date.','.$end_date);
             $res = $M->where($map)->find();
             unset($map['created_time']);
-            $map['itemsPerPage'] = $res['order_count'];//传递页数
-            $map['order_by'] = array('user_id' => 'ASC','created_time' => 'DESC');
-            $A = A('Common/Order','Logic');
-            $orders = $A->order($map);
-            $this->data = $orders;
+            if (defined('VERSION')) {
+                $map['order_by'] = array('created_time' => 'DESC');
+                $A = A('Tms/Dist','Logic');
+                $bills = $A->billOut($map);
+                $orders = $bills['orders'];
+            } else {
+                $A = A('Common/Order','Logic');
+                $map['itemsPerPage'] = $res['order_count'];//传递页数
+                $map['order_by'] = array('user_id' => 'ASC','created_time' => 'DESC');
+                $orders = $A->order($map);
+            }
+            //$this->data = $orders;
             $all_orders     = 0;  //总订单统计
             $sign_orders    = 0;  //签收统计
             $unsign_orders  = 0;  //退货统计
@@ -104,6 +111,9 @@ class ListLogic{
             $sum_deal_price = 0;  //司机回款统计
             $back_lists     = array(); //退货清单
             foreach ($orders as $key => $value) {
+                if (defined('VERSION')) {
+                    $value = $value['order_info'];
+                }
                 $all_orders++;
                 // 统计实收货款和签收未收订单 
                 switch($value['status_cn']){
@@ -161,7 +171,7 @@ class ListLogic{
      * 获取司机配送客户的地址详情
      * @param  string $mobile     司机电话号码
      * @param  string $id         签到id（车次id）
-     * @return array  $geo_arrays 返回用户店铺位置信息
+     * @return array  $data       返回用户店铺位置信息和客户数量
      * @author   jt
      */
     public function getCustomerAddress($mobile,$id) {
@@ -174,16 +184,28 @@ class ListLogic{
         $map['status'] = '1';
         $data = M('tms_delivery')->where($map)->select();
         unset($map);
-        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
         $A = A('Common/Order','Logic');
-        $geo_array=array();
+        $geo_array = array();
+        $customer  = array();
         foreach ($data as $key => $value) {
             // dump($value['dist_id']);
             $map['dist_id'] = $value['dist_id'];
-            $map['itemsPerPage'] = $value['order_count'];
-            $orders = $A->order($map);
+            if (defined('VERSION')) {
+                $map['order_by'] = array('created_time' => 'DESC');
+                $A = A('Tms/Dist','Logic');
+                $bills  = $A->billOut($map);
+                $orders = $bills['orders'];
+            } else { 
+                $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                $map['itemsPerPage'] = $value['order_count'];
+                $orders = $A->order($map);
+            }
             foreach ($orders as $keys => $values) {
+                if (defined('VERSION')) {
+                    $values = $values['order_info'];
+                }
                 $values['geo'] = json_decode($values['geo'],TRUE);
+                $customer[$values['user_id']] = 1;//统计商家数量
                 //如果地址为空的话跳过
                 if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
                     continue;
@@ -207,8 +229,12 @@ class ListLogic{
                 $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
             }            
         }
-        $geo_arrays  = array_values($geo_array);
-        return $geo_arrays;
+        $customer_count = count($customer);
+        $geo_arrays     = array_values($geo_array);
+        unset($data);
+        $data['customer_count'] = $customer_count;
+        $data['geo_arrays']     = $geo_arrays;
+        return $data;
     }
   
   /**

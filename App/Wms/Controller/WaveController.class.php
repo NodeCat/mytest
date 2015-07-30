@@ -121,6 +121,7 @@ class WaveController extends CommonController {
         $pid = I('id');
         $m = M('stock_wave_detail');
         $map['pid'] = $pid;
+        $map['is_deleted'] = 0;
         $result = array();
         $result = $m->where($map)->select();
         if($result){

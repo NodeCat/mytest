@@ -168,6 +168,9 @@ class PurchaseInDetailController extends CommonController {
 
     //导出
     public function export(){
+        $id = I('id');
+        $created_time_start = I('created_time_start');
+        $created_time_end = I('created_time_end');
         $purchase_code = I('purchase_code');
         $stock_in_code = I('stock_in_code');
         $pro_code = I('pro_code');
@@ -195,6 +198,16 @@ class PurchaseInDetailController extends CommonController {
         if(!empty($status)){
             $map['status'] = $status;
         }
+        if(!empty($id)){
+            $map['erp_purchase_in_detail.id'] = $id;
+        }
+        if(!empty($created_time_start) || !empty($created_time_end)){
+            $created_time_start = (empty($created_time_start)) ? '1900-01-01' : $created_time_start;
+            $created_time_end = (empty($created_time_end)) ? '9999-12-31' : $created_time_end;
+            $created_time_start = $created_time_start.' 00:00:00';
+            $created_time_end = $created_time_end.' 23:59:59';
+            $map['erp_purchase_in_detail.created_time'] = array('between',$created_time_start.','.$created_time_end);
+        }
 
         //查询符合条件的采购入库单
         $purchase_in_details = M('erp_purchase_in_detail')
@@ -204,10 +217,8 @@ class PurchaseInDetailController extends CommonController {
         ->where($map)->order('id DESC')->select();
 
         if(empty($purchase_in_details)){
-            $data['status'] = 0;
-            $data['msg'] = '没有符合条件的数据';
-
-            $this->ajaxReturn($data);
+            echo '没有符合条件的数据';
+            return false;
         }
 
         //$purchase_in_details = A('Pms','Logic')->add_fields($purchase_in_details,'pro_name');

@@ -96,7 +96,13 @@ class StockInController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-		), 
+		),
+		'stock_bill_in.pid' => array (     
+			'title' =>  '提货码',
+			'query_type' => 'eq',     
+			'control_type' => 'text',     
+			'value' => '',   
+		),  
 	);
 	public function after_search(&$map) {
 	    if (array_key_exists('stock_bill_in.pro_code',$map)) {
@@ -711,5 +717,108 @@ class StockInController extends CommonController {
 
         if(empty($data))$data['']='';
         echo json_encode($data);
+    }
+
+    //处理预览数据
+    public function preview(){
+        $pro_infos = I('pro_infos');
+        if(empty($pro_infos)){
+            $this->msgReturn(0,'请提交批量处理的信息');
+        }
+        $pro_infos_list = explode("\n", $pro_infos);
+
+        $pro_codes = array();
+        $purchase_infos = array();
+        foreach($pro_infos_list as $pro_info){
+            $pro_info_arr = explode("\t", $pro_info);
+            $pro_codes[] = $pro_info_arr[0];
+            $in_qty[$pro_info_arr[0]] = $pro_info_arr[1];
+            //$purchase_infos[$pro_info_arr[0]]['pro_qty'] = $pro_info_arr[1];
+            //$purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
+        }
+
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+
+        //拼接模板
+        foreach($pro_codes as $key => $pro_code){
+        	$key++;
+            $result .= '<tr class="tr-cur tr-active">
+		        <td style="width:50%;">
+			        <input type="hidden" value="'.$pro_code.'" name="pros['.$key.'][pro_code]" class="pro_code form-control input-sm">
+			        <input type="hidden" value="'.$sku_list[$pro_code]['name'].'" name="pros['.$key.'][pro_name]" class="pro_name form-control input-sm">
+			        <input type="hidden" value="'.$sku_list[$pro_code]['pro_attrs_str'].'" name="pros['.$key.'][pro_attrs]" class="pro_attrs form-control input-sm">
+			        <input type="text" id="typeahead" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" value="['.$pro_code.']'.$sku_list[$pro_code]['wms_name'].'">
+			    </td>
+		        <td style="width:10%;">
+		            <input type="text" name="pros['.$key.'][pro_qty]" placeholder="数量" value="'.$in_qty[$pro_code].'" class="form-control input-sm text-left" autocomplete="off">
+		        </td>
+		        <td style="width:10%;">
+		            <select name="pros['.$key.'][pro_uom]" class="form-control input-sm">
+		                <!--<option value="箱">箱</option>-->
+		            		<option value="件">件</option>
+		            </select>
+		        </td>
+		        <!--<td style="width:10%;">
+		            <input type="text" id="price_unit" name="pros[0][price_unit]" placeholder="单价"  value="0.00" class="pro_unit form-control input-sm text-left">
+		        </td>-->
+		        
+		        <td style="width:10%;" class="text-center">
+		            <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+		        </td>
+		      </tr>';
+        }
+
+        $this->msgReturn(1,'',array('html'=>$result));
+    }
+
+    //一键上架
+    public function onall(){
+    	$ids = I('id');
+        if(empty($ids)){
+            $this->msgReturn(0,'请选择到货单');
+        }
+
+        //查询收货区库位
+        $map['code'] = '001-001';
+        $map['wh_id'] = session('user.wh_id');
+        $rev_location_info = M('location')->where($map)->find();
+        unset($map);
+
+        if(empty($rev_location_info['id'])){
+        	$this->msgReturn(0,'请添加库位001-001');
+        }
+
+        //根据到货单查询相关SKU信息
+        $map['stock_bill_in_detail.pid'] = array('in',$ids);
+        $stock_bill_in_detail = M('stock_bill_in_detail')
+        ->join('join stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
+        ->field('stock_bill_in_detail.*,stock_bill_in.code')
+        ->where($map)
+        ->select();
+        unset($map);
+
+        $wh_id = session('user.wh_id');
+        $location_id = $rev_location_info['id'];
+
+        foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
+        	//先模拟收货 更新prepare_qty的值为expected_qty
+        	$map['id'] = $stock_bill_in_detail_info['id'];
+        	$data['prepare_qty'] = $stock_bill_in_detail_info['expected_qty'];
+        	M('stock_bill_in_detail')->where($map)->data($data)->save();
+        	unset($map);
+        	unset($data);
+
+        	$refer_code = $stock_bill_in_detail_info['code'];
+        	$batch = $stock_bill_in_detail_info['code'];
+        	$pro_code = $stock_bill_in_detail_info['pro_code'];
+        	$pro_qty = $stock_bill_in_detail_info['expected_qty'];
+        	$pro_uom = $stock_bill_in_detail_info['pro_uom'];
+        	$status = 'qualified';
+        	$product_date = date('Y-m-d');
+        	//直接上架
+        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
+        }
+
+        $this->msgReturn(1);
     }
 }
