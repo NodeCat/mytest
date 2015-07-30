@@ -623,7 +623,7 @@ class StockInLogic{
 				foreach ($out_container as $ky => $val) {
 					if($value['refer_code'] == $val['refer_code']) {
 						if (!isset($issetCode[$val['pro_code'].'-'.$val['batch']])) {
-							//统计同一批次 ，调拨单，商品
+							//统计同一批次 ，调拨单.商品
 							$map['c.pro_code'] = $val['pro_code'];
 							$map['o.refer_code'] = $val['refer_code'];
 							$map['c.batch'] = $val['batch'];
