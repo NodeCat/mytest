@@ -84,6 +84,7 @@ class ProcessLogic {
             $param['pro_qty'] = $value['qty'];
             $param['price'] = $this->get_price_by_sku($value['batch'], $data['pro_code']);
             $param['batch'] = $value['batch'];
+            $param['code'] = $data['refer_code'];
             $param['location_id'] = $value['location_id'];
             $param['created_time'] = get_time();
             $param['created_user'] = session('user.uid');
@@ -108,28 +109,45 @@ class ProcessLogic {
     public function get_price_by_sku($batch = '', $sku_code = '') {
         $return = 0;
         
+        
         if (empty($batch) || empty($sku_code)) {
             return $return;
         }
-        $map['code'] = $batch;
-        $res = M('stock_bill_in')->where($map)->find();
-        if (empty($res)) {
-            return $return;
+        $pos = strpos($batch, 'ASN');
+        if ($pos !== false) {
+            //采购入库
+            $map['code'] = $batch;
+            $res = M('stock_bill_in')->where($map)->find();
+            if (empty($res)) {
+                return $return;
+            }
+            unset($map);
+            $map['code'] = $res['refer_code'];
+            $pur = M('stock_purchase')->where($map)->find();
+            if (empty($pur)) {
+                return $return;
+            }
+            unset($map);
+            $map['pid'] = $pur['id'];
+            $map['pro_code'] = $sku_code;
+            $result = M('stock_purchase_detail')->where($map)->find();
+            if (empty($result)) {
+                return $return; 
+            }
+        } else {
+            //加工入库
+            $result['price_unit'] = 0;
+            $map['erp_process_in_detail.pro_code'] = $sku_code;
+            $map['erp_process_in.code'] = $batch;
+            $result = M('erp_process_in_detail')
+                                    ->join('erp_process_in ON erp_process_in.id=erp_process_in_detail.pid')
+                                    ->where($map)
+                                    ->find();
+            
+            if (!empty($result)) {
+                $result['price_unit'] = $result['price'];
+            }
         }
-        unset($map);
-        $map['code'] = $res['refer_code'];
-        $pur = M('stock_purchase')->where($map)->find();
-        if (empty($pur)) {
-            return $return;
-        }
-        unset($map);
-        $map['pid'] = $pur['id'];
-        $map['pro_code'] = $sku_code;
-        $result = M('stock_purchase_detail')->where($map)->find();
-        if (empty($result)) {
-            return $return; 
-        }
-        
         $return = formatMoney($result['price_unit'], 2);
         return $return;
     }
