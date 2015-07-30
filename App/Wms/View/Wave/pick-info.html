@@ -1,0 +1,29 @@
+<script type='text/html' id="dialog_pick_over">
+<div class="modal fade in" role="dialog" aria-labelledby="gridSystemModalLabeldialog" style="display:block;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" onclick="alert_dialog.close();" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="gridSystemModalLabelalert"> {{title}}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid lgo">
+          <div class="row">
+            <div class="col-md-8">已创建{{tasksum}}个分拣任务，包含{{ordersum}}个出库单</div>
+          </div>
+          <br>
+          <div>
+            <div class="alert alert-danger" style="word-break: break-all;" role="alert">
+                有<strong>{{rejectsum}}</strong> 个出库单因库存不足未加入分拣任务，已踢回待生产！<br />
+				{{each detail as value}}出库单号为:<strong>{{value['code']}},缺货SKU:{{value['sku']}}</strong><br />{{/each}}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+		<button type="button" class="btn btn-primarydefault" onclick="alert_dialog.close();">确定</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</script>
