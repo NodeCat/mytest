@@ -53,6 +53,12 @@ class StockOutController extends CommonController {
             'control_type' => 'text',     
             'value' => 'code',   
         ),
+        'stock_bill_out.refer_code' =>    array (     
+            'title' => '关联单号',     
+            'query_type' => 'eq',     
+            'control_type' => 'text',     
+            'value' => '',   
+        ),
         'stock_bill_out.wave_id' =>    array (     
             'title' => '波次号',     
             'query_type' => 'eq',     
