@@ -324,7 +324,9 @@ function check_data_is_valid($str){
 * float加运算
 */
 function f_add($left,$right,$scale = 2){
-    $left = floatval($left);
+    $result = bcadd($left,$right,$scale);
+    return $result;
+    /*$left = floatval($left);
     $right = floatval($right);
     $scale = intval($scale);
 
@@ -334,14 +336,16 @@ function f_add($left,$right,$scale = 2){
     $result = intval($left * $multiple) + intval($right * $multiple);
     $result = $result / $multiple;
 
-    return $result;
+    return $result;*/
 }
 
 /**
 * float减运算
 */
 function f_sub($left,$right,$scale = 2){
-    $left = floatval($left);
+    $result = bcsub($left, $right, $scale);
+    return $result;
+    /*$left = floatval($left);
     $right = floatval($right);
     $scale = intval($scale);
 
@@ -351,14 +355,16 @@ function f_sub($left,$right,$scale = 2){
     $result = intval($left * $multiple) - intval($right * $multiple);
     $result = $result / $multiple;
 
-    return $result;
+    return $result;*/
 }
 
 /**
 * float乘运算
 */
 function f_mul($left,$right,$scale = 2){
-    $left = floatval($left);
+    $result = bcmul($left,$right,$scale);
+    return $result;
+    /*$left = floatval($left);
     $right = floatval($right);
     $scale = intval($scale);
 
@@ -370,7 +376,7 @@ function f_mul($left,$right,$scale = 2){
     $result = $result / $multiple;
 
 
-    return $result;
+    return $result;*/
 }
 
 /**
@@ -378,5 +384,5 @@ function f_mul($left,$right,$scale = 2){
 */
 function f_div($left,$right,$scale = 2){
     $resutl = bcdiv($left, $right, $scale);
-    return floatval($resutl);
+    return $resutl;
 }
