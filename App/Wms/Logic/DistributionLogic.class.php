@@ -652,7 +652,7 @@ class DistributionLogic {
             if ($result['status'] == 0) {
                 $remarks = $stockBillOutInfo['notes'];
                 $pos = strpos($remarks, '@@@@');
-                if ($pos != false) {
+                if ($pos !== false) {
                     $remarks = substr($remarks, 0, $pos);
                 }
                 $data['notes'] = $remarks . '@@@@缺货SKU货号:' . implode(',', $result['data']['not_enough_pro_code']);

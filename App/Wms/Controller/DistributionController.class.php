@@ -954,11 +954,45 @@ class DistributionController extends CommonController {
         //去除空元素liuguangping
         $ids = array_filter($idsArr['trueResult']);
         $unids = array_filter($idsArr['falseResult']);
-        if(empty($ids)){
-            $this->msgReturn(false, '库存不足，无法创建波次');
+
+        //对缺货订单不做处理
+        $ids = array_merge($ids,$unids);
+        //调用hop接口查看订单是否被取消，如果被取消，则不加入波次
+        foreach($ids as $k => $bill_out_id){
+            $map['id'] = $bill_out_id;
+            $bill_out_info = $stock_out->where($map)->find();
+            unset($map);
+            //销售订单
+            if($bill_out_info['type'] == 1){
+                $order_id_list = array($bill_out_info['refer_code']);
+                $map = array('order_ids' => $order_id_list, 'itemsPerPage' => 1);
+                $order_lists = A('Common/Order','Logic')->order($map);
+                unset($map);
+                if(!empty($order_lists[0]['order_number']) && $order_lists[0]['status'] == 0){
+                    //订单被取消了，不能拉进波次
+                    unset($ids[$k]);
+                    //同时将出库单逻辑删除
+                    $map['id'] = $bill_out_id;
+                    $data['is_deleted'] = 1;
+                    $stock_out->where($map)->save($data);
+                    unset($map);
+                    unset($data);
+                    //同时在对应的车单上删除掉
+                    $map['bill_out_id'] = $bill_out_id;
+                    $data['is_deleted'] = 1;
+                    M('stock_wave_distribution_detail')->where($map)->save($data);
+                    unset($map);
+                    unset($data);
+                }
+            }
         }
-        $count = count($ids) + count($unids); //库存不足的订单数量
-        if (count($unids) > 0) {
+        $count = count($ids);
+        /*if(empty($ids)){
+            $this->msgReturn(false, '库存不足，无法创建波次');
+        }*/
+        //$count = count($ids) + count($unids); 
+        //库存不足的订单数量
+        /*if (count($unids) > 0) {
             //弹出确认框
             $confirm = I('get.confirm');
             //确认之后将继续向下执行
@@ -986,14 +1020,14 @@ class DistributionController extends CommonController {
                 return;
             }
         }
-        unset($map);
+        unset($map);*/
         //获取配送单详情中符合条件的出库单
         $map['bill_out_id'] = array('in', $ids);
         $map['is_deleted'] = 0;
         $detail = M('stock_wave_distribution_detail')->where($map)->select();
-        if (empty($detail)) {
+        /*if (empty($detail)) {
             $this->msgReturn(false, '库存不足');
-        }
+        }*/
         unset($map);
         //获取库存充足的订单详情
         $map['pid'] = array('in', $ids);
@@ -1036,12 +1070,12 @@ class DistributionController extends CommonController {
             $this->msgReturn(false, '更新出库单失败');
         }
         //更新库存不足的出库单状态为缺货 并修改其备注
-        if (!empty($unids)) {
+        /*if (!empty($unids)) {
             $affectedReduce = $D->getReduceSkuCodesAndUpdate($unids);
             if (!$affectedReduce) {
                 $this->msgReturn(false, '更新出库单失败');
             }
-        }
+        }*/
         //通知hop订单状态改变为波次中
         foreach($ids as $bill_out_id){
             $map['id'] = $bill_out_id;

@@ -27,14 +27,21 @@ class FmsController extends \Common\Controller\AuthController{
     */
     public function pay() {
         $id = I('get.id',0);
-        if(empty($id)) {
+        if (empty($id)) {
             $this->msgReturn('0','结算失败，提货码不能为空');
         }
         $map['id'] = $id;
         $dist = $this->distInfo($map);
-        if(empty($dist)) {
+        if (empty($dist)) {
             $this->msgReturn('0','结算失败，未找到该配送单。');
         }
+        $fms_list = A('Fms/List','Logic');
+        //查询是否有退货，并且已创建拒收入库单
+        $can = $fms_list->can_pay($id);
+        if (!$can) {
+            $this->msgReturn('0','结算失败，该配送单中有退货，请交货后再做结算');
+        }
+
         //获得所有出库单id 
         $bill_out_ids = array_column($dist['detail'],'bill_out_id');
         $bill_outs = array();
@@ -45,7 +52,7 @@ class FmsController extends \Common\Controller\AuthController{
                 $bill_outs[] = $bill_out;
             }
         }
-        if(empty($bill_outs)) {
+        if (empty($bill_outs)) {
             $this->msgReturn('0','查询失败，未找到该配送单中的订单。');
         }
         //遍历所有出库单，并判断是否已经结算过，是否含有未处理的订单

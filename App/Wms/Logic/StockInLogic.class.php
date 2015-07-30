@@ -3,7 +3,8 @@ namespace Wms\Logic;
 
 class StockInLogic{
 	
-	public function getInQty($inId,$code) {
+	//$batch_flg 如果有值 则引进批次收货 liuguangping
+	public function getInQty($inId,$code,$batch_flg = null) {
 		if(empty($inId) || empty($code)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
 		}
@@ -20,8 +21,20 @@ class StockInLogic{
 
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
-		$bill_in_detail_info = M('stock_bill_in_detail')->group('pro_code')->where($map)->find();
-		$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
+		$prepareOnQty = 0;
+		//加入批次 liuguangping
+		if($batch_flg){
+			$bill_in_detail_m = M('stock_bill_in_detail');
+			$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(prepare_qty)) as qtyForCanInC,sum(receipt_qty) as receipt_qty_sum')->where($map)->select();
+			if ($cate_qty_r) {
+				$prepareOnQty = $cate_qty_r['0']['qtyforcaninc'];
+				$receipt_qty_sum =  $cate_qty_r['0']['receipt_qty_sum'];
+			}
+		}else{
+			$bill_in_detail_info = M('stock_bill_in_detail')->group('pro_code')->where($map)->find();
+			$prepareOnQty = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['receipt_qty'];
+			$receipt_qty_sum =  $bill_in_detail_info['receipt_qty'];
+		}
 
 		if($prepareOnQty == 0) {
 			return array('res'=>false,'msg'=>'该货品没有待入库量。');
@@ -33,10 +46,13 @@ class StockInLogic{
 		//$detail['moved_qty'] = $detail['expected_qty'] - $this->getQtyForIn($inId,$code);
 		$detail['moved_qty'] = $this->getQtyForIn($inId,$code);
 		$detail['expected_qty'] = $detail['expected_qty'];
+		//$detail['receipt_qty'] = $prepareOnQty;
+		$detail['receipt_qty'] = $receipt_qty_sum;
 		return array('res'=>true,'data'=>$detail);
 	}
 
-	public function getOnQty($inId,$code) {
+	//liuguangping 加入批次 $batch_flg 有加入批次，无就正常走
+	public function getOnQty($inId,$code,$batch_flg = null) {
 		if(empty($inId) || empty($code)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
 		}
@@ -52,7 +68,10 @@ class StockInLogic{
 
 		$in = M('stock_bill_in')->field('id,code,type,refer_code,status')->find($inId);
 
-		$qtyForOn = $this->getQtyForOn($in['code'],$code);
+		
+		//$qtyForOn = $this->getQtyForOn($in['code'],$code);
+		//liuguangping 改了，这方法是查待库存量
+		$qtyForOn = $this->getQtySum($in['id'],$code);
 		if(empty($qtyForOn)) {
 			return array('res'=>false,'msg'=>'该货品没有待上架量。');
 		}
@@ -85,6 +104,7 @@ class StockInLogic{
 	//$status 本次上架状态
 	//$product_date 生产日期
 	public function on($inId,$code,$qty,$location_code,$status,$product_date){
+
 		if(empty($inId) || empty($code)  || $location_code == '' || empty($status) || empty($product_date)) {
 			return array('res'=>false,'msg'=>'必填字段不能为空。');
 		}
@@ -97,7 +117,12 @@ class StockInLogic{
 		if(empty($in)) {
 			return array('res'=>false,'msg'=>'未找到该入库单。');
 		}
-		$qtyForOn = $this->getQtyForOn($in['code'],$code);
+
+		$pid = $in['id'];
+
+		//$qtyForOn = $this->getQtyForOn($in['code'],$code);
+		//liuguangping 改了，这方法是查待库存量
+		$qtyForOn = $this->getQtySum($pid, $code);
 		if(empty($qtyForOn)) {
 			return array('res'=>false,'msg'=>'该货品没有待上架量。');
 		}
@@ -112,11 +137,6 @@ class StockInLogic{
 		$map['is_deleted'] = 0;
 		$res = M('location')->field('id,status')->where($map)->find();
 		unset($map);
-
-		if($res['status'] != $status){
-			return array('res'=>false,'msg'=>'状态不一致，目标库位的状态是：'.en_to_cn($res['status']).'状态');
-		}
-
 		if(empty($res)) {
 			return array('res'=>false,'msg'=>'库位不存在。');
 		}
@@ -126,50 +146,113 @@ class StockInLogic{
 			$location = M('location_detail')->field('is_mixed_pro,is_mixed_batch')->where($map)->find();
 			unset($map);
 		}
-		
-		//判断目标库位是否可以 混货 混批次
-		$data['dest_location_id'] = $location_id;
-		$data['wh_id'] = $in['wh_id'];
-		//$data['status'] = $status;
-		$data['batch'] = $in['code'];
-		$data['pro_code'] = $code;
-		$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
-		unset($data);
-
-		//禁止混批次
-		if($res['status'] == 0){
-			return $res;
+		if($res['status'] != $status){
+			return array('res'=>false,'msg'=>'状态不一致，目标库位的状态是：'.en_to_cn($res['status']).'状态');
 		}
-		
+
+		//我要加入批次来出库 liuguangping 2015.7.28
+		//出库详细
+		$where = array();
+		$where['pid'] = $pid;
+		$where['pro_code'] = $code;
+		$where['is_deleted'] = 0;
+		$bill_detail = M('stock_bill_in_detail')->where($where)->select();
+		foreach ($bill_detail as $ky => $val) {
+			//判断目标库位是否可以 混货 混批次
+			$data['dest_location_id'] = $location_id;
+			$data['wh_id'] = $in['wh_id'];
+			//$data['status'] = $status;
+			if($val['batch']){
+				$data['batch'] = $val['batch'];
+			}else{
+				$data['batch'] = $in['code'];
+			}
+
+			$data['pro_code'] = $code;
+			$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
+			unset($data);
+
+			//禁止混批次
+			if($res['status'] == 0){
+				return $res;
+			}
+		}
+
+		$diff = $qty;//要上架的数量
+		$refer_code = $in['refer_code'];
+		$wh_id = $in['wh_id'];
+	
+		foreach ($bill_detail as $key => $value) {
+			//有批次走分批次走，没有则按照原来的走
+			if($value['batch']){
+				$batch = $value['batch'];
+				$batch_bak = $value['batch'];
+			}else{
+				$batch = $in['code'];
+				$batch_bak = '';
+			}
+			if(intval($diff*100) <= 0){
+				break;
+			}
+			//可上架量
+			$qtyForCanIn = $value['prepare_qty'];
+			$qtycom = intval($qtyForCanIn*100);
+			$diffcom = intval($diff*100);
+			if ($qtycom == 0){
+				continue; //收货完成
+			} elseif ($qtycom <= $diffcom) {
+				//当可以上的量小于总共上的，则这次可以把可验收数量全部数量
+				$this->updateStockUpStatus($inId,$code,$qtyForCanIn,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
+				$diff = f_sub($diff, $qtyForCanIn, 2);
+			} elseif ($qtycom > $diffcom) {
+				$this->updateStockUpStatus($inId,$code,$diff,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
+				$diff = 0;
+			}
+
+		}
+
+		//修改状态
+		$oned = $this->checkOn($inId); 
+		if($oned == 2) {
+			$data['status'] = '33';
+			$map['id'] = $inId;
+			$map['status'] = '31';
+			$map['is_deleted'] = 0;
+			M('stock_bill_in')->where($map)->save($data);
+			unset($map);
+			unset($data);
+		}
+
+		if (intval($diff*100) == 0) {
+			$qtys = $qty;
+		}elseif(f_sub($cate_qty, $qty, 2) > 0) {
+			$qtys = $qty;
+		}elseif(f_sub($cate_qty, $qty, 2) < 0){
+			$qtys = $cate_qty;
+		}
+		$line = $this->getLine($inId,$code);
+		return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$qtys.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
+
+	}
+
+	public function updateStockUpStatus($inId,$code,$qty,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId){
 		//写库存
 		$line = $this->getLine($inId,$code);
 		$pro_code = $line['pro_code'];
 		$pro_uom = $line['pro_uom'];
 		$pro_qty = $qty;
-		$refer_code = $in['code'];
-		$wh_id = $in['wh_id'];
-		$batch   = $in['code'];
 		//管理批次号
 		get_batch($batch);
-		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
-		
-		if($res == true) {
-			$oned = $this->checkOn($inId); 
-			
-			if($oned == 2) {
-				$data['status'] = '33';
-				$map['id'] = $inId;
-				$map['status'] = '31';
-				$map['is_deleted'] = 0;
-				M('stock_bill_in')->where($map)->save($data);
-				unset($map);
-				unset($data);
-			}
-		}
+		$res = A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak);
 
 		//更新到货单详情 正品 残品 数量
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
+		//判断是否是原来的
+		if ($batch_bak) {
+			$map['batch'] = $batch;
+		}
+
 		if($status == 'qualified'){
 			M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$qty);
 		}
@@ -184,12 +267,6 @@ class StockInLogic{
             $stock_bill_in_detail->where($map)->save($data);
             unset($data);
         }
-		unset($map);
-
-		if($res == true){
-			return array('res'=>ture,'msg'=>'库位：'.$location_code.'。数量：<strong>'.$pro_qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
-		}
-		return array('res'=>false,'msg'=>'添加上架记录失败。');
 
 	}
 
@@ -200,34 +277,50 @@ class StockInLogic{
 		if(!is_numeric($qty) || empty($qty) || $qty < 0) {
 			return array('res'=>false,'msg'=>'验收数量有误。');
 		}
-		//$qtyForIn = $this->getQtyForIn($inId,$code);
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
-		$bill_in_detail_info = M('stock_bill_in_detail')->where($map)->find();
-		//可验收数量 = 预计数量 - 实际验收数
-		$qtyForCanIn = $bill_in_detail_info['expected_qty'] - $bill_in_detail_info['prepare_qty'];
-		
-		if(empty($qtyForCanIn) || $qtyForCanIn < $qty) {
-			return array('res'=>false,'msg'=>'验收数量不能大于可验收数量。');
+
+		//出库详细表中加入批次条件，有能一个sku_code对应两个批次
+		//首先判断用户要收货的数量是否大于总可验收数量；
+		$bill_in_detail_m = M('stock_bill_in_detail');
+		$cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(receipt_qty)) as qtyForCanInC')->where($map)->select();
+		$cate_qty = 0;
+		if ($cate_qty_r) {
+			$cate_qty = $cate_qty_r['0']['qtyforcaninc'];
+		}
+		if (empty($cate_qty) || $cate_qty < $qty) {
+				return array('res'=>false,'msg'=>'验收数量不能大于可验收数量。');
 		}
 
-		$line = $this->getLine($inId,$code);
-		$pro_uom = $line['pro_uom'];
+		$bill_in_detail_info = M('stock_bill_in_detail')->where($map)->select();
+		$diff = $qty;//要上架的数量
+		foreach ($bill_in_detail_info as $key => $value) {
+			if(intval($diff*100) <= 0){
+				break;
+			}
+			//可验收数量 = 预计数量 - 实际验收数
+			$qtyForCanIn = f_sub($value['expected_qty'], $value['receipt_qty'], 2);
+			$qtycom = intval($qtyForCanIn*100);
+			$diffcom = intval($diff*100);
+			if ($qtycom == 0){
+				continue; //收货完成
+			} elseif ($qtycom <= $diffcom) {
+				//当可以上的量小于总共上的，则这次可以把可验收数量全部数量
+				$this->updateStockInStatus($inId,$code,$qtyForCanIn,$value['batch']);
+				$diff = f_sub($diff, $qtyForCanIn, 2);
+			} elseif ($qtycom > $diffcom) {
+				$this->updateStockInStatus($inId,$code,$diff,$value['batch']);
+				$diff = 0;
+			}
+		}
 
-		$in = M('stock_bill_in')->field('id,wh_id,code,type,refer_code,status')->find($inId);
 
-		//根据pid + pro_code + pro_uom 更新stock_bill_in_detail expected_qty 减少 prepare_qty 增加
-		$map['pid'] = $inId;
-		$map['pro_code'] = $code;
-		$map['pro_uom'] = $pro_uom;
-		//$res = M('stock_bill_in_detail')->where($map)->setDec('expected_qty',$qty);
-		$res = M('stock_bill_in_detail')->where($map)->setInc('prepare_qty',$qty);
-		$res = M('stock_bill_in_detail')->where($map)->setInc('receipt_qty',$qty);
 		unset($map);
 
-		if($res == true) {
+		if(intval($diff*100) == 0) {
 			$ined = $this->checkIn($inId);
-			if($ined == 2) {
+			// $ined == 2 不可以验收 待上架 等于1时候 可以验收
+			if($ined == 2) { //
 				$data['status'] = '31';
 				$map['id'] = $inId;
 				$map['status'] = '21';
@@ -242,12 +335,31 @@ class StockInLogic{
 				*/
 			}
 		}
-		if($res == true){
-
-			return array('res'=>true,'msg'=>'数量：<strong>'.$qty.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
-			
+		if (intval($diff*100) == 0) {
+			$qtys = $qty;
+		}elseif(f_sub($cate_qty, $qty, 2) > 0) {
+			$qtys = $qty;
+		}elseif(f_sub($cate_qty, $qty, 2) < 0){
+			$qtys = $cate_qty;
 		}
-		return array('res'=>false,'msg'=>'添加验收记录失败。');
+		$line = $this->getLine($inId,$code);
+		return array('res'=>true,'msg'=>'数量：<strong>'.$qtys.'</strong> '.$line['pro_uom'].'。名称：['.$line['pro_code'] .'] '. $line['pro_name'] .'（'. $line['pro_attrs'].'）');
+		
+
+	}
+
+	//修改状态和待入库量和实际收货量 $inId 入库单id $code pro_code商品编码 $diff要改变的数量 $batch 批次 liuguangping
+	public function updateStockInStatus($inId,$code,$qty,$batch=''){
+		$map = array();
+		//当可以上的量小于总共上的，则这次可以把可验收数量全部数量
+		if($batch){
+			$map['batch'] = $batch;
+		}
+		$map['pid'] = $inId;
+		$map['pro_code'] = $code;
+		//$res = M('stock_bill_in_detail')->where($map)->setDec('expected_qty',$qty);
+		$res = M('stock_bill_in_detail')->where($map)->setInc('prepare_qty',$qty);
+		$res = M('stock_bill_in_detail')->where($map)->setInc('receipt_qty',$qty);
 	}
 
 	//根据stock_bill_in_detail 检查是否已经有入库
@@ -396,6 +508,35 @@ class StockInLogic{
 		}
 	}
 
+	/**
+     * getQtySum 获取同一入库单某个商品数量
+     * @param Int $pid 入库单id
+     * @param String $pro_code 货物编码
+     * @author liuguangping@dachuwang.com
+     * @since 2015-06-13
+     */
+	public function getQtySum($pid,$pro_code){
+		$map = array();
+		if ($pid) {
+			$map['pid'] = $pid;
+		}
+		if ($pro_code) {
+			$map['pro_code'] = $pro_code;
+		}
+		$bill_in_detail_m = M('stock_bill_in_detail');
+		$cate_qty_r = $bill_in_detail_m->field('sum(prepare_qty) as qty')->where($map)->select();
+		$cate_qty = 0;
+		if ($cate_qty_r) {
+			$cate_qty = $cate_qty_r['0']['qty'];
+		}
+		
+		if(!$pro_code || !$pid || empty($cate_qty_r)) {
+			return 0;
+		} else {
+			return $cate_qty;
+		}
+	}
+
 	//到货单 实收量 已经收到的货品量
 	public function getQtyForReceipt($batch,$pro_code){
 		$map['pro_code'] = $pro_code;
@@ -409,10 +550,13 @@ class StockInLogic{
 			return $res['receipt_qty'];
 		}
 	}
-	public function getLine($inId,$code){
+	public function getLine($inId,$code,$batch = ''){
 		$map['pid'] = $inId;
 		$map['pro_code'] = $code;
 		$map['is_deleted'] = '0';
+		if ($batch) {
+			$map['batch'] = $batch;
+		}
 		$detail = M('stock_bill_in_detail')
 		->field('pro_code,pro_name,pro_attrs,pro_uom,sum(expected_qty) as expected_qty,receipt_qty,product_date')
 		->group('pro_code')->where($map)->find();
@@ -432,6 +576,112 @@ class StockInLogic{
 		$M->where($map)->save($data);
 		
 		return true;
+	}
+
+	//加入入库单 @pass_reduce_ids 出库单id liuguangping @todoliuguangping
+	public function addWmsIn($pass_reduce_ids)
+	{
+		if (empty($pass_reduce_ids)) {
+			return false;
+		}
+		//查找出库单和出库单详细
+		$out_m = M('stock_bill_out_container');
+		$map['o.type'] = 5;//调拨单
+		$map['o.status'] = 2;//已出库
+		$map['o.id'] = array('in',$pass_reduce_ids);
+		$map['o.is_deleted'] = 0;
+		$map['d.is_deleted'] = 0;
+		$map['c.is_deleted'] = 0;
+		$out_m->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
+			left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
+			left join stock_bill_out as o on wdd.bill_out_id = o.id 
+			left join stock_bill_out_detail as d on d.pid=o.id')->where($map);
+		$out_m2 = clone $out_m;//深度拷贝
+		//插入stokc_bill_in_detail表
+		$out_container = $out_m->field('c.batch,c.pro_code,d.pro_name,d.pro_attrs,d.price,d.measure_unit,o.*')->select();
+		//插入stock_bill_in表 根据同一个调拨单，同一件商品和批次生产一张调拨单
+        $out_infos = $out_m2->field('c.batch,c.pro_code,o.*')->group('o.refer_code')->select();
+    
+		if (!$out_infos) {
+			return false;
+		}
+		$bill_in_m = M('stock_bill_in');
+		$bill_in_detail_m = M('stock_bill_in_detail');
+		$erp_transfer_m = M('erp_transfer');
+		//插入入库单
+		$stock_type = M('stock_bill_in_type');
+        $type_name = $stock_type->field('type')->where(array('id' => 4))->find();
+        $numbs = M('numbs');
+        $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
+		foreach ($out_infos as $key => $value) {
+			$bill_in = array();
+			$bill_in['code'] = get_sn($name['name']);
+
+			//根据调拨单获取获取入库单
+			$wh_id_in_m['trf_code'] = $value['refer_code'];
+			$erp_transfer_win = $erp_transfer_m->where($wh_id_in_m)->getField('wh_id_in');
+
+			$bill_in['wh_id'] = $erp_transfer_win?$erp_transfer_win:'';//入库仓库@todo
+			$bill_in['type'] = 4;
+			$bill_in['company_id'] = 1;
+			$bill_in['refer_code'] = $value['refer_code'];//调拨单
+			$bill_in['pid'] = 0;
+			//$bill_in['batch_code'] = get_batch($value['batch']);
+			$bill_in['partner_id'] = 1;//供应商；@todoliuguangping
+			$bill_in['remark'] = '调拨入库单';
+			$bill_in['updated_time'] = get_time();
+			$bill_in['created_user'] = session('user.uid');
+			$bill_in['updated_user'] = session('user.uid');
+			$bill_in['created_time'] = get_time();
+			$bill_in['status'] = 21; //状态 21待入库
+
+			if($pid = $bill_in_m->add($bill_in)){
+				//插入出库单详细表
+				$detail = array();
+				$issetCode = array();
+				$i = 0;
+				foreach ($out_container as $ky => $val) {
+					if($value['refer_code'] == $val['refer_code']) {
+						if (!isset($issetCode[$val['pro_code'].'-'.$val['batch']])) {
+							//统计同一批次 ，调拨单，商品
+							$map['c.pro_code'] = $val['pro_code'];
+							$map['o.refer_code'] = $val['refer_code'];
+							$map['c.batch'] = $val['batch'];
+							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
+								left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
+								left join stock_bill_out as o on wdd.bill_out_id = o.id 
+								left join stock_bill_out_detail as d on d.pid=o.id')->where($map)->sum('c.qty');
+							$detail[$i]['wh_id'] = $bill_in['wh_id'];
+				            $detail[$i]['pid'] = $pid;
+				            $detail[$i]['refer_code'] = $value['refer_code']?$value['refer_code']:'';
+				            $detail[$i]['pro_code'] = $val['pro_code']? $val['pro_code']:'';
+				            $detail[$i]['pro_name'] = $val['pro_name']?$val['pro_name']:'';
+				            $detail[$i]['pro_attrs'] = $val['pro_attrs']?$val['pro_attrs']:'';
+				            $detail[$i]['batch'] = $val['batch'];
+				            $detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
+				            $detail[$i]['pro_uom'] = $val['measure_unit']?$val['measure_unit']:'';
+				            $detail[$i]['price_unit'] = $val['price']?$val['price']:'';
+				            $detail[$i]['prepare_qty'] = 0;
+				            $detail[$i]['done_qty'] = 0;
+				            $detail[$i]['receipt_qty'] = 0;
+				            $detail[$i]['created_user'] = session('user.uid');
+				            $detail[$i]['updated_user'] = session('user.uid');
+				            $detail[$i]['created_time'] = date('Y-m-d H:i:s', time());
+				            $detail[$i]['updated_time'] = date('Y-m-d H:i:s', time());
+				            $i++;
+						}
+						$issetCode[$val['pro_code'].'-'.$val['batch']] = 1;
+						
+					}
+				}
+				$bill_in_detail_m->addAll($detail);
+
+			}
+		}
+		return ture;
+
+        
+        
 	}
 
 }

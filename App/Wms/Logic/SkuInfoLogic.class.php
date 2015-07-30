@@ -146,4 +146,25 @@ class SkuInfoLogic
         
         return $return;
     }
+    
+    /**
+     * 根据仓库ID查询SKU上架记录
+     */
+    public function getSkuVisitRecord($warehouseId = 0) {
+        $return = array();
+        
+        $map = array();
+        if ($warehouseId > 0) {
+            $map['wh_id'] = $warehouseId;
+        }
+        $map['done_qty'] = array('gt', 0);
+        $result = M('stock_bill_in_detail')->field('pro_code')->where($map)->group('pro_code')->select();
+        if (!empty($result)) {
+            foreach ($result as $value) {
+                $return[] = $value['pro_code'];
+            }
+        }
+        
+        return $return;
+    }
 }

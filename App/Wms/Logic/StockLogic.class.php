@@ -465,7 +465,7 @@ class StockLogic{
      * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak = ''){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
@@ -517,9 +517,12 @@ class StockLogic{
         unset($row);
 
         //减待上架库存 增加已上量
-        $map['refer_code'] = $refer_code;
+        $map['pid'] = $inId;
         $map['pro_code'] = $pro_code;
         //$map['pro_uom'] = $pro_uom;
+        if ($batch_bak) {
+            $map['batch'] = $batch;
+        }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
         unset($map);
@@ -613,8 +616,6 @@ class StockLogic{
 
         //按照现进先出原则 减去最早的批次量
         foreach($src_stock_list as $src_stock){
-            //获取生产日期
-            $param['product_date'] = $src_stock['product_date'];
             if($diff_qty > 0){
                 //库存量大于剩余移动量
                 if($src_stock['stock_qty'] > $diff_qty){
@@ -682,7 +683,6 @@ class StockLogic{
             $add_info['stock_qty'] = $param['variable_qty'];
             $add_info['assign_qty'] = 0;
             $add_info['prepare_qty'] = 0;
-            $add_info['product_date'] = $param['product_date'] == '0000-00-00 00:00:00' ? date('Y-m-d') : $param['product_date'];
 
             try{
                 //插入数据
@@ -753,21 +753,12 @@ class StockLogic{
                         //新增目标库存记录
                         $stock_add_data = $map;
                         $stock_add_data['stock_qty'] = $param['variable_qty'];
-                        $stock_add_data['product_date'] = $param['product_date'] == '0000-00-00 00:00:00' ? date('Y-m-d') : $param['product_date'];
                         $stock = D('Stock');
                         $stock_add_data = $stock->create($stock_add_data);
                         $stock->data($stock_add_data)->add();
                     }else{
                         //增加目标库存
                         M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
-                        //是否更新生产日期
-                        if(strtotime($param['product_date']) < strtotime($stock_info['product_date']) || $stock_info['product_date'] == '0000-00-00 00:00:00'){
-                            $data['product_date'] = (empty($param['product_date'])) ? date('Y-m-d') : $param['product_date'];
-                            $stock = D('Stock');
-                            $data = $stock->create($data,2);
-                            $res = $stock->where($map)->save($data);
-                            unset($data);
-                        }
                     }
 
                     //写入库存交易日志
@@ -1158,7 +1149,7 @@ class StockLogic{
         $add_data['stock_qty'] = (empty($params['stock_qty'])) ? 0 : $params['stock_qty'];
         $add_data['assgin_qty'] = (empty($params['assgin_qty'])) ? 0 : $params['assgin_qty'];
         $add_data['prepare_qty'] = (empty($params['prepare_qty'])) ? 0 : $params['prepare_qty'];
-        $add_data['product_date'] = (empty($params['product_date'])) ? date('Y-m-d') : $param['product_date'];
+
         //插入记录
         $stock = D('Stock');
         $add_data = $stock->create($add_data);

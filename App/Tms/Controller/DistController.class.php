@@ -79,7 +79,7 @@ class DistController extends Controller {
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                //$this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if (empty($this->error)) {
@@ -257,7 +257,10 @@ class DistController extends Controller {
                     foreach ($val['detail'] as &$v) {
                         if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                             //该出库单详情对应的签收数据
-                            $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
+                            $dmap['bill_out_detail_id'] = $v['id'];
+                            $dmap['is_deleted'] = 0;
+                            $sign_in_detail = $M->table('tms_sign_in_detail')->where($dmap)->find();
+                            unset($dmap);
                             $val['receivable_sum'] = $sign_in['receivable_sum'];
                             $val['real_sum'] = $sign_in['real_sum'];
                             $v['quantity']  = $sign_in_detail['real_sign_qty'];
@@ -408,8 +411,12 @@ class DistController extends Controller {
                     //更新签收数据
                     foreach ($cdata as $value) {
                         unset($value['created_time']);
+                        $dmap = array(
+                            'bill_out_detail_id' => $value['bill_out_detail_id'],
+                            'is_deleted' => 0
+                        );
                         M('tms_sign_in_detail')
-                            ->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))
+                            ->where($dmap)
                             ->save($value);
                     }
                 }
@@ -556,11 +563,15 @@ class DistController extends Controller {
         if (!empty($bill_outs)) { 
             //总订单数
             $all_orders = count($bill_outs);
-            for ($n = 0; $n < count($bill_outs); $n++) { 
-                switch ($bill_outs[$n]['sign_status']) {
+            foreach ($bill_outs as $bill_out) { 
+                unset($map);
+                $map['bill_out_id'] = $bill_out['id'];
+                $map['is_deleted']  = 0;
+                $sign_data = M('stock_wave_distribution_detail')->where($map)->find();
+                switch ($bill_out['sign_status']) {
                     case '2':
                         $sign_orders++; //已签收订单数加1
-                        foreach ($bill_outs[$n]['detail'] as $value) {
+                        foreach ($bill_out['detail'] as $value) {
                             unset($map);
                             $map['bill_out_detail_id'] = $value['id'];
                             $map['is_deleted'] = 0;
@@ -575,16 +586,18 @@ class DistController extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            if ($sign_data[$n]['pay_status'] != 1) {
-                                $sum_deal_price += f_mul($sign_qty, $sign_in_detail['price_unit']);  //回款
+                            if ($sign_data['pay_status'] != 1) {
+                                $sum_deal_price += $sign_qty * $sign_in_detail['price_unit'];  //回款
                             }
                         }
-                        $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);  
+                        if ($sign_data['pay_status'] != 1) {
+                            $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);
+                        }  
                         break;
 
                     case '3':
                         $unsign_orders++;   //已拒收订单数加1
-                        foreach ($bill_outs[$n]['detail'] as $val) {
+                        foreach ($bill_out['detail'] as $val) {
                             $key  = $val['pro_code'];    //sku号
                             $arrays[$key]['quantity'] +=  $val['delivery_qty']; //回仓数量
                             $arrays[$key]['name'] =  $val['pro_name'];   //sku名称
@@ -609,7 +622,7 @@ class DistController extends Controller {
         $list['sign_orders'] = $sign_orders;//已签收
         $list['unsign_orders'] = $unsign_orders;//未签收
         $list['sign_finished']  = $sign_finished;  // 已完成
-        $list['delivering'] = $all_orders - $sign_orders - $unsign_orders;//派送中
+        $list['delivering'] = $all_orders - $sign_orders - $unsign_orders - $sign_finished;//派送中
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
