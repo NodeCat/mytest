@@ -148,7 +148,7 @@ class SkuApi extends CommApi
             }
             //平均采购价
             if (isset($salePriceArr[$skuCode])) {
-                $returnSucess['list'][$key]['average_buy_price'] = $salePriceArr[$skuCode];
+                $returnSucess['list'][$key]['avearage_buy_price'] = $salePriceArr[$skuCode];
             }
             
             if (isset($tmsInfo[$index])) {
@@ -160,7 +160,7 @@ class SkuApi extends CommApi
                 $returnSucess['list'][$key]['actual_sale_count']  = $tmsInfo[$index]['actual_sale_count'];
             }
             //汇总
-            $avearage_buy_price       += $returnSucess['list'][$key]['average_buy_price'];        //平均采购价
+            $avearage_buy_price       += $returnSucess['list'][$key]['avearage_buy_price'];        //平均采购价
             $out_warehouse_sku_counts += $returnSucess['list'][$key]['out_warehouse_sku_counts']; //SKU出库量
             $reject_sku_counts        += $returnSucess['list'][$key]['reject_sku_counts'];        //拒收SKU数量
             $actual_sale_amount       += $returnSucess['list'][$key]['actual_sale_amount'];       //实际销售额
