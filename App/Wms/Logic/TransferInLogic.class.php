@@ -79,6 +79,7 @@ class TransferInLogic
                 $detal_in = $stock_in_detail->where($array_m)->select();
                 if ($detal_in) {
                     $detail = array();
+                    $process_logic = A('Process', 'Logic');
                     foreach ($detal_in as $ky => $val) {
                         //生产日期未加入
                         $detail[$ky]['pid'] = $pid;
@@ -87,7 +88,7 @@ class TransferInLogic
                         $detail[$ky]['pro_attrs'] = $val['pro_attrs'];
                         $detail[$ky]['batch_code'] = $val['batch'];
                         $detail[$ky]['pro_uom'] = $val['pro_uom'];
-                        $detail[$ky]['price_unit'] = $val['price_unit'];
+                        $detail[$ky]['price_unit'] = $process_logic->get_price_by_sku($val['batch'], $val['pro_code']);//平均价
                         $detail[$ky]['plan_in_qty'] = $val['expected_qty'];
                         $detail[$ky]['created_time'] = get_time();
                         $detail[$ky]['created_user'] = session('user.uid');
