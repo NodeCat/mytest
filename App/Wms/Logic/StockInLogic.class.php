@@ -648,7 +648,7 @@ class StockInLogic{
 				            $detail[$i]['batch'] = $val['batch'];
 				            $detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
 				            $detail[$i]['pro_uom'] = $out_detail['measure_unit']?$out_detail['measure_unit']:'';
-				            $detail[$i]['price_unit'] = $process_logic->get_price_by_sku($val['batch'], $val['pro_code']);//平均价$out_detail['price']?$out_detail['price']:'';
+				            $detail[$i]['price_unit'] = $process_logic->get_price_by_sku($val['batch'], $val['pro_code']);//平均价
 				            $detail[$i]['prepare_qty'] = 0;
 				            $detail[$i]['done_qty'] = 0;
 				            $detail[$i]['receipt_qty'] = 0;
