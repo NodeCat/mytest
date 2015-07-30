@@ -127,7 +127,7 @@ class SkuApi extends CommApi
         $reutrnSkuCodeArr = array_merge($salseSkuIndexArr, $stockSkuIndexArr);
         //TMS数据 实际销售额 实际销售件数 拒收SKU数
         $tmsInfo = $SkuInfo->getTmsInfo($condition['stime'], $condition['etime'], $condition['warehouse_id']);
-        $avearage_buy_price       = 0; //平均采购价
+        $average_buy_price        = 0; //平均采购价
         $out_warehouse_sku_counts = 0; //SKU出库量
         $reject_sku_counts        = 0; //拒收SKU数量
         $actual_sale_amount       = 0; //实际销售额
@@ -136,7 +136,7 @@ class SkuApi extends CommApi
         foreach ($reutrnSkuCodeArr as $key => $skuCode) {
             $index = rtrim($skuCode, '#');
             $returnSucess['list'][$key]['sku_number']               = $index;
-            $returnSucess['list'][$key]['avearage_buy_price']       = 0;
+            $returnSucess['list'][$key]['average_buy_price']       = 0;
             $returnSucess['list'][$key]['out_warehouse_sku_counts'] = 0;
             $returnSucess['list'][$key]['reject_sku_counts']        = 0;
             $returnSucess['list'][$key]['actual_sale_amount']       = 0;
@@ -148,7 +148,7 @@ class SkuApi extends CommApi
             }
             //平均采购价
             if (isset($salePriceArr[$skuCode])) {
-                $returnSucess['list'][$key]['avearage_buy_price'] = $salePriceArr[$skuCode];
+                $returnSucess['list'][$key]['average_buy_price'] = $salePriceArr[$skuCode];
             }
             
             if (isset($tmsInfo[$index])) {
@@ -160,14 +160,14 @@ class SkuApi extends CommApi
                 $returnSucess['list'][$key]['actual_sale_count']  = $tmsInfo[$index]['actual_sale_count'];
             }
             //汇总
-            $avearage_buy_price       += $returnSucess['list'][$key]['avearage_buy_price'];        //平均采购价
+            $average_buy_price        += $returnSucess['list'][$key]['average_buy_price'];        //平均采购价
             $out_warehouse_sku_counts += $returnSucess['list'][$key]['out_warehouse_sku_counts']; //SKU出库量
             $reject_sku_counts        += $returnSucess['list'][$key]['reject_sku_counts'];        //拒收SKU数量
             $actual_sale_amount       += $returnSucess['list'][$key]['actual_sale_amount'];       //实际销售额
             $actual_sale_count        += $returnSucess['list'][$key]['actual_sale_count'];        //实际销售件数            
         }
         //汇总
-        $returnSucess['total']['average_buy_price']        = $avearage_buy_price;
+        $returnSucess['total']['average_buy_price']        = $average_buy_price;
         $returnSucess['total']['out_warehouse_sku_counts'] = $out_warehouse_sku_counts;
         $returnSucess['total']['reject_sku_counts']        = $reject_sku_counts;
         $returnSucess['total']['actual_sale_amount']       = $actual_sale_amount;
