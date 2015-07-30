@@ -169,6 +169,9 @@ class OrderController extends \Common\Controller\AuthController {
         $map['bill_out_id'] = $bill_out_id;
         $map['is_deleted']  = 0;
         $dist_detail_id = M('stock_wave_distribution_detail')->where($map)->find();
+        if ($dist_detail_id['status'] != 2 && $dist_detail_id['status'] != 3) {
+            $this->error('此订单不是已签收或已拒收状态，不能重置订单状态。');exit;
+        }
         $dist_detail_id = $dist_detail_id['id'];
         $data['status']     = 1; //重置为已装车状态
         $data['real_sum']   = 0; //实收金额置0
@@ -213,6 +216,10 @@ class OrderController extends \Common\Controller\AuthController {
         if ($order_id && $bill_id) {
             $map['bill_out_id'] = $bill_id;
             $map['is_deleted']  = 0;
+            $dist_detail = M('stock_wave_distribution_detail')->where($map)->find();
+            if ($dist_detail['status'] != 4) {
+                $this->error('此订单不是已完成状态，不能修改订单实收金额。');exit;
+            }
             $data['real_sum']   = $deal_price - $wipezero - $deposit;
             $data['sign_msg']   = $sign_msg;
             $data['wipezero']   = $wipe_zero_sum + $wipezero;
