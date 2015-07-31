@@ -61,9 +61,12 @@
       路线:<span>{$lines}</span>
     </h4>
       </div>
-      <div id="tip">
+      <div id="tip">    
+        <div id="myp" style="position:absolute;width:200px;height:auto;z-index:100;font-size:18px;right:0px;">niahao</div>
+    <br/>
     <b>鼠标左键在地图上单击获取坐标</b>
     <br><div>X：<input type="text" id="lngX" name="lngX" value=""/>&nbsp;Y：<input type="text" id="latY" name="latY" value=""/></div>
+
   </div>
       <div id="tip">  
     <input type="button" value="显示线路" onClick="javascript:polyline.setMap(map)"/>
@@ -116,18 +119,18 @@
       <volist name='address' id='addr'>
         marker{$i} = new AMap.Marker({
         <if condition="$addr['color_type'] eq 3">
+          icon:"__PUBLIC__/img/red.png",
+        <elseif condition="$addr['color_type'] eq 0" />
           draggable:true, //点标记可拖拽
           cursor:'move',
-          icon:"__PUBLIC__/img/red.png",
-        <elseif condition="$addr['color_type'] eq 2" />
-          icon:"__PUBLIC__/img/green.png",
+          icon:"__PUBLIC__/img/gray.png",
         </if>
         //icon:"http://webapi.amap.com/images/custom_a_j.png",
         position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
       });
       marker{$i}.setMap(map);
       marker{$i}.setTitle("{$addr['address']}");
-      <if condition="$addr['color_type'] eq 3">
+      <if condition="$addr['color_type'] eq 0">
         marker{$i}.id  = "{$addr['user_id']}";
         marker{$i}.lng = "{$addr['lng']}";
         marker{$i}.lat = "{$addr['lat']}";
@@ -191,7 +194,6 @@ function update(obj)
     lng = e.lnglat.getLng();
     lat = e.lnglat.getLat();
     this.setPosition(new AMap.LngLat(lng,lat));
-
     //alert('this.id');
   });
   AMap.event.addListener(obj,'dragend',function(e){
@@ -215,14 +217,32 @@ function updatePoint(x)
             lat  = x.lat,
             lngN = x.lngN,
             latN = x.latN;
-        alert(id+lng+lat);
-        $.post("{:U('ReportError/updatePoint')}",{'id':id,'lng':lng,'lat':lat,'lngN':lngN,'latN':latN},function(res){
+            lookProperty(x);
+            x.setDraggable(false);
+            x.setCursor('Cursor');
+            x.setIcon('__PUBLIC__/img/blue.png');
+
+            /*        $.post("{:U('ReportError/updatePoint')}",{'id':id,'lng':lngN,'lat':latN},function(res){
             if (res.status == 1) {
-                alert(res.msg);
+              
+              alert(res.msg);
+
             } else {
                 alert(res.msg);
             }
-        });
+        });*/
     }
 }
+
+function lookProperty(x){
+              ob=eval(x);
+              var Property="";
+              for(var i in ob){
+                Property+="属性："+i+"";
+                document.getElementById("myp").innerHTML=Property;
+              
+              }
+            }
+
+
  </script>
