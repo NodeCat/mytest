@@ -77,6 +77,7 @@ class SignInLogic
         $content .= "客户姓名：{$data['realname']} 将产品{$products}拒收，";
         $content .= "拒收原因：{$reject_reason}，电话：{$data['mobile']} 。";
         $content .= "请在方便的时候给客户打个电话，了解具体情况，便于各部门改进工作，如果需要请联系在线部做进一步客情维护。";
+        $content .= "退订请回复TD";
         $map = array(
             'mobile'   => $mobiles,
             'content'  => $content,
@@ -112,7 +113,8 @@ class SignInLogic
         $driver_name   = mb_substr(session('user.username'), 0, 1);
         //组合短信内容
         $content = "亲爱的老板，您在大厨网订购的产品已从库房发出，正朝您赶来，请耐心等待。";
-        $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491.";
+        $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491。";
+        $content .= "退订请回复TD";
         $cA = A('Common/Order', 'Logic');
         $map = array(
             'mobile'   => $mobiles,
@@ -164,7 +166,8 @@ class SignInLogic
             }
             //组合信息内容
             $content = "亲爱的老板，分店“{$data['shop_name']}”的产品已成功送达，完成签收，请您放心，";
-            $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491";
+            $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491。";
+            $content .= "退订请回复TD";
             $map = array(
                 'mobile'   => $mobile,
                 'content'  => $content,
