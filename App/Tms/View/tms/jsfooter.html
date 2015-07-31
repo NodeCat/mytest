@@ -226,7 +226,12 @@
       $('.btn-reject').on('click',function(e) {
         e.preventDefault();
         var _this = $(this);
-        rejectDialog.showRejectBox(_this);
+        var ver = _this.data('ver');
+        if(ver == 1){
+          rejectDialog.showRejectBox(_this);
+        }else{
+          rejectDialog.subReject(_this);
+        }
         return false;
       });
     });
