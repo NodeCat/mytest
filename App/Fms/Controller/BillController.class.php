@@ -188,9 +188,13 @@ class BillController extends \Wms\Controller\CommonController
         $t = I('t');
         if(empty($t)) {
             $map['date'] = I('date');
+            $this->date = $map['date'];
             $data = $A->billOrders($map);
         }
         else {
+            $this->t = 'store';
+            //$A->debug = true;
+            $map['customer_id'] = I('uid');
             $data = $A->billStoreOrders($map);
         }
 
@@ -202,8 +206,8 @@ class BillController extends \Wms\Controller\CommonController
                 }
                 $vo['pricePerW'] = round($vo['single_price'] / $vo['net_weight'],2);
                 $vo['inW'] = $vo['quantity'] * $vo['net_weight'];
-                $vo['shW'] = $vo['actual_quantity'] * $vo['new_weight'];
-                $vo['juW'] = ($vo['quantity'] - $vo['actual_quantity']) * $vo['new_weight'];
+                $vo['shW'] = $vo['actual_quantity'] * $vo['net_weight'];
+                $vo['juW'] = ($vo['quantity'] - $vo['actual_quantity']) * $vo['net_weight'];
                 $vo['inW'] = $vo['inW'] ? $vo['inW'] : '/';
                 $vo['shW'] = $vo['shW'] ? $vo['shW'] : '/';
                 $vo['juW'] = $vo['juW'] ? $vo['juW'] : '/';

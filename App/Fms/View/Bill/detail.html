@@ -1,18 +1,17 @@
       <div class="table-responsive">
           <h4>账单明细</h4>
-          <h4>7月1日</h4>
+          <h4>{:$date}</h4>
           <volist name="data" id="order">
           <table class="table table-bordered table-striped table-hover">
             <thead>
               <tr >
                 <td colspan="15">
-                   <span class="mr-10">订单编号：{$order.order_number} </span>
+                   <span class="mr-10"><notempty name="t">{$key}</notempty> 订单编号：{$order.order_number} </span>
                    <span class="mr-10">店铺名称：{$order.shop_name} </span>
-                   <span>下单金额：¥{$order.final_price} </span>
-                   <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
-                   <img id="sign_img{$vo.order_number}" class="hidden" src="{$order.sign_img_url}">
+                                      <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
+                   <img id="sign_img{$vo.order_id}" class="hidden" src="http://img.dachuwang.com/{$order.sign_img_url}">
                    <notempty name="order['sign_img_url']">
-                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.order_number}">查看电子签名</a>
+                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.order_id}">查看电子签名</a>
                    </notempty>
                 </td>
               </tr>
@@ -20,7 +19,6 @@
                 <td class="text-center"><h5>序号</h5></td>
                 <td class="text-center"><h5>商品货号</h5></td>
                 <td class="text-center"><h5>商品名称</h5></td>
-                <td class="text-center"><h5>规格</h5></td>
                 <td class="text-center"><h5>单价(元/斤)</h5></td>
                 <td class="text-center"><h5>单价(元/件)</h5></td>
 
@@ -42,7 +40,7 @@
                 <td>{$vo.id}</td>
                 <td>{$vo.sku_number}</td>
                 <td>{$vo.name}</td>
-                <td>{$vo.spe}</td>
+              
                 <td>{$vo.pricePerW}</td>
                 <td>{$vo.single_price}</td>
 
@@ -66,12 +64,22 @@
                 </td>
               </tr>
               
+              
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  <span>下单金额：¥{$order.final_price} </span>
+                </td>
+              </tr>
               <tr>
                 <td class="text-center" colspan="8"></td>
                 <td class="text-center"  colspan="7">
                   应付金额总计：￥{$order.actual_price}
                 </td>
+                
+
               </tr>
+
             </tbody>
           </table>
           </volist>

@@ -59,7 +59,7 @@
           <img id="img_evidence" class="hidden" src="{$data['billing_info']['payment_evidence']}">
           <in name="data['billing_info']['status_code']" value="4,5">
           <notempty name="data['billing_info']['payment_evidence']">
-          <a href="#" class="list-group-item" data-toggle="modal" data-target="#modal-refer" data-content="#img_evidence">
+          <a href="{$data['billing_info']['payment_evidence']}" class="list-group-item" target="_blank">
             <div class="media-left">
               <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
                 <span class="glyphicon glyphicon-file" aria-hidden="true">
@@ -290,7 +290,7 @@
                 {$vo.deal_price}
               </td>
               <td>
-                <a data-href="{:U('detail', 't=s&id='.$data['billing_info']['id'])}"
+                <a data-href="{:U('detail', 't=s&id='.$data['billing_info']['id'].'&uid='.$vo['user_id'])}"
                 data-target="#modal-adapt" data-toggle="modal" class="btn btn-xs btn-view"
                 data-title="查看" rel="tooltip" data-toggle="tooltip" data-trigger="hover"
                 data-placement="bottom">
@@ -374,7 +374,7 @@
         if(msg.data != '' && msg.data != null ){
           var vo = msg.data;
           $(target).find('tbody').html('');
-          for (var i = vo.length - 1; i >= 0; i--) {
+          for (var i = 0; i < vo.length - 1; i++) {
             var tr = '<tr><td>'+vo[i].created_time + '</td><td>' + vo[i].content + '</td><td>' + vo[i].role_name + ' ' +vo[i].author_name + '</td></tr>';
             $(target).find('tbody').append(tr);
           };

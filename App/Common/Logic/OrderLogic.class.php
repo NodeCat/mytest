@@ -54,7 +54,7 @@ class OrderLogic{
     //账单详情
     public function billStoreOrders($map = '')
     {
-    	$url = '/billing/get_orders_of_store';
+    	$url = '/billing/get_order_detail_of_store';
     	$res = $this->get($url,$map);
     	return $res;
     }
