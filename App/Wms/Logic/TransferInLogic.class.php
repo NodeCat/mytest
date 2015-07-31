@@ -67,6 +67,8 @@ class TransferInLogic
             //插入erp_transfer_in 调拨入库单
             $data['code'] = $value['code'];
             $data['wh_id_out'] = $erp_transfer_wout;
+            //升级 在erp 入库单加入关联调拨单号
+            $data['refer_code'] = $value['refer_code'];
             $data['wh_id_in'] = $value['wh_id'];
             $data['cat_total'] = $sumCate['cat_total'];
             $data['qty_tobal'] = $sumCate['qty_tobal'];
@@ -149,11 +151,12 @@ class TransferInLogic
         $map = array();
         $map['code'] = $in_code;
         $map['is_deleted'] = 0;
-        $id = $erp_transfer_in->where($map)->getField('id');
+        $ids = $erp_transfer_in->where($map)->field('id,refer_code')->find();
+        $id = $ids['id'];
         unset($map);
         $map['pid'] = $id;
         if ($is_up == 'receipt' && $id) {
-            $in = $erp_in_detail->where($map)->field('receipt_qty')->select();
+            /*$in = $erp_in_detail->where($map)->field('receipt_qty')->select();
             foreach ($in as $key => $val) {
                 if (intval($val['receipt_qty']*100) > 0){
                     unset($map);
@@ -162,7 +165,8 @@ class TransferInLogic
                     M('erp_transfer_in')->where($map)->save($data);
                     return 2;
                 }
-            }
+            }*/
+            return 2;
 
         } elseif ($is_up == 'up' && $id){
             $in = $erp_in_detail->where($map)->field('done_qty')->select();
@@ -172,6 +176,16 @@ class TransferInLogic
                     $map['id'] = $id;
                     $data['status'] = 'up';
                     M('erp_transfer_in')->where($map)->save($data);
+                    //修改已经出库调拨单状态 改成已入库
+                    if ($ids && $ids['refer_code']) {
+                        unset($map);
+                        $map['trf_code'] = $ids['refer_code'];
+                        $map['status'] = 'refunded';
+                        unset($data);
+                        $data['status'] = 'up';
+                        M('erp_transfer')->where($map)->save($data);
+                    }
+                     
                     return 2;
                 }
             }

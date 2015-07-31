@@ -15,9 +15,9 @@ class TransferInController extends CommonController
     protected $filter = array(
         'state'=>array(
             'waiting'=>'待入库',
-            'waitingup'=>'待上架',
-            'up'=>'已上架',
-            'cancelled' => '已作废'
+            /*'waitingup'=>'待上架',*/
+            'up'=>'已入库'
+            /*'cancelled' => '已作废'*/
         ),
        'wh_id_out'=>'',
 
@@ -60,9 +60,9 @@ class TransferInController extends CommonController
                 'control_type' => 'select',
                 'value' => array(
                     'waiting'=>'待入库',
-                    'waitingup'=>'待上架',
-                    'up'=>'已上架',
-                    'cancelled' => '已作废'
+                    /*'waitingup'=>'待上架',*/
+                    'up'=>'已入库'
+                    /*'cancelled' => '已作废'*/
                     
                 ),
         ),
@@ -147,7 +147,7 @@ class TransferInController extends CommonController
         $this->edit();
     }
 
-    protected function before_edit(&$data)
+    protected function before_edit_bak(&$data)
     {
         //详情数据处理
         D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_in_detail');
@@ -200,6 +200,23 @@ class TransferInController extends CommonController
         //dump($data);die;
     }
 
+    protected function before_edit(&$data)
+    {
+        //详情数据处理
+        D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_in_detail');
+        $plan_qty = 0;//计划
+        $real_qty = 0;//实际
+        $isset = array();
+        foreach ($data['detail'] as $key => $value) {
+            
+            $plan_qty = f_add($plan_qty,$value['plan_in_qty']);
+            $real_qty = f_add($real_qty,$value['receipt_qty']);
+        }
+        
+        $data['plan_qty'] = $plan_qty;//计划
+        $data['receipt_qty'] = $real_qty;//实际
+    }
+
     //查看批次
     public function transferBatch(){
         $id = I('post.id');
@@ -217,6 +234,7 @@ class TransferInController extends CommonController
         }
         $this->msgReturn(1,'查询成功',$res);
     }
+
     
     
 }

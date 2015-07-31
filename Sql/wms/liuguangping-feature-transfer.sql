@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `erp_transfer` (
   `wh_id_in` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '调入仓库id',
   `plan_cat_total` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '计划货品种数',
   `plan_qty_tobal` decimal(18,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '计划货品件数',
-  `status` varchar(45) NOT NULL DEFAULT 'draft' COMMENT '退货状态：draft草稿audit待审核tbr待出库refunded 已出库 cancelled 已作废 Rejected已驳回',
+  `status` varchar(45) NOT NULL DEFAULT 'draft' COMMENT '退货状态：draft草稿audit待审核tbr待出库refunded 已出库 up 已入库 cancelled 已作废 Rejected已驳回',
   `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created_user` int(11) unsigned NOT NULL DEFAULT '0',
   `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `erp_transfer_in` (
   `wh_id_in` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '调入仓库id',
   `cat_total` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'SKU种数',
   `qty_tobal` decimal(18,2) unsigned NOT NULL DEFAULT '0.00' COMMENT 'SKU件数',
-  `status` varchar(45) NOT NULL DEFAULT 'waiting' COMMENT '状态 waiting 待入库 waitingup 待上架  up 已上架 cancelled已作废',
+  `status` varchar(45) NOT NULL DEFAULT 'waiting' COMMENT '状态 waiting 待入库 waitingup 待上架 up 已上架 cancelled已作废 待入库是发运完了=》待上架是收货完了=》已上架是上架了',
   `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created_user` int(11) unsigned NOT NULL DEFAULT '0',
   `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -189,6 +189,8 @@ ALTER TABLE `erp_transfer_in`
 
 ALTER TABLE `erp_transfer_in`
   MODIFY `id` int(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键';
+  
+ALTER TABLE `erp_transfer_in` ADD `refer_code` VARCHAR(45) NOT NULL DEFAULT '''''' COMMENT '关联单号：调拨单' AFTER `code`;
 
 --
 -- Indexes for table `erp_transfer_in_detail`

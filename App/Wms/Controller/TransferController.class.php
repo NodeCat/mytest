@@ -17,8 +17,9 @@ class TransferController extends CommonController
        'state'=>array(
             'draft' => '草稿',
             'audit'=>'待审核',
-            'tbr'=>'待出库',
+            'tbr'=>'已生效',
             'refunded'=>'已出库',
+            'up'=>'已入库',
             'cancelled' => '已作废',
             'rejected' => '已驳回'
         ),
@@ -63,8 +64,9 @@ class TransferController extends CommonController
                 'value' => array(
                     'draft' => '草稿',
                     'audit'=>'待审核',
-                    'tbr'=>'待出库',
+                    'tbr'=>'已生效',
                     'refunded'=>'已出库',
+                    'up'=>'已入库',
                     'cancelled' => '已作废',
                     'rejected' => '已驳回'
                     
@@ -285,6 +287,38 @@ class TransferController extends CommonController
         //调拨单详情数据处理
         $data['warehouseArr'] = $this->warehouseArr;
         D('Transfer', 'Logic')->get_transfer_all_sku_detail($data);
+        $erp_transfer_m = M('erp_transfer');
+        $erp_transfer_in_m = M('erp_transfer_in');
+        $erp_transfer_in_detail_m = M('erp_transfer_in_detail');
+        foreach ($data['detail'] as $key => $value) {
+            $pro_code = $value['pro_code'];
+            $transfer_id = $value['pid'];
+            unset($map);
+            //查询erp 入库单id
+            $map['id'] = $transfer_id;
+            $transfer_code = $erp_transfer_m->where($map)->getField('trf_code');
+            if ($transfer_id && $transfer_code) {
+                unset($map);
+                $map['refer_code'] = $transfer_code;
+                $transfer_in_id = $erp_transfer_in_m->where($map)->getField('id');
+                if ($transfer_id) {
+                    unset($map);
+                    $map['pid'] = $transfer_in_id;
+                    $map['pro_code'] = $pro_code;
+                    if ($erp_detail = $erp_transfer_in_detail_m->field('sum(done_qty) as done_qty')->where($map)->find()) {
+                        $data['detail'][$key]['done_qty'] = $erp_detail['done_qty'];   
+                    } else {
+                        $data['detail'][$key]['done_qty'] = '0.00'; 
+                    }
+
+                } else {
+                    $data['detail'][$key]['done_qty'] = '0.00'; 
+                }
+            } else {
+                $data['detail'][$key]['done_qty'] = '0.00'; 
+            }
+
+        }
     }
 
     /**
