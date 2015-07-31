@@ -193,7 +193,7 @@ class BillController extends \Wms\Controller\CommonController
         }
         else {
             $this->t = 'store';
-            $A->debug = true;
+            
             $map['customer_id'] = I('uid');
             $data = $A->billStoreOrders($map);
         }
