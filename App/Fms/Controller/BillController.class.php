@@ -193,14 +193,14 @@ class BillController extends \Wms\Controller\CommonController
         }
         else {
             $this->t = 'store';
-            //$A->debug = true;
+            $A->debug = true;
             $map['customer_id'] = I('uid');
             $data = $A->billStoreOrders($map);
         }
 
         foreach ($data['list'] as &$order) {
             $deal_price= 0;
-            foreach ($order['child'] as &$vo) {
+            foreach ($order['detail'] as &$vo) {
                 if(empty($vo['net_weight'])) {
                     $vo['new_weight'] = 0;
                 }
