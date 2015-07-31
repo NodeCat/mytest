@@ -66,7 +66,9 @@ class StockInLogic{
 
 		$in = M('stock_bill_in')->field('id,code,type,refer_code,status')->find($inId);
 		//liuguangping 改了，这方法是查待库存量
-		$qtyForOn = $this->getQtySum($in['id'],$code);
+		//$qtyForOn = $this->getQtySum($in['id'],$code);//这个是按照系统分配批次上
+		//加入批次条件 批次是先进先出 以前是系统分配现在是拿第一个批次上架
+		$qtyForOn = $this->getQtyBatchSum($in['id'],$code);
 		if(empty($qtyForOn)) {
 			return array('res'=>false,'msg'=>'该货品没有待上架量。');
 		}
@@ -74,9 +76,11 @@ class StockInLogic{
 		$detail['id'] = $in['id'];
 		$detail['code'] = $in['code'];
 		$detail['pro_names'] = $detail['pro_name'] .'（'. $detail['pro_attrs'].'）';
-		$detail['moved_qty'] = $qtyForOn;
+		$detail['batch'] = $qtyForOn['batch']?$qtyForOn['batch']:$in['code'];//如果有批次则就显示批次号没有显示到货单单号
+		$detail['moved_qty'] = $qtyForOn['prepare_qty'];
 		return array('res'=>true,'data'=>$detail);
 	}
+
 
 	public function getCode($barcode){
 		$map['barcode'] = $barcode;
@@ -114,11 +118,15 @@ class StockInLogic{
 
 		$pid = $in['id'];
 		//liuguangping 改了，这方法是查待库存量
-		$qtyForOn = $this->getQtySum($pid, $code);
+		//$qtyForOn = $this->getQtySum($pid, $code);//这个是按照系统分配批次上
+		//加入批次条件 批次是先进先出 以前是系统分配现在是拿第一个批次上架
+		$qtyForOn = $this->getQtyBatchSum($in['id'],$code);
+		//指定批次
+		$batch = $qtyForOn['batch'];
 		if(empty($qtyForOn)) {
 			return array('res'=>false,'msg'=>'该货品没有待上架量。');
 		}
-		if($qtyForOn < $qty) {
+		if($qtyForOn['prepare_qty'] < $qty) {
 			return array('res'=>false,'msg'=>'上架数量不能大于该货品待上架数量');
 		}
 
@@ -147,9 +155,31 @@ class StockInLogic{
 		$where = array();
 		$where['pid'] = $pid;
 		$where['pro_code'] = $code;
+		//指定批次
+		if($batch){
+			$where['batch'] = $batch;
+		}
 		$where['is_deleted'] = 0;
 		$bill_detail = M('stock_bill_in_detail')->where($where)->select();
-		foreach ($bill_detail as $ky => $val) {
+		//判断目标库位是否可以 混货 混批次
+		$data['dest_location_id'] = $location_id;
+		$data['wh_id'] = $in['wh_id'];
+		//$data['status'] = $status;
+		if($batch){
+			$data['batch'] = $batch;
+		}else{
+			$data['batch'] = $in['code'];
+		}
+
+		$data['pro_code'] = $code;
+		$res = A('Stock','Logic')->checkLocationMixedProOrBatch($data);
+		unset($data);
+
+		//禁止混批次
+		if($res['status'] == 0){
+			return $res;
+		}
+		/*foreach ($bill_detail as $ky => $val) {
 			//判断目标库位是否可以 混货 混批次
 			$data['dest_location_id'] = $location_id;
 			$data['wh_id'] = $in['wh_id'];
@@ -168,13 +198,25 @@ class StockInLogic{
 			if($res['status'] == 0){
 				return $res;
 			}
-		}
+		}*/
 
 		$diff = $qty;//要上架的数量
 		$refer_code = $in['refer_code'];
 		$wh_id = $in['wh_id'];
+		//扣库存操作
+		//有批次走分批次走，没有则按照原来的走
+		if($batch){
+			$batch = $batch;
+			$batch_bak = $batch;
+		}else{
+			$batch = $in['code'];
+			$batch_bak = '';
+		}
+		
+		$this->updateStockUpStatus($inId,$code,$qty,$batch,$location_id,$status,$product_date,$refer_code,$wh_id,$batch_bak,$inId);
+
 	
-		foreach ($bill_detail as $key => $value) {
+		/*foreach ($bill_detail as $key => $value) {
 			//有批次走分批次走，没有则按照原来的走
 			if($value['batch']){
 				$batch = $value['batch'];
@@ -201,7 +243,7 @@ class StockInLogic{
 				$diff = 0;
 			}
 
-		}
+		}*/
 
 		//修改erp状态
 		$bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
@@ -495,7 +537,7 @@ class StockInLogic{
      * @param Int $pid 入库单id
      * @param String $pro_code 货物编码
      * @author liuguangping@dachuwang.com
-     * @since 2015-06-13
+     * @since 2015-07-29
      */
 	public function getQtySum($pid,$pro_code){
 		$map = array();
@@ -516,6 +558,38 @@ class StockInLogic{
 			return 0;
 		} else {
 			return $cate_qty;
+		}
+	}
+
+	/**
+     * getQtyBatchSum 获取同一入库单某个商品先进先上的第一条数量（未上架完）
+     * @param Int $pid 入库单id
+     * @param String $pro_code 货物编码
+     * @author liuguangping@dachuwang.com
+     * @since 2015-07-31
+     */
+	public function getQtyBatchSum($pid,$pro_code){
+		$map = array();
+		$result = array();
+		if ($pid) {
+			$map['pid'] = $pid;
+		}
+		if ($pro_code) {
+			$map['pro_code'] = $pro_code;
+		}
+		$bill_in_detail_m = M('stock_bill_in_detail');
+		$bill_in_detail = $bill_in_detail_m->where($map)->field('prepare_qty,batch')->order('id asc')->select();
+		foreach ($bill_in_detail as $key => $value) {
+			if ($value['prepare_qty']>0) {
+				$result['batch'] = $value['batch'];
+				$result['prepare_qty'] = $value['prepare_qty'];
+				break;
+			}
+		}
+		if(!$pro_code || !$pid || empty($bill_in_detail)) {
+			return 0;
+		} else {
+			return $result;
 		}
 	}
 
