@@ -146,7 +146,7 @@ class OrderController extends \Common\Controller\AuthController {
             }
             //抹零总计
             $bill_out['wipe_zero_sum'] = $wipe_zero_sum;
-            $logs = getlogs('dist_detail',$sign_data['id']);
+            $logs = getlogs('dist_detail',$bill_out_id);
             $this->assign('data',$bill_out);
             $this->assign('logs',$logs);
         }
@@ -171,6 +171,11 @@ class OrderController extends \Common\Controller\AuthController {
         $dist_detail_id = M('stock_wave_distribution_detail')->where($map)->find();
         if ($dist_detail_id['status'] != 2 && $dist_detail_id['status'] != 3) {
             $this->error('此订单不是已签收或已拒收状态，不能重置订单状态。');exit;
+        }
+        //查询订单是否有退货，并且已创建拒收入库单
+        $is_can = can_replace($bill_out_id);
+        if ($is_can) {
+            $this->error('此订单有退货且已经交货，不能重置订单状态。');exit;
         }
         $dist_detail_id = $dist_detail_id['id'];
         $data['status']     = 1; //重置为已装车状态
@@ -226,7 +231,7 @@ class OrderController extends \Common\Controller\AuthController {
             }
             $data['real_sum']   = $deal_price - $wipezero - $deposit;
             $data['sign_msg']   = $sign_msg;
-            $data['wipezero']   = $wipe_zero_sum + $wipezero;
+            $data['wipe_zero']   = $wipe_zero_sum + $wipezero;
             $data['deposit']    = $deposit_sum + $deposit;
             $res = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
             logs($bill_id,'修改订单实收金额，'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
