@@ -175,12 +175,17 @@
           reject_box.removeClass('hidden');
           $("a[data-action='saveReason']").on("click", function(e){
             e.preventDefault();
-            var selectCase = $("input[name='reject_reason[]']:checked");
+            var selectCase = $("input[name='reason[]']:checked");
             if(selectCase.length){
+              selectCase.each(function(){
+                var hid = '<input name="reject_reason[]" value="'+$(this).val()+'" type="hidden">';
+                obj.closest('form.order').append(hid);
+              });
               trans_bg.hide();
               reject_box.addClass('hidden');
               rejectDialog.subReject(obj);
               selectCase.attr('checked',false);
+              $("input[name='reject_reason[]']").remove();
             }else{
               return false;
             }
