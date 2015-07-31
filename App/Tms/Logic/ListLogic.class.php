@@ -225,7 +225,15 @@ class ListLogic{
                 }
                 else{
                     $geo['color_type'] = 0;
-                }   
+                }
+                unset($map);
+                $map['is_deleted']  = '0';
+                $map['customer_id'] = $values['user_id'];
+                $res = M('tms_report_error')->field('id')->where($map)->find();
+                unset($map);
+                if ($res) {
+                    $geo['color_type'] = 2;
+                }
                 $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
             }            
         }

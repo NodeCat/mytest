@@ -125,6 +125,40 @@ class ReportErrorController extends Controller{
         $objWriter->save('php://output');
 	}
 
+    /**
+     * 修改商家的地址坐标
+     *
+     * @author   jt
+     */
+    public function updatePoint()
+    {
+        $data = I('post.');
+        $customer_id   = $data['id'];
+        //unset($data['id']);
+        print_r($data);
+        $data = json_encode($data);
+        print_r($data);
+        $id = M('tms_report_error')->field('id')->where(array('customer_id' => $customer_id))->order('created_time desc')->find();
+        $map['id'] = $id['id'];
+        $map['updated_time'] = get_time();
+        $map['updated_user'] = UID;
+        $map['is_deleted'] = '1';
+        $res = M('tms_report_error')-> save($map);
+
+        /*if ($res) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '地址修改成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '地址修改失败',
+            );
+        }
+        $this->ajaxReturn($return);*/
+    }
+
 	protected function get_excel_sheet(&$Excel) {
         $Excel->getProperties()
         ->setCreator("Dachuwang")

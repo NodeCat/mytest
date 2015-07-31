@@ -61,6 +61,10 @@
       路线:<span>{$lines}</span>
     </h4>
       </div>
+      <div id="tip">
+    <b>鼠标左键在地图上单击获取坐标</b>
+    <br><div>X：<input type="text" id="lngX" name="lngX" value=""/>&nbsp;Y：<input type="text" id="latY" name="latY" value=""/></div>
+  </div>
       <div id="tip">  
     <input type="button" value="显示线路" onClick="javascript:polyline.setMap(map)"/>
     <input type="button" value="隐藏线路" onClick="javascript:polyline.setMap(null)"/>
@@ -111,14 +115,24 @@
       //商家标记
       <volist name='address' id='addr'>
         marker{$i} = new AMap.Marker({
-        <if condition="$addr['color_type'] eq 0">
-        icon:"__PUBLIC__/img/red.png",
+        <if condition="$addr['color_type'] eq 3">
+          draggable:true, //点标记可拖拽
+          cursor:'move',
+          icon:"__PUBLIC__/img/red.png",
+        <elseif condition="$addr['color_type'] eq 2" />
+          icon:"__PUBLIC__/img/green.png",
         </if>
         //icon:"http://webapi.amap.com/images/custom_a_j.png",
         position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
       });
       marker{$i}.setMap(map);
       marker{$i}.setTitle("{$addr['address']}");
+      <if condition="$addr['color_type'] eq 3">
+        marker{$i}.id  = "{$addr['user_id']}";
+        marker{$i}.lng = "{$addr['lng']}";
+        marker{$i}.lat = "{$addr['lat']}";
+        update(marker{$i});
+      </if>
       </volist>
       <if condition="$points neq NULL">
       //起点
@@ -168,4 +182,47 @@
         outlineColor:"#000066"
       });
     })();
-  </script>
+
+function update(obj)
+{
+  AMap.event.addListener(obj,'dragstart',function(e){
+    document.getElementById("lngX").value=e.lnglat.getLng();
+    document.getElementById("latY").value=e.lnglat.getLat();
+    lng = e.lnglat.getLng();
+    lat = e.lnglat.getLat();
+    this.setPosition(new AMap.LngLat(lng,lat));
+
+    //alert('this.id');
+  });
+  AMap.event.addListener(obj,'dragend',function(e){
+    document.getElementById("lngX").value=e.lnglat.getLng();
+    document.getElementById("latY").value=e.lnglat.getLat();
+    lng = e.lnglat.getLng();
+    lat = e.lnglat.getLat();
+    this.lngN = lng;
+    this.latN = lat;
+    //alert(this.id);
+    updatePoint(this);
+
+  });
+}
+
+function updatePoint(x)
+{
+    if (confirm('你确定要修改该位置吗')) {
+        var id   = x.id,
+            lng  = x.lng,
+            lat  = x.lat,
+            lngN = x.lngN,
+            latN = x.latN;
+        alert(id+lng+lat);
+        $.post("{:U('ReportError/updatePoint')}",{'id':id,'lng':lng,'lat':lat,'lngN':lngN,'latN':latN},function(res){
+            if (res.status == 1) {
+                alert(res.msg);
+            } else {
+                alert(res.msg);
+            }
+        });
+    }
+}
+ </script>
