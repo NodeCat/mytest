@@ -172,13 +172,13 @@
           var reject_box = $('#reject-box'),
               trans_bg   = $('#trans-bg');
           trans_bg.show();
-          reject_box.show();
+          reject_box.removeClass('hidden');
           $("a[data-action='saveReason']").on("click", function(e){
             e.preventDefault();
             var selectCase = $("input[name='reject_reason[]']:checked");
             if(selectCase.length){
               trans_bg.hide();
-              reject_box.hide();
+              reject_box.addClass('hidden');
               rejectDialog.subReject(obj);
               selectCase.attr('checked',false);
             }else{
@@ -189,12 +189,12 @@
           $("a[data-action='cancle']").on("click", function(e){
             e.preventDefault();
             trans_bg.hide();
-            reject_box.hide();
+            reject_box.addClass('hidden');
           });
           trans_bg.on("click", function(e){
             e.preventDefault();
             trans_bg.hide();
-            reject_box.hide();
+            reject_box.addClass('hidden');
           });
         },
         subReject : function(obj) {
