@@ -128,7 +128,7 @@ class OrderLogic{
 		$url = '/suborder/set_sign_img';
 		if (!isset($params['suborder_id']) || !isset($params['sign_img'])) {
 			$res = array(
-				'status' => 0,
+				'status' => -1,
 				'msg'    => '参数有误'
 			);
 			return $res;
@@ -138,6 +138,63 @@ class OrderLogic{
 
 	}
 	
+	/**
+	 * [sendPushMsg 发送短信]
+	 * @param  array  $params [description]
+	 * @return [type]         [description]
+	 */
+	public function sendPushMsg($params = array())
+	{
+		$url = '/sms/send_sms';
+		if (empty($params['mobile']) || empty($params['content'])) {
+			$res = array(
+				'status' => -1,
+				'msg'    => '参数有误'
+			);
+			return $res;
+		}
+		$res = $this->get($url,$params);
+		return $res;
+	}
+
+	/**
+	 * [sendPullMsg 撤回短信]
+	 * @param  array  $params [description]
+	 * @return [type]         [description]
+	 */
+	public function sendPullMsg($params = array())
+	{
+		$url = '/sms/pull_sms_job';
+		if (empty($params['job_id'])) {
+			$res = array(
+				'status' => -1,
+				'msg'    => '参数有误'
+			);
+			return $res;
+		}
+		$res = $this->get($url,$params);
+		return $res;
+	}
+
+	/**
+	 * [getParentAccountByCoustomerId 根据子账户获ID取母账户信息]
+	 * @param  array  $params [description]
+	 * @return [type]         [description]
+	 */
+	public function getParentAccountByCoustomerId($params = array())
+	{
+		$url = '/customer/get_parent_info';
+		if (empty($params['customer_id'])) {
+			$res = array(
+				'status' => -1,
+				'msg'    => '参数有误'
+			);
+			return $res;
+		}
+		$res = $this->get($url,$params);
+		return $res;
+	}
+
 	public function get($url,$map='') {
 		$url = $this->server . $url;
 		$map = json_encode($map);
