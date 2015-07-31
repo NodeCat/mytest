@@ -1082,9 +1082,8 @@ class DistributionController extends CommonController {
         $msg['type'] = 'success';
         $msg['wave_id'] = $back;
         if($cancel_order_flag){
-            $this->msgReturn(true, '创建波次成功，'.$cancel_order_notes, $msg, U('index'));
-        }else{
-            $this->msgReturn(true, '创建波次成功', $msg, U('index'));
+            $msg['cancel_order_notes'] = $cancel_order_notes;
         }
+        $this->msgReturn(true, '创建波次成功', $msg, U('index'));
     }
 }
