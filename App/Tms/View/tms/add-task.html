@@ -14,25 +14,31 @@
           <tr>
             <td colspan="3">
               <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                  <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">任务名称(10字以内)：</label>
+                  <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">任务名称(10字以内)
+                    <span class="text-danger">*</span>&nbsp;
+                  </label>
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-                  <input type="text" class="form-control" style="width:100%;" placeholder="输入任务名称">
+                  <input type="text" name="task_name" class="form-control" style="width:100%;" placeholder="输入任务名称">
                 </div>
               </div>
             </td>
             <td colspan="2">
               <div class="form-group">
-                <label for="" class="control-label">任务码：</label>
-                <input type="txt" class="form-control" placeholder="" readonly>
+                <label for="" class="control-label">任务码
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <input type="txt" name="code" class="form-control" placeholder="自动生成" readonly>
               </div>
             </td>
           </tr>
           <tr>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">仓库：</label>
-                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                  <option value="0">选择状态</option>
+                <label for="" class="control-label">仓库
+                  <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control"  id="warehouse" name="wh_id" placeholder="仓库">
+                  <option value="0">选择仓库</option>
                   <volist name='car.warehouse' id='storge'>
                   <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                   </volist>
@@ -41,8 +47,10 @@
             </td>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">任务类型：</label>
-                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
+                <label for="" class="control-label">任务类型
+                  <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control"  id="task_type" name="task_type">
                   <option value="0">选择状态</option>
                   <volist name='car.warehouse' id='storge'>
                   <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
@@ -52,35 +60,45 @@
             </td> 
             <td>
               <div class="form-group">
-                <label for="" class="control-label">用车申请人：</label>
-                <input type="txt" class="form-control" placeholder="">
+                <label for="" class="control-label">用车申请人
+                  <span class="text-danger">*</span>&nbsp;
+                </label>
+                <input type="txt" name="apply_user" class="form-control" placeholder="用车申请人">
               </div>
             </td> 
             <td>
               <div class="form-group">
-                <label for="" class="control-label">申请人联系方式：</label>
-                <input type="txt" class="form-control" placeholder="">
+                <label for="" class="control-label">申请人联系方式
+                  <span class="text-danger">*</span>&nbsp;
+                </label>
+                <input type="txt" name="apply_mobile" class="form-control" placeholder="申请人联系方式">
               </div>
             </td> 
           </tr>
           <tr>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">用车部门：</label>
-                <input type="txt" class="form-control" placeholder="">
+                <label for="" class="control-label">用车部门
+                  <span class="text-danger">*</span>&nbsp;
+                </label>
+                <input type="txt" name="apply_department" class="form-control" placeholder="用车部门">
               </div>
             </td>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">期望用车时间：</label>
-                <input type="txt" rel="datepicker" name="sign_date" value="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择日期">
+                <label for="" class="control-label">期望用车时间
+                  <span class="text-danger">*</span>&nbsp;
+                </label>
+                <input type="txt" rel="datepicker" name="op_time" value="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择日期">
               </div>
             </td>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">期望车型：</label>
-                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                  <option value="0">选择状态</option>
+                <label for="" class="control-label">期望车型
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control"  id="expect_car_type" name="expect_car_type">
+                  <option value="0">选择车型</option>
                   <volist name='car.warehouse' id='storge'>
                   <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                   </volist>
@@ -89,23 +107,29 @@
             </td>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">预计运费(元)：</label>
-                <input type="txt" class="form-control" placeholder="" readonly>
+                <label for="" class="control-label">预计运费(元)
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <input type="txt" name="expect_fee" class="form-control" placeholder="自动生成" readonly>
               </div>
             </td>
           </tr>
           <tr>
             <td colspan="3">
-              <div class="form-group">
-                <label for="" class="control-label">用车事由：</label>
-                <textarea class="form-control" rows="3"></textarea>
+              <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">用车事由</label>
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                  <input type="text" name="reason" class="form-control" style="width:100%;" placeholder="用车事由">
+                </div>
               </div>
             </td>
             <td>
               <div class="form-group">
-                <label for="" class="control-label">备注(长期/临时)</label>
-                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                  <option value="0">选择状态</option>
+                <label for="" class="control-label">备注(长期/临时)
+                    &nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control"  id="remark" name="remark">
+                  <option value="0">选择备注</option>
                   <volist name='car.warehouse' id='storge'>
                   <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                   </volist>
@@ -117,18 +141,30 @@
             <td colspan="4">
               <div class="form-group">
                 <label for="" class="control-label">选择记录点</label>
-                <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <option value="0">选择状态</option>
+                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
+                    <option value="0">选择记录点</option>
                     <volist name='car.warehouse' id='storge'>
                     <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                     </volist>
-                  </select>&nbsp;
-                  <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                    <option value="0">选择状态</option>
+                </select>&nbsp;
+                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
+                    <option value="0">选择记录点</option>
                     <volist name='car.warehouse' id='storge'>
                     <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                     </volist>
-                  </select>&nbsp;
+                </select>&nbsp;
+                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
+                    <option value="0">选择记录点</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select>&nbsp;
+                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
+                    <option value="0">选择记录点</option>
+                    <volist name='car.warehouse' id='storge'>
+                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                    </volist>
+                </select>&nbsp;
               </div>
             </td>
           </tr>

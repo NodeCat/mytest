@@ -1234,4 +1234,15 @@ class DistributionLogic {
         }
         return $res;
     }
+
+    /**
+     * [getAllWarehouse 获取所有仓库信息]
+     * @return [type] [description]
+     */
+    public function getAllWarehouse()
+    {
+        $M = M('warehouse');
+        $res = $M->select();
+        return $res;
+    }
 }
