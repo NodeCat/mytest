@@ -18,7 +18,6 @@ class DispatchTaskController extends Controller
     public function addTask()
     {
         $warehouses = A('Wms/Distribution', 'Logic')->getAllWarehouse();
-        dump($warehouses);
         // $task_types = 
         // $car_types  = 
         $this->display('tms:add-task');
