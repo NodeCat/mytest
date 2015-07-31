@@ -492,7 +492,7 @@ class DistController extends Controller {
             $dist_details = $wA->getDistDetails($map);
             //该出库单对应配送单详情
             $dist_detail = $dist_details['list'][0];
-            //向出库单详情更新拒收信息
+            //向配送单详情更新拒收信息
             if($dist_detail) {
                 $datas = array(
                     'id'   => $dist_detail['id'],
