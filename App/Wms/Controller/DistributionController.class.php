@@ -576,33 +576,9 @@ class DistributionController extends CommonController {
                 //将待生产订单从波次中踢出
                 $affected = $D->updateStockWaveDetailByOutIds($merge);
                 
-                $pass_reduce_ids = array_merge($pass_ids,$reduce_ids);
                 //更新配送单中总件数 总条数 总行数 总金额
-                $map['id'] = array('in', $pass_reduce_ids);
-                //获取出库单
-                $sur_info = $stock->where($map)->select();
-                unset($map);
-                $sur_detail = $D->get_out_detail($pass_reduce_ids); //通过审核的sku详情
-                $total['order_count'] = count($pass_reduce_ids); //总单数
-                $total['sku_count'] = 0; //总件数
-                $total['line_count'] = 0; //总行数
-                $total['total_price'] = 0; //总金额
-                $det_merge = array();
-                foreach ($sur_info as $surmain) {
-                    //总价格
-                    $total['total_price'] += $surmain['total_amount'];
-                }
-                foreach ($sur_detail as $sur) {
-                    //总数量
-                    $total['sku_count'] += $sur['order_qty'];
-                    $det_merge[$sur['pro_code']] = null; //总行数
-                }
-                $total['line_count'] = count($det_merge);
-                if ($M->create($total)) {
-                    //更新操作
-                    $map['id'] = $result['id'];
-                    $M->where($map)->save();
-                }
+                $D->updDistInfoByIds(array($result['id']));
+
             } else {
                 $unpass_ids .= implode(',', $make_ids) . '|' . $post;
                 $this->msgReturn(true, '请确认', '', U('unpass?ids=' . $unpass_ids . '&type=make'));
@@ -957,6 +933,8 @@ class DistributionController extends CommonController {
 
         //对缺货订单不做处理
         $ids = array_merge($ids,$unids);
+        $cancel_order_notes = '因订单被取消而造成的出库单取消的单号：';
+        $cancel_order_flag = false;
         //调用hop接口查看订单是否被取消，如果被取消，则不加入波次
         foreach($ids as $k => $bill_out_id){
             $map['id'] = $bill_out_id;
@@ -983,13 +961,18 @@ class DistributionController extends CommonController {
                     M('stock_wave_distribution_detail')->where($map)->save($data);
                     unset($map);
                     unset($data);
+                    $cancel_order_notes .= $bill_out_info['code'].',';
+                    $cancel_order_flag = true;
                 }
             }
         }
+        //更新配送单的数据
+        $D->updDistInfoByIds($idarr);
+
         $count = count($ids);
-        /*if(empty($ids)){
-            $this->msgReturn(false, '库存不足，无法创建波次');
-        }*/
+        if(empty($ids)){
+            $this->msgReturn(false, '所有订单都不满足要求，无法创建波次');
+        }
         //$count = count($ids) + count($unids); 
         //库存不足的订单数量
         /*if (count($unids) > 0) {
@@ -1069,6 +1052,7 @@ class DistributionController extends CommonController {
         if (!$affectedWave) {
             $this->msgReturn(false, '更新出库单失败');
         }
+
         //更新库存不足的出库单状态为缺货 并修改其备注
         /*if (!empty($unids)) {
             $affectedReduce = $D->getReduceSkuCodesAndUpdate($unids);
@@ -1097,6 +1081,10 @@ class DistributionController extends CommonController {
         $msg['order_count'] = count($ids);
         $msg['type'] = 'success';
         $msg['wave_id'] = $back;
-        $this->msgReturn(true, '创建波次成功', $msg, U('index'));
+        if($cancel_order_flag){
+            $this->msgReturn(true, '创建波次成功，'.$cancel_order_notes, $msg, U('index'));
+        }else{
+            $this->msgReturn(true, '创建波次成功', $msg, U('index'));
+        }
     }
 }
