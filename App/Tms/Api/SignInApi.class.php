@@ -34,14 +34,14 @@ class SignInApi extends CommApi
         chmod($file,0755);
         $res = $this->curl_upload_pic($file);
         is_file($file) && unlink($file);
-        if (empty($res['files'][0]['saved_name'])) {
+        if (empty($res['files'][0]['url'])) {
             $re = array(
                 'status' => -1,
                 'msg'    => '图片上传失败'
             );
             $this->ajaxReturn($re);
         }
-        $sign_path = $res['files'][0]['saved_name'];
+        $sign_path = $res['files'][0]['url'];
         $map['suborder_id'] = $suborder_id;
         $map['sign_img'] = $sign_path;
 
