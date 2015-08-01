@@ -21,6 +21,7 @@ class DispatchTaskController extends Controller
      */
     public function index()
     {
+        //筛选条件
         if ($wh_id = I('post.wh_id/d', 0)) {
             $map['wh_id'] = $wh_id;
             $this->wh_id = $wh_id;
@@ -55,6 +56,7 @@ class DispatchTaskController extends Controller
         $map['is_deleted'] = 0;
         $order = 'created_time DESC';
         $list = $M->where($map)->order($order)->select();
+        //获取任务类型用车平台和司机信息
         foreach ($list as &$val) {
             $val['warehouse_name'] = A('Wms/Distribution', 'Logic')->getWarehouseById($val['wh_id']);
             $val['task_type_name'] = A('Tms/Dist', 'Logic')->getCateNameById($val['task_type']);
@@ -63,6 +65,7 @@ class DispatchTaskController extends Controller
             $val['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($val['driver_id']);
             $val['status_cn']  = A('Tms/Dist', 'Logic')->getStatusCnByCode($val['status']);
         }
+        //所有的任务状态和用车平台
         $this->task_status = A('Tms/Dist', 'Logic')->getAllTaskStatus();
         $this->platforms = A('Tms/Dist', 'Logic')->getCatesByType('platform');
         $this->list = $list;
@@ -103,6 +106,7 @@ class DispatchTaskController extends Controller
                 'remark'          => I('post.remark', '', 'trim'),
             );
             $data = array_merge($rdata, $ndata);
+            //创建人、创建时间
             $data['created_time'] = get_time();
             $data['created_user'] = session('user.user_id');
             $M = M('tms_dispatch_task');
@@ -137,6 +141,7 @@ class DispatchTaskController extends Controller
             $this->ajaxReturn($re);
         }
         $M = M('tms_dispatch_task');
+        //遍历为每一条任务加运费
         foreach ($fees as $key => $value) {
             $s = $M->where(array('id' => $key))-> save(array('delivery_fee' => $value));
         }
@@ -147,7 +152,10 @@ class DispatchTaskController extends Controller
         $this->ajaxReturn($re);
     }
 
-
+    /**
+     * [taskDel 逻辑删除一条任务]
+     * @return [type] [description]
+     */
     public function taskDel()
     {
         $id = I('get.id/d', 0);
@@ -158,7 +166,8 @@ class DispatchTaskController extends Controller
         $map['id'] = $id;
         $map['is_deleted'] = 0;
         $task = $M->field('status')->where($map)->find();
-        if ($task['status'] == 1 || $task['status'] == 2) {
+        //限制可以删除的任务为待审批和未通过的
+        if ($task['status'] == 1 || $task['status'] == 2 || $task['status'] == 6) {
             $data = array('is_deleted' => 1);
             $re = $M->where($map)->save($data);
             if ($re) {
