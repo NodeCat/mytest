@@ -1242,7 +1242,25 @@ class DistributionLogic {
     public function getAllWarehouse()
     {
         $M = M('warehouse');
-        $res = $M->select();
+        $map['is_deleted'] = 0;
+        $res = $M->where($map)->select();
         return $res;
+    }
+
+    /**
+     * [getWarehouseById 根据仓库ID获取仓库名称]
+     * @param  [type] $wh_id [description]
+     * @return [type]        [description]
+     */
+    public function getWarehouseById($id)
+    {
+        if (empty($id)) {
+            return '';
+        }
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $res = $M->field('name')->where($map)->find();
+        return $res['name'];
     }
 }

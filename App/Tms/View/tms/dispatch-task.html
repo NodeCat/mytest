@@ -2,52 +2,60 @@
 <div class="table-responsive" >
     <h2 class="text-center">派车任务管理</h2>
     <hr>
-    <form id="f" name="f" action="" method="post" class="form-inline">
+    <form action="{:U('index')}" method="post" class="form-inline">
     <div class="form-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div class="col-lg-9 col-md-9 col-sm-9 col-xs-9">
+        <div class="text-center col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="col-lg-11 col-md-11 col-sm-11 col-xs-11">
+                <a class='btn btn-info pull-right' href="{:U('addTask')}" target="_blank">新建任务</a>
+            </div>
+            <div>
+                <a class='btn btn-success pull-right' onclick="editFee(this)">编辑运费</a>
+            </div>
+        </div>
+        <br />
+        <br />
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             
-            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                <option value="0">选择仓库</option>
-                <volist name='car.warehouse' id='storge'>
-                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+            <select autocomplete="off" class="form-control"  id="wh_id" name="wh_id">
+                <option value="">选择仓库</option>
+                <volist name='warehouses' id='v'>
+                <option value="{$v.id}" <eq name="wh_id" value="$v['id']">selected="true"</eq> >{$v.name}</option>
                 </volist>
             </select>&nbsp;
-            <input type="txt" rel="datepicker" name="sign_date" value="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择创建日期">&nbsp;
-            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                <option value="0">选择任务类型</option>
-                <volist name='car.warehouse' id='storge'>
-                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+            <input type="txt" rel="datepicker" name="created_time" value="{$created_time}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择创建日期">&nbsp;
+            <select autocomplete="off" class="form-control"  id="task_type" name="task_type">
+                <option value="">选择任务类型</option>
+                <volist name='task_types' id='v'>
+                <option value="{$v.id}" <eq name="task_type" value="$v['id']">selected="true"</eq> >{$v.name}</option>
                 </volist>
             </select>&nbsp;
-            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                <option value="0">选择车型</option>
-                <volist name='car.warehouse' id='storge'>
-                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+            <select autocomplete="off" class="form-control"  id="car_type" name="car_type">
+                <option value="">选择车型</option>
+                <volist name='car_types' id='v'>
+                <option value="{$v.id}" <eq name="car_type" value="$v['id']">selected="true"</eq> >{$v.name}</option>
                 </volist>
             </select>&nbsp;
-            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                <option value="0">选择平台</option>
-                <volist name='car.warehouse' id='storge'>
-                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+            <select autocomplete="off" class="form-control"  id="platform" name="platform">
+                <option value="">选择平台</option>
+                <volist name='platforms' id='v'>
+                <option value="{$v.id}" <eq name="platform" value="$v['id']">selected="true"</eq> >{$v.name}</option>
                 </volist>
             </select>&nbsp;
-            <select autocomplete="off" value="" type="text" style="" class="form-control"  id="warehouse" name="warehouse" placeholder="仓库">
-                <option value="0">选择状态</option>
-                <volist name='car.warehouse' id='storge'>
-                <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+            <select autocomplete="off" class="form-control"  id="status" name="status">
+                <option value="">选择状态</option>
+                <volist name='task_status' id='v'>
+                <option value="{$key}" <eq name="status" value="$key">selected="true"</eq> >{$v}</option>
                 </volist>
             </select>&nbsp;
-            <input type="txt" class="form-control" placeholder="任意值检索（除运费）">&nbsp;
-            <button class='btn btn-primary' onclick="select()" >查询</button>
-        </div>
-        <div class="text-center col-lg-3 col-md-3 col-sm-3 col-xs-3">
-            <a class='btn btn-info' href="{:U('addTask')}" target="_blank">新建任务</a>
-            <button class='btn btn-success pull-right' onclick="select()" >编辑运费</button>
-        </div>
+            <input type="txt" name="apply_user" class="form-control" placeholder="任意值检索（除运费）">&nbsp;
+            <button class='btn btn-primary'>查询</button>
+        </div> 
     </div>
   </form>
-  <br />      
-  <br />      
+    <br />      
+    <br />
+    <br />
+    <br />
     <table class="table table-bordered" style="text-align:center">
         <!--<thead align="center">-->
           <tr style="text-align:center;">
@@ -74,33 +82,32 @@
           </tr>
         <!--</thead>-->
         <tbody>
-          <volist name='list' id="k">
+          <volist name='list' id="vo">
           <tr>
-            <th scope="row">{$k.userid}</th>
-            <td>{$k.username}</td>
-            <td>{$k.mobile}</td>
-            <td>{$k.car_num}</td>
-            <td>{$k.car_type}</td>
-            <td>{$k.car_from}</td>
-            <td>{$k.warehouse}</td>
-            <td>{$k.created_time}</td>
-            <td>{$k.updated_time}</td>
-            <td>{$k.period}</td>
-            <td>{$k.line_name}</td>               
-            <td>{$k.sign_orders}</td>
-            <td>{$k.unsign_orders}</td>
-            <td>{$k.delivering}</td>
-            <td>{$k.sign_finished}</td>
-            <td>{$k.distance}</br>
-            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
-            </td>    
-            <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
-            <td></td>
-            <td></td>
+            <th scope="row">{$vo.id}</th>
+            <td>{$vo.code}</td>
+            <td>{$vo.warehouse_name}</td>
+            <td>{$vo.task_type_name}</td>
+            <td>{$vo.created_time}</td>
+            <td>{$vo.apply_user}</td>
+            <td>{$vo.apply_department}</td>
+            <td>{$vo.op_time}</td>
+            <td>{$vo.expect_car_type_name}</td>
+            <td>{$vo.expect_fee}</td>
+            <td>{$vo.department_approver}</td>               
+            <td>{$vo.logistics_aaprover}</td>
+            <td>{$vo.platform_name}</td>
+            <td>{$vo.car_type_name}</td>
+            <td>{$vo.driver.name}</td>
+            <td>{$vo.driver.mobile}</td>    
+            <td class="delivery-fee" data-id="{$vo.id}" data-fee="{$vo.delivery_fee}">{$vo.delivery_fee}</td>    
+            <td>{$vo.distance}</td>
+            <td>{$vo.status_cn}</td>
             <td>
-                <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
-                    <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
-                </if>
+                <a data-id="{$vo.id}" onclick="delete_sign(this)">部门审批</a>
+                <a data-id="{$vo.id}" onclick="delete_sign(this)">物流审批</a>
+                <a href="{:U('taskDetail',array('id'=>$vo['id']))}" target="_blank">查看</a>
+                <a href="{:U('taskDel',array('id'=>$vo['id']))}" onclick="return confirm('确定要删除么');">删除</a>
             </td>
           </tr>
         </volist>
@@ -109,6 +116,55 @@
     </div>
 
 <script type="text/javascript">
+    //编辑运费
+    var tds;
+    var btn = '<a class="btn btn-success pull-right" onclick="editFee(this)" >编辑运费</a>';
+    function editFee(obj) {
+        var save   = '<a class="btn btn-primary btn-sm pull-right" onclick="saveFee(this)" >保存</a>',
+            sp     = '<span class="pull-right">&nbsp;&nbsp;&nbsp;&nbsp;</span>'
+            cancle = '<a class="btn btn-default btn-sm pull-right" onclick="cancleEdit(this)" > 取消</a>';
+            $(obj).after(cancle+sp+save);
+            $(obj).remove();
+        tds = $('.delivery-fee');
+        tds.each(function(){
+            var fee = $.trim($(this).text());
+            var input  = "<input class='input-sm' min='0' style='width:80px;' type='number' value='"+fee+"'>";
+            $(this).html(input);
+        })
+    }
 
+    function saveFee(obj) {
+        var arr = {};
+        $('.delivery-fee').each(function(){
+            var fee = parseInt($(this).find('input').val()),
+                fee = fee ? fee : 0;
+                sid = parseInt($(this).data('id'));
+            if(sid) {
+                arr[sid] = fee;
+            }
+        })
+        $.post("{:U('saveFee')}",{fees:arr},function(res){
+            if(res.status == 0) {
+                for (x in arr) {
+                    $('td[data-id='+x+']').text(arr[x]);
+                };
+            }else{
+                alert(res.msg);
+            }
+            $(obj).siblings().remove();
+            $(obj).after(btn);
+            $(obj).remove();
+        })
+    }
+    function cancleEdit(obj) {
+        tds.each(function(){
+            var fee = parseInt($(this).data('fee'));
+                fee = fee ? fee : 0;
+            $(this).text(fee);
+        })
+        $(obj).siblings().remove();
+        $(obj).after(btn);
+        $(obj).remove();
+    }
 </script>
 

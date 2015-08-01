@@ -1,13 +1,13 @@
 
 <div class="table-responsive" >
-  <form action="" class="form-inline">      
+  <form action="__SELF__" method="POST" class="form-inline" id="task-form">      
     <table class="table table-bordered">
           <tr class="text-center">
             <td colspan="4">
               <div class="row col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <h2 class="text-center col-lg-4 col-md-4 col-md-offset-4 col-lg-offset-4">新建派车任务</h2>
-                <button class='btn btn-success col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="" >复制</button>
-                <button class='btn btn-primary col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="select()" >提交</button>
+                <a class='btn btn-success col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1'>复制</a>
+                <a class='btn btn-primary col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="subForm()" >提交</a>
               </div>
             </td>
           </tr>
@@ -18,7 +18,7 @@
                     <span class="text-danger">*</span>&nbsp;
                   </label>
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-                  <input type="text" name="task_name" class="form-control" style="width:100%;" placeholder="输入任务名称">
+                  <input type="text" name="task_name" class="form-control require" style="width:100%;" placeholder="输入任务名称">
                 </div>
               </div>
             </td>
@@ -27,7 +27,7 @@
                 <label for="" class="control-label">任务码
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <input type="txt" name="code" class="form-control" placeholder="自动生成" readonly>
+                <input type="txt" name="code" class="form-control" placeholder="任务提交后自动生成" readonly>
               </div>
             </td>
           </tr>
@@ -37,10 +37,10 @@
                 <label for="" class="control-label">仓库
                   <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <select autocomplete="off" class="form-control"  id="warehouse" name="wh_id" placeholder="仓库">
-                  <option value="0">选择仓库</option>
-                  <volist name='car.warehouse' id='storge'>
-                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                <select autocomplete="off" class="form-control require"  id="warehouse" name="wh_id" placeholder="仓库">
+                  <option value="">选择仓库</option>
+                  <volist name='warehouses' id='vo'>
+                  <option value="{$vo.id}">{$vo.name}</option>
                   </volist>
                 </select>
               </div>
@@ -50,10 +50,10 @@
                 <label for="" class="control-label">任务类型
                   <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <select autocomplete="off" class="form-control"  id="task_type" name="task_type">
-                  <option value="0">选择状态</option>
-                  <volist name='car.warehouse' id='storge'>
-                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                <select autocomplete="off" class="form-control require"  id="task_type" name="task_type">
+                  <option value="">选择状态</option>
+                  <volist name='task_types' id='vo'>
+                  <option value="{$vo.id}">{$vo.name}</option>
                   </volist>
                 </select>
               </div>
@@ -63,7 +63,7 @@
                 <label for="" class="control-label">用车申请人
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_user" class="form-control" placeholder="用车申请人">
+                <input type="txt" name="apply_user" class="form-control require" placeholder="用车申请人" maxlength="4">
               </div>
             </td> 
             <td>
@@ -71,7 +71,7 @@
                 <label for="" class="control-label">申请人联系方式
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_mobile" class="form-control" placeholder="申请人联系方式">
+                <input type="txt" name="apply_mobile" class="form-control require" placeholder="申请人联系方式" maxlength="18">
               </div>
             </td> 
           </tr>
@@ -81,7 +81,7 @@
                 <label for="" class="control-label">用车部门
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_department" class="form-control" placeholder="用车部门">
+                <input type="txt" name="apply_department" class="form-control require" placeholder="用车部门">
               </div>
             </td>
             <td>
@@ -89,7 +89,7 @@
                 <label for="" class="control-label">期望用车时间
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" rel="datepicker" name="op_time" value="" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择日期">
+                <input type="txt" rel="datepicker" name="op_time" value="" class="form-control input-md form_datetime require" data-date-format="yyyy-mm-dd" placeholder="选择日期">
               </div>
             </td>
             <td>
@@ -98,9 +98,9 @@
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
                 <select autocomplete="off" class="form-control"  id="expect_car_type" name="expect_car_type">
-                  <option value="0">选择车型</option>
-                  <volist name='car.warehouse' id='storge'>
-                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
+                  <option value="">选择车型</option>
+                  <volist name='car_types' id='vo'>
+                  <option value="{$vo.id}">{$vo.name}</option>
                   </volist>
                 </select>
               </div>
@@ -110,7 +110,7 @@
                 <label for="" class="control-label">预计运费(元)
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <input type="txt" name="expect_fee" class="form-control" placeholder="自动生成" readonly>
+                <input type="txt" name="expect_fee" class="form-control" placeholder="自动计算" readonly>
               </div>
             </td>
           </tr>
@@ -130,9 +130,8 @@
                 </label>
                 <select autocomplete="off" class="form-control"  id="remark" name="remark">
                   <option value="0">选择备注</option>
-                  <volist name='car.warehouse' id='storge'>
-                  <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                  </volist>
+                  <option value="长期">长期</option>
+                  <option value="临时">临时</option>
                 </select>
               </div>
             </td>
@@ -178,6 +177,38 @@
     </div>
 
 <script type="text/javascript">
+    function subForm(){
+      var require = $(".require"),
+          flag = 1;
 
+      require.each(function(){
+        var va = $(this).val();
+        if(!va){
+          flag = 0;
+          alert('请将必选项填写完整');
+          $(this).focus();
+          return false;
+        }
+      })
+      if(flag === 0){
+        return false;
+      }
+      var form = $("#task-form").serialize();
+      addr = "{:U('addTask')}";
+      $.ajax({
+        url:addr,
+        type:'post',
+        data:form,
+        dataType:'json',
+        cache:false,
+        success:function(res){
+          if(res.status == 0){
+            location.href = "{:U('index')}";
+          }else{
+            alert(res.msg);
+          }
+        }
+      })
+    }
 </script>
 
