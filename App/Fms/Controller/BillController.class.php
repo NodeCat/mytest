@@ -36,7 +36,7 @@ class BillController extends \Wms\Controller\CommonController
                 'toolbar_tr'=> true,
                 'statusbar' => true
         );
-        $this->search_addon = true;
+        //$this->search_addon = true;
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
         );
@@ -336,7 +336,7 @@ class BillController extends \Wms\Controller\CommonController
         $this->pk = 'id';
         $this->assign('data', $data['list']); 
         $maps = $this->condition;
-        $template= IS_AJAX ? 'Table/list':'Table/index';
+        $template= IS_AJAX ? 'Common@Table/list':'Common@Table/index';
         $this->page($data['total'],$maps,$template);
     }
 }
