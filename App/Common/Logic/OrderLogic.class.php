@@ -145,4 +145,14 @@ class OrderLogic{
 		$res = json_decode($res,true);
 		return $res;
 	}
+	/**
+	 * [修改商家地址]
+	 * @param  array  $map [id,lng,lat]
+	 * @return status      [0成功]
+	 */
+	public function updateGeo($map=''){
+		$url = '/customer/update_geo';
+		$res = $this->get($url,$map);
+		return $res['status'];
+	}
 }

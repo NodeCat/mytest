@@ -230,5 +230,11 @@
         $(x).val(val2);
       }
     }
-
+    $('.report').on('click',
+      function() {
+        var userid = $(this).data('userid');
+        var type    = '地址错误';
+        report = {'user_id':userid,'type':type};
+        tmsReportError(report);
+    });
   </script>

@@ -27,7 +27,6 @@ class ReportErrorController extends Controller{
 
     //根据客户id和报错类型type保存报错信息
     public function report_error(){
-
         $id = I('post.id');
         $type = I('post.type');
         if(empty($id) || empty($type)){
@@ -43,7 +42,11 @@ class ReportErrorController extends Controller{
             }else{
                 //保存报错信息到数据库
                 $M = M('tms_report_error');
-                $report['type'] = implode(',', $type);
+                if (is_array($type)) {
+                    $report['type'] = implode(',', $type);
+                } else {
+                    $report['type'] = $type;
+                }
                 $report['customer_id'] = $id;
                 $report['customer_name'] = $res['name'];
                 $report['customer_address'] = $res['address'];
@@ -134,18 +137,14 @@ class ReportErrorController extends Controller{
     {
         $data = I('post.');
         $customer_id   = $data['id'];
-        //unset($data['id']);
-        print_r($data);
-        $data = json_encode($data);
-        print_r($data);
-        $id = M('tms_report_error')->field('id')->where(array('customer_id' => $customer_id))->order('created_time desc')->find();
-        $map['id'] = $id['id'];
         $map['updated_time'] = get_time();
         $map['updated_user'] = UID;
         $map['is_deleted'] = '1';
-        $res = M('tms_report_error')-> save($map);
-
-        /*if ($res) {
+        $res = M('tms_report_error')->where(array('customer_id' => $customer_id))->save($map);
+        if ($res) {
+            $status = A('Common/Order','Logic')->updateGeo($data);
+        }
+        if ($status === 0) {
             $return = array(
                 'status' => 1,
                 'msg'    => '地址修改成功',
@@ -156,7 +155,7 @@ class ReportErrorController extends Controller{
                 'msg'    => '地址修改失败',
             );
         }
-        $this->ajaxReturn($return);*/
+        $this->ajaxReturn($return);
     }
 
 	protected function get_excel_sheet(&$Excel) {
