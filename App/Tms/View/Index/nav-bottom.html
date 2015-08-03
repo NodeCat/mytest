@@ -47,7 +47,7 @@
 		      data:{"id":para.user_id,"type":para.type},
           success: function(msg){
             alert(msg.msg);
-            if(typeof HostApp != "undefined") {
+            if (typeof HostApp != "undefined") {
               HostApp.toast(msg.msg);
             }
           }
