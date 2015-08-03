@@ -146,9 +146,9 @@ class RepertoryController extends CommonController
                 if (ACTION_NAME == 'view') {
                     $this->filter_list($res);//如果是查看，需要filter
                 }
-                $attr = explode(',', $res['pro_attrs']);
-                $attr_name = str_replace('规格:', '', $attr[1]);
-                $res['attr_name'] = $attr_name;
+                preg_match('/规格.*/',$res['pro_attrs'],$result);
+                $attr_name = explode(',', $result[0]);
+                $res['attr_name'] = str_replace('规格:', '', $attr_name['0']);
                 $this->data = $res;
 
                 //获取入库出库明细信息
