@@ -1,6 +1,5 @@
 <?php
 /**
- * User: san77
  * Date: 15/7/29
  * Time: 下午6:15
  */
@@ -94,7 +93,6 @@ class RepertoryLogic
         $where['erp_process_in_detail.pro_code'] = $pro_codes;
         $where['DATE_FORMAT(erp_process_in_detail.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
         $join = array(
-            #"INNER JOIN stock_bill_in ON stock_bill_in.refer_code=erp_process_in.refer_code AND stock_bill_in.code=erp_process_in.code",
             "INNER JOIN erp_process_in ON erp_process_in.id=erp_process_in_detail.pid",                 //获取批次号
             "INNER JOIN erp_process_sku_relation ON erp_process_sku_relation.p_pro_code=erp_process_in_detail.pro_code",      //获取比例量
             //根据批次号和SKU，获取商品价格

@@ -125,31 +125,5 @@ $(function(){
         var url   = "{:U('Repertory/exportData')}"+'?wh_id='+wh_id+"&start_time="+start_time+"&end_time="+end_time+"&ids="+ids;
         window.location.href = url;
     });
-
-    //导出数据
-    /*$('#export').on('click',function(){
-        var ids = getChecked();
-        alert(ids);
-
-        if(ids){
-            $.ajax({
-                url:'/Repertory/exportData',
-                type:'post',
-                cache : false,
-                dataType:'json',
-                data:'ids='+ids,
-                success: function(json){
-                   *//* if(json.status=='1'){
-                        alert('操作成功');
-                        window.location.reload();
-                    }else{
-                        alert(json.msg);
-                    }*//*
-                }
-            });
-        }
-
-        return false;
-    });*/
 });
 </script>
