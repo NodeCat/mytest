@@ -308,6 +308,19 @@ class DistController extends Controller {
 
     //司机签收
     public function sign() {
+        //实收数量或重量
+        $quantity    = I('post.quantity');
+        $weight      = I('post.weight', 0);
+        $flagQty = array_sum($quantity);
+        $flagWgt = empty($weight) ? 0 : array_sum($weight);
+        
+        if (ceil($flagQty) == 0 && ceil($flagWgt) == 0) {
+            $re = array(
+                'status' => -1,
+                'msg'    => '签收数量不能全部为空'
+            );
+            $this->ajaxReturn($re);           
+        }
         $bill_out_id = I('post.bid/d', 0);
         if (!$bill_out_id) {
             $res = array(
@@ -343,9 +356,6 @@ class DistController extends Controller {
             );
             $this->ajaxReturn($res);
         }
-        //实收数量或重量
-        $quantity    = I('post.quantity');
-        $weight      = I('post.weight', 0);
         $receivable_sum = 0;
         //出库单详情关联订单详情,计算应收总额
         $bill_id_details = array();
@@ -409,23 +419,12 @@ class DistController extends Controller {
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
-                if($dist_detail['status'] == 2) {
-                    //更新签收数据
-                    foreach ($cdata as $value) {
-                        unset($value['created_time']);
-                        $dmap = array(
-                            'bill_out_detail_id' => $value['bill_out_detail_id'],
-                            'is_deleted' => 0
-                        );
-                        M('tms_sign_in_detail')
-                            ->where($dmap)
-                            ->save($value);
-                    }
-                }
-                else {
-                    //添加签收数据
-                    M('tms_sign_in_detail')->addAll($cdata);
-                }
+                $bill_out_detail_ids = array_keys($bill_id_details);
+                $bdmap['bill_out_detail_id'] = array('in', $bill_out_detail_ids);
+                $sdM = M('tms_sign_in_detail');
+                $sdM->where($map)->save(array('is_deleted' => 1));
+                //添加签收详情数据
+                $sdM->addAll($cdata);
                 //更新配送单详情－>配送单状态
                 $map['dist_id'] = $dist_id;
                 $map['status']  = 2;
