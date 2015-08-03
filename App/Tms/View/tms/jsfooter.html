@@ -133,6 +133,7 @@
       function() {
         real_quantity = $(this).parents('form.order').find('input.real');
         var i = 1;
+        var flag = 0;
         real_quantity.each(function() {
           real = $(this).val();
           if (real == '') {
@@ -142,9 +143,12 @@
           } else {
             i = 1;
           }
+          if (Math.ceil(real) > 0){
+            flag = 1;
+          }
 
         });
-        if (i == 1) {
+        if (i == 1 && flag) {
           var params = $(this).closest('form.order').serialize();
           var addr = "{:U('sign')}";
           var oid = $(this).parents('.order').find('input[name=id]').val();
@@ -155,21 +159,19 @@
             dataType: 'json',
             data: params,
             success: function(msg) {
+              if (typeof HostApp == "undefined") {
+                alert(msg.msg);
+              } else {
+                HostApp.toast(msg.msg);
+              }
               if (msg.status == '0') {
-                if (typeof HostApp == "undefined") {
-                  alert(msg.msg);
-                } else {
-                  HostApp.toast(msg.msg);
-                }
                 var url = action + "/id/{$id}/oid/"+oid;
                 location.href = url;
-              } else {
-                alert_error(msg.msg);
               }
             }
           });
         } else {
-          alert('签收数量不能为空');
+          alert('签收数量不能为空,不能全为0');
         }
       });
       
