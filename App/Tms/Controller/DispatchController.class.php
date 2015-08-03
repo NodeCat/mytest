@@ -336,7 +336,7 @@ class DispatchController extends Controller{
     }
 
     //保存运费
-    public function save_fee() {
+    public function saveFee() {
         $fees = I('post.fees');
         if(empty($fees)) {
             $re = array(

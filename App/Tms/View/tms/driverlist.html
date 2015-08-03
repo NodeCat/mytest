@@ -133,7 +133,7 @@ function saveFee(obj) {
             arr[sid] = fee;
         }
     })
-    $.post("{:U('save_fee')}",{fees:arr},function(res){
+    $.post("{:U('saveFee')}",{fees:arr},function(res){
         if(res.status == 0) {
             for (x in arr) {
                 $('td[data-id='+x+']').text(arr[x]);

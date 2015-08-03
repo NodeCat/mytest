@@ -402,6 +402,10 @@ function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
     $pos            = strrpos($number, '.');
     $enstr          = substr($number,$pos+1);
     if ($is_end_str !== null) {
+        if ($pos === FALSE) {
+            // 末尾没有小数点
+            return 1;
+        }
         return $enstr;
     }
     $return_str     = 0;
