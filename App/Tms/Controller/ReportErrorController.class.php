@@ -56,7 +56,7 @@ class ReportErrorController extends Controller{
                 $report['line_id'] = $res['line_id'];
                 $report['line_name'] = $res['line_name'];
                 $report['shop_name'] = $res['shop_name'];
-                $report['current_bd_id'] = $res['sale']['id'];
+                $report['current_bd_id'] = isset($res['sale']['id']) ? $res['sale']['id'] : '0';
                 $report['current_bd'] = $res['sale']['name'];
                 $report['develop_bd'] = $res['invite_bd'];
                 $report['driver_name'] = session('user.username');
