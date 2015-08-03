@@ -147,10 +147,17 @@ class RepertoryLogic
         $where['stock_bill_out_detail.pro_code'] = $pro_codes;
         $where['DATE_FORMAT(stock_bill_out_detail.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
         $join = array(
-            'INNER JOIN stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid AND stock_bill_out.type=1 AND stock_bill_out.is_deleted=0'
+            'INNER JOIN stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid AND stock_bill_out.type=1 AND stock_bill_out.is_deleted=0',
+            'INNER JOIN stock_wave_distribution_detail ON stock_wave_distribution_detail.bill_out_id=stock_bill_out.id',
+            'INNER JOIN stock_wave_distribution ON stock_wave_distribution.id=stock_wave_distribution_detail.pid',
+            'INNER JOIN stock_bill_out_container ON stock_bill_out_container.refer_code=stock_wave_distribution.dist_code AND stock_bill_out_container.pro_code=stock_bill_out_detail.pro_code',
+            #'INNER JOIN stock_bill_in_detail ON stock_bill_in_detail.refer_code=stock_bill_out_container.batch AND stock_bill_in_detail.pro_code=stock_bill_out_container.pro_code',
+            #'INNER JOIN stock_bill_in ON stock_bill_in.id=stock_bill_in_detail.pid'
         );
-        $filed = "stock_bill_out_detail.pro_code, SUM(stock_bill_out_detail.delivery_qty*stock_bill_out_detail.price) as total_amount, SUM(stock_bill_out_detail.delivery_qty) as delivery_qty";
+
+        $filed = " stock_bill_out_container.batch, stock_bill_out_detail.price, stock_bill_out_detail.pro_code, SUM(stock_bill_out_detail.delivery_qty*stock_bill_out_detail.price) as total_amount, SUM(stock_bill_out_detail.delivery_qty) as delivery_qty";
         $stockOutDetail = $stockOut->field($filed)->join($join)->where($where)->group('stock_bill_out_detail.pro_code')->select();
+
         $stockOutList = array();
         foreach ($stockOutDetail as $val) {
             $stockOutList[$val['pro_code']] = $val;
@@ -322,6 +329,8 @@ class RepertoryLogic
         //采购退货单
         $refundList     = $this->getRefundList($start_time, $end_time, $pro_codes);
 
+        $getPrice       = D('Process', 'Logic');
+
         foreach ($data as $key => $val) {
             //初期成本
             $data[$key]['first_nums']           = $startList[$val['pro_code']]['stock_qty'] ? $startList[$val['pro_code']]['stock_qty'] : 0;        //期初数量
@@ -353,10 +362,17 @@ class RepertoryLogic
             $data[$key]['insotck_cost']         = $this->numbers_format_2($data[$key]['instock_amounts'] / $data[$key]['instock_num']);     //入库加权平均成本
 
             //销售出库
+            //获取单价
+            $price_unit = $getPrice->get_price_by_sku($stockOutList[$val['pro_code']]['batch'], $val['pro_code']);
             $data[$key]['sale_cost_nums']       =  $stockOutList[$val['pro_code']]['delivery_qty'] ? $stockOutList[$val['pro_code']]['delivery_qty'] : 0;//销售数量
-            $data[$key]['sale_cost_amount']     =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);     //销售成本（含税）
+            if ($price_unit > 0) {
+                $data[$key]['sale_cost_amount'] = $this->numbers_format_2($price_unit * $stockOutList[$val['delivery_qty']]);
+            } else {
+                $data[$key]['sale_cost_amount']     =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);     //销售成本（含税）
+            }
             //销售成本（未含税）
-            $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount'] / $price_rate);
+            $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($data[$key]['sale_cost_amount'] / $price_rate);
+            $data[$key]['sale_income']          =  $stockOutList[$val['pro_code']]['total_amount'];
 
             //加工出库
             $data[$key]['process_out_num']      = $processOutList[$val['pro_code']]['pro_qty'] ? $processOutList[$val['pro_code']]['pro_qty'] : 0;      //加工出库数

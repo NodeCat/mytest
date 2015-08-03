@@ -242,7 +242,7 @@ class RepertoryController extends CommonController
     public function _before_index()
     {
         $this->table = array(
-            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+            #'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
             'searchbar' => true, //是否显示搜索栏
             'checkbox'  => true, //是否显示表格中的浮选款
             'status'    => false,
