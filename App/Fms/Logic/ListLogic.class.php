@@ -70,7 +70,6 @@ class ListLogic {
     public function can_pay($dist_id) {
         $flag = false;
         $exist = false;
-        $dist_logic = A('Tms/Dist','Logic');
         $list_logic = A('Tms/List','Logic');
         //获得出库单列表
         unset($map); 
@@ -128,9 +127,6 @@ class ListLogic {
     //查询订单是否有退货，并且已创建拒收入库单
     public function can_replace($bill_out_id) {
         $flag = false;
-        $exist = false;
-        $dist_logic = A('Tms/Dist','Logic');
-        $list_logic = A('Tms/List','Logic');
         //获得出库单列表
         $bill_out = $this->bill_out_Info($bill_out_id);
         if (!empty($bill_out)) { 
@@ -178,7 +174,7 @@ class ListLogic {
                 }
             } else {
                 //没有拒收
-                return true;
+                return false;
             }
         }
               
