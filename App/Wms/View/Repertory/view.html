@@ -1,0 +1,42 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<div class="panel panel-default">
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-10"><h3>产品名称： {$data.pro_name}</h3></div>
+    </div>
+
+  	<hr/>
+  	
+
+<div class="row">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">一级分类</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+        <label class="control-label label-field">{$data.category_name1}</label>
+    </div>
+</div>
+
+<div class="form-group col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="created_user">规格</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.attr_name}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="created_time">单位</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.pro_uom}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="audited_time">仓库</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.wh_name}</label>
+    </div>
+</div>
+</div>
+<br />
+<include file="prolist-view" />
+</div>
+</div>
+</form>
