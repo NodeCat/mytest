@@ -4,30 +4,22 @@
     <table class="table table-bordered">
           <tr class="text-center">
             <td colspan="4">
-              <div class="row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+              <div class="task-head row col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <h2 class="text-center col-lg-4 col-md-4 col-md-offset-4 col-lg-offset-4">新建派车任务</h2>
-                <a class='btn btn-success col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1'>复制</a>
+                <a class='btn btn-success col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="copyTask(this)">复制</a>
                 <a class='btn btn-primary col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="subForm()" >提交</a>
               </div>
             </td>
           </tr>
           <tr>
-            <td colspan="3">
+            <td colspan="4">
               <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
                   <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">任务名称(10字以内)
                     <span class="text-danger">*</span>&nbsp;
                   </label>
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-                  <input type="text" name="task_name" class="form-control require" style="width:100%;" placeholder="输入任务名称">
+                  <input type="text" name="task_name[]" class="form-control require" style="width:100%;" placeholder="输入任务名称">
                 </div>
-              </div>
-            </td>
-            <td colspan="2">
-              <div class="form-group">
-                <label for="" class="control-label">任务码
-                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </label>
-                <input type="txt" name="code" class="form-control" placeholder="任务提交后自动生成" readonly>
               </div>
             </td>
           </tr>
@@ -37,7 +29,7 @@
                 <label for="" class="control-label">仓库
                   <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <select autocomplete="off" class="form-control require"  id="warehouse" name="wh_id" placeholder="仓库">
+                <select autocomplete="off" class="form-control require"  id="warehouse" name="wh_id[]" data-val="">
                   <option value="">选择仓库</option>
                   <volist name='warehouses' id='vo'>
                   <option value="{$vo.id}">{$vo.name}</option>
@@ -50,7 +42,7 @@
                 <label for="" class="control-label">任务类型
                   <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <select autocomplete="off" class="form-control require"  id="task_type" name="task_type">
+                <select autocomplete="off" class="form-control require"  id="task_type" name="task_type[]" data-val="">
                   <option value="">选择状态</option>
                   <volist name='task_types' id='vo'>
                   <option value="{$vo.id}">{$vo.name}</option>
@@ -63,7 +55,7 @@
                 <label for="" class="control-label">用车申请人
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_user" class="form-control require" placeholder="用车申请人" maxlength="4">
+                <input type="txt" name="apply_user[]" class="form-control require" placeholder="用车申请人" maxlength="4">
               </div>
             </td> 
             <td>
@@ -71,7 +63,7 @@
                 <label for="" class="control-label">申请人联系方式
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_mobile" class="form-control require" placeholder="申请人联系方式" maxlength="18">
+                <input type="txt" name="apply_mobile[]" class="form-control require" placeholder="申请人联系方式" maxlength="18">
               </div>
             </td> 
           </tr>
@@ -81,7 +73,7 @@
                 <label for="" class="control-label">用车部门
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_department" class="form-control require" placeholder="用车部门">
+                <input type="txt" name="apply_department[]" class="form-control require" placeholder="用车部门">
               </div>
             </td>
             <td>
@@ -89,7 +81,7 @@
                 <label for="" class="control-label">期望用车时间
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" rel="datepicker" name="op_time" value="" class="form-control input-md form_datetime require" data-date-format="yyyy-mm-dd" placeholder="选择日期">
+                <input type="txt" rel="datepicker" name="op_time[]" value="" class="form-control input-md form_datetime require" data-date-format="yyyy-mm-dd" placeholder="选择日期">
               </div>
             </td>
             <td>
@@ -97,7 +89,7 @@
                 <label for="" class="control-label">期望车型
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <select autocomplete="off" class="form-control"  id="expect_car_type" name="expect_car_type">
+                <select autocomplete="off" class="form-control"  id="expect_car_type" name="expect_car_type[]" data-val="">
                   <option value="">选择车型</option>
                   <volist name='car_types' id='vo'>
                   <option value="{$vo.id}">{$vo.name}</option>
@@ -110,7 +102,7 @@
                 <label for="" class="control-label">预计运费(元)
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </label>
-                <input type="txt" name="expect_fee" class="form-control" placeholder="自动计算" readonly>
+                <input type="txt" name="expect_fee[]" class="form-control" placeholder="自动计算" readonly>
               </div>
             </td>
           </tr>
@@ -119,7 +111,7 @@
               <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
                   <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">用车事由</label>
                 <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-                  <input type="text" name="reason" class="form-control" style="width:100%;" placeholder="用车事由">
+                  <input type="text" name="reason[]" class="form-control" style="width:100%;" placeholder="用车事由">
                 </div>
               </div>
             </td>
@@ -128,7 +120,7 @@
                 <label for="" class="control-label">备注(长期/临时)
                     &nbsp;&nbsp;&nbsp;
                 </label>
-                <select autocomplete="off" class="form-control"  id="remark" name="remark">
+                <select autocomplete="off" class="form-control"  id="remark" name="remark[]" data-val="">
                   <option value="0">选择备注</option>
                   <option value="长期">长期</option>
                   <option value="临时">临时</option>
@@ -140,7 +132,7 @@
             <td colspan="4">
               <div class="form-group">
                 <label for="" class="control-label">选择记录点</label>
-                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
+                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse" data-val="">
                     <option value="0">选择记录点</option>
                     <volist name='car.warehouse' id='storge'>
                     <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
@@ -177,6 +169,11 @@
     </div>
 
 <script type="text/javascript">
+    $('select').change(function(){
+      var val = $(this).val();
+      $(this).attr('data-val',val);
+    })
+    //表单验证提交
     function subForm(){
       var require = $(".require"),
           flag = 1;
@@ -209,6 +206,23 @@
           }
         }
       })
+    }
+    //复制任务
+    function copyTask(obj){
+      var cancleBtn = "<a class='btn btn-danger col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick='delTask(this)'>移除</a>";
+      var task = $(obj).parents('table').clone();
+      task.find('.task-head a').remove();
+      task.find('.task-head').append(cancleBtn);
+      task.find('select').each(function(){
+        var val = $(this).data('val');
+        $(this).find("option[value="+val+"]").attr('selected',true);
+      })
+      $('#task-form').append(task);
+
+    }
+    //移除任务
+    function delTask(obj){
+      $(obj).parents('table').remove();
     }
 </script>
 

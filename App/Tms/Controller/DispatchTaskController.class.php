@@ -52,6 +52,14 @@ class DispatchTaskController extends Controller
             $map['created_time'] = array('between', array($start_date, $end_date));
             $this->created_time = $created_time;
         }
+        if ($apply_info = I('post.apply_info', '', 'trim')) {
+            $where['apply_user']   = $apply_info;
+            $where['apply_mobile'] = $apply_info;
+            $where['_logic'] = 'or';
+            $map['_complex'] = $where;
+            $this->apply_info = $apply_info;
+
+        }
         $M = M('tms_dispatch_task');
         $map['is_deleted'] = 0;
         $order = 'created_time DESC';
@@ -80,13 +88,13 @@ class DispatchTaskController extends Controller
         if (IS_POST) {
             //必选信息
             $rdata = array(
-                'task_name'        => I('post.task_name', '', 'trim'),
-                'wh_id'            => I('post.wh_id/d', 0),
-                'task_type'        => I('post.task_type/d', 0),
-                'apply_user'       => I('post.apply_user', '', 'trim'),
-                'apply_mobile'     => I('post.apply_mobile', '', 'trim'),
-                'apply_department' => I('post.apply_department', '', 'trim'),
-                'op_time'          => I('post.op_time', '', 'trim'),
+                'task_name'        => I('post.task_name', array()),
+                'wh_id'            => I('post.wh_id', array()),
+                'task_type'        => I('post.task_type/', array()),
+                'apply_user'       => I('post.apply_user', array()),
+                'apply_mobile'     => I('post.apply_mobile', array()),
+                'apply_department' => I('post.apply_department', array()),
+                'op_time'          => I('post.op_time', array()),
             );
             //判断必选信息是否完整
             foreach ($rdata as $r) {
@@ -100,28 +108,45 @@ class DispatchTaskController extends Controller
             }
             //非必选信息
             $ndata = array(
-                'expect_car_type' => I('post.expect_car_type/d', 0),
-                'expect_fee'      => I('post.expect_fee/f', 0),
-                'reason'          => I('post.reason', '', 'trim'),
-                'remark'          => I('post.remark', '', 'trim'),
+                'expect_car_type' => I('post.expect_car_type', array()),
+                'expect_fee'      => I('post.expect_fee', array()),
+                'reason'          => I('post.reason', array()),
+                'remark'          => I('post.remark', array()),
             );
-            $data = array_merge($rdata, $ndata);
-            //创建人、创建时间
-            $data['created_time'] = get_time();
-            $data['created_user'] = session('user.user_id');
-            $M = M('tms_dispatch_task');
-            $id = $M->add($data);
-            if ($id) {
-                $res = array(
-                    'status' => 0,
-                    'msg'    => '创建成功'
+            foreach ($rdata['task_name'] as $key => $value) {
+                $data = array(
+                    'task_name'        => $value,
+                    'wh_id'            => $rdata['wh_id'][$key],
+                    'task_type'        => $rdata['task_type'][$key],
+                    'apply_user'       => $rdata['apply_user'][$key],
+                    'apply_mobile'     => $rdata['apply_mobile'][$key],
+                    'apply_department' => $rdata['apply_department'][$key],
+                    'op_time'          => $rdata['op_time'][$key],
+                    'expect_car_type'  => $ndata['expect_car_type'][$key],
+                    'expect_fee'       => $ndata['expect_fee'][$key],
+                    'reason'           => $ndata['reason'][$key],
+                    'remark'           => $ndata['remark'][$key],
                 );
-            } else {
-                $res = array(
-                    'status' => -1,
-                    'msg'    => '创建失败'
-                );
+                //创建人、创建时间
+                $data['created_time'] = get_time();
+                $data['created_user'] = 0;
+                $M = M('tms_dispatch_task');
+                $id = $M->add($data);
+                if ($id) {
+                    $cdata = array('code' => 'DT' . $id);
+                    $M->where(array('id'=>$id))->save($cdata);
+                } else {
+                    $res = array(
+                        'status' => -1,
+                        'msg'    => '创建失败'
+                    );
+                    $this->ajaxReturn($res);
+                }
             }
+            $res = array(
+                'status' => 0,
+                'msg'    => '创建成功'
+            );
             $this->ajaxReturn($res);
         } else {
             $this->display('tms:add-task');
@@ -179,5 +204,26 @@ class DispatchTaskController extends Controller
             $this->error('该任务已完成审批流程，不能删除.');
         }
         
+    }
+
+    public function taskDetail()
+    {
+        $id = I('get.id/d', 0);
+        if (empty($id)) {
+            $this->error('参数错误');
+        }
+        $M = M('tms_dispatch_task');
+        $map['id'] = $id;
+        $map['is_deleted'] = 0;
+        $task = $M->where($map)->find();
+        //根据ID查询仓库、车型、平台、用户信息等
+        $task['warehouse_name'] = A('Wms/Distribution', 'Logic')->getWarehouseById($task['wh_id']);
+        $task['task_type_name'] = A('Tms/Dist', 'Logic')->getCateNameById($task['task_type']);
+        $task['platform_name'] = A('Tms/Dist', 'Logic')->getCateNameById($task['platform']);
+        $task['expect_car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($task['expect_car_type']);
+        $task['car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($task['car_type']);
+        $task['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($task['driver_id']);
+        $this->task = $task;
+        $this->display('tms:task-detail');
     }
 }

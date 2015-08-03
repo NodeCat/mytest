@@ -1,0 +1,78 @@
+
+<div class="table-responsive" >
+  <form action="__SELF__" method="POST" class="form-inline" id="task-form">      
+    <table class="table table-bordered text-center">
+          <tr class="text-center">
+            <td colspan="8">
+              <div class="row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h2 class="text-center col-lg-4 col-md-4 col-md-offset-4 col-lg-offset-4">派车任务详情</h2>
+                <a class='btn btn-primary col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1'>打印</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>任务名称(10字以内)</td>
+            <td colspan="7">{$task.task_name}</td>
+          </tr>
+          <tr>
+            <td>任务码</td>
+            <td>{$task.code}</td> 
+            <td>仓库</td>
+            <td>{$task.warehouse_name}</td> 
+            <td>任务类型</td>
+            <td>{$task.task_type_name}</td>  
+            <td>申请时间</td>
+            <td>{$task.created_time}</td>
+          </tr>
+          <tr>
+            <td>用车申请人</td>
+            <td>{$task.apply_user}</td> 
+            <td>申请人联系方式</td>
+            <td>{$task.apply_mobile}</td> 
+            <td>用车部门</td>
+            <td>{$task.apply_department}</td>  
+            <td>期望用车时间</td>
+            <td>{$task.op_time}</td>
+          </tr>
+          <tr>
+            <td>期望车型</td>
+            <td>{$task.expect_car_type_name}</td> 
+            <td>预计运费/元</td>
+            <td>{$task_expect_fee}</td> 
+            <td>部门审批人</td>
+            <td>{$task.duser.username}</td>  
+            <td>部门审批时间</td>
+            <td>{$task.department_time}</td>
+          </tr>
+          <tr>
+            <td>物流审批人</td>
+            <td>{$task.luser.username}</td> 
+            <td>物流审批时间</td>
+            <td>{$task.logistics_time}</td> 
+            <td>平台</td>
+            <td>{$task.platform_name}</td>  
+            <td>车型</td>
+            <td>{$task.car_type_name}</td>
+          </tr>
+          <tr>
+            <td>司机姓名&手机号</td>
+            <td>{$task.driver.username} {$task.driver.mobile}</td> 
+            <td>里程/km</td>
+            <td>{$task.distance}</td> 
+            <td>任务用时/小时</td>
+            <td>{$task.take_time}</td>  
+            <td>总费用/元</td>
+            <td>{$task.delivery_fee}</td>
+          </tr>
+          <tr>
+            <td>用车事由</td>
+            <td colspan="7">{$task.reason}</td>
+          </tr>
+      </table>
+    </form>
+    </div>
+
+<script type="text/javascript">
+    
+</script>
+
