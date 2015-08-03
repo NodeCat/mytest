@@ -100,7 +100,16 @@ class DispatchController extends Controller{
                 $lines = '无';
             }
             $value['line_name'] = $lines;// 保存路线
-            $lines = NULL;// 清空上一配送单路线    
+            $lines = NULL;// 清空上一配送单路线
+            //查看是否有报错
+            unset($map);
+            $map['driver_mobile'] = $value['mobile'];
+            $map['is_deleted']    = '0';
+            $map['created_time']  = array('EGT',$value['created_time']);
+            $res = M('tms_report_error')->where($map)->find();
+            if ($res) {
+                $value['report_error'] = '1';
+            }
         }
         if (defined('VERSION')) {
             $this->car['warehouse'] = array(8 =>'北京北仓');
