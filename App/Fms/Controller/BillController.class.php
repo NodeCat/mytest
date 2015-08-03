@@ -27,6 +27,7 @@ class BillController extends \Wms\Controller\CommonController
     
 
 	public function before_index() {
+
         $this->table = array(
                 'toolbar'   => false,//是否显示表格上方的工具栏,添加、导入等
                 'searchbar' => true, //是否显示搜索栏
@@ -35,7 +36,7 @@ class BillController extends \Wms\Controller\CommonController
                 'toolbar_tr'=> true,
                 'statusbar' => true
         );
-        
+        $this->search_addon = true;
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
         );
@@ -54,6 +55,10 @@ class BillController extends \Wms\Controller\CommonController
         $query = $A->billQuery();
         
         unset($query['area'][0]);
+        $this->bd = json_encode($query['bd']);
+        foreach ($query['bd'] as &$value) {
+            $value = $value['name'];
+        }
 
         $this->query = array(
         	'billing_cycle' => array(
@@ -86,7 +91,7 @@ class BillController extends \Wms\Controller\CommonController
                 'control_type' => 'select',
                 'value' => $query['expire_status']
             ),
-            'theory_start' =>    array (    
+            'start_time' =>    array (    
 			'title' => '账单时间',     
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
@@ -118,7 +123,7 @@ class BillController extends \Wms\Controller\CommonController
                 $map[$key] = $condition[$key];
                 switch ($v['query_type']) {
                     case 'between'://区间匹配
-                        $map['theory_end'] = $condition[$key.'_1'];
+                        $map['end_time'] = $condition[$key.'_1'];
                     break;
                 }
                 continue;
@@ -331,7 +336,7 @@ class BillController extends \Wms\Controller\CommonController
         $this->pk = 'id';
         $this->assign('data', $data['list']); 
         $maps = $this->condition;
-        $template= IS_AJAX ? 'Common@Table/list':'Common@Table/index';
+        $template= IS_AJAX ? 'Table/list':'Table/index';
         $this->page($data['total'],$maps,$template);
     }
 }
