@@ -11,7 +11,7 @@
                                       <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
                    <img id="sign_img{$vo.order_id}" class="hidden" src="{$order.sign_img_url}">
                    <notempty name="order['sign_img_url']">
-                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.order_id}">查看电子签名</a>
+                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.order_id}">签收凭证</a>
                    </notempty>
                 </td>
               </tr>
@@ -68,7 +68,7 @@
               <tr>
                 <td class="text-center" colspan="8"></td>
                 <td class="text-center"  colspan="7">
-                  <span>下单金额：¥{$order.final_price} </span>
+                  <span>总订货金额：¥{$order.total_price} </span>
                 </td>
               </tr>
               <tr>
