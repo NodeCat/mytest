@@ -311,6 +311,7 @@ class WavePickingLogic{
             $param['batch'] = $value['batch'];
             $param['status'] = 'qualified';
             $param['change_src_assign_qty'] = '1';
+            $param['refer_code'] = $code;
             try{
                 $res = A('Stock','Logic')->adjustStockByMove($param);
             }catch(Exception $e){
