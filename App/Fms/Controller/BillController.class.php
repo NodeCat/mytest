@@ -330,7 +330,7 @@ class BillController extends \Wms\Controller\CommonController
         foreach ($data['list'] as &$val) {
             $val['theory_start'] = $val['theory_start'] . ' － ' . $val['theory_end'];
             if ($val['expire_status'] == '1') {
-                $val['expire_time'] = $val['expire_time'] . '<span class="label label-danger">逾期未付</span>';
+                $val['expire_time'] = $val['expire_time'] . ' <span class="label label-danger">逾期未付</span>';
             }
         }
         $this->pk = 'id';
