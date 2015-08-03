@@ -44,7 +44,7 @@ class BillController extends \Wms\Controller\CommonController
         $this->pill = array(
 			'status'=> array(
 				'11'=>array('value'=>'2','title'=>'未打款','class'=>'warning'),
-				'13'=> array('value'=>'3','title'=>'同意打款','class'=>'info'),//已审核
+				'13'=> array('value'=>'3','title'=>'对账中','class'=>'info'),//已审核
 				'14'=> array('value'=>'4','title'=>'已打款','class'=>'danger'),
 				'04'=> array('value'=>'5','title'=>'已收款','class'=>'success')
 			)
