@@ -219,7 +219,7 @@ class OrderController extends \Common\Controller\AuthController {
         $deal_price    = I('post.deal_price',0);
         $sign_msg      = I('post.sign_msg',0);
         
-        if ($wipezero <= 0 || $deposit <= 0){
+        if ($wipezero < 0 || $deposit < 0){
             $this->error('输入的抹零或押金有误！');exit;
         }
         if ($order_id && $bill_id) {
