@@ -140,11 +140,11 @@ class ReportErrorController extends Controller{
         $map['updated_time'] = get_time();
         $map['updated_user'] = UID;
         $map['is_deleted'] = '1';
-        $res = M('tms_report_error')->where(array('customer_id' => $customer_id))->save($map);
-        if ($res) {
-            $status = A('Common/Order','Logic')->updateGeo($data);
-        }
+        $status = A('Common/Order','Logic')->updateGeo($data);
         if ($status === 0) {
+            $res = M('tms_report_error')->where(array('customer_id' => $customer_id))->save($map);
+        }
+        if ($res) {
             $return = array(
                 'status' => 1,
                 'msg'    => '地址修改成功',
