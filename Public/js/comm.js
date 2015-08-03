@@ -374,8 +374,8 @@ $('.modal').on('shown.bs.modal', function (e) {
 	    } else {
 	    	var content = $(this).data("content");
 	    	var cp = $(content).clone(true);
+	    	cp.removeClass('hidden');
 	    	$(target+ " .modal-body").html(cp);
-	    	$(cp).removeClass('hidden');
 	    	$(target).modal("show");
 	    }
 	    

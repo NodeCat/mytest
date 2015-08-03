@@ -9,9 +9,9 @@
                    <span class="mr-10"><notempty name="t">{$key}</notempty> 订单编号：{$order.order_number} </span>
                    <span class="mr-10">店铺名称：{$order.shop_name} </span>
                                       <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
-                   <img id="sign_img{$vo.order_id}" class="hidden" src="{$order.sign_img_url}">
+                   <img id="sign_img{$vo.id}" class="hidden" src="{$order.sign_img_url}">
                    <notempty name="order['sign_img_url']">
-                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.order_id}">签收凭证</a>
+                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.id}">签收凭证</a>
                    </notempty>
                 </td>
               </tr>
