@@ -226,7 +226,6 @@ class RepertoryController extends CommonController
                 $list   = array();
                 $start_num    = $res['stock_qty'];
                 $start_amount = $this->numbers_format_2($res['stock_qty'] * $res['price_unit']);
-                console($res);
                 $last_num     = 0;      //结余数
                 $last_amount  = 0;      //结余金额(含税)
                 $last_amounts = 0;      //结余金额(不含税)
