@@ -1,0 +1,231 @@
+<?php
+// +----------------------------------------------------------------------
+// | DaChuWang [ Let people eat at ease ]
+// +----------------------------------------------------------------------
+// | Copyright (c) 20015 http://dachuwang.com All rights reserved.
+// +----------------------------------------------------------------------
+// | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
+// +----------------------------------------------------------------------
+// | Author: liuguangping <liuguangping@dachuwang.com>
+// +----------------------------------------------------------------------
+namespace Wms\Controller;
+use Think\Controller;
+class TransferOutController extends CommonController
+{
+    protected $filter = array(
+        'state'=>array(
+            'tbr'=>'待出库',
+            'refunded'=>'已出库',
+            'cancelled' => '已作废'
+        ),
+       'wh_id_out'=>'',
+
+       'wh_id_in'=>'',
+    );
+    
+    protected $columns = array (
+        'id' => '',
+        'code' => '出库单号',
+        'wh_id_out' => '调出仓库',
+        'wh_id_in' => '调入仓库',
+        'cat_total' => 'SKU种数',
+        'qty_tobal' => 'SKU件数',
+        'created_user_nickname' => '创建人',
+        'created_time' => '创建时间',
+        'state' => '调拨状态'
+    );
+    protected $query   = array (
+        'erp_transfer_out.code' => array(
+                'title' => '调拨出库单号',
+                'query_type' => 'eq',
+                'control_type' => 'text',
+                'value' => 'code',
+        ),
+        'erp_transfer_out.wh_id_out' => array(
+               'title' => '调出仓库',
+               'query_type' => 'eq',
+               'control_type' => 'select',
+               'value' => '',
+        ),
+        'erp_transfer_out.wh_id_in' => array(
+               'title' => '调入仓库',
+               'query_type' => 'eq',
+               'control_type' => 'select',
+               'value' => '',
+        ),
+        'erp_transfer_out.status' => array(
+                'title' => '调拨状态',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => array(
+                    'tbr'=>'待出库',
+                    'refunded'=>'已出库',
+                    'cancelled' => '已作废'
+                    
+                ),
+        ),
+        'erp_transfer_out.created_time' =>    array (    
+            'title' => '日期',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => 'created_time',   
+        ), 
+    );
+    protected $warehouseArr = array();
+    //加入默认值
+    public function __construct(){
+        parent::__construct();
+        //获得仓库信息
+        $warehouse = M('warehouse')->field('id,name')->select();
+        $warehouseArr = array();
+        foreach ($warehouse as $key => $value) {
+            $warehouseArr[$value['id']] = $value['name'];
+        }
+        $this->warehouseArr = $warehouseArr;
+        $this->query['erp_transfer_out.wh_id_in']['value'] = $warehouseArr;
+        $this->query['erp_transfer_out.wh_id_out']['value'] = $warehouseArr;
+        $this->filter['wh_id_out'] = $warehouseArr;
+        $this->filter['wh_id_in'] = $warehouseArr;
+    }
+    //设置列表页选项
+    protected function before_index()
+    {
+        $this->table = array(
+            'toolbar'   => true,
+            'searchbar' => true, 
+            'checkbox'  => true, 
+            'status'    => false, 
+            'toolbar_tr'=> true,
+        );
+        $this->toolbar_tr =array(
+            array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => false,'new'=>'true'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
+        );
+        $this->toolbar =array(
+            array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'), 
+            array('name'=>'edit', 'show' => false,'new'=>'false'), 
+            array('name'=>'delete' ,'show' => false,'new'=>'false'),
+            array('name'=>'import' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'print' ,'show' => false,'new'=>'false'),
+            array('name'=>'setting' ,'show' => false,'new'=>'false'),
+        );
+    }
+
+    public function _before_index()
+    {
+        $this->table = array(
+            'toolbar'   => true,//是否显示表格上方的工具栏,添加、导入等
+            'searchbar' => true, //是否显示搜索栏
+            'checkbox'  => true, //是否显示表格中的浮选款
+            'status'    => false, 
+            'toolbar_tr'=> true,
+            'statusbar' => true
+        );
+        $this->toolbar_tr =array(
+            'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"1,4"), 
+            'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"1"),
+            'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"1"),
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"1,2,4")
+        );
+        $this->status =array(
+            array(
+                array('name'=>'forbid', 'title'=>'禁用', 'show' => isset($this->auth['forbid'])), 
+                array('name'=>'resume', 'title'=>'启用', 'show' => isset($this->auth['resume']))
+            ),
+        );
+    }
+    
+    /**
+     * 列表字段处理
+     * @param unknown $data
+     */
+    public function after_lists(&$data)
+    {
+        $code = array();
+        
+        //格式化状态
+        $new_data = array();
+        foreach ($data as $key => &$value) {
+            foreach ($this->face as $k => $val) {
+                if ($k == $value['status']) {
+                    $value['status'] = $val;
+                }
+            }
+            $value['type'] = en_to_cn($value['type']);
+        }
+    }
+
+    //重写view
+    public function view()
+    {
+        $this->_before_index();
+        $this->edit();
+    }
+
+    protected function before_edit(&$data)
+    {
+        //批次详细
+        $id = I('get.id');
+        if (!$id) {
+            $this->error('0','请正确传值！');
+        }
+        $map['id'] = $id;
+        //调拨单为了查找erp_transfer_detail_container表
+        $transfer_code = M('erp_transfer_out')->where($map)->getField('refer_code');
+        $erp_out_container = M('erp_transfer_out_container');
+        D('Transfer', 'Logic')->get_transfer_all_sku_detail($data, 'erp_transfer_out_detail');
+        $data['id'] = $id;
+        $plan_qty = 0;//计划
+        $real_qty = 0;//实际
+        foreach ($data['detail'] as $key => $value) {
+            //获取父级和sku
+            if ($transfer_code) {
+                unset($map);
+                $map['refer_code'] = $transfer_code;
+                $map['pro_code'] = $value['pro_code'];
+                $res = $erp_out_container->where($map)->field('batch,pro_qty')->group('refer_code,pro_code,batch')->select();
+                $count = count($res);
+                $data['detail'][$key]['batch_count'] = $count;
+            } else {
+                $data['detail'][$key]['batch_count'] = '0';
+            }
+            $plan_qty = f_add($plan_qty,$value['plan_transfer_qty']);
+            $real_qty = f_add($real_qty,$value['real_out_qty']);
+
+        }
+        $data['plan_qty'] = $plan_qty;//计划
+        $data['real_qty'] = $real_qty;//实际
+
+    }
+
+    //查看批次
+    public function transferBatch(){
+        $id = I('post.id');
+        $pro_code = I('post.procode');
+        if (!$id || !$pro_code) {
+            $this->error('0','请正确传值！');
+        }
+        $map = array();
+        $map['id'] = $id;
+        $transfer_code = M('erp_transfer_out')->where($map)->getField('refer_code');
+        if (!$transfer_code) {
+            $this->error('0','查询调拨出库单失败！');
+        }
+        unset($map);
+        $map['refer_code'] = $transfer_code;
+        $map['pro_code'] = $pro_code;
+        $erp_out_container = M('erp_transfer_out_container');
+        $res = $erp_out_container->where($map)->field('batch,pro_qty')->select();
+        if (!$res) {
+            $this->msgReturn(0,'未查询到批次');           
+        }
+        $this->msgReturn(1,'查询成功',$res);
+    }
+    
+    
+}
+/* End of file TransferController.class.php */
+/* Location: ./Application/Controller/TransferController.class.php */
