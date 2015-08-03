@@ -5,7 +5,7 @@ class ListLogic {
     *@param array(id,dist_code)
     *@return $dist结果集
     */
-    protected function distInfo($map){
+    public function distInfo($map){
         if(empty($map)){
             return null;
         }
@@ -70,7 +70,6 @@ class ListLogic {
     public function can_pay($dist_id) {
         $flag = false;
         $exist = false;
-        $dist_logic = A('Tms/Dist','Logic');
         $list_logic = A('Tms/List','Logic');
         //获得出库单列表
         unset($map); 
@@ -120,6 +119,62 @@ class ListLogic {
             } else {
                 //没有拒收
                 return true;
+            }
+        }
+              
+    }
+
+    //查询订单是否有退货，并且已创建拒收入库单
+    public function can_replace($bill_out_id) {
+        $flag = false;
+        //获得出库单列表
+        $bill_out = $this->bill_out_Info($bill_out_id);
+        if (!empty($bill_out)) { 
+            unset($map);
+            $map['bill_out_id'] = $bill_out_id;
+            $map['is_deleted']  = 0;
+            $sign_data = M('stock_wave_distribution_detail')->where($map)->find();
+            
+            switch ($sign_data['status']) {
+                case '2':
+                    $sign_orders++; //已签收订单数加1
+                    foreach ($bill_out['detail'] as $value) {
+                        unset($map);
+                        $map['bill_out_detail_id'] = $value['id'];
+                        $map['is_deleted'] = 0;
+                        $sign_in_detail = M('tms_sign_in_detail')->where($map)->find();
+                        $sign_qty = $sign_in_detail['real_sign_qty']; //签收数量
+                        $delivery_qty = $value['delivery_qty']; //配送数量
+                        $quantity = $delivery_qty - $sign_qty; //回仓数量
+                        if($quantity > 0){
+                            $flag = true;
+                        }
+                    } 
+                    break;
+
+                case '3':
+                    $flag = true;
+                    break;
+                
+                default:
+                    # code...
+                    break;
+            }
+            //有拒收
+            if ($flag) {
+                //是否已创建拒收入库单
+                unset($map);
+                $map['refer_code'] = $bill_out['code']; 
+                $map['is_deleted'] = 0;
+                $back_in = M('stock_bill_in')->where($map)->select();
+                if(!empty($back_in)) {
+                    return true;
+                }else{      //如果没有查到相应的拒收入库单，直接返回FALSE
+                    return false;
+                }
+            } else {
+                //没有拒收
+                return false;
             }
         }
               
