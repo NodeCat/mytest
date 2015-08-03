@@ -27,7 +27,6 @@ class ReportErrorController extends Controller{
 
     //根据客户id和报错类型type保存报错信息
     public function report_error(){
-
         $id = I('post.id');
         $type = I('post.type');
         if(empty($id) || empty($type)){
@@ -43,7 +42,11 @@ class ReportErrorController extends Controller{
             }else{
                 //保存报错信息到数据库
                 $M = M('tms_report_error');
-                $report['type'] = implode(',', $type);
+                if (is_array($type)) {
+                    $report['type'] = implode(',', $type);
+                } else {
+                    $report['type'] = $type;
+                }
                 $report['customer_id'] = $id;
                 $report['customer_name'] = $res['name'];
                 $report['customer_address'] = $res['address'];
@@ -124,6 +127,36 @@ class ReportErrorController extends Controller{
         $objWriter  =  \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007');
         $objWriter->save('php://output');
 	}
+
+    /**
+     * 修改商家的地址坐标
+     *
+     * @author   jt
+     */
+    public function updatePoint()
+    {
+        $data = I('post.');
+        $customer_id   = $data['id'];
+        $map['updated_time'] = get_time();
+        $map['updated_user'] = UID;
+        $map['is_deleted'] = '1';
+        $status = A('Common/Order','Logic')->updateGeo($data);
+        if ($status === 0) {
+            $res = M('tms_report_error')->where(array('customer_id' => $customer_id))->save($map);
+        }
+        if ($res) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '地址修改成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '地址修改失败',
+            );
+        }
+        $this->ajaxReturn($return);
+    }
 
 	protected function get_excel_sheet(&$Excel) {
         $Excel->getProperties()

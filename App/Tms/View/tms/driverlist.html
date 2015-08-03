@@ -73,7 +73,13 @@
             <td>{$k.created_time}</td>
             <td>{$k.updated_time}</td>
             <td>{$k.period}</td>
-            <td>{$k.line_name}</td>               
+            <td>
+                <if condition="$k.report_error eq '1'">
+                    <div style="color:red;float:right;width:8px;margin-top:-7px" class="glyphicon glyphicon-remove-sign">
+                    </div>
+                </if>
+                {$k.line_name}
+            </td>
             <td>{$k.sign_orders}</td>
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
