@@ -97,6 +97,11 @@
       		//减去优惠金额
       		var minus = obj.parents('.order').find('.p_minus').text();
       		var sum = accSub(final_price, minus);
+
+          //加上运费
+          var delivery_fee = obj.parents('.order').find('.p_drive').text();
+          sum = accAdd(sum, delivery_fee);
+          
       		obj.parents('.order').find('.p_final').text(sum);
       		obj.parents('.order').find('.p_final').val(sum);
       		//计算实收金额，累加所有的小计，并减去优惠金额
@@ -105,6 +110,7 @@
       		  deal_sum = accAdd(deal_sum, $.trim($(item).text()));
       		});
       		deal_sum = accSub(deal_sum, minus);
+          deal_sum = accAdd(deal_sum,delivery_fee);
           //抹零处理
           deal_sum = wipeZero(deal_sum);
       		obj.parents('.order').find('.p_deal').val(deal_sum);
@@ -118,6 +124,7 @@
               deal_sum = accAdd(deal_sum, $(item).text());
             });
             deal_sum = accSub(deal_sum, minus);
+            deal_sum = accAdd(deal_sum,delivery_fee);
             $(this).parents('.order').find('.p_deal').val(deal_sum);
         });
 
