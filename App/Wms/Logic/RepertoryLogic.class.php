@@ -89,17 +89,11 @@ class RepertoryLogic
      */
     public function getProcessList($start_time, $end_time, $pro_codes)
     {
-        $where['erp_process_in_detail.status'] = 2;
-        $where['erp_process_in_detail.pro_code'] = $pro_codes;
-        $where['DATE_FORMAT(erp_process_in_detail.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
-        $join = array(
-            "INNER JOIN erp_process_in ON erp_process_in.id=erp_process_in_detail.pid",                 //获取批次号
-            "INNER JOIN erp_process_sku_relation ON erp_process_sku_relation.p_pro_code=erp_process_in_detail.pro_code",      //获取比例量
-            //根据批次号和SKU，获取商品价格
-            "INNER JOIN stock_bill_in_detail ON stock_bill_in_detail.refer_code=erp_process_in.code AND stock_bill_in_detail.pro_code=erp_process_in_detail.pro_code"
-        );
+        $where['status'] = 2;
+        $where['pro_code'] = $pro_codes;
+        $where['DATE_FORMAT(`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
         $process = M('erp_process_in_detail');
-        $processDetail = $process->field("erp_process_in_detail.pro_code, erp_process_in_detail.real_qty, erp_process_in.code, erp_process_in.refer_code,stock_bill_in_detail.price_unit, SUM(erp_process_sku_relation.ratio) as ratio")->join($join)->where($where)->group('erp_process_in_detail.pro_code')->select();
+        $processDetail = $process->field("pro_code, real_qty, SUM(real_qty*price) as total_amount ")->where($where)->group('pro_code')->select();
         $processList = array();
         foreach ($processDetail as $val) {
             $processList[$val['pro_code']] = $val;
@@ -312,6 +306,7 @@ class RepertoryLogic
     {
         //初期时间，获取前一天的结余
         $_time_1 = date('Y-m-d', (strtotime($start_time)-86400));
+
         //获取初期数量
         $startList      = $this->getSnapList($_time_1, $pro_codes);
         //获取期末数量
@@ -340,15 +335,13 @@ class RepertoryLogic
             $data[$key]['purchase_in_amount']   = $this->numbers_format_2($purchaseList[$val['pro_code']]['total_amount'] / $price_rate);  //采购入库金额(不含税)
 
             //加工入库金额计算
-            $process_num    = $processList[$val['pro_code']]['real_qty'] * $processList[$val['pro_code']]['ratio']; //加工入库数
-            $process_amount = $process_num * $processList[$val['pro_code']]['price_unit'];          //加工入库金额
-            $data[$key]['process_nums']         = $process_num;                                     //加工入库数
-            $data[$key]['process_in_amount']    = $process_amount;                                  //加工入库金额(含税)
-            $data[$key]['process_in_amounts']   = $this->numbers_format_2($process_amount / $price_rate); //加工入库金额(不含税)
+            $data[$key]['process_nums']         = $processList[$val['pro_code']]['real_qty'];                              //加工入库数
+            $data[$key]['process_in_amount']    = $processList[$val['pro_code']]['total_amount'];                          //加工入库金额(含税)
+            $data[$key]['process_in_amounts']   = $this->numbers_format_2($data[$key]['process_in_amount'] / $price_rate); //加工入库金额(不含税)
 
             //入库数
-            $data[$key]['instock_num']          = $process_num + $data[$key]['purchase_nums'];      //入库数
-            $data[$key]['instock_amount']       = $data[$key]['purchase_amount'] + $process_amount; //入库金额(含税)
+            $data[$key]['instock_num']          = $data[$key]['process_in_amount'] + $data[$key]['purchase_nums'];      //入库数
+            $data[$key]['instock_amount']       = $data[$key]['purchase_amount'] + $data[$key]['process_in_amount']; //入库金额(含税)
             $data[$key]['instock_amounts']      = $this->numbers_format_2($data[$key]['purchase_in_amount'] + $data[$key]['process_in_amount']); //入库金额(不含税)
             $data[$key]['insotck_cost']         = $this->numbers_format_2($data[$key]['instock_amounts'] / $data[$key]['instock_num']);     //入库加权平均成本
 

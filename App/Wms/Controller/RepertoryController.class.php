@@ -412,9 +412,13 @@ class RepertoryController extends CommonController
         if (empty($data)) {
             return false;
         }
-
         $start_time = $_POST['query']['stock_snap.snap_time'];
         $end_time = $_POST['query']['stock_snap.snap_time_1'];
+
+        if (empty($start_time)) {
+            $start_time = I('get.snap_time');
+            $end_time   = I('get.snap_time_1');
+        }
 
         $start_sku = array();
         foreach ($data as $val) {
