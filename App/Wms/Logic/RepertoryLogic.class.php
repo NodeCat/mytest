@@ -333,30 +333,28 @@ class RepertoryLogic
 
         foreach ($data as $key => $val) {
             //初期成本
-            $data[$key]['first_nums']           = $startList[$val['pro_code']]['stock_qty'] ? $startList[$val['pro_code']]['stock_qty'] : 0;        //期初数量
-            $data[$key]['first_amount']         = $startList[$val['pro_code']]['price_unit'] ? $startList[$val['pro_code']]['price_unit'] : 0;       //期初成本(含税)
+            $data[$key]['first_nums']           = $this->numbers_format_2($startList[$val['pro_code']]['stock_qty']);        //期初数量
+            $data[$key]['first_amount']         = $this->numbers_format_2($startList[$val['pro_code']]['price_unit']);       //期初成本(含税)
             //期初成本(不含税)
             $data[$key]['first_amounts']        = $this->numbers_format_2($data[$key]['first_amount'] / $price_rate);
 
             //采购入库
-            $data[$key]['purchase_nums']        = $purchaseList[$val['pro_code']]['pro_qty'] ? $purchaseList[$val['pro_code']]['pro_qty'] : 0;       //采购入库数
+            $data[$key]['purchase_nums']        = $this->numbers_format_2($purchaseList[$val['pro_code']]['pro_qty']);       //采购入库数
             //采购入库金额(含税)
-            $data[$key]['purchase_amount']      = $purchaseList[$val['pro_code']]['total_amount'] ? $purchaseList[$val['pro_code']]['total_amount'] : 0;
+            $data[$key]['purchase_amount']      = $this->numbers_format_2($purchaseList[$val['pro_code']]['total_amount']);
             $data[$key]['purchase_in_amount']   = $this->numbers_format_2($purchaseList[$val['pro_code']]['total_amount'] / $price_rate);  //采购入库金额(不含税)
 
 
 
             //加工入库金额计算
-            $data[$key]['process_nums']         = $processList[$val['pro_code']]['real_qty'] ? $processList[$val['pro_code']]['real_qty'] : 0;  //加工入库数
+            $data[$key]['process_nums']         = $this->numbers_format_2($processList[$val['pro_code']]['real_qty']);  //加工入库数
             //加工入库金额(含税)
-            $data[$key]['process_in_amount']    = $processList[$val['pro_code']]['total_amount'] ? $processList[$val['pro_code']]['total_amount'] : 0;
+            $data[$key]['process_in_amount']    = $this->numbers_format_2($processList[$val['pro_code']]['total_amount']);
             $data[$key]['process_in_amounts']   = $this->numbers_format_2($data[$key]['process_in_amount'] / $price_rate); //加工入库金额(不含税)
 
             //入库数
-            $data[$key]['instock_num']          = $data[$key]['process_in_amount'] + $data[$key]['purchase_nums'];      //入库数
-            $data[$key]['instock_num']          = $data[$key]['instock_num'] ? $data[$key]['instock_num'] : 0;
-            $data[$key]['instock_amount']       = $data[$key]['purchase_amount'] + $data[$key]['process_in_amount']; //入库金额(含税)
-            $data[$key]['instock_amount']       = $data[$key]['instock_amount'] ? $data[$key]['instock_amount'] : 0;
+            $data[$key]['instock_num']          = $this->numbers_format_2($data[$key]['process_in_amount'] + $data[$key]['purchase_nums']);      //入库数
+            $data[$key]['instock_amount']       = $this->numbers_format_2($data[$key]['purchase_amount'] + $data[$key]['process_in_amount']); //入库金额(含税)
 
             $data[$key]['instock_amounts']      = $this->numbers_format_2($data[$key]['purchase_in_amount'] + $data[$key]['process_in_amount']); //入库金额(不含税)
             $data[$key]['insotck_cost']         = $this->numbers_format_2($data[$key]['instock_amounts'] / $data[$key]['instock_num']);     //入库加权平均成本
@@ -364,36 +362,36 @@ class RepertoryLogic
             //销售出库
             //获取单价
             $price_unit = $getPrice->get_price_by_sku($stockOutList[$val['pro_code']]['batch'], $val['pro_code']);
-            $data[$key]['sale_cost_nums']       =  $stockOutList[$val['pro_code']]['delivery_qty'] ? $stockOutList[$val['pro_code']]['delivery_qty'] : 0;//销售数量
+            $data[$key]['sale_cost_nums']       =  $this->numbers_format_2($stockOutList[$val['pro_code']]['delivery_qty']);//销售数量
             if ($price_unit > 0) {
                 $data[$key]['sale_cost_amount'] = $this->numbers_format_2($price_unit * $stockOutList[$val['delivery_qty']]);
             } else {
-                $data[$key]['sale_cost_amount']     =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);     //销售成本（含税）
+                $data[$key]['sale_cost_amount'] =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);     //销售成本（含税）
             }
             //销售成本（未含税）
             $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($data[$key]['sale_cost_amount'] / $price_rate);
-            $data[$key]['sale_income']          =  $stockOutList[$val['pro_code']]['total_amount'];
+            $data[$key]['sale_income']          =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);
 
             //加工出库
-            $data[$key]['process_out_num']      = $processOutList[$val['pro_code']]['pro_qty'] ? $processOutList[$val['pro_code']]['pro_qty'] : 0;      //加工出库数
+            $data[$key]['process_out_num']      = $this->numbers_format_2($processOutList[$val['pro_code']]['pro_qty']);      //加工出库数
             //加工出库金额(含税)
-            $data[$key]['process_out_amount']   = $processOutList[$val['pro_code']]['total_amount'] ? $processOutList[$val['pro_code']]['total_amount'] : 0;
+            $data[$key]['process_out_amount']   = $this->numbers_format_2($processOutList[$val['pro_code']]['total_amount']);
             //加工出库金额(不含税)
             $data[$key]['process_out_amounts']  = $this->numbers_format_2($processOutList[$val['pro_code']]['total_amount'] / $price_rate);
 
             //采购退货
-            $data[$key]['purchase_return_nums']     = $refundList[$val['pro_code']]['real_qty'] ? $refundList[$val['pro_code']]['real_qty'] : 0;     //采购退货数
+            $data[$key]['purchase_return_nums']     = $this->numbers_format_2($refundList[$val['pro_code']]['real_qty']);     //采购退货数
             //采购退货金额(含税)
-            $data[$key]['purchase_return_amount']   = $refundList[$val['pro_code']]['total_amount'] ? $refundList[$val['pro_code']]['total_amount'] : 0;
+            $data[$key]['purchase_return_amount']   = $this->numbers_format_2($refundList[$val['pro_code']]['total_amount']);
             //采购退货金额(不含税)
             $data[$key]['purchase_return_amounts']  = $this->numbers_format_2($refundList[$val['pro_code']]['total_amount'] / $price_rate);
 
             //出库数量
-            $data[$key]['stock_out_nums']       = $data[$key]['sale_cost_nums'] + $data[$key]['process_out_num'] + $data[$key]['purchase_return_nums'];    //出库数量
+            $data[$key]['stock_out_nums']       = $this->numbers_format_2($data[$key]['sale_cost_nums'] + $data[$key]['process_out_num'] + $data[$key]['purchase_return_nums']);    //出库数量
             //出库金额（含税）
-            $data[$key]['stock_out_amount']     = $data[$key]['sale_cost_amount'] + $data[$key]['process_out_amount'] + $data[$key]['purchase_return_amount'];
+            $data[$key]['stock_out_amount']     = $this->numbers_format_2($data[$key]['sale_cost_amount'] + $data[$key]['process_out_amount'] + $data[$key]['purchase_return_amount']);
             //出库金额（未含税）
-            $data[$key]['stock_out_amounts']    = $data[$key]['sale_cost_amounts'] + $data[$key]['process_out_amounts'] + $data[$key]['purchase_return_amounts'];
+            $data[$key]['stock_out_amounts']    = $this->numbers_format_2($data[$key]['sale_cost_amounts'] + $data[$key]['process_out_amounts'] + $data[$key]['purchase_return_amounts']);
             //出库加权平均成本
             $data[$key]['stock_out_cost']       = $this->numbers_format_2($data[$key]['stock_out_amount'] / $data[$key]['stock_out_nums']);
 
@@ -402,16 +400,16 @@ class RepertoryLogic
             $data[$key]['profit_amounts']       = 0;
 
             //期末成本
-            $data[$key]['last_nums']            = $endList[$val['pro_code']]['stock_qty'] ? $endList[$val['pro_code']]['stock_qty'] : 0;          //期末数量
-            $data[$key]['last_amount']          = $endList[$val['pro_code']]['price_unit'] ? $endList[$val['pro_code']]['price_unit'] : 0;         //期末成本(含税)
-            $data[$key]['last_amounts']         = $endList[$val['pro_code']]['price_unit'] ? $endList[$val['pro_code']]['price_unit'] : 0;         //期末成本(不含税)
+            $data[$key]['last_nums']            = $this->numbers_format_2($endList[$val['pro_code']]['stock_qty']);         //期末数量
+            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);         //期末成本(含税)
+            $data[$key]['last_amounts']         = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);        //期末成本(不含税)
         }
     }
 
     //格式化金额，截取2位小数
     private function numbers_format_2($number)
     {
-        if ($number <= 0) {
+        if (intval($number) == 0) {
             return 0;
         }
         $p= stripos($number, '.');

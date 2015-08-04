@@ -488,8 +488,8 @@ class RepertoryController extends CommonController
     //格式化金额，截取2位小数
     private function numbers_format_2($number)
     {
-        if ($number <= 0) {
-            return false;
+        if (intval($number) == 0) {
+            return 0;
         }
         $p= stripos($number, '.');
         return substr($number,0,$p+3);
