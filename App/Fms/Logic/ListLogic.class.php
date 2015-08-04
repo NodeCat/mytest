@@ -11,13 +11,15 @@ class ListLogic {
         }
         $map['is_deleted'] = 0;
         $dist = M('stock_wave_distribution')->where($map)->find();
-        unset($map);
-        //查询条件为配送单id
-        $map['pid'] = $dist['id'];
-        $map['is_deleted'] = 0;
-        //根据配送单id查配送详情单里与出库单相关联的出库单id
-        $dist_detail = M('stock_wave_distribution_detail')->where($map)->select();
-        $dist['detail'] = $dist_detail;
+        if (!empty($dist)) {
+            unset($map);
+            //查询条件为配送单id
+            $map['pid'] = $dist['id'];
+            $map['is_deleted'] = 0;
+            //根据配送单id查配送详情单里与出库单相关联的出库单id
+            $dist_detail = M('stock_wave_distribution_detail')->where($map)->select();
+            $dist['detail'] = $dist_detail;
+        }
         return $dist;
     }
     /*根据出库单id获得出库单信息
