@@ -1,0 +1,152 @@
+<div class="row" id="module-content-{$type}">
+<script type="text/javascript">
+$(function(){
+    
+    $('#pk').val('{$fk}');
+    $('#module').change(function(){ 
+        var n=$(this).val();
+        $.ajax({
+            type:"POST",  
+            url:'{:U("getColumn")}',
+            data:{id:n},  
+            success:function(json){ 
+                $('#fk').find('option').remove();
+                $.each(json, function(i, value) {
+                    $('#fk').append($('<option>').text(value).attr('value',value));
+                });
+            },
+            error:function(x){  
+                alert("Request error");  
+            } 
+        });
+    }); 
+    $('#shorcut').change(function(){ 
+        var val=$(this).val();
+        var vals = val.split(';');
+        if(vals.length<3)return;
+        $('#addtion').val(vals[0]);
+        $('#rule').val(vals[1]);
+        $('#cond').val(vals[2]);
+    });
+    $('#module').val('{$module}');
+    $('#shorcut').change();
+    $('#validate_form button[type=submit]').on('click',function(){
+        var modal = $('#validate_form');
+        var addr,params;
+        params=modal.serialize();
+        addr=modal.attr('action');
+ 
+        $.ajax({
+            url:addr,
+            type:'post',
+            cache : false,
+            dataType:'json',
+            data:params,
+            success: function(msg){
+                alert(msg.msg); 
+                if(msg.status=='1'){
+                    var newRow = msg.data;
+                    $(".table tr:first").after(newRow);
+                }
+            }
+        }); 
+        return false;
+    });
+}); 
+</script>
+<form class="form form-horizontal" id="validate_form" method="POST" action="{:U('Code/auto_save')}">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">表名</span>
+                    <select id="module" name="module" class="form-control">
+                    <volist name="Modules" id="vo">
+                        <option value ="{$vo}">{$vo}</option>
+                    </volist>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">完成字段</span>
+                     <select  id='fk' name="col_id" class="form-control">
+                        <volist name="module_columns" id="vo">
+                            <option value ="{$vo}">{$vo}</option>
+                        </volist>
+                    </select>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="col-lg-6">
+                <div class="input-group">
+                    <span class="input-group-addon">完成规则</span>
+                    <input id='rule' name="rule" type="text" class="form-control"  placeholder="">
+                </div>
+            </div>
+
+        </div>
+    </div>
+            <br>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="col-lg-6">
+                <div class="input-group">
+                  <span class="input-group-addon">快捷</span>
+                    <select  id='shorcut' name="shorcut" class="form-control">
+<option value ="string;默认值;3">数据－默认值－添加时</option>
+<option value ="ignore;;3">数据－为空则忽略－添加时</option>
+<option value ="field;其它字段;3">数据－字段填充－添加时</option>
+<option value ="function;函数名;3">调用－公共函数－添加和更新时</option>
+<option value ="callback;方法名;3">调用－模型方法－添加和更新时</option>
+
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="input-group">
+                  <span class="input-group-addon">完成时间</span>
+                    <select  id='cond' name="cond" class="form-control">
+                        <option value ="1">添加时</option>
+                        <option value ="2">更新时</option>
+                        <option value ="3">添加和更新</option>
+                        
+                        
+                    </select>
+                </div>
+                
+            </div>
+            
+        </div>
+
+
+        <div class="col-lg-6">
+            <div class="col-lg-6">
+                <div class="input-group">
+                  <span class="input-group-addon">附加规则</span>
+                    <select  id='addtion' name="addtion" class="form-control">
+                        <option value ="function">function</option>
+                        <option value ="callback">callback</option>
+                        <option value ="field">field</option>
+                        <option value ="string">string</option>
+                        <option value ="ignore">ignore</option>
+                        
+                    </select>
+                </div>
+            </div>
+            
+         </div>
+
+    </div>
+    <br>
+    
+<include file="Index:btn"/>
+
+</form>
+<div class="col-lg-12">
+    <include file="Table:list" />
+</div>
+</div>
