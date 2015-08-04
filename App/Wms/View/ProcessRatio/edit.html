@@ -34,10 +34,30 @@
     <div class="form-group ">
         <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="name">比例</label>
         <div class="col-lg-5 col-sm-5 col-xs-5">
-            <input type="text" class="form-control {required:true,maxlength:32,}"  value="{$data.ratio}" name="ratio" id="name" placeholder="">
+            <input type="text" class="form-control {required:true,maxlength:32,}"  value="{$data.ratio}" name="ratio" id="name" placeholder="" data-ele='ratio'>
         </div>
         <label class="control-label col-lg-4" for=""></label>
     </div>
     
 </form>
 </div>
+
+<script type='text/javascript'>
+
+/******liuguangping*******/
+var checkObjs = {
+  chekInput:function(){
+    $(document).on('blur','[data-ele = ratio]',function(){
+      var out_qty = parseFloat($(this).val());
+      var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+      if (!reg.test(out_qty)){
+        alert('比例只能精确到小数点两位');
+        //$(this).val('1.00');
+      }
+      
+    });
+  }
+};
+checkObjs.chekInput();
+
+</script>

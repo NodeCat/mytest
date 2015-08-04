@@ -222,15 +222,15 @@ $(function(){
 
           }
     };
-  $(document).on('keyup','[attr = out_qty]',function(){
-    var out_qty = $(this).val();
-    var reg = /^[0-9]+$/;
-    if (out_qty != '' && !out_qty.match(reg)){
-      alert('退货量只能数字');
-      $(this).val('0');
+  $(document).on('blur','[attr = out_qty]',function(){
+    var out_qty = parseFloat($(this).val());
+    var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
+    if (!reg.test(out_qty)){
+      alert('退货量只能精确到小数点两位');
+      $(this).val('0.00');
     }
-    var pro_qty = parseInt($(this).attr('data-value'),10);
-    if(out_qty>pro_qty){
+    var pro_qty = $(this).attr('data-value');
+    if(out_qty>parseFloat(pro_qty)){
       alert('退货量不能大于在库量');
       $(this).val(pro_qty);
     }

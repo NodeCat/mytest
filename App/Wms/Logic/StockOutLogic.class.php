@@ -38,6 +38,7 @@ class StockOutLogic{
         $data['delivery_ampm'] = $params['delivery_ampm'];
         $data['customer_realname'] = $params['customer_realname'];
         $data['delivery_address'] = $params['delivery_address'];
+        $data['op_date'] = $params['op_date'];
         $data['order_type'] = $params['order_type'];
         $data['created_time'] = date('Y-m-d H:i:s');
         $data['created_user'] = UID;
@@ -189,7 +190,7 @@ class StockOutLogic{
         if(!$idsArr) return '';
         foreach($idsArr as $key=>$value){
             $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($value, $loc_type, $batch_code);
-            if($is_enough){ 
+            if($is_enough['status'] == 1){ 
                 array_push($result['tureResult'], $value);
             }else{
                 $tablename = 'stock_bill_out';
@@ -220,5 +221,97 @@ class StockOutLogic{
         $data['skuCount']   = $skuCount?$skuCount:0;
         $data['totalCount'] = $totalCount?$totalCount:0;
         return $data;
+    }
+
+    /**
+     * [lists 出库单列表]
+     * @param  array  $params dist_id或bill_out_ids,可选order
+     * @return [type]      [description]
+     */
+    public function bill_out_list($params = array()) {
+        $dist_id = isset($params['dist_id']) ? $params['dist_id'] : 0;
+        $bill_out_ids = isset($params['bill_out_ids']) ? $params['bill_out_ids'] : array();
+        if (empty($dist_id) && empty($bill_out_ids)) {
+            return array(
+                'status' => -1,
+                'msg'    => '配送单ID或出库单ID不能为空'
+            );
+        }
+        if (empty($bill_out_ids)) {
+            //配送单详情查询出库单id,签收状态
+            $map['pid'] = $params['dist_id'];
+            $map['is_deleted'] = 0;
+            $dist_detail = M('stock_wave_distribution_detail')
+                ->field('bill_out_id,status')
+                ->where($map)
+                ->select();
+            //组合一个出库单ID数组
+            if ($dist_detail) {
+                $bill_out_ids = array();
+                foreach ($dist_detail as $value) {
+                    $bill_out_ids[] = $value['bill_out_id'];
+                }
+            }
+        } else {
+            //配送单详情查询签收状态
+            $map['bill_out_id'] = array('in', $bill_out_ids);
+            $map['is_deleted'] = 0;
+            $dist_detail = M('stock_wave_distribution_detail')
+                ->field('id,status')
+                ->where($map)
+                ->select();
+        }
+        //如果出库单ID数组为空
+        if (empty($bill_out_ids)) {
+            return array(
+                'status' => -1,
+                'msg'    => '参数错误'
+            );
+        }
+        unset($map);
+        //查询条件
+        $map['id'] = array('in', $bill_out_ids);
+        $map['is_deleted'] = 0;
+        //排序条件
+        $order = isset($params['order']) ? $params['order'] : 'created_time DESC';
+        //出库单列表
+        $list = M('stock_bill_out')
+            ->where($map)
+            ->order($order)
+            ->select();
+        unset($map);
+        if ($list) {
+           $bill_out_ids = array();
+           foreach ($list as &$value) {
+               $bill_out_ids[] = $value['id'];
+               foreach ($dist_detail as $v) {
+                   //配送单详情签收状态
+                   if ($value['id'] == $v['bill_out_id']) {
+                       $value['sign_status'] = $v['status'];
+                   }
+               }
+           }
+           //查询出库单详情关联到出库单列表
+           if($bill_out_ids){
+               $map['pid'] = array('in',$bill_out_ids);
+               $map['is_deleted'] = 0;
+               $list_details = M('stock_bill_out_detail')->where($map)->select();
+               foreach ($list_details as $v) {
+                   foreach ($list as &$bill) {
+                       if($bill['id'] == $v['pid']){
+                           $bill['detail'][] = $v;
+                       }
+                   }
+               }
+           }
+           return array(
+                'status' => 0,
+                'list'   => $list
+            ); 
+        }
+        return array(
+            'status' => -1,
+            'msg'    => '数据不存在'
+        );        
     }
 }

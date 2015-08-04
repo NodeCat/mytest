@@ -7,24 +7,16 @@
      <col style="width: 15%;" />
      <col style="width: 10%;" />
      <col style="width: 5%;" />
+     <!-- <col style="width: 5%;" /> -->
+     <col style="width: 10%;" />
+     <col style="width: 10%;" />
+     <col style="width: 10%;" />
+     <col style="width: 10%;" />
+     <col style="width: 10%;" />
      <col style="width: 5%;" />
-     <col style="width: 10%;" />
-     <col style="width: 10%;" />
-     <col style="width: 10%;" />
-     <col style="width: 5%;" />
-    <!--   <col style="width: 4.6%;" />
-     <col style="width: 4.6%;" />
-     <col style="width: 2.4%;" />
- -->    </colgroup> 
+    </colgroup> 
     <thead> 
      <tr class="text-center tablesorter-headerRow"> 
-<!--       <th data-column="0" class="tablesorter-header sorter-false bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
-       <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
-        <div class="tablesorter-header-inner"> 
-         <label class="checkbox"> <input type="checkbox" class="select-all" data-target="data-table" /> 全选 </label> 
-         <i class=""></i>
-        </div>
-       </div></th>  -->
       <th id="wh_name" data-column="1" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
@@ -67,13 +59,13 @@
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
-        <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
+        <!-- <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
          父SKU采购量 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
-       </div></th>
+       </div></th> -->
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
@@ -95,6 +87,20 @@
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
+       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
+       <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
+        <div class="tablesorter-header-inner">
+         子SKU总可用量 
+         <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
+        </div>
+       </div></th>
+       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
+       <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
+        <div class="tablesorter-header-inner">
+         子SKU总需求量
+         <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
+        </div>
+       </div></th>
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
@@ -113,11 +119,14 @@
       <td>{$vo.wh_id|getTableFieldById='warehouse','name',###}</td> 
       <td>{$vo.wh_id|getStockQtyByWpcode=$vo['pro_code'],###}</td> 
       <td>{$vo.wh_id|getDownOrderNum=$vo['pro_code'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
-      <td>{$vo.wh_id|getPurchaseNum=$vo['pro_code'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
+      <!-- <td>{$vo.purchase_num}</td> -->
       <td>{$vo.c_pro_code}</td>
       <td>{$vo.c_pro_code|getPronameByCode='name',###}</td>
       <td>{$vo.wh_id|getStockQtyByWpcode=$vo['c_pro_code'],###}</td>
-      <td>{$vo.c_pro_code|getProcessByCode=$vo['pro_code'],$vo['wh_id'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
+      <td>{$vo.available_qty}</td>
+      <td>{$vo.requirement_qty}</td>
+      <!-- <td>{$vo.c_pro_code|getProcessByCode=$vo['pro_code'],$vo['wh_id'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td> -->
+      <td>{$vo.c_purchase_qty}</td>
      </tr>
     </volist>
      

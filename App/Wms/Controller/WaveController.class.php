@@ -121,6 +121,7 @@ class WaveController extends CommonController {
         $pid = I('id');
         $m = M('stock_wave_detail');
         $map['pid'] = $pid;
+        $map['is_deleted'] = 0;
         $result = array();
         $result = $m->where($map)->select();
         if($result){
@@ -178,9 +179,30 @@ class WaveController extends CommonController {
       }
       $wave_ids  = explode(',', $ids);
 
-    	A('WavePicking','Logic')->waveExec($wave_ids);
+      $pickInfo = A('WavePicking','Logic')->waveExec($wave_ids);
+      
+      //分拣完成后弹出弹框提示 zhangchaoge
+      if ($pickInfo['status'] != 1) {
+          $this->msgReturn(false, '分拣失败');
+      }
+      $hintInfo = $pickInfo['alert'];
+      $orderInfo = array();
+      foreach ($hintInfo['orderids'] as $key => $orderid) {
+          //获取出库单信息
+          $orderCode = M('stock_bill_out')->where(array('id'=>$orderid))->find();
+          //获取此出库单下的缺货SKU编号
+          $result = A('Stock', 'Logic')->checkStockIsEnoughByOrderId($orderid);
+          $orderInfo['detail'][$key]['code'] = $orderCode['code'];
+          $orderInfo['detail'][$key]['sku']  = implode(',', $result['data']['not_enough_pro_code']);
+      }
+      //总单数
+      $orderInfo['ordersum']  = $hintInfo['ordersum'];
+      //总任务数
+      $orderInfo['tasksum']   = $hintInfo['tasksum'];
+      //被踢回的订单数
+      $orderInfo['rejectsum'] = count($hintInfo['orderids']);
+      $this->msgReturn(true, '已完成', $orderInfo);
   }
-  
 }
 /* End of file WaveController.class.php */
 /* Location: ./Application/Controller/WaveController.class.php */

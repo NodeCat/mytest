@@ -100,6 +100,15 @@ $(function () {
 		return false;
 	});
 
+	$('#save').on('click',function(){
+		var addr,params;
+		params=$('#table-searchbar').serialize();
+		addr=$(this).attr('data-href');
+		window.location.href=addr+'?'+params;
+		
+		return false;
+	})
+
 	$('.form-ajax button[type=submit]').on('click',function(){
 /*
 		if(!$(this).parents('form').valid()){alert('验证失败，请检查您的输入。');return false;}

@@ -227,6 +227,8 @@ class PmsLogic{
             foreach ($res['list'] as $key => $val) {
                 $data[$i]['val']['code'] = $val['sku_number'];
                 $data[$i]['val']['name'] = $val['name'];
+                //加了计量单位 liuguangping
+                $data[$i]['val']['unit_name'] = $val['unit_name'];
                     
                 foreach ($val['description'] as $k => $v) {
                       $attrs[]= $v['name'].':'.$v['val'];

@@ -178,7 +178,7 @@ class PickController extends CommonController {
       }
       
       //结果集处理
-      foreach ($items as &$val) {
+      /*foreach ($items as &$val) {
           foreach ($val['detail'] as $k => $v) {
               if (!isset($val['detail'][$v['pro_code']])) {
                   $val['detail'][$v['pro_code']] = $v;
@@ -188,7 +188,9 @@ class PickController extends CommonController {
                   unset($val['detail'][$k]);
               }
           }
-      }
+      }*/
+      layout(false);
+
       $this->assign('list',$items);
 
       $this->display('Pick::pickPrint');  

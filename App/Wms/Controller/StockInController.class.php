@@ -19,7 +19,7 @@ class StockInController extends CommonController {
 			'21'=>'待收货',
 			'31'=>'待上架',
 			'33'=>'已上架',
-			'04'=>'已作废'
+			//'04'=>'已作废'
 		),
 	);
 	protected $columns = array (   
@@ -48,7 +48,12 @@ class StockInController extends CommonController {
 			'control_type' => 'text',     
 			'value' => 'Company.id,name',   
 		),  
-		
+		'stock_bill_in.pro_code' => array(
+		    'title' => '货号',
+		    'query_type' => 'eq',
+		    'control_type' => 'text',
+		    	'value' => '',
+		),
 		'warehouse.id' =>    array (     
 			'title' => '仓库',     
 			'query_type' => 'eq',     
@@ -93,6 +98,21 @@ class StockInController extends CommonController {
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
 		), 
 	);
+	public function after_search(&$map) {
+	    if (array_key_exists('stock_bill_in.pro_code',$map)) {
+	        $where['pro_code'] = $map['stock_bill_in.pro_code'][1];
+	        $result = M('stock_bill_in_detail')->where($where)->select();
+	        if (empty($result)) {
+	            unset($map['stock_bill_in.pro_code']);
+	        }
+	        $ids = array();
+	        foreach ($result as $value) {
+	            $ids[] = $value['pid'];
+	        }
+	        unset($map['stock_bill_in.pro_code']);
+	        $map['stock_bill_in.id'] = array('in', $ids);
+	    }
+	}
 	public function on($t='scan_incode'){
 		$this->cur = '上架';
 		if(IS_GET) {
@@ -134,9 +154,11 @@ class StockInController extends CommonController {
 				$qty = I('post.qty');
 				$location = I('post.location');
 				$status = I('post.status');
+				//生产日期
+				$product_date = I('post.product_date');
 
 				//上架逻辑
-				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status);
+				$res = A('StockIn','Logic')->on($id,$code,$qty,$location,$status,$product_date);
 				if($res['res'] == true) {
 					//判断是否是采购入库
 					$map['id'] = $id;
@@ -162,7 +184,7 @@ class StockInController extends CommonController {
 						$data['stock_in_code'] = $bill_in_detail_info['code'];
 						$data['purchase_code'] = $bill_in_detail_info['refer_code'];
 						$data['pro_status'] = $status;
-						$data['price_subtotal'] = ($bill_in_detail_info['price_unit'] * 100) * $qty / 100;
+						$data['price_subtotal'] = formatMoney(intval($bill_in_detail_info['price_unit'] * 100 * $qty) / 100,2);
 
 						if($bill_in_detail_info['invoice_method'] == 0){
 							$data['status'] = 'paid';
@@ -253,7 +275,7 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$res = $A->getInQty($id,$code);
+				$res = $A->getInQty($id,$code,1);
 				if($res['res'] == true) {
 					$this->assign($res['data']);
 					layout(false);
@@ -270,7 +292,6 @@ class StockInController extends CommonController {
 			if($type == 'input_qty') {
 				$qty = I('post.qty');
 				$res = A('StockIn','Logic')->in($id,$code,$qty);
-
 				if($res['res'] == true) {
 					//有一件商品入库 更新到货单状态为 待上架
 					$upd_map['id'] = $id;
@@ -296,30 +317,36 @@ class StockInController extends CommonController {
 				$map['is_deleted'] = 0;
 				$map['code'] = $code;
 				$res = M('stock_bill_in')->where($map)->find();
+				unset($map);
 				if(!empty($res)) {
-					if(true){
-						if($res['status'] =='21' || $res['status'] =='22' || $res['status'] == '31' || $res['status'] =='32' || $res['status'] =='33') {
-							$data['id'] = $res['id'];
-							$data['code'] = $res['code'];
-							$data['title'] = '扫描货品';
-							$this->assign($data);
-							layout(false);
-							$this->msg = '查询成功。';
-							$this->title = '扫描货品';
-							$data = $this->fetch('StockIn:in-scan-procode');
-							$this->msgReturn(1,'查询成功。',$data);
+					if(!empty($res['refer_code'])){
+						//如果是销售到货单，货到付款，判断结算金额是否大于0，如果大于0则证明已经收过货，不让继续收货
+						$map['code'] = $res['refer_code'];
+						$purchase_info = M('stock_purchase')->where($map)->find();
+
+						if($purchase_info['invoice_method'] == 1 && floatval($purchase_info['paid_amount']) > 0){
+							$this->msgReturn(0,'采购单已结算，无法收货');
 						}
-						/*if($res['status'] == '31' || $res['status'] =='32') {
-							$this->msgReturn(0,'查询失败，该单据已入库。');
-						}*/
-						if($res['status'] == '53'){
-							$this->msgReturn(0,'查询失败，该单据已完成。');
-						}
-						$this->msgReturn(0,'查询失败，该单据状态异常。');
 					}
-					else {
-						$this->msgReturn(0,'查询失败，您没有权限。');
+					
+					if($res['status'] =='21' || $res['status'] =='22' || $res['status'] == '31' || $res['status'] =='32' || $res['status'] =='33') {
+						$data['id'] = $res['id'];
+						$data['code'] = $res['code'];
+						$data['title'] = '扫描货品';
+						$this->assign($data);
+						layout(false);
+						$this->msg = '查询成功。';
+						$this->title = '扫描货品';
+						$data = $this->fetch('StockIn:in-scan-procode');
+						$this->msgReturn(1,'查询成功。',$data);
 					}
+					/*if($res['status'] == '31' || $res['status'] =='32') {
+						$this->msgReturn(0,'查询失败，该单据已入库。');
+					}*/
+					if($res['status'] == '53'){
+						$this->msgReturn(0,'查询失败，该单据已完成。');
+					}
+					$this->msgReturn(0,'查询失败，该单据状态异常。');
 				}
 				else {
 					$this->msgReturn(0,'查询失败，未找到该单据。');
@@ -363,17 +390,17 @@ class StockInController extends CommonController {
 		$A = A('StockIn','Logic');
 		$qtyForPrepare = 0;
 		foreach ($pros as $key => $val) {
-			$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
+			//$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
 			//$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
 			$getQtyForReceipt = $A->getQtyForReceipt($id,$val['pro_code']);
 			
-			$qtyForPrepare += $qtyPrepare;
+			$qtyForPrepare += $val['prepare_qty'];
 			//$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			//$pros[$key]['moved_qty'] = $qtyIn;
 			//$moved_qty_total += $qtyIn;
 			//预计收获量
-			$expected_qty_total += $val['pro_qty'];
+			$expected_qty_total += $val['expected_qty'];
 			//已收总量
 			$receipt_qty_total += $getQtyForReceipt;
 			//$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
@@ -392,9 +419,9 @@ class StockInController extends CommonController {
 
 		$data['qtyForPrepare'] = $qtyForPrepare;
 		//预计收获量
-		$data['expected_qty_total'] = $expected_qty_total;
+		$data['expected_qty_total'] = formatMoney($expected_qty_total, 2);
 		//已收总量
-		$data['receipt_qty_total'] = $receipt_qty_total;
+		$data['receipt_qty_total'] = formatMoney($receipt_qty_total, 2);
 
 		//$data['qtyForOn'] =$qtyForIn;
 	}
@@ -420,7 +447,7 @@ class StockInController extends CommonController {
         $this->toolbar = array(
         	    array('name' => 'add', 'show' => $show && isset($this->auth['add']), 'new' => 'true'),
         );
-        
+        $this->search_addon = true;
     }
     public function pview() {
         $this->edit();
@@ -455,7 +482,7 @@ class StockInController extends CommonController {
 				'21'=>array('value'=>'21','title'=>'待收货','class'=>'primary'),
 				'31'=>array('value'=>'31','title'=>'待上架','class'=>'info'),
 				'33'=>array('value'=>'33','title'=>'已上架','class'=>'success'),
-				'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger')
+				//'04'=>array('value'=>'04','title'=>'已作废','class'=>'danger')
 			)
 		);
 		$M_bill_in = M('stock_bill_in');
@@ -510,7 +537,7 @@ class StockInController extends CommonController {
                             ->where(array('pid' => $value['id']))
                             ->find();
                 $value['cat_total'] = $detail['cat_total']; //SKU总数
-                $value['qty_total'] = $detail['qty_total']; //总数量
+                $value['qty_total'] = formatMoney($detail['qty_total'], 2); //总数量
                 $value['sp_created_time'] = $value['created_time']; //创建时间
             }
         }
@@ -521,42 +548,46 @@ class StockInController extends CommonController {
     	$id = I('get.id');
 
     	//根据id 查询对应入库单
-    	$map['stock_bill_in.id'] = $id;
+    	$map['stock_bill_in.id'] = array('in',$id);
     	$bill_in = M('stock_bill_in')
     	->join('partner on partner.id = stock_bill_in.partner_id' )
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-    	->where($map)->field('stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')->find();
+    	->where($map)->field('stock_bill_in.id, stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')
+    	->select();
     	unset($map);
 
-    	//根据pid 查询对应入库单详情
-    	$map['stock_bill_in_detail.pid'] = $id;
-    	$bill_in_detail_list = M('stock_bill_in_detail')
-    	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
-    	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')->select();
-        
-        $data['refer_code'] = $bill_in['code'];
-    	$data['remark'] = $bill_in['remark'];
-    	$data['print_time'] = get_time();
-    	$data['partner_name'] = $bill_in['partner_name'];
-    	$data['expecting_date'] = $bill_in['expecting_date'];
-    	$data['created_user_name'] = $bill_in['created_user_name'];
-    	$data['session_user_name'] = session('user.username');
-    	$data['dest_wh_name'] = $bill_in['dest_wh_name'];
+    	foreach($bill_in as $key => $value){
+	    	//根据pid 查询对应入库单详情
+	    	$map['stock_bill_in_detail.pid'] = $value['id'];
+	    	$bill_in_detail_list = M('stock_bill_in_detail')
+	    	->join('left join product_barcode on product_barcode.pro_code = stock_bill_in_detail.pro_code')
+	    	->where($map)->field('stock_bill_in_detail.pro_code,product_barcode.barcode,stock_bill_in_detail.expected_qty,stock_bill_in_detail.receipt_qty')
+	    	->select();
+	        
+	        $data[$key]['refer_code'] = $value['code'];
+	    	$data[$key]['remark'] = $value['remark'];
+	    	$data[$key]['print_time'] = get_time();
+	    	$data[$key]['partner_name'] = $value['partner_name'];
+	    	$data[$key]['expecting_date'] = $value['expecting_date'];
+	    	$data[$key]['created_user_name'] = $value['created_user_name'];
+	    	$data[$key]['session_user_name'] = session('user.username');
+	    	$data[$key]['dest_wh_name'] = $value['dest_wh_name'];
 
-    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
-        //如果没有对应的条码号则使用内部货号作为条码号
-        foreach($bill_in_detail_list as &$val) {
-            if(empty($val['barcode'])) {
-               $val['barcode'] = $val['pro_code']; 
-            }
-        }
+	    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
+	        //如果没有对应的条码号则使用内部货号作为条码号
+	        foreach($bill_in_detail_list as &$val) {
+	            if(empty($val['barcode'])) {
+	               $val['barcode'] = $val['pro_code']; 
+	            }
+	        }
+
+	        $data[$key]['bill_in_detail_list'] = $bill_in_detail_list;
+    	}
        
-    	$data['bill_in_detail_list'] = $bill_in_detail_list;
-
     	layout(false);
-    	$this->assign($data);
+    	$this->assign('result',$data);
     	$this->display('StockIn:print');
     }
     
@@ -599,6 +630,12 @@ class StockInController extends CommonController {
             //sku数量为0
             if ($value['pro_qty'] <= 0) {
                 $this->msgReturn(0, '数量不可为0');
+                return;
+            }
+
+            if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                $mes = '数量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);
                 return;
             }
         }
@@ -673,5 +710,108 @@ class StockInController extends CommonController {
 
         if(empty($data))$data['']='';
         echo json_encode($data);
+    }
+
+    //处理预览数据
+    public function preview(){
+        $pro_infos = I('pro_infos');
+        if(empty($pro_infos)){
+            $this->msgReturn(0,'请提交批量处理的信息');
+        }
+        $pro_infos_list = explode("\n", $pro_infos);
+
+        $pro_codes = array();
+        $purchase_infos = array();
+        foreach($pro_infos_list as $pro_info){
+            $pro_info_arr = explode("\t", $pro_info);
+            $pro_codes[] = $pro_info_arr[0];
+            $in_qty[$pro_info_arr[0]] = $pro_info_arr[1];
+            //$purchase_infos[$pro_info_arr[0]]['pro_qty'] = $pro_info_arr[1];
+            //$purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
+        }
+
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+
+        //拼接模板
+        foreach($pro_codes as $key => $pro_code){
+        	$key++;
+            $result .= '<tr class="tr-cur tr-active">
+		        <td style="width:50%;">
+			        <input type="hidden" value="'.$pro_code.'" name="pros['.$key.'][pro_code]" class="pro_code form-control input-sm">
+			        <input type="hidden" value="'.$sku_list[$pro_code]['name'].'" name="pros['.$key.'][pro_name]" class="pro_name form-control input-sm">
+			        <input type="hidden" value="'.$sku_list[$pro_code]['pro_attrs_str'].'" name="pros['.$key.'][pro_attrs]" class="pro_attrs form-control input-sm">
+			        <input type="text" id="typeahead" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" value="['.$pro_code.']'.$sku_list[$pro_code]['wms_name'].'">
+			    </td>
+		        <td style="width:10%;">
+		            <input type="text" name="pros['.$key.'][pro_qty]" placeholder="数量" value="'.$in_qty[$pro_code].'" class="form-control input-sm text-left" autocomplete="off">
+		        </td>
+		        <td style="width:10%;">
+		            <select name="pros['.$key.'][pro_uom]" class="form-control input-sm">
+		                <!--<option value="箱">箱</option>-->
+		            		<option value="件">件</option>
+		            </select>
+		        </td>
+		        <!--<td style="width:10%;">
+		            <input type="text" id="price_unit" name="pros[0][price_unit]" placeholder="单价"  value="0.00" class="pro_unit form-control input-sm text-left">
+		        </td>-->
+		        
+		        <td style="width:10%;" class="text-center">
+		            <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+		        </td>
+		      </tr>';
+        }
+
+        $this->msgReturn(1,'',array('html'=>$result));
+    }
+
+    //一键上架
+    public function onall(){
+    	$ids = I('id');
+        if(empty($ids)){
+            $this->msgReturn(0,'请选择到货单');
+        }
+
+        //查询收货区库位
+        $map['code'] = '001-001';
+        $map['wh_id'] = session('user.wh_id');
+        $rev_location_info = M('location')->where($map)->find();
+        unset($map);
+
+        if(empty($rev_location_info['id'])){
+        	$this->msgReturn(0,'请添加库位001-001');
+        }
+
+        //根据到货单查询相关SKU信息
+        $map['stock_bill_in_detail.pid'] = array('in',$ids);
+        $stock_bill_in_detail = M('stock_bill_in_detail')
+        ->join('join stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
+        ->field('stock_bill_in_detail.*,stock_bill_in.code')
+        ->where($map)
+        ->select();
+        unset($map);
+
+        $wh_id = session('user.wh_id');
+        $location_id = $rev_location_info['id'];
+
+        foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
+        	//先模拟收货 更新prepare_qty的值为expected_qty
+        	$map['id'] = $stock_bill_in_detail_info['id'];
+        	$data['prepare_qty'] = $stock_bill_in_detail_info['expected_qty'];
+        	M('stock_bill_in_detail')->where($map)->data($data)->save();
+        	unset($map);
+        	unset($data);
+
+        	$refer_code = $stock_bill_in_detail_info['code'];
+        	$batch = $stock_bill_in_detail_info['code'];
+        	$pro_code = $stock_bill_in_detail_info['pro_code'];
+        	$pro_qty = $stock_bill_in_detail_info['expected_qty'];
+        	$pro_uom = $stock_bill_in_detail_info['pro_uom'];
+        	$status = 'qualified';
+        	$product_date = date('Y-m-d');
+        	//直接上架
+        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
+        }
+
+        $this->msgReturn(1);
     }
 }

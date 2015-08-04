@@ -51,7 +51,9 @@
 			</volist>
 		</tbody>
 	</table>
-	<a class='btn btn-primary hidden' href="{:U('Index/deliver_goods?dist_id='.$list['dist_id'])}" >交货</a>
+	<notempty name="VERSION">
+	<a class='btn btn-primary' href="{:U('Index/deliver_goods?dist_id='.$list['dist_id'])}" >交货</a>
+	</notempty>
 </div>
 
 </div>

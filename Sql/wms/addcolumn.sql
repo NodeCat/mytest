@@ -1,0 +1,1 @@
+ALTER TABLE `stock_bill_out_detail` ADD `measure_unit` varchar(45) DEFAULT '' COMMENT '计量单位';

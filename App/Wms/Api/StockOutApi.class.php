@@ -150,13 +150,21 @@ class StockOutApi extends Controller{
         }
 
         $stock = M('stock'); 
+        $wh_list=array('5','6','7','8','9','10','11','12');
+        $result=array();
         foreach($post as $key=>$val) {
             $map['stock.status'] = 'qualified';
             $map['stock.is_deleted'] = 0;
             $map['pro_code'] = $val;
+            $result[$val]=array();
             $res = $stock->field('warehouse.id as wh_name,sum(stock_qty) as total_qty')->join('warehouse on warehouse.id=wh_id')->where($map)->group('wh_name, pro_code')->select();
             foreach($res as $v) {
                 $result[$val][$v['wh_name']] = $v['total_qty'];
+            }
+            foreach ($wh_list as $wh_id){
+                if(!array_key_exists($wh_id,$result[$val])){
+                    $result[$val][$wh_id]= 0;
+                }
             }
         }
         

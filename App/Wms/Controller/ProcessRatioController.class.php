@@ -34,7 +34,34 @@ class ProcessRatioController extends CommonController {
 	                'control_type' => 'getField',
 	                'value' => 'company.id,name',
 	        ),
+	        'erp_process_sku_relation.created_user' => array(
+	                'title' => '创建人',
+	                'query_type' => 'eq',
+	                'control_type' => 'text',  
+	                'value' => '',
+	        ),
+	        
     );
+	
+	public function after_search(&$map){
+	    if (array_key_exists('erp_process_sku_relation.created_user', $map)) {
+	        $where['nickname'] = $map['erp_process_sku_relation.created_user'][1];
+	        $result = M('user')->where($where)->select();
+	        if (empty($result)) {
+	            unset($map['erp_process_sku_relation.created_user']);
+	        }
+	        $ids = array();
+	        foreach ($result as $value) {
+	            $ids[] = $value['id'];
+	        }
+	        unset($map['erp_process_sku_relation.created_user']);
+	        if (!empty($ids)) {
+	           $map['erp_process_sku_relation.created_user'] = array('in', $ids);
+	        } else {
+	            $map['erp_process_sku_relation.created_user'] = array('eq', null);
+	        }
+	    }
+	}
 	
 	/**
 	 * 定义页面格局
@@ -79,6 +106,7 @@ class ProcessRatioController extends CommonController {
         	    $p_code = $data['p_pro_code'];
         	    $M = M('erp_process_sku_relation');
         	    $map['p_pro_code'] = $p_code;
+        	    $map['is_deleted'] = 0;
         	    $ratio = $M->where($map)->select();
         	    
         	    unset($map);
@@ -107,7 +135,7 @@ class ProcessRatioController extends CommonController {
         	                    	'c_code' => $v['c_pro_code'],
         	                        'c_name' => $value['name'],
         	                        'c_attrs' => $value['pro_attrs_str'],
-        	                        'c_ratio' => $v['ratio'],
+        	                        'c_ratio' => formatMoney($v['ratio'], 2),
         	                        'c_uom_name' => $value['uom_name'],
         	                    );
         	                }
@@ -135,6 +163,7 @@ class ProcessRatioController extends CommonController {
         	    //去除隐藏域
         	    unset($post['pros'][0]);
         	    $map['p_pro_code'] = $post['p_pro_code_hidden'];
+        	    $map['is_deleted'] = 0;
         	    $affected = $M->where($map)->find();
         	    if (!empty($affected)) {
         	        //此比例关系已存在
@@ -160,10 +189,18 @@ class ProcessRatioController extends CommonController {
         	            $this->msgReturn(0, '请选择子SKU');
         	            return;
         	        }
-        	        if ($value['pro_qty'] < 1) {
-        	            $this->msgReturn(0, '数量不可小于1');
+        	        if ($value['pro_qty'] < 0) {
+        	            $this->msgReturn(0, '数量不可小于零');
         	            return;
         	        }
+
+                    //验证小数 liuguangping
+                    $mes = '';
+                    if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                        $mes = '数量只能精确到两位小数点';
+                        $this->msgReturn(0,$mes);
+                        return;
+                    }
         	        
         	        //子SKU父SKU不可相同
         	        if ($value['pro_code'] == $post['p_pro_code_hidden']) {
@@ -171,7 +208,7 @@ class ProcessRatioController extends CommonController {
         	        }
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
-        	        $info[$key]['ratio'] = $value['pro_qty'];
+        	        $info[$key]['ratio'] = formatMoney($value['pro_qty'], 2);
         	        $info[$key]['company_id'] = $post['company_id'];
         	        $info[$key]['created_user'] = session()['user']['uid'];
         	        $info[$key]['updated_user'] = session()['user']['uid'];
@@ -276,11 +313,18 @@ class ProcessRatioController extends CommonController {
         	    if (empty($M->ratio)) {
         	        $this->msgReturn(false, '请输入比例关系');
         	    }
+                //验证小数 liuguangping
+                $mes = '';
+                if (strlen(formatMoney($M->ratio, 2, 1))>2) {
+                    $mes = '数量只能精确到两位小数点';
+                    $this->msgReturn(false,$mes);
+                }
         	    if ($M->p_pro_code == $M->c_pro_code) {
         	        $this->msgReturn(false, '父SKU和子SKU不可相同');
         	    }
         	    if ($this->p_pro_code != $M->p_pro_code) {
         	        $map['p_pro_code'] = $M->p_pro_code;
+        	        $map['is_deleted'] = 0;
             	    $have = M('erp_process_sku_relation')->where($map)->find();
             	    if (!empty($have)) {
             	        $this->msgReturn(false, '此物料清单已存在');

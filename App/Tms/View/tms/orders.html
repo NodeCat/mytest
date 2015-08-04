@@ -53,6 +53,13 @@
               </span>
             </a>
           </h4>
+          <a class="report" data-userid="{$vo.user_id}">
+          <i style="color:red"class="glyphicon glyphicon-remove-circle">
+          </i>
+            <span >
+              地址报错
+            </span>
+          </a>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
           {$vo.realname} &nbsp;&nbsp;
@@ -82,17 +89,16 @@
           <case value="已回款" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
             data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <case value="已退货" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
             data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <default />
           <a onclick="check(this)" class="list-group-item  panel-footer collapsed"
-          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false"
-          data-parent="#orders" aria-controls="info_{$vo.id}">
+          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
         </switch>
         <!--{$vo.order_type_cn}-->
         <span class="order-id">
@@ -175,14 +181,11 @@
                       </switch>
                       <else/>
                       <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
-                      placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                      placeholder="{$v.quantity}" data-val="{$v.quantity}" value="{$v.quantity}" onkeyup="checkValue(this)">
                     </eq>
                     <span class="input-group-addon">
                       {$v.close_unit}
                     </span>
-                    <!-- <input type="number" name="price_sum[]" min="0" class="form-control
-                    p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
-                    -->
                     <span class="input-group-addon">
                       ¥
                       <span class="p_sum">
@@ -224,12 +227,12 @@
                 <span class="input-group-addon">
                   应收 ¥
                   <span class="p_final">
-                    {$vo.final_price}
+                    {$vo.receivable_sum}
                   </span>
                   元
                 </span>
-                <input type="hidden" class="form-control p_final" placeholder="{$vo.final_price}"
-                value="{$vo.final_price}" readonly>
+                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.receivable_sum}"
+                value="{$vo.receivable_sum}" readonly>
                 <span class="input-group-addon">
                   实收
                 </span>
@@ -268,10 +271,10 @@
                         该订单已网上支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                  value="{$vo.deal_price}" readonly>
                     <else/>
                       <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                  value="{$vo.deal_price}" readonly>
                    </if>
                 </switch>
               </div>
@@ -294,6 +297,14 @@
               <case value="已完成" break="0">
               </case>
               <case value="已回款" break="1">
+                <!-- 打印小票 -->
+                <div class="panel-footer" id="p_{$vo.id}">
+                    <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">
+                        <div>
+                            <a class="btn btn-primary btn-block js-btn-print" data-id="{$vo.id}" data-bid="0" data-str='{$vo.printStr}'>打印小票</a>
+                        </div>
+                    </div>
+                </div>
               </case>
               <case value="已退货" break="0">
               </case>
@@ -317,6 +328,14 @@
                   </div>
                   <div class="clearfix">
                   </div>
+                </div>
+                <!-- 打印小票 -->
+                <div class="panel-footer">
+                    <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">
+                        <div>
+                            <a class="btn btn-default btn-block disabled">打印小票</a>
+                        </div>
+                    </div>
                 </div>
               </case>
             </switch>

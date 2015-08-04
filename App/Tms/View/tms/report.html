@@ -9,6 +9,21 @@
   <h4 class="list-group-item-heading">{$vo.dist_code}<br/>{$vo.line_name}</h4>
   </a>
 </volist>
+<br/>
+<br/>
+<botton id="finished" class='btn btn-primary btn-lg btn-block'>我已回库</botton>
 </div>
+<div id="notice" style="color:red;font-size:110%">
+  <span>温馨提示：回到仓库后必须点击我已回库，否则影响运费结算</span>
 </div>
-
+<br/>
+</div>
+<script type="text/javascript">
+$('#finished').click(function(){
+  if(typeof HostApp == "undefined") {
+    alert('配送完成');
+    return false;
+  }
+  HostApp.stopLocate();
+  });
+</script>

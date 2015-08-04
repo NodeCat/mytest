@@ -41,16 +41,18 @@ class StockLogic{
             $check_re = $this->outStockBySkuFIFOCheck($data);
             if($check_re['status'] != 1){
                 $is_enough = false;
+                $not_enough_pro_code[] = $check_re['data']['pro_code'];
             }
             unset($data);
 
-            //如果不够 直接返回
-            if(!$is_enough){
-                return false;
-            }
         }
 
-        return true;
+        //如果不够 直接返回
+        if(!$is_enough){
+            return array('status'=>0,'data'=>array('not_enough_pro_code'=>$not_enough_pro_code));
+        }
+
+        return array('status'=>1);
     }
 
     /**
@@ -83,7 +85,7 @@ class StockLogic{
             $map['stock.batch'] = $params['batch_code'];
         }
 
-        $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+        $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
 
         //检查所有的 库存量 是否满足 出库量
@@ -194,11 +196,12 @@ class StockLogic{
             $map['stock.status'] = $location_status['status'];
             unset($location_map);
         }
+
         //加入批次条件满足采购退货 liuguangping
         if($params['batch_code']){
             $map['stock.batch'] = $params['batch_code'];
         }
-        $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+        $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
 
         //检查所有的 库存量 是否满足 出库量
@@ -206,8 +209,8 @@ class StockLogic{
             $stock_total += $stock['stock_qty'] - $stock['assign_qty'];
         }
 
-        if($stock_total < intval($params['pro_qty'])){
-            return array('status'=>0,'msg'=>'库存总量不足！');
+        if($stock_total < formatMoney($params['pro_qty'], 2)){
+            return array('status'=>0,'msg'=>'库存总量不足！','data'=>array('pro_code'=>$params['pro_code']));
         }
 
         return array('status'=>1);
@@ -227,7 +230,7 @@ class StockLogic{
             return array('status'=>0,'msg'=>'参数有误！');
         }
 
-        $diff_qty = $params['pro_qty'];
+        $diff_qty = $params['pro_qty']; 
 
         //根据pro_code location_id 查询库存stock 按照batch排序，最早的批次在前面
         $map['pro_code'] = $params['pro_code'];
@@ -243,7 +246,7 @@ class StockLogic{
             $map['stock.status'] = $location_status['status'];
             unset($location_map);
         }
-        $stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->select();
+        $stock_list = M('Stock')->where($map)->order('product_date')->select();
         unset($map);
 
         //检查所有的 库存量 是否满足 出库量
@@ -255,7 +258,7 @@ class StockLogic{
             return array('status'=>0,'msg'=>'库存总量不足！');
         }
 
-        $diff_qty = intval($diff_qty);
+        $diff_qty = formatMoney($diff_qty, 2);
         
         //按照现进先出原则 减去最早的批次量
         foreach($stock_list as $key=>$stock){
@@ -459,9 +462,10 @@ class StockLogic{
      * $pro_qty 产品数量
      * $pro_uom 产品计量单位
      * $status 库存状态
+     * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak = ''){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
@@ -470,12 +474,14 @@ class StockLogic{
         $row['batch'] = $batch;
         $row['status'] =$status;
         
-        $res = $stock->where($row)->find();
+        $stock_info = $stock->where($row)->find();
         
-        if(empty($res)) {
+        if(empty($stock_info)) {
             $row['prepare_qty'] = 0;
             $row['stock_qty'] = $pro_qty;
-            $row['assign_qty'] = 0;    
+            $row['assign_qty'] = 0;
+            //增加生产日期
+            $row['product_date'] = (empty($product_date)) ? date('Y-m-d') : $product_date;
             
             $data = $stock->create($row);
 
@@ -483,27 +489,40 @@ class StockLogic{
 
             $log_old_qty = 0;
             $log_new_qty = $pro_qty;
+            unset($data);
         }
         else{
-            $log_old_qty = $res['stock_qty'];
-            $log_new_qty = $res['stock_qty'] + $pro_qty;
+            $log_old_qty = $stock_info['stock_qty'];
+            $log_new_qty = $stock_info['stock_qty'] + $pro_qty;
 
-            $map['id'] = $res['id'];
-            $data['stock_qty'] = $res['stock_qty'] + $pro_qty;
+            //增加数量
+            $map['id'] = $stock_info['id'];
+            $data['stock_qty'] = $stock_info['stock_qty'] + $pro_qty;
             $data = $stock->create($data,2);
             $res = $stock->where($map)->save($data);
+            unset($data);
+
+            //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+            if(strtotime($stock_info['product_date']) > strtotime($product_date) || $stock_info['product_date'] == '0000-00-00 00:00:00'){
+                $data['product_date'] = (empty($product_date)) ? date('Y-m-d') : $product_date;
+                $data = $stock->create($data,2);
+                $res = $stock->where($map)->save($data);
+                unset($data);
+            }
             unset($map);
         }
         if($res == false) {
             return false;
         }
         unset($row);
-        unset($data);
 
         //减待上架库存 增加已上量
-        $map['refer_code'] = $refer_code;
+        $map['pid'] = $inId;
         $map['pro_code'] = $pro_code;
         //$map['pro_uom'] = $pro_uom;
+        if ($batch_bak) {
+            $map['batch'] = $batch;
+        }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
         unset($map);
@@ -572,27 +591,27 @@ class StockLogic{
         $map['location_id'] = $param['src_location_id'];
         $map['pro_code'] = $param['pro_code'];
         $map['wh_id'] = $param['wh_id'];
-        $src_stock_list = M('Stock')->join('LEFT JOIN stock_batch on stock_batch.code = stock.batch')->where($map)->order('stock_batch.product_date')->field('stock.*,stock_batch.product_date')->group('batch')->select();
+        $src_stock_list = M('Stock')->where($map)->order('product_date')->group('batch')->select();
         unset($map);
 
         //检查变化量是否大于总库存量，如果大于则报错
         foreach($src_stock_list as $src_stock){
-            $src_total_qty += $src_stock['stock_qty'];
+            $src_total_qty += $src_stock['stock_qty'] - $src_stock['assign_qty'];
         }
 
 
-        if(intval($param['variable_qty']) > intval($src_total_qty)){
+        if(formatMoney($param['variable_qty'], 2) > formatMoney($src_total_qty, 2)){
             return array('status'=>0,'msg'=>'移库量大于库存总量！');
         }
 
         //剩余移动量
-        $diff_qty = intval($param['variable_qty']);
+        $diff_qty = formatMoney($param['variable_qty'], 2);
 
         //整理数据格式
         foreach($src_stock_list as $key => $value){
-            $src_stock_list[$key]['stock_qty'] = intval($value['stock_qty']);
-            $src_stock_list[$key]['assign_qty'] = intval($value['assign_qty']);
-            $src_stock_list[$key]['prepare_qty'] = intval($value['prepare_qty']);
+            $src_stock_list[$key]['stock_qty'] = formatMoney($value['stock_qty'], 2);
+            $src_stock_list[$key]['assign_qty'] = formatMoney($value['assign_qty'], 2);
+            $src_stock_list[$key]['prepare_qty'] = formatMoney($value['prepare_qty'], 2);
         }
 
         //按照现进先出原则 减去最早的批次量
@@ -804,6 +823,7 @@ class StockLogic{
     *    'batch'=>xxxx,
     *    'status'=>xxxx,
     *    'change_src_assign_qty'=>xxxx, 是否减少src的assign_qty
+    *    'refer_code'=>xxxx, 关联单号
     * )
     *
     */
@@ -850,6 +870,7 @@ class StockLogic{
             $add_info['stock_qty'] = $param['variable_qty'];
             $add_info['assign_qty'] = 0;
             $add_info['prepare_qty'] = 0;
+            $add_info['product_date'] = $src_stock_info['product_date'];
 
             try{
                 //插入数据
@@ -869,6 +890,7 @@ class StockLogic{
                     'new_qty' => $param['variable_qty'],
                     'batch' => $src_stock_info['batch'],
                     'status' => $param['status'],
+                    'refer_code' => $param['refer_code'],
                     );
                 $stock_move = D('StockMoveDetail');
                 $stock_move_data = $stock_move->create($stock_move_data);
@@ -925,6 +947,15 @@ class StockLogic{
                     $map['batch'] = $param['batch'];
                     M('Stock')->where($map)->setInc('stock_qty',$param['variable_qty']);
 
+                    //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+                    if(strtotime($dest_stock_info['product_date']) > strtotime($src_stock_info['product_date']) || $dest_stock_info['product_date'] == '0000-00-00 00:00:00'){
+                        $data['product_date'] = (empty($src_stock_info['product_date'])) ? date('Y-m-d') : $src_stock_info['product_date'];
+                        $stock = D('Stock');
+                        $data = $stock->create($data,2);
+                        $res = $stock->where($map)->save($data);
+                        unset($data);
+                    }
+
                     //写入库存交易日志
                     $stock_move_data = array(
                         'wh_id' => $param['wh_id'],
@@ -937,6 +968,7 @@ class StockLogic{
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
                         'batch' => $param['batch'],
                         'status' => $param['status'],
+                        'refer_code' => $param['refer_code'],
                         );
                     $stock_move = D('StockMoveDetail');
                     $stock_move_data = $stock_move->create($stock_move_data);

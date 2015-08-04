@@ -91,7 +91,8 @@
 <div class="form-group  col-lg-6">
 <div class="col-lg-10 col-lg-offset-2">
    <button type="submit" data-href="__SELF__" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
-   <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>
+   <a href="{:U('__ACTION__')}?"  class="btn btn-default btn-sm">显示全部</a>&nbsp;&nbsp;&nbsp;&nbsp;
+   <a id="mapdisplay" href="javascript:void(0);" class="btn btn-default btn-sm">显示地图</a>
 </div>
 </div>
    <eq name="search_addon" value="TRUE">
@@ -105,6 +106,38 @@
 <script>
 	$(function() {
 		var url = "/Distribution/line_order_num";
+        $('#btn-query').on('click',function(){
+            $("#data-table").children("tbody").html("");
+            $("#mapdisplay").html('显示地图');
+            $('#mapContainer').css("display","none");
+            flg = 1;
+            $.ajax({
+                url:url,
+                data:{
+                    stype:$("select[name='query[stype]']").val(),
+                    type:$("select[name='query[type]']").val(),
+                    line:$("select[name='query[line]']").val(),
+                    date:$("input[name='query[date]']").val(),
+                    time:$("select[name='query[time]']").val()
+                },
+                success:function (msg) {
+                    var msg = eval('('+msg+')');   
+                    $("select[name='query[line]']").children('option').each(function() {
+                        var content = $(this).html();
+                        var value = $(this).val();
+                        if (typeof(msg[value]) == 'undefined') {
+                           $(this).html(content.slice(0,content.lastIndexOf("("))+"(0)")
+                        } else {
+                         $(this).html(content.slice(0,content.lastIndexOf("("))+'('+msg[value]+')')
+                        }
+                        if (value == '' && typeof(msg['sum']) != 'undefined') {
+                            content = "全部";
+                            $(this).html(content+'('+msg["sum"]+')');
+                        }
+                    })
+                }
+            });
+        });
 		$.ajax({
 	    		url:url,
 	    		success:function (msg) {

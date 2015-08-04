@@ -9,7 +9,15 @@ class DistributionLogic {
     
     public static $line = array(); //线路 （缓存线路）
     
+    private $server = '';
+    private $request;
     
+    public function __construct() {
+        import('Common.Lib.HttpCurl');
+        
+        $this->server = C('HOP_API_PATH');
+        $this->request = new \HttpCurl();
+    }
     /**
      * 订单筛选字段验证
      * @param array $post 筛选条件
@@ -28,10 +36,6 @@ class DistributionLogic {
             return $return;
         }
         if ($post['stype'] == 1) {
-            if (empty($post['type'])) {
-                $return['msg'] = '请选择订单类型';
-                return $return;
-            }
             if (empty($post['date'])) {
                 $return['msg'] = '请选择配送时间';
                 return $return;
@@ -98,7 +102,7 @@ class DistributionLogic {
             $map['delivery_date'] = date('Y-m-d H:i:s', strtotime($search['date']));
         }
         //获取出库单
-        $result = $M->where($map)->select();
+        $result = $M->where($map)->order('line_id,refer_code,created_time')->select();
         if (empty($result)) {
             $return['msg'] = '没有符合符号条件的订单';
             return $return;
@@ -120,6 +124,7 @@ class DistributionLogic {
                 //增加客服id 创建配送单使用
                 foreach ($result as $k => $v) {
                     if ($v['refer_code'] == $val['id']) {
+                        $result[$k]['map_pos'] = json_decode($val['geo'], true);
                         $result[$k]['user_id'] = $val['user_id'];
                         break;
                     }
@@ -162,6 +167,7 @@ class DistributionLogic {
             $return[$key]['address'] = $value['delivery_address']; //地址
             $return[$key]['deliver_date'] = $value['delivery_date'] . ' ' . $value['delivery_time'];//配送时间
             $return[$key]['line_total'] = count($value['detail']); //sku总数
+            $return[$key]['map_pos'] = $value['map_pos']; //坐标
             foreach ($value['detail'] as $k => $val) {
                 $return[$key]['sku_total'] += $val['order_qty']; //sku总数
                 $return[$key]['detail'][$k]['name'] = $val['pro_name']; //名称
@@ -318,16 +324,17 @@ class DistributionLogic {
      * @param number $line_id
      * @return string|Ambigous <string, unknown>
      */
-    public function format_line($line_id = -1) {
+    public function format_line($line_id = -1, $wh_id = 0) {
         $return = '';
         
         if ($line_id == 0) {
             return $return;
         }
+        
         //获取线路
         if (empty($this->line)) {
             $lines = D('Wave', 'Logic');
-            $result = $lines->line();
+            $result = $lines->line($wh_id);
             $this->line = $result;
         }
         
@@ -564,6 +571,104 @@ class DistributionLogic {
     }
     
     /**
+     * 根据出库单ID将出库单从波次中踢出
+     * @param array $outIds 出库单ID数组（所有出库单必须属于同一个波次）
+     * @param int $waveId 波次ID
+     */
+    public function updateStockWaveDetailByOutIds($outIds = array()) {
+        $return = false;
+        
+        if (empty($outIds)) {
+            return $return;
+        }
+        
+        $map['stock_wave_detail.bill_out_id'] = array('in', $outIds);
+        $map['stock_bill_out.id'] = array('in', $outIds);
+        $data['stock_wave_detail.is_deleted'] = 1;
+        $affected = M('stock_wave_detail')
+                        ->where($map)
+                        ->join('stock_bill_out ON stock_bill_out.wave_id=stock_wave_detail.pid')
+                        ->save($data);
+        if ($affected) {
+            $return = true;
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * 根据出库单ID 更新出库单备注及拒绝标示 波次号 
+     * @param array $ids 出库单id数组
+     * @param array $data 更新数据
+     */
+    public function updateStockInfoByIds($ids = array(), $waveId = 0) {
+        $return = false;
+        
+        if (empty($ids) || empty($waveId)) {
+            return $return;
+        }
+        $stockBillOutInfo = M('stock_bill_out')->where(array('id' => array('in', $ids)))->select();
+        $formatData = array();
+        foreach ($stockBillOutInfo as $value) {
+            $formatData[$value['id']] = $value;
+        }
+        foreach ($ids as $val) {
+            $remarks = $formatData[$val]['notes'];
+            $pos = strpos($remarks, '@@@@');
+            if ($pos !== false) {
+                if ($pos == 0) {
+                    $remarks = '';
+                } elseif ($pos > 0) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
+            }
+            $data['refused_type'] = 1;
+            $data['wave_id'] = $waveId;
+            $data['status'] = 3; //波次中
+            $data['notes'] = $remarks;
+            $affected = M('stock_bill_out')->where(array('id' => $val))->save($data);
+            if (!$affected) {
+                return $return;
+            }
+        }
+        
+        $return = true;
+        return $return;
+    }
+    /**
+     * 根据出库单ID检查缺货SKU货号 并更新出库单备注及拒绝标示
+     * @param array $ids 出库单id数组
+     * @param return
+     */
+    public function getReduceSkuCodesAndUpdate($ids = array()) {
+        $return = false;
+        
+        if (empty($ids)) {
+            return $return;
+        }
+        foreach ($ids as $value) {
+            $stockBillOutInfo = M('stock_bill_out')->where(array('id' => $value))->find();
+            $result = A('Stock', 'Logic')->checkStockIsEnoughByOrderId($value);
+            if ($result['status'] == 0) {
+                $remarks = $stockBillOutInfo['notes'];
+                $pos = strpos($remarks, '@@@@');
+                if ($pos !== false) {
+                    $remarks = substr($remarks, 0, $pos);
+                }
+                $data['notes'] = $remarks . '@@@@缺货SKU货号:' . implode(',', $result['data']['not_enough_pro_code']);
+                $data['refused_type'] = 2; //缺货
+                $map['id'] = $value;
+                $affected = M('stock_bill_out')->where($map)->save($data);
+                if (!$affected) {
+                    return $return;
+                }
+            }
+        }
+        $return = true;
+        return $return;
+    }
+    
+    /**
      * 获取出库但类型
      * @param int $id 类型ID
      */
@@ -586,17 +691,48 @@ class DistributionLogic {
     
     /**
      * 获取所有可加入配送单的出库单 并按线路ID统计数量
+     * 参数 $params = array(
+     * 'stype' => xxx  出库单类型
+     * 'type' => xxx 订单类型
+     * 'line' => xxx 线路
+     * 'date' => xxx 日期
+     * 'time' => xxx 时段
+     * );
+     * 
      * @return array
      */
-    public function get_all_orders() {
+    public function get_all_orders($params = array()) {
+        $stype = (empty($params['stype'])) ? array('in', array(1, 3, 4, 5)) : $params['stype'];
+
         $return = array('status' => false, 'msg' => '');
         
         $M = M('stock_bill_out');
-        $map['type'] = array('in', array(1, 3, 4, 5)); //类型 1销售出库 3 采购正品出库 4领用出库 5调拨出库
+        $map['type'] = $stype; //类型 1销售出库 3 采购正品出库 4领用出库 5调拨出库
         $map['status'] = 1; //状态 1带生产
         $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
         //$map['line_id'] = array('gt', 0); //线路ID > 0
+        if(!empty($params['type'])){
+            $map['order_type'] = $params['type'];
+        }
+        if(!empty($params['line'])){
+            $map['line_id'] = $params['line'];
+        }
+        if(!empty($params['date'])){
+            $map['create_time'] = array(array('like',$params['date'].'%'));
+        }
+        if(!empty($params['time'])){
+            switch($params['time']){
+                case 1:
+                    $map['delivery_ampm'] = 'am';
+                    break;
+                case 2:
+                    $map['delivery_ampm'] = 'pm';
+                    break;
+                default:
+                    break;
+            }
+        }
         
         $result = $M->where($map)->select();
         if (empty($result)) {
@@ -677,6 +813,23 @@ class DistributionLogic {
         }
         
         $return = $pid;
+        return $return;
+    }
+    
+    /**
+     * 获取订单类型
+     */
+    public function getOrderTypeByTms() {
+        $return = array();
+        
+        $url = $this->server . '/order/get_order_split_config';
+        $result = $this->request->post($url);
+        $result = json_decode($result, true);
+        if ($result['status'] == 0) {
+            foreach ($result['res'] as $value) {
+                $return[$value['code']] = $value['msg'];
+            }
+        }
         return $return;
     }
     
@@ -772,5 +925,366 @@ class DistributionLogic {
     
         $csv_data = array_merge($csv_data, $tail_arr);
         return $csv_data;
+    }
+
+    /**
+     * [distInfo 根据配送单ID获取一条配送单信息]
+     * @param  [int] $dist_id [配送单ID]
+     * @return [type]          [description]
+     */
+    public function distInfo($dist_id) {
+            if(!$dist_id) {
+                return false;
+            }
+            $M = M('stock_wave_distribution');
+            $map['id'] = $dist_id;
+            $map['is_deleted'] = 0;
+            $dist = $M->where($map)->find();
+            return $dist;
+    }
+
+    /**
+     * [getDistDetail 根据ID或出库单ID获取配送单详情]
+     * @param  id 或 bill_out_id,支持数组
+     * @return [type] [返回配送单详情的列表]
+     */
+    public function getDistDetails($params = array()) {
+        $id = isset($params['id']) ? $params['id'] : array();
+        $bill_out_id = isset($params['bill_out_id']) ? $params['bill_out_id'] : array();
+        if (empty($id) && empty($bill_out_id)) {
+            return array(
+                'status' => -1,
+                'msg'    => 'ID或出库单ID不能为空'
+            );
+        }
+        //参数有配送单ID
+        if (!empty($id)) {
+            if (is_array($id)) {
+                $map['id'] = array('in', $id);
+            } else {
+                $map['id'] = $id;
+            }
+        }
+        //参数有出库单ID
+        if (!empty($bill_out_id)) {
+            if (is_array($bill_out_id)) {
+                $map['bill_out_id'] = array('in', $bill_out_id);
+            } else {
+                $map['bill_out_id'] = $bill_out_id;
+            }
+        }
+        //出库单数据
+        $map['is_deleted'] = 0;
+        $M = M('stock_wave_distribution_detail');
+        $dist_details = $M->where($map)->select();
+        if ($dist_details) {
+            $res = array(
+                'status' => 0,
+                'list'   => $dist_details
+            );
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'   => '数据不足'
+            );
+        }
+        return $res;
+    }
+
+    /**
+     * [saveSignDataToDistDetail 保存签收主数据到配送单详情]
+     * @param  array  $params [配送单详情ID,签收数据data]
+     * @return [type]         [description]
+     */
+    public function saveSignDataToDistDetail($params = array()) {
+        if(empty($params['id']) || empty($params['data'])) {
+            return false;
+        }
+        $M = M('stock_wave_distribution_detail');
+        $map['id'] = $params['id'];
+        $res = $M->where($map)->save($params['data']);
+        return $res;
+    }
+
+    /**
+     * [set_dist_detail_status 根据配送单ID或出库单ID，修改配送单详情状态]
+     * @param array $map [bill_out_id或dist_id,status]
+     */
+    public function set_dist_detail_status($params = array())
+    {
+        if(!empty($params['status'])) {
+            $M = M('stock_wave_distribution_detail');
+            //传入的是出库单ID
+            if (!empty($params['bill_out_id'])) {
+                $map['bill_out_id'] = $params['bill_out_id'];
+                $map['is_deleted']  = 0;
+                //配送单详情
+                $dist_detail = $M->field('id,pid,status')->where($map)->find();
+                if($dist_detail['status'] == $params['status']) {
+                    $res = array(
+                        'status' => 0,
+                        'msg'    => '状态已更新'
+                    );
+                } else {
+                    //更新配送单详情状态
+                    $s = $M->where(array('bill_out_id' => $params['bill_out_id']))
+                        ->save(array('status' => $params['status']));
+                    if($s) {
+                        $res = array(
+                            'status' => 0,
+                            'msg'    => '配送单详情状态更新成功'
+                        );
+                    }
+                    else {
+                        $res = array(
+                            'status' => -1,
+                            'msg'    => '配送单详情状态更新失败'
+                        );
+                        return $res;
+                    }
+                }
+                $dmap['dist_id'] = $dist_detail['pid'];
+            } elseif (!empty($params['dist_id'])) {
+                //传入的是配送单ID
+                unset($map);
+                $map['pid'] = $params['dist_id'];
+                $map['is_deleted'] = 0;
+                //所有配送单详情状态
+                $details = $M->field('id,status')->where($map)->select();
+                //是否有状态需要更新
+                $update = 0;
+                foreach ($details as $value) {
+                    if ($value['status'] != $params['status']) {
+                        $update = 1;
+                        break;
+                    }
+                }
+                //更新配送单详情状态
+                unset($map['is_deleted']);
+                $s = $M->where($map)
+                    ->save(array('status' => $params['status']));
+                //更新不成功
+                if ($update && !$s) {
+                    $res = array(
+                        'status' => -1,
+                        'msg'    => '配送单详情状态更新失败'
+                    );
+                    return $res;
+                } else {
+                    //更新成功
+                    $res = array(
+                        'status' => 0,
+                        'msg'    => '配送单详情状态更新成功'
+                    );
+                }
+                $dmap['dist_id'] = $params['dist_id'];
+            } else {
+                //配送单ID或出库单ID不能为空
+                $res = array(
+                    'status' => -1,
+                    'msg'    => '配送单ID或出库单ID不能为空'
+                );
+                return $res;
+            }
+            //调用更新配送单主表的方法
+            $dmap['status']  = $params['status'];
+            $ds = $this->set_dist_status($dmap);
+            if ($ds['status'] === -1) {
+                $res = array(
+                    'status' => -1,
+                    'msg'    => '配送单详情状态更新成功，配送单主表状态更新失败'
+                );
+                return $res;
+            }
+        } else {
+            //状态值为空
+            $res = array(
+                'status' => -1,
+                'msg'    => '状态值不能为空'
+            );
+        }
+
+        return $res;
+    }
+
+    /**
+     * [set_dist_status 更改配送单状态]
+     * @param array $map [dist_id,status]
+     */
+    public function set_dist_status($params = array()) {
+        if(!empty($params['dist_id']) && !empty($params['status'])) {
+            $map['id'] = $params['dist_id'];
+            switch($params['status']) {
+                case '2'://已签收对应配送单状态3:已配送
+                    $status = '3';
+                    break;
+                case '4'://已完成对应配送单状态4:已结算
+                    $status = '4';
+                    break;
+            }
+            if (!$status) {
+                $res = array(
+                    'status' => 0,
+                    'msg'    => '没有对应状态需要更新'
+                );
+                return $res;
+            }
+            $map['status']  = $status;
+            $M = M('stock_wave_distribution');
+            //配送单是否已为需要更新的状态
+            $dist = $M->field('id')->where($map)->find();
+            if ($dist) {
+                $res = array(
+                    'status' => 0,
+                    'msg'    => '状态已更新'
+                );
+                return $res;
+            } else {
+                //该配送单所有配送单详情状态
+                unset($map);
+                $map['pid'] = $params['dist_id'];
+                $map['is_deleted'] = 0;
+                $detail_status = $M->table('stock_wave_distribution_detail')
+                    ->field('status')
+                    ->where($map)
+                    ->select();
+                //所有配送单详情均为该状态时，修改配送单主表状态
+                $flag = 1;
+                foreach ($detail_status as $value) {
+                    if($value['status'] != $params['status']) {
+                        $flag = 0;
+                        break;
+                    }
+                }
+                //更新配送单状态
+                if($flag === 1) {
+                    unset($map);
+                    $map['id'] = $params['dist_id'];
+                    $data = array('status' => $status);
+                    $s = $M->where($map)->save($data);
+                    //成功的返回结果
+                    if($s) {
+                        $res = array(
+                            'status' => 0,
+                            'msg'    => '配送单状态更新成功'
+                        );
+                    } else {
+                        //失败的返回结果
+                        $res = array(
+                            'status' => -1,
+                            'msg'    => '配送单状态更新失败'
+                        );
+                        return $res;
+                    }
+                } else {
+                    $res = array(
+                        'status' => 0,
+                        'msg'    => '当前状态无需更新'
+                    );
+                }
+            }
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '配送单ID或状态不能为空'
+            );
+        }
+        return $res;
+    }
+
+    /**
+     * [saveSignature 保存客户电子签名]
+     * @param  array  $params [订单ID:suborder_id,签名路径:sign_img]
+     * @return [type]         [description]
+     */
+    public function saveSignature($params = array()) {
+        if(!isset($params['suborder_id']) || !isset($params['sign_img'])) {
+            return array(
+                'status' => -1,
+                'msg'    => '参数有误'
+            );
+        }
+        //查出库单ID
+        $bM = M('stock_bill_out');
+        $map['refer_code'] = $params['suborder_id'];
+        $map['is_deleted'] = 0;
+        $bill_out = $bM->field('id')->where($map)->find();
+        if (empty($bill_out)) {
+            return array(
+                'status' => -1,
+                'msg'    => '出库单数据不存在'
+            );
+        }
+        unset($map);
+        //更新到配送单详情
+        $dM = M('stock_wave_distribution_detail');
+        $map['bill_out_id'] = $bill_out['id'];
+        $data = array('signature' => $params['sign_img']);
+        $ret = $dM->where($map)->save($data);
+        if ($ret) {
+            $res = array(
+                'status' => 0,
+                'msg'    => '已保存'
+            );
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '签名保存失败'
+            );
+        }
+        return $res;
+    }
+
+    /**
+    * 根据配送id，查询当前详情，更新配送单主表数据
+    * @param $ids = array()
+    * @return true/false
+    */
+    public function updDistInfoByIds($ids = array()){
+        if(empty($ids)){
+            return false;
+        }
+        foreach($ids as $id){
+            $map['pid'] = $id;
+            $map['is_deleted'] = 0;
+            $dist_detail_infos = M('stock_wave_distribution_detail')->where($map)->select();
+            unset($map);
+            foreach($dist_detail_infos as $dist_detail_info){
+                $bill_out_ids[] = $dist_detail_info['bill_out_id'];
+            }
+
+            //更新配送单中总件数 总条数 总行数 总金额
+            if(!empty($bill_out_ids)){
+                $map['id'] = array('in', $bill_out_ids);
+                //获取出库单
+                $sur_info = M('stock_bill_out')->where($map)->select();
+                unset($map);
+            }else{
+                $sur_info = array();
+            }
+            
+            $sur_detail = $this->get_out_detail($bill_out_ids); //通过审核的sku详情
+            $total['order_count'] = count($bill_out_ids); //总单数
+            $total['sku_count'] = 0; //总件数
+            $total['line_count'] = 0; //总行数
+            $total['total_price'] = 0; //总金额
+            $det_merge = array();
+            foreach ($sur_info as $surmain) {
+                //总价格
+                $total['total_price'] += $surmain['total_amount'];
+            }
+            foreach ($sur_detail as $sur) {
+                //总数量
+                $total['sku_count'] += $sur['order_qty'];
+                $det_merge[$sur['pro_code']] = null; //总行数
+            }
+            $total['line_count'] = count($det_merge);
+            if (M('stock_wave_distribution')->create($total)) {
+                //更新操作
+                $map['id'] = $id;
+                M('stock_wave_distribution')->where($map)->save();
+            }
+            return true;
+        }
     }
 }

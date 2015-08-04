@@ -1,4 +1,6 @@
 <include file="Index:nav-cur" />
+<!-- 拒收选项 -->
+<include file="tms:reject-box" />
 <div class="col-xs-12">
     <div class="row-fluid">
         <div class="input-group">
@@ -53,6 +55,13 @@
               </span>
             </a>
           </h4>
+          <a class="report" data-userid="{$vo.user_id}">
+          <i style="color:red"class="glyphicon glyphicon-remove-circle">
+          </i>
+            <span >
+              地址报错
+            </span>
+          </a>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
           {$vo.customer_realname} &nbsp;&nbsp;
@@ -64,7 +73,6 @@
           </a>
         </div>
       </eq>
-
       <notempty name="vo['remarks']">
         <div class="panel-footer">
           <i class="glyphicon glyphicon-comment">
@@ -81,18 +89,17 @@
           </case>
           <case value="已回款" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
-            data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
+            aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
           </case>
           <case value="已退货" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
-            data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
-            aria-controls="info_{$vo.id}">
+            data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
+            aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
           </case>
           <default />
           <a onclick="check(this)" class="list-group-item  panel-footer collapsed"
-          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false"
-          data-parent="#orders" aria-controls="info_{$vo.id}">
+          data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}">
         </switch>
         <!--{$vo.order_type_cn}-->
         <span class="order-id">
@@ -125,12 +132,10 @@
         </switch>
         <span id="show" style="color:red;">点击展开</span>
         </a>
-        <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.id}">
+        <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.refer_code}">
           <form class="order">
             <input type="hidden" name="id" value="{$vo.refer_code}" />
-            <input type="hidden" name="dist_id" value="{$dist_id}" />
             <input type="hidden" name="bid" value="{$vo.id}" />
-    		    <input type="hidden" name="pay_status" value="{$vo.pay_status_code}" />
 
             <ul class="list-group">
               <volist name="vo['detail']" id="v">
@@ -139,20 +144,17 @@
                   </li>
                   <li class="list-group-item">
                     <div class="input-group row">
-                    <input type="hidden" name="pro_id[{$v.id}]" value="{$v.id}" />
                     <input type="hidden" name="order_detail_id[{$v.id}]" value="{$v.order_detail_id}" />
                     
-                      <input type="hidden" name="close_unit[{$v.id}]" value="{$v.close_unit}" />
-                      <input type="hidden" name="unit_id[{$v.id}]" value="{$v.unit_id}" />
-                    
                       <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.single_price}" />
+                      
                       <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
                        
-                      <input type="number" name="quantity[{$v.id}]" min="0" class="form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
+                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
                       <span class="input-group-addon">{$v.unit_id}</span>
 
                 	    <neq name="v['close_unit']" value="$v['unit_id']">
-                      <input type="number" name="weight[{$v.id}]" min="0" class="form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
+                      <input type="number" name="weight[{$v.id}]" min="0" class="real form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
                       <span class="input-group-addon">{$v.close_unit}</span>
                   	  </neq>
 
@@ -173,9 +175,6 @@
                   </span>
                   元
                 </span>
-                <input type="hidden" name="minus_amount" class="form-control" value="{$vo.minus_amount}">
-                <input type="hidden" name="pay_reduce" class="form-control" value="{$vo.pay_reduce}">
-                <input type="hidden" name="deliver_fee" class="form-control" value="{$vo.deliver_fee}">
                
                 <span class="input-group-addon">
                   优惠 ¥
@@ -195,11 +194,11 @@
                 <span class="input-group-addon">
                   应收 ¥
                   <span class="p_final">
-                    {$vo.final_price}
+                    {$vo.receivable_sum}
                   </span>
                   元
                 </span>
-                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
+                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.receivable_sum}" value="{$vo.receivable_sum}" readonly>
                 <span class="input-group-addon">
                   实收
                 </span>
@@ -210,7 +209,7 @@
                   </case>
                   <case value="已回款" break="1">
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.deal_price}" readonly>
+                    value="{$vo.real_sum}" readonly>
                   </case>
                   <case value="已退货" break="1">
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
@@ -218,7 +217,7 @@
                   </case>
                   <default />
                   <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.final_price}" readonly>
+                  value="{$vo.real_sum}" readonly>
                 </switch>
               </div>
             </div>
@@ -240,6 +239,14 @@
               <case value="已完成" break="0">
               </case>
               <case value="已回款" break="1">
+                <!-- 打印小票 -->
+                <div class="panel-footer" id="p_{$vo.refer_code}">
+                    <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">
+                        <div>
+                            <a class="btn btn-primary btn-block js-btn-print" data-id="{$vo.refer_code}" data-bid="{$vo.id}" data-str='{$vo.printStr}'>打印小票</a>
+                        </div>
+                    </div>
+                </div>
               </case>
               <case value="已退货" break="0">
               </case>
@@ -252,7 +259,7 @@
               <case value="待收货" break="0">
                 <div class="panel-footer">
                   <div class="col-xs-6">
-                    <a class="btn-reject btn btn-danger btn-block">
+                    <a class="btn-reject btn btn-danger btn-block" data-ver="<defined name="VERSION">1</defined>">
                       拒收
                     </a>
                   </div>
@@ -264,6 +271,14 @@
                   <div class="clearfix">
                   </div>
                 </div>
+                <!-- 打印小票 -->
+                <div class="panel-footer">
+                    <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">
+                        <div>
+                            <a class="btn btn-default btn-block disabled">打印小票</a>
+                        </div>
+                    </div>
+                </div>
               </case>
             </switch>
           </form>
@@ -274,6 +289,7 @@
   </div>
   <style type="text/css">
     hr{ margin-top: 10px; margin-bottom: 10px; } form.order ul.list-group{
-    margin-bottom: 0px; }
+    margin-bottom: 0px;}
   </style>
 <include file="tms:jsfooter" />
+

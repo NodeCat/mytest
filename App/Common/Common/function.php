@@ -239,22 +239,47 @@ function auth_decrypt($data, $key){
 	}
 	return base64_decode($str);
 }
-function logs($id, $data, $action = ''){
+
+function logs($id = 0, $msg = '', $model = '', $action = '', $module = ''){
     $M = M('log');
-    if(empty($action)) {
-    	$M->action      = ACTION_NAME.'/'.CONTROLLER;
+    if (empty($model)) {
+        $M->model       = CONTROLLER_NAME;
     }
-	else {
-		$M->action = $action;
-	}
-	$M->content     = json_encode($data);
-	$M->pk          = $id;
+    else {
+        $M->model = $model;
+    }
+    if (empty($action)) {
+        $M->action = ACTION_NAME;
+    }
+    else {
+        $M->action = $action;
+    }
+    if (empty($module)) {
+        $M->module = MODULE_NAME;
+    }
+    else {
+        $M->module = $module;
+    }
+
+    $M->operate     = CONTROLLER_NAME . '/' . ACTION_NAME;
+    $M->pk          = $id;
+    $M->msg         = $msg;
 	$M->url 		= __SELF__;
-	$M->ip          =  get_client_ip();
-	$M->update_user = session('user.uid');
-	$M->update_time = get_time();
-    $M->add();
+	$M->ip          =  ip2long(get_client_ip());
+	$M->updated_user = session('user.uid');
+	$M->updated_time = get_time();
+    $res = $M->add();
 }
+
+function getlogs($model='', $id = 0) {
+    $map['model'] = $model;
+    $map['pk']    = $id;
+    $res = M()->table('log')->field('log.id,log.pk,log.msg,user.nickname user,log.updated_time optime')
+                ->join('user on user.id = log.updated_user')
+                ->where($map)->order('log.id desc')->select();
+    return $res;
+}
+
 function get_time(){
     return date('Y-m-d H:i:s',NOW_TIME);
 }
@@ -320,3 +345,69 @@ function check_data_is_valid($str){
     return true;
 }
 
+/**
+* float加运算
+*/
+function f_add($left,$right,$scale = 2){
+    $result = bcadd($left,$right,$scale);
+    return $result;
+    /*$left = floatval($left);
+    $right = floatval($right);
+    $scale = intval($scale);
+
+    $multiple = str_pad(1, $scale + 1 , 0);
+    $multiple = intval($multiple);
+
+    $result = intval($left * $multiple) + intval($right * $multiple);
+    $result = $result / $multiple;
+
+    return $result;*/
+}
+
+/**
+* float减运算
+*/
+function f_sub($left,$right,$scale = 2){
+    $result = bcsub($left, $right, $scale);
+    return $result;
+    /*$left = floatval($left);
+    $right = floatval($right);
+    $scale = intval($scale);
+
+    $multiple = str_pad(1, $scale + 1 , 0);
+    $multiple = intval($multiple);
+
+    $result = intval($left * $multiple) - intval($right * $multiple);
+    $result = $result / $multiple;
+
+    return $result;*/
+}
+
+/**
+* float乘运算
+*/
+function f_mul($left,$right,$scale = 2){
+    $result = bcmul($left,$right,$scale);
+    return $result;
+    /*$left = floatval($left);
+    $right = floatval($right);
+    $scale = intval($scale);
+
+    $multiple = str_pad(1, $scale + 1 , 0);
+    $multiple = intval($multiple);
+
+    $result = intval($left * $multiple) * intval($right * $multiple);
+    $result = intval($result / $multiple);
+    $result = $result / $multiple;
+
+
+    return $result;*/
+}
+
+/**
+* float除运算
+*/
+function f_div($left,$right,$scale = 2){
+    $resutl = bcdiv($left, $right, $scale);
+    return $resutl;
+}

@@ -1,4 +1,5 @@
 <div class="table-responsive">
+<div style="height:600px;width:900px;margin-bottom:50px;display:none" id="mapContainer" ></div>
 <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
   <thead>
     <tr class="text-center">
@@ -22,38 +23,35 @@
   </thead>
 
   <tbody>
-    <volist name="data" id="vo" key="row" empty="">	
-	    
-	<volist name="vo['detail']" id="detail" key="k">
-    <tr id="r-{$vo.id}" class="list_info_all">
-      <volist name="columns" id="col" offset="0" length='1'>
-      <input type="hidden" value="{$vo.user_id}" class="order-user_id" />
-	    <input type="hidden" value="{$vo.id}" class="order-id" />
-	    <input type="hidden" value="{$vo.address}" class="order-adress" />
-	    <input type="hidden" value="{$vo.line}" class="order-line" />
-	    <input type="hidden" value="{$vo.line_total}" class="order-cat" />
-	    <input type="hidden" value="{$vo.sku_total}" class="order-qty" />
+    <volist name="data" id="vo" key="row" empty="">
+      <volist name="vo['detail']" id="detail" key="k">
+        <tr id="r-{$vo.id}" class="list_info_all">
+          <volist name="columns" id="col" offset="0" length='1'>
+          <input type="hidden" value="{$vo.user_id}" class="order-user_id" />
+          <input type="hidden" value="{$vo.id}" class="order-id" />
+          <input type="hidden" value="{$vo.address}" class="order-adress" />
+          <input type="hidden" value="{$vo.line}" class="order-line" />
+          <input type="hidden" value="{$vo.line_total}" class="order-cat" />
+          <input type="hidden" value="{$vo.sku_total}" class="order-qty" />
           <td rowspan="{$vo['line_total']}" index="{$k}"><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$pk]}" data-id="{$pk}" /></eq>{$row}</label></td>
           {~$values[$key]=$vo[$key]}
-      </volist>
+          </volist>
 
-      <volist name="columns" id="col" offset="0" length="4">
-          <td rowspan="{$vo['line_total']}" index="{$k}">{$vo[$key]}</td>	
-          {~$values[$key]=$vo[$key]}
+          <volist name="columns" id="col" offset="0" length="5">
+            <td rowspan="{$vo['line_total']}" index="{$k}">{$vo[$key]}</td>	
+            {~$values[$key]=$vo[$key]}
+          </volist>
+          <volist name="columns" id="col" offset="5">
+          <td>{$detail[$key]}</td>
+          {~$values[$key]=$detail[$key]}
+          </volist>
+        </tr>
       </volist>
-      <volist name="columns" id="col" offset="4">
-          	  <td>{$detail[$key]}</td>
-              {~$values[$key]=$detail[$key]}
-      </volist>
-  		
-    </tr>
-    </volist>
     </volist>
   </tbody>
 </table>
 </div>
 <include file="Index:pager"/>
-
 <style type="text/css">
   .table-operate-btn{
     word-wrap:keep-all;
@@ -64,6 +62,7 @@
 <script src="__PUBLIC__/tablesorter/js/jquery.tablesorter.js"></script>
 <script src="__PUBLIC__/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 <script src="__PUBLIC__/js/light-table-filter.min.js"></script>
+<script src="http://webapi.amap.com/maps?v=1.3&key=67f642a47ca5d2d0b4c4a272baeda00f" type="text/javascript"></script>
 <script type="text/javascript">
 $(function() {
   var td =  $('.list_info_all').children('td[rowspan]');
@@ -81,8 +80,44 @@ $(function() {
       $('#data-table #'+id).find('input[type=checkbox]').prop('disabled',true);
     };
   });
+  var flg = 1;
+  $(document).on('click','#mapdisplay',function(){
+       if($('#data-table').children("tbody").children("tr").length==0) return;
+       if(flg == 1)
+          {
+          display();
+          $(this).html('隐藏地图');
+          $('#mapContainer').css("display","block");
+          flg = 0;
+          
+        }else{
+          $(this).html('显示地图');
+          $('#mapContainer').css("display","none");
+          flg = 1;
+          
+        }
+   });
 
-
+   function display(){
+          var mapObj;
+          // 地图初始化
+          mapObj = new AMap.Map("mapContainer",{
+          center:new AMap.LngLat(116.397428,39.90923), //地图中心点
+          level:11  //地图显示的比例尺级别
+          //zoomEnable:false
+        });
+        <volist name="data" id="attrs">
+           <notempty name="attrs['map_pos']['lng']">
+           var markerPosition = new AMap.LngLat({$attrs['map_pos']['lng']},{$attrs['map_pos']['lat']});
+           var marker = new AMap.Marker({  
+                position:markerPosition,
+                content:'<div class="mapIcon"  style="background:url(http://hop.test3.dachuwang.com/assets/images/will.png); color:red; width:45px; height:38px;text-align: right; padding-right: 5px;">'+"{$attrs.order_id}"+'</div>',
+            });
+           marker.setMap(mapObj);
+           </notempty>
+        </volist>
+        
+   }
   $.extend($.tablesorter.themes.bootstrap, {
     // these classes are added to the table. To see other table classes available,
     // look here: http://twitter.github.com/bootstrap/base-css.html#tables

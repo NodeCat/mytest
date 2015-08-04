@@ -152,7 +152,7 @@ class PurchaseOutLogic{
         foreach($addAll as $vals){
             $arrsum += $vals['price_unit']*$vals['plan_return_qty'];
         }
-        $addStockOut['total_amount'] = $arrsum;
+        $addStockOut['total_amount'] = formatMoney($arrsum, 2);
         $addStockOut['total_qty'] = count($addAll);
         $addStockOut['order_type'] = 1;
 
@@ -255,12 +255,165 @@ class PurchaseOutLogic{
                 }else{
                     continue;
                 }
+            }elseif($type[$key] == 'STO'){
+                //调拨出库
+                //修改调拨单
+                $transfer_code = $bill_out_result['refer_code'];//调拨单
+                //wms和erp的出库单和wms出库单详细的详细关联单号
+                $bill_out_code = $bill_out_result['code'];
+                if($this->updateTransfer($transfer_code, $out_id)){
+                    //修改erp 出库单
+                    if ($this->erpUpdateOut($bill_out_code, $out_id)) {
+                        //添加erp出库单详细
+                        $this->insertErpContainer($out_id);
+                        $return = true;
+                    } else {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+
             }else{
                 continue;
             }
         }
         return $return;
 
+    }
+
+    //修改调拨单@transfer_code 调拨单 ，出库单id
+    public function updateTransfer($transfer_code, $out_id)
+    {
+        $data = array();
+        $map = array();
+        $return = false;
+        $data['status'] = 'refunded';
+        $data['updated_time'] = get_time();
+        $data['updated_user'] = session('user.uid');
+        $map['trf_code'] = $transfer_code;
+        $transfer_m = M('erp_transfer');
+        $wms_out_detail = M('stock_bill_out_detail');
+        $erp_transfer_detail_m = M('erp_transfer_detail');
+        if ($transfer_m->where($map)->save($data)) {
+            $where = array();
+            $where['trf_code'] = $transfer_code;
+            $id = $transfer_m->where($where)->getField('id');
+
+            //查找出库单详细表
+            unset($map);
+            $map['pid'] = $out_id;
+            $map['is_deleted'] = 0;
+            //修改采购退货单实际出库量
+            $detail = $wms_out_detail->field('pro_code,delivery_qty')->where($map)->select();
+            if($detail){
+                foreach ($detail as $vals) {
+                    unset($map);
+                    //一个调拨单里面只有一个sku
+                    $map['pro_code'] = $vals['pro_code'];
+                    $map['pid'] = $id;
+                    $saveDetail = array();
+                    $saveDetail['updated_time'] = get_time();
+                    $saveDetail['updated_user'] = session('user.uid');
+                    $saveDetail['status'] = 'refunded';
+                    $saveDetail['real_out_qty'] = $vals['delivery_qty'];
+                    $erp_transfer_detail_m->where($map)->save($saveDetail);
+                }
+                return true;
+            }else{
+                $where = array();
+                $purSave = array();
+                $where['trf_code'] = $transfer_code;
+                $purSave['status'] = 'tbr';
+                $transfer_m->where($where)->save($purSave);
+                return false;
+            }
+
+        } else {
+            return false;
+        }
+    }
+
+    //修改ERP 出库单 $bill_out_code erp出库单和wms 出库单 @out_id wms出库单id
+    public function erpUpdateOut($bill_out_code,  $out_id){
+        $transfer_out_m = M('erp_transfer_out');
+        $transfer_out_detail_m = M('erp_transfer_out_detail');
+        $wms_out_detail = M('stock_bill_out_detail');
+        $map = array();
+        $data = array();
+        $map['code'] = $bill_out_code;
+        $data['status'] = 'refunded';
+        $data['updated_time'] = get_time();
+        $data['updated_user'] = session('user.uid');
+        if ($transfer_out_m->where($map)->save($data)) {
+            $where = array();
+            $where['code'] = $bill_out_code;
+            $id = $transfer_out_m->where($where)->getField('id');
+
+            //查找出库单详细表
+            unset($map);
+            $map['pid'] = $out_id;
+            $map['is_deleted'] = 0;
+            //修改采购退货单实际出库量
+            $detail = $wms_out_detail->field('pro_code,delivery_qty')->where($map)->select();
+            if($detail){
+                foreach ($detail as $vals) {
+                    unset($map);
+                    //一个调拨单里面只有一个sku
+                    $map['pro_code'] = $vals['pro_code'];
+                    $map['pid'] = $id;
+                    $saveDetail = array();
+                    $saveDetail['updated_time'] = get_time();
+                    $saveDetail['updated_user'] = session('user.uid');
+                    $saveDetail['status'] = 'refunded';
+                    $saveDetail['real_out_qty'] = $vals['delivery_qty'];
+                    $transfer_out_detail_m->where($map)->save($saveDetail);
+                }
+                return true;
+            }else{
+                $where = array();
+                $purSave = array();
+                $where['code'] = $bill_out_code;
+                $purSave['status'] = 'tbr';
+                $transfer_out_m->where($where)->save($purSave);
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    //写入ERP出库详细详细表
+    public function insertErpContainer($out_id){
+        $stock_bill_out_container = M('stock_bill_out_container');
+        $erp_bill_out_container = M('erp_transfer_out_container');
+        $map['wdd.bill_out_id'] = $out_id;
+        $map['wdd.status'] = 5;//已发运
+        $map['wdd.is_deleted'] = 0;
+        $stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
+            left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
+            left join stock_bill_out as o on wdd.bill_out_id = o.id ')->where($map)->select();
+        if($stock_container){
+            $data = array();
+            $process_logic = A('Process', 'Logic');
+            foreach ($stock_container as $key => $value) {
+                $data[$key]['refer_code'] = $value['code_refer'];
+                $data[$key]['pro_code'] = $value['pro_code'];
+                $data[$key]['batch'] = get_batch($value['batch']);
+                $data[$key]['price'] = $process_logic->get_price_by_sku($value['batch'], $value['pro_code']);//平均价
+                $data[$key]['pro_qty'] = $value['qty'];
+                $data[$key]['location_id'] = $value['location_id'];
+                $data[$key]['wh_id'] = $value['wh_id'];
+                $data[$key]['created_time'] = get_time();
+                $data[$key]['created_user'] = session('user.uid');
+                $data[$key]['updated_time'] = get_time();
+                $data[$key]['updated_user'] = session('user.uid');
+            }
+            $erp_bill_out_container->addAll($data);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }
