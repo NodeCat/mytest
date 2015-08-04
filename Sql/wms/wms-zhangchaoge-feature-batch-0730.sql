@@ -1,0 +1,1 @@
+ALTER TABLE  `erp_process_out_price` ADD  `code` VARCHAR( 100 ) NOT NULL DEFAULT  '' COMMENT  '出库单号' AFTER `batch` ;

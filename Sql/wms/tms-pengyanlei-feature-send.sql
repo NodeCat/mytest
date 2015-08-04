@@ -1,0 +1,1 @@
+ALTER TABLE  `stock_wave_distribution_detail` ADD  `reject_reason` VARCHAR(240) NOT NULL DEFAULT  '' COMMENT '拒收理由' AFTER  `pay_status` ;

@@ -465,7 +465,7 @@ class StockLogic{
      * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak = ''){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
@@ -517,9 +517,12 @@ class StockLogic{
         unset($row);
 
         //减待上架库存 增加已上量
-        $map['refer_code'] = $refer_code;
+        $map['pid'] = $inId;
         $map['pro_code'] = $pro_code;
         //$map['pro_uom'] = $pro_uom;
+        if ($batch_bak) {
+            $map['batch'] = $batch;
+        }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
         unset($map);
@@ -820,6 +823,7 @@ class StockLogic{
     *    'batch'=>xxxx,
     *    'status'=>xxxx,
     *    'change_src_assign_qty'=>xxxx, 是否减少src的assign_qty
+    *    'refer_code'=>xxxx, 关联单号
     * )
     *
     */
@@ -886,6 +890,7 @@ class StockLogic{
                     'new_qty' => $param['variable_qty'],
                     'batch' => $src_stock_info['batch'],
                     'status' => $param['status'],
+                    'refer_code' => $param['refer_code'],
                     );
                 $stock_move = D('StockMoveDetail');
                 $stock_move_data = $stock_move->create($stock_move_data);
@@ -963,6 +968,7 @@ class StockLogic{
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
                         'batch' => $param['batch'],
                         'status' => $param['status'],
+                        'refer_code' => $param['refer_code'],
                         );
                     $stock_move = D('StockMoveDetail');
                     $stock_move_data = $stock_move->create($stock_move_data);

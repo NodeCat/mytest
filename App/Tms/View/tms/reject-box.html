@@ -1,0 +1,33 @@
+<div id="reject-box" class="form-horizontal hidden"  style="max-width:80%;max-height:400px;background:#eee;position: fixed;  
+z-index: 9999;top:50%;margin-top:-150px;left:10%;">
+        <span class="input-group-addon input-lg">拒收原因（必填，可多选）</span><br>
+        <div class="checkbox">
+          <label class="col-sm-offset-1 col-sm-11 col-md-offset-1 col-md-11">
+            <input name="reason[]" value="1" type="checkbox" class="input-md"> 品相不符
+          </label>
+        </div><br>
+        <div class="checkbox">
+          <label class="col-sm-offset-1 col-sm-11 col-md-offset-1 col-md-11">
+            <input name="reason[]" value="2" type="checkbox" class="input-md"> 缺斤少两
+          </label>
+        </div><br>
+        <div class="checkbox">
+          <label class="col-sm-offset-1 col-sm-11 col-md-offset-1 col-md-11">
+            <input name="reason[]" value="3" type="checkbox" class="input-md"> 顾客原因
+          </label>
+        </div><br><br>
+        <div class="panel-footer">
+            <div class="col-xs-4">
+              <a class="btn btn-default btn-block btn-sm" data-action="cancle">
+                取消
+              </a>
+            </div>
+            <div class="col-xs-4 col-xs-offset-4">
+              <a class="btn btn-primary btn-block btn-sm" data-action="saveReason">
+                确定  
+              </a>
+            </div>
+            <div class="clearfix">
+            </div>
+        </div>
+</div>

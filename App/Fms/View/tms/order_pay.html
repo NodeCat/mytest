@@ -1,0 +1,246 @@
+
+<div class="row-fluid">
+<form class="form-horizontal form-pda form-scan" action="{:U('Order/index')}" method="POST">
+  <div class="row-fluid">
+  <div class="col-md-6 col-xs-12">
+  <div class="form-group">
+  <div class="input-group">
+      <span class="input-group-addon">
+      <i class="glyphicon glyphicon-pencil"></i>
+      </span>
+      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="id" placeholder="请输入 订单id">
+      <span class="input-group-btn">
+        <button class="btn btn-lg btn-default" type="submit"><i class="glyphicon glyphicon-search"></i> 查询</button>
+      </span>
+    </div>
+  </div>
+ </div>
+ <div class="col-md-2 col-xs-6 col-md-offset-1">
+<notempty name="data">
+  <if condition="($data['status_cn'] eq '已签收') OR ($data['status_cn'] eq '已拒收')">
+<a href="{:U('reset','id='.$data['refer_code'])}" class="btn-sign btn btn-lg btn-success btn-block">重置订单状态</a>
+  </if>
+</notempty>
+ </div>
+ <div class="clearfix"></div>
+ </div>
+</form>
+</div>
+
+<div class="panel panel-info">
+  <div class="panel-heading">订单信息</div>
+  <div class="panel-body">
+  <div class="col-md-3">
+    <h4>订单id：{$data['refer_code']}</h4>
+  </div>
+  <div class="col-md-3">
+    <h4>抹零：{$data['wipe_zero_sum']}</h4>
+  </div>
+  <div class="col-md-3">
+    <h4>押金：{$data['deposit_sum']}</h4>
+  </div>
+  <div class="col-md-3">
+  <h4>结算金额：{$data['pay_for_price_total']}</h4>
+  </div>
+  </div>
+
+
+<div class="row-fluid" id="orders">
+<table class="data-table table table-bordered table-striped table-condensed " style="">
+<thead>
+  <tr>
+    <th>订单id</th>
+    <th>订单状态</th>
+    <th>付款状态</th>
+    <th>应收金额</th>
+    <!--<th>结算金额</th>-->
+    <!--<th>操作</th>-->
+  </tr>
+</thead>
+<tfoot>
+  <tr>
+  <td>合计</td>
+  <td colspan="2">{:count($data['detail'])}货品</td>
+  <td colspan="2">{$data['pay_for_price_total']}</td>
+  
+  </tr>
+</tfoot>
+<tbody>
+
+<tr>
+  <td>{$data.refer_code}</td>
+  <td>{$data.status_cn}</td>
+  <td>{$data.pay_status}</td>
+  <td>{$data.pay_for_price}</td>
+  <!--
+  <td class=" col-md-3">
+  <input type="numb" name="" class="form-control" value="{$vo.final_price}" />
+  </td>
+  -->
+  <!--<td>
+  <a href="#" class="collapsed" data-toggle="collapse" data-target="#info_{$data.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$data.refer_code}">
+  查看详情
+  </a>
+  </td>
+   -->
+</tr>
+<tr class="panel-collapse collapsed" aria-expanded="true"  id="info_{$data.refer_code}">
+<td colspan="5">
+  <div >
+  <form class=" order">
+    <input type="hidden" name="id" value="{$data.refer_code}" />
+    <div class="table-responsive">
+      <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+      <caption><span class="panel-info"><div class="panel-heading info">收货详情</div></span></caption>
+        <thead>
+          <tr class="text-center">
+            <th>货品</th>
+            <th>下单数量</th>
+            <!--<th>送货数量</th>-->
+            <th>实收数量</th>
+            <!--<th>送货重量</th>
+            <th>实收重量</th>-->
+            <th>结算单价</th>
+            <!--<th>实收小计</th>-->
+            <th>应收小计</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tfoot>
+          <tr>
+            <td>{:count($data['detail'])}行</td>
+            <td colspan="3">合计</td>
+            <td class="dange">{$data.actual_price}</td>
+          </tr>
+        </tfoot>
+        <volist name="data['detail']" id="v">
+          <tr>
+          <td>{$v.pro_code} {$v.pro_name}
+          <!-- <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach>-->
+          </td>
+          <td>{$v.delivery_qty}{$v.unit_id}</td>
+          <!--
+          <td class="warnin">{$v.quantity}{$v.unit_id}</td>
+          -->
+
+          <td class="dange">{$v.real_sign_qty}{$v.unit_id}</td>
+          <!--
+          <td>{$v.actual_quantity}</td>
+          <td>{$v.actual_quantity}</td>
+-->
+          <td>{$v.price}<notempty name='v.unit_id'>/{$v.unit_id}</notempty></td>
+           <!-- <td>{$v.sum_price}</td>-->
+          <td>{$v.actual_sum_price}</td>
+          </tr>
+        </volist>
+        </tbody>
+      </table>
+
+      <table class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+        <caption><span class="panel-info"><div class="panel-heading info">总计</div></span></caption>
+        <thead>
+            <tr>
+              <td>货品金额</td>
+              <td>优惠金额</td>
+              <td>减免金额</td>
+              <td>运费</td>
+              <td>应收总计</td>
+              <td>司机实收金额</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td>{$data.actual_price}</td>
+              <td>{$data.minus_amount}</td>
+              <td>{$data.pay_reduce}</td>
+              <td>{$data.deliver_fee}</td>
+              <td class="dange">{$data.pay_for_price}</td>
+              <td class="dange">{$data.deal_price}</td>
+            </tr>
+        </tbody>
+      </table>
+
+    
+    
+      </div>
+    </div>
+  </form>
+  <if condition="($data.status_cn eq '已完成') AND ($data.pay_status neq '已付款')">
+    <form class="form-inline" action="{:U('Order/pay')}" method="POST">
+      <input type="hidden" name="order_id" value="{$data.refer_code}" />
+      <input type="hidden" name="bill_id" value="{$data.id}" />
+      <input type="hidden" name="deposit_sum" value="{$data.deposit_sum}" />
+      <input type="hidden" name="deal_price" value="{$data.deal_price}" />
+      <input type="hidden" name="wipe_zero_sum" value="{$data.wipe_zero_sum}" />
+      
+      <div class="panel-footer ">
+          <div class="form-group">
+          <label class="" for="msg">备注</label>
+          <input class="form-control" type="text" id="msg" name="sign_msg" value="{$data.sign_msg}" placeholder="签收或退货备注">
+          </div>
+          <div class="form-group">
+            <label class="" for="wipezero"> 抹零</label>
+            <input class="form-control"  type="text" id="wipezero" name="wipezero" value="" placeholder="抹零">
+          </div>
+          <div class="form-group">
+            <label class="" for="deposit"> 押金</label>
+            <input class="form-control" type="text" id="deposit" name="deposit" value="" placeholder="押金">
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-sign btn btn-md btn-success btn-block"> 修 改 </button>
+          </div>
+    </form>
+    <else />
+      <div class="panel-footer">
+        <div class="input-group col-lg-12">
+          <span class="input-group-addon">备注</span>
+          <input class="form-control" type="text" name="sign_msg" value="{$data.sign_msg}" readonly placeholder="签收或退货备注">
+        </div>
+      </div>
+  </if>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="panel-heading" style="text-align:center">订单动态信息</div>
+<div class="row-fluid" >
+<table class="data-table table table-bordered table-striped table-condensed " style="">
+  <thead>
+    <tr>
+      <th>处理时间</th>
+      <th>处理信息</th>
+      <th>操作人</th>
+    </tr>
+  </thead>
+<volist name="logs" id="log">
+<tr>
+  <td>
+    {$log.optime}
+  </td>
+  <td>
+    {$log.msg}
+  </td>
+  <td>
+    {$log.user}
+  </td>
+</tr>
+</volist>
+</table>
+</div>
+</div>
+
+<br/>
+<br/>
+
+<style type="text/css">
+hr{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+form.order ul.list-group{
+  margin-bottom: 0px;
+}
+
+</style>

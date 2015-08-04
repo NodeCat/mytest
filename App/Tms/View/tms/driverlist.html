@@ -57,6 +57,7 @@
             <th>总里程/km</th>
             <th>当次运费(元)</th>
             <th>备注</th>
+            <th>删除</th>
           </tr>
         <!--</thead>-->
         <tbody>
@@ -72,17 +73,27 @@
             <td>{$k.created_time}</td>
             <td>{$k.updated_time}</td>
             <td>{$k.period}</td>
-            <td>{$k.line_name}</td>               
+            <td>
+                <if condition="$k.report_error eq '1'">
+                    <div style="color:red;float:right;width:8px;margin-top:-7px" class="glyphicon glyphicon-remove-sign">
+                    </div>
+                </if>
+                {$k.line_name}
+            </td>
             <td>{$k.sign_orders}</td>
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>
             <td>{$k.distance}</br>
-            <a href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
+            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
             <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>
-
+            <td>
+                <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
+                    <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
+                </if>
+            </td>
           </tr>
         </volist>
         </tbody>
@@ -122,7 +133,7 @@ function saveFee(obj) {
             arr[sid] = fee;
         }
     })
-    $.post("{:U('save_fee')}",{fees:arr},function(res){
+    $.post("{:U('saveFee')}",{fees:arr},function(res){
         if(res.status == 0) {
             for (x in arr) {
                 $('td[data-id='+x+']').text(arr[x]);
@@ -152,5 +163,19 @@ function exp(){
     x.submit();
 }
 
+function delete_sign(x)
+{   
+    if (confirm('你确定要删除该记录吗')) {
+        var id = $(x).data('id');
+        $.post("{:U('deleteSign')}",{'id':id},function(res){
+            if (res.status == 1) {
+                alert(res.msg);
+                $(x).parents('tr').remove(); 
+            } else {
+                alert(res.msg);
+            }
+        });
+    }
+} 
 </script>
 

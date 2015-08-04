@@ -1,4 +1,6 @@
 <include file="Index:nav-cur" />
+<!-- 拒收选项 -->
+<include file="tms:reject-box" />
 <div class="col-xs-12">
     <div class="row-fluid">
         <div class="input-group">
@@ -53,6 +55,13 @@
               </span>
             </a>
           </h4>
+          <a class="report" data-userid="{$vo.user_id}">
+          <i style="color:red"class="glyphicon glyphicon-remove-circle">
+          </i>
+            <span >
+              地址报错
+            </span>
+          </a>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
           {$vo.customer_realname} &nbsp;&nbsp;
@@ -250,7 +259,7 @@
               <case value="待收货" break="0">
                 <div class="panel-footer">
                   <div class="col-xs-6">
-                    <a class="btn-reject btn btn-danger btn-block">
+                    <a class="btn-reject btn btn-danger btn-block" data-ver="<defined name="VERSION">1</defined>">
                       拒收
                     </a>
                   </div>
@@ -280,6 +289,7 @@
   </div>
   <style type="text/css">
     hr{ margin-top: 10px; margin-bottom: 10px; } form.order ul.list-group{
-    margin-bottom: 0px; }
+    margin-bottom: 0px;}
   </style>
 <include file="tms:jsfooter" />
+

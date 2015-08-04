@@ -1,0 +1,381 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<input type="hidden" name="id" value="{$data['billing_info']['id']}">
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+      <include file="status-bar" />
+
+      <div class="clearfix">
+      </div>
+    </h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-lg-6">
+        <h3>
+          账单 {$data['billing_info']['billing_num']}
+          <neq name="data['billing_info']['status_code']" value="5">
+          <eq name="data['billing_info']['expire_status']" value="1">
+        <small>
+        <span class="label label-danger">
+      逾期未还
+      </span></small>
+      </eq>
+      </neq>
+        </h3>
+      </div>
+      <div class="col-lg-6">
+      <switch name="data['billing_info']['status_code']" >
+      
+      <case value="2" break="0"></case>
+      <case value="3" break="1">
+        <a data-href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="a-ajax btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 一键收款</a>
+      </case>
+      <case value="4" break="1">
+                <a data-href="{:U('pay','id='.$data['billing_info']['id'])}" data-title="结算" rel="tooltip" data-placement="bottom" class="a-ajax btn btn-lg btn-info"><i class="glyphicon glyphicon-ok"></i> 收款</a>
+      </case>
+      <case value="5" break="1"></case>
+      <default />
+      </switch>
+
+        <div class="btn-group pull-right" role="group" aria-label="...">
+
+          <a href="#" class="list-group-item">
+            <div class="media-left">
+              <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+                <span class="glyphicon glyphicon-yen" aria-hidden="true">
+                </span>
+              </div>
+            </div>
+            <div class="media-body">
+              <h4 class="list-group-item-heading">
+                  {$data['billing_info']['total_price']}
+              </h4>
+              <p class="list-group-item-text">
+                  账单金额
+              </p>
+            </div>
+          </a>
+          <img id="img_evidence" class="hidden" src="{$data['billing_info']['payment_evidence']}">
+          <in name="data['billing_info']['status_code']" value="4,5">
+          <notempty name="data['billing_info']['payment_evidence']">
+          <a href="{$data['billing_info']['payment_evidence']}" class="list-group-item" target="_blank">
+            <div class="media-left">
+              <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+                <span class="glyphicon glyphicon-file" aria-hidden="true">
+                </span>
+              </div>
+            </div>
+            <div class="media-body">
+            
+              <h4 class="list-group-item-heading">
+                付款凭证
+              </h4>
+              <p class="list-group-item-text">
+                查看
+              </p>
+            </div>
+          </a>
+          </notempty>
+          </in>
+        </div>
+      </div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          店铺名称
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_info']['shop_name']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          联系电话
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_info']['mobile']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          所属BD
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['bd_customer_info']['bd_name']} ({$data['bd_customer_info']['bd_mobile']})
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          账期
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['billing_info']['billing_cycle']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+      <div class="row">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          本账期
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['billing_info']['theory_start']} - {$data['billing_info']['theory_end']}
+          </label>
+        </div>
+      </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          结款日期
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['billing_info']['expire_time']}
+          </label>
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <div class="table-responsive">
+      <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 总账单 </a></li>
+  </ul>
+
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#tab-date" aria-controls="tab-date" role="tab" data-toggle="tab" style="padding: 5px 10px;">按日期查看</a></li>
+    <li role="presentation"><a href="#tab-store" aria-controls="store" role="tab-store" data-toggle="tab" style="padding: 5px 10px;">按店铺查看</a></li>
+  </ul>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="tab-date">
+      <table class="data-table table table-bordered table-striped table-condensed table-hover">
+        <thead>
+          <tr>
+            <td>
+                日期
+            </td>
+            <td>
+                订货金额
+            </td>
+            <td>
+                拒收金额
+            </td>
+            <td>
+                签收金额
+            </td>
+            
+            <td>
+                运费
+            </td>
+            <td>
+                优惠
+            </td>
+            <td>
+                应付金额总计
+            </td>
+            <td>
+                账单明细
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <volist name="data['order_list']" id="vo">
+            <tr>
+              <td>
+                {$vo.deliver_date}
+              </td>
+              <td>
+                {$vo.total_price}
+              </td>
+              <td>
+                {$vo.refuse_price}
+              </td>
+              <td>
+                {$vo.sign_price}
+              </td>
+              <td>
+                {$vo.actual_deliver_fee}
+              </td>
+              <td>
+                {$vo.minus_amount}
+              </td>
+              <td>
+                {$vo.deal_price}
+              </td>
+              <td>
+                <a data-href="{:U('detail', 'id='.$data['customer_info']['id'].'&date='.$vo['deliver_date'])}"
+                data-target="#modal-adapt" data-toggle="modal" class="btn btn-xs btn-view"
+                data-title="查看" rel="tooltip" data-toggle="tooltip" data-trigger="hover"
+                data-placement="bottom">
+                  <i class="glyphicon glyphicon-zoom-in">
+                  </i>
+                </a>
+              </td>
+            </tr>
+          </volist>
+        </tbody>
+      </table>
+    </div>
+    <div role="tabpanel" class="tab-pane" id="tab-store">
+      <table class="data-table table table-bordered table-striped table-condensed table-hover">
+        <thead>
+          <tr>
+            <td>
+                店铺
+            </td>
+            <td>
+                订货金额
+            </td>
+            <td>
+                拒收金额
+            </td>
+            <td>
+                收货金额
+            </td>
+            <td>
+                运费
+            </td>
+            <td>
+                优惠
+            </td>
+            <td>
+                应付金额总计
+            </td>
+            <td>
+                账单明细
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <volist name="store['list']" id="vo">
+            <tr>
+              <td>
+                {$vo.shop_name}
+              </td>
+              <td>
+                {$vo.total_price}
+              </td>
+              <td>
+                {$vo.refuse_price}
+              </td>
+              <td>
+                {$vo.sign_price}
+              </td>
+              <td>
+                {$vo.deliver_fee}
+              </td>
+              <td>
+                {$vo.minus_amount}
+              </td>
+              <td>
+                {$vo.deal_price}
+              </td>
+              <td>
+                <a data-href="{:U('detail', 't=s&id='.$data['billing_info']['id'].'&uid='.$vo['user_id'])}"
+                data-target="#modal-adapt" data-toggle="modal" class="btn btn-xs btn-view"
+                data-title="查看" rel="tooltip" data-toggle="tooltip" data-trigger="hover"
+                data-placement="bottom">
+                  <i class="glyphicon glyphicon-zoom-in">
+                  </i>
+                </a>
+              </td>
+            </tr>
+          </volist>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<br>
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 账单动态 </a></li>
+  </ul>
+<div class="row">
+<div class="col-md-6">
+    <table class="data-table table table-bordered table-condensed table-hover" id="table-remarks">
+      <thead>
+        <tr>
+        <th>日期</th><th>操作</th><th>人员</th>
+        </tr>
+      </thead>
+      <tbody>
+      <volist name="remarks" id="vo">
+        <tr>
+          <td>{$vo.created_time}</td><td>{$vo.content}</td><td>{$vo.role_name} {$vo.author_name}</td>
+        </tr>
+      </volist>
+      </tbody>
+    </table>
+</div>
+<div class="col-md-6">
+<br>
+<neq name="data.state" value="5">
+    <div class="input-group">
+        <input type="text" class="form-control" name="remark" id="txt-remark" placeholder="请输入工作人员备注信息">
+        <span class="input-group-btn">
+          <button class="btn btn-default btn-add-remark btn-ajax" data-input="#txt-remark" data-target="#table-remarks" data-href="{:U('remark')}" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加备注</button>
+        </span>
+      </div>
+</neq>
+</div>
+</div>
+  </div>
+</div>
+</form>
+<script type="text/javascript">
+  $('body').delegate('.btn-add-remark','click',function (e) {
+      e.preventDefault();
+    var addr,params,form,target,input;
+    form = $(this).parents('form');
+    if(form != '' && form != null ){
+      params=$(form).serialize();
+    }
+
+    if(addr == null ) {
+      addr=$(this).data('href');
+    }
+    
+    target = $(this).data('target');
+    if(target == '' || target == null ){
+      target = '.content';
+    }
+
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      async:true,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        alert(msg.msg);
+        if(msg.url != '' && msg.url != null ){
+            setTimeout(function() {document.location=msg.url}, 0);
+        }
+        $('#txt-remark').val('');
+        if(msg.data != '' && msg.data != null ){
+          var vo = msg.data;
+          $(target).find('tbody').html('');
+          for (var i = 0; i < vo.length - 1; i++) {
+            var tr = '<tr><td>'+vo[i].created_time + '</td><td>' + vo[i].content + '</td><td>' + vo[i].role_name + ' ' +vo[i].author_name + '</td></tr>';
+            $(target).find('tbody').append(tr);
+          };
+        }
+      }
+    }); 
+    return false;
+  });
+
+</script>

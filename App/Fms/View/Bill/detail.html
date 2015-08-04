@@ -1,0 +1,86 @@
+      <div class="table-responsive">
+          <h4>账单明细</h4>
+          <h4>{:$date}</h4>
+          <volist name="data" id="order">
+          <table class="table table-bordered table-striped table-hover">
+            <thead>
+              <tr >
+                <td colspan="15">
+                   <span class="mr-10"><notempty name="t">{$order.deliver_date}</notempty> 订单编号：{$order.order_number} </span>
+                   <span class="mr-10">店铺名称：{$order.shop_name} </span>
+                                      <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
+                   <img id="sign_img{$vo.id}" class="hidden" src="{$order.sign_img_url}">
+                   <notempty name="order['sign_img_url']">
+                   <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.id}">签收凭证</a>
+                   </notempty>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center"><h5>序号</h5></td>
+                <td class="text-center"><h5>商品货号</h5></td>
+                <td class="text-center"><h5>商品名称</h5></td>
+                <td class="text-center"><h5>单价(元/斤)</h5></td>
+                <td class="text-center"><h5>单价(元/件)</h5></td>
+
+                <td class="text-center"><h5>订货斤数</h5></td>
+                <td class="text-center"><h5>订货件数</h5></td>
+                <td class="text-center"><h5>拒收斤数</h5></td>
+                <td class="text-center"><h5>拒收件数</h5></td>
+                <td class="text-center"><h5>收货斤数</h5></td>
+                <td class="text-center"><h5>收货件数</h5></td>
+                
+                <td class="text-center"><h5>订货金额</h5></td>
+                <td class="text-center"><h5>拒收金额</h5></td>
+                <td class="text-center"><h5>收货金额</h5></td>
+              </tr>
+            </thead>
+            <tbody>
+            <volist name="order['detail']" id="vo">
+              <tr>
+                <td>{$vo.id}</td>
+                <td>{$vo.sku_number}</td>
+                <td>{$vo.name}</td>
+              
+                <td>{$vo.pricePerW}</td>
+                <td>{$vo.single_price}</td>
+
+                <td>{$vo['inW']}</td>
+                <td>{$vo.quantity}</td>
+                <td>{$vo['juW']}</td>
+                <td>{$vo['quantity'] - $vo['actual_quantity']}</td>
+                <td>{$vo['shW']}</td>
+                <td>{$vo.actual_quantity}</td>
+                
+                <td>{$vo['quantity'] * $vo['single_price']}</td>
+                <td>{$vo['quantity'] * $vo['single_price'] - $vo['actual_quantity'] * $vo['single_price']}</td>
+                <td>{$vo.actual_sum_price}</td>
+                
+              </tr>
+            </volist>
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  <span class="mr-10">运费金额:¥{$order.deliver_fee} </span><span class="mr-10">优惠:¥{$order.minus_amount} </span>
+                </td>
+              </tr>
+              
+              
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  <span>总订货金额：¥{$order.total_price} </span>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center" colspan="8"></td>
+                <td class="text-center"  colspan="7">
+                  应付金额总计：￥{$order.actual_price}
+                </td>
+                
+
+              </tr>
+
+            </tbody>
+          </table>
+          </volist>
+      </div>
