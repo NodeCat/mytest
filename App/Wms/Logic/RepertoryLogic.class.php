@@ -399,9 +399,9 @@ class RepertoryLogic
             //出库加权平均成本
             $data[$key]['stock_out_cost']       = $this->numbers_format_2($data[$key]['stock_out_amount'] / $data[$key]['stock_out_nums']);
 
-            $data[$key]['profit_nums']          = 0;
+            /*$data[$key]['profit_nums']          = 0;
             $data[$key]['profit_amount']        = 0;
-            $data[$key]['profit_amounts']       = 0;
+            $data[$key]['profit_amounts']       = 0;*/
 
             //期末成本
             $data[$key]['last_nums']            = $this->numbers_format_2($endList[$val['pro_code']]['stock_qty']);         //期末数量

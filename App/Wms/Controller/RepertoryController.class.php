@@ -47,9 +47,9 @@ class RepertoryController extends CommonController
         'process_nums'      => '加工入库数量',
         'process_in_amount' => '加工入库金额（含税）',
         'process_in_amounts'=> '加工入库金额（未含税）',
-        'profit_nums'       => '盘盈数量',
+        /*'profit_nums'       => '盘盈数量',
         'profit_amount'     => '盘盈金额（含税）',
-        'profit_amounts'    => '盘盈金额（未含税）',
+        'profit_amounts'    => '盘盈金额（未含税）',*/
         'stock_out_nums'    => '出库数量',
         'stock_out_amount'  => '出库金额（含税）',
         'stock_out_amounts' => '出库金额（未含税）',
