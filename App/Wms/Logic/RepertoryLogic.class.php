@@ -361,24 +361,17 @@ class RepertoryLogic
 
             //销售出库
             //获取单价
-            if (empty($stockOutList[$val['pro_code']])) {
-                $data[$key]['sale_cost_nums'] = 0;
-                $data[$key]['sale_cost_amount'] = 0;
-                $data[$key]['sale_cost_amounts'] = 0;
-                $data[$key]['sale_income'] = 0;
+            $price_unit = $getPrice->get_price_by_sku($stockOutList[$val['pro_code']]['batch'], $val['pro_code']);          //获取销售成本价
+            $data[$key]['sale_cost_nums']       =  $this->numbers_format_2($stockOutList[$val['pro_code']]['delivery_qty']);//销售数量
+            //销售成本（含税）
+            if ($price_unit > 0) {
+                $data[$key]['sale_cost_amount'] = $this->numbers_format_2($price_unit * $stockOutList[$val['pro_code']]['delivery_qty']);
             } else {
-                $price_unit = $getPrice->get_price_by_sku($stockOutList[$val['pro_code']]['batch'], $val['pro_code']);          //获取销售成本价
-                $data[$key]['sale_cost_nums']       =  $this->numbers_format_2($stockOutList[$val['pro_code']]['delivery_qty']);//销售数量
-                //销售成本（含税）
-                if ($price_unit > 0) {
-                    $data[$key]['sale_cost_amount'] = $this->numbers_format_2($price_unit * $stockOutList[$val['pro_code']]['delivery_qty']);
-                } else {
-                    $data[$key]['sale_cost_amount'] =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);
-                }
-
-                $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($data[$key]['sale_cost_amount'] / $price_rate);      //销售成本（未含税）
-                $data[$key]['sale_income']          =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);    //销售收入
+                $data[$key]['sale_cost_amount'] =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);
             }
+
+            $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($data[$key]['sale_cost_amount'] / $price_rate);      //销售成本（未含税）
+            $data[$key]['sale_income']          =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);    //销售收入
 
             //加工出库
             $data[$key]['process_out_num']      = $this->numbers_format_2($processOutList[$val['pro_code']]['pro_qty']);                    //加工出库数
@@ -414,9 +407,13 @@ class RepertoryLogic
     private function numbers_format_2($number)
     {
         if (intval($number) == 0) {
-            return 0;
+            return sprintf("%.2f",0);
         }
         $p= stripos($number, '.');
-        return substr($number,0,$p+3);
+        if ($p) {
+            return substr($number,0,$p+3);
+        } else {
+            return sprintf("%.2f",$number);
+        }
     }
 }

@@ -441,11 +441,13 @@ class RepertoryController extends CommonController
                 $this->msgReturn(0, '请填写开始和结束时间');
             }
 
+            /*
             $time_str = explode(',', $map['stock_snap.snap_time'][1]);
 
             $model = M('stock_snap');
             $where['snap_time'] = date("Y-m-d", strtotime($time_str[0])-86400);
             $start_count = $model->where($where)->count();
+
 
             if (empty($start_count)) {
                 $this->msgReturn(0, '开始时间没有数据');
@@ -457,6 +459,7 @@ class RepertoryController extends CommonController
             if (empty($end_count)) {
                 $this->msgReturn(0, '结束时间没有数据');
             }
+            */
         }
         //默认页面进来，不显示报表数据，将时间赋值成当天时间，取不出数据
         if (empty($map['stock_snap.snap_time'])) {
@@ -489,9 +492,13 @@ class RepertoryController extends CommonController
     private function numbers_format_2($number)
     {
         if (intval($number) == 0) {
-            return 0;
+            return sprintf("%.2f",0);
         }
         $p= stripos($number, '.');
-        return substr($number,0,$p+3);
+        if ($p) {
+            return substr($number,0,$p+3);
+        } else {
+            return sprintf("%.2f",$number);
+        }
     }
 }
