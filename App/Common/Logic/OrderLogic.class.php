@@ -278,25 +278,6 @@ class OrderLogic{
 	 * @return [type]         [description]
 	 */
 
-	public function getOrderInfoByOrderIdArr($ids = array()) {
-	    $return = array('status' => false, 'msg' => '');
-	    
-	    if (empty($ids)) {
-	        $return['msg'] = '参数有误';
-	    }
-	    $url = '/suborder/lists';
-	    $map = array('order_ids' => $ids, 'itemsPerPage' => count($ids));
-	    $res = $this->get($url,$map);
-
-	    if ($res['status'] == 0) {
-	        $return['status'] = true;
-	        $return['msg'] = '成功';
-	        $return['list'] = $res['orderlist'];
-	    } else {
-	        $return['msg'] = '没有符合条件的订单';
-	        $return['list'] = array();
-	    }
-	    return $return;
 
 	public function getParentAccountByCoustomerId($params = array())
 	{
