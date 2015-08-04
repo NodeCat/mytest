@@ -2,6 +2,7 @@
 namespace Common\Logic;
 
 class OrderLogic{
+	public $debug = false;
     protected $server = '';
     protected $request ;
     public function __construct(){
@@ -9,6 +10,81 @@ class OrderLogic{
         import("Common.Lib.HttpCurl");
         $this->request = new \HttpCurl();
     }
+
+    //账单查询条件
+    public function billQuery()
+    {
+    	$url = '/billing/get_condition';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单列表接口
+    public function billList($map = '')
+    {
+    	$url = '/billing/lists';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单详情
+    public function billDetail($map = '')
+    {
+    	$url = '/billing/view';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单详情中的订单列表
+    public function billOrders($map = '')
+    {
+    	$url = '/billing/get_orders_of_billing';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单详情中的订单列表
+    public function billStore($map = '')
+    {
+    	$url = '/billing/get_orders_of_store';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单详情
+    public function billStoreOrders($map = '')
+    {
+    	$url = '/billing/get_order_detail_of_store';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+
+    //添加账单备注
+    public function billAddRemark($map = '')
+    {
+    	$url = '/billing/add_remark';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+    //账单备注列表
+    public function billRemarkList($map = '')
+    {
+    	$url = '/billing/get_billing_dynamic';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
+
+    //账单结算
+    public function billPay($map = '')
+    {
+    	$url = '/billing/one_key_pay';
+    	$res = $this->get($url,$map);
+    	return $res;
+    }
+
     //获取订单列表
 
     public function order($map=''){
@@ -201,6 +277,27 @@ class OrderLogic{
 	 * @param  array  $params [description]
 	 * @return [type]         [description]
 	 */
+
+	public function getOrderInfoByOrderIdArr($ids = array()) {
+	    $return = array('status' => false, 'msg' => '');
+	    
+	    if (empty($ids)) {
+	        $return['msg'] = '参数有误';
+	    }
+	    $url = '/suborder/lists';
+	    $map = array('order_ids' => $ids, 'itemsPerPage' => count($ids));
+	    $res = $this->get($url,$map);
+
+	    if ($res['status'] == 0) {
+	        $return['status'] = true;
+	        $return['msg'] = '成功';
+	        $return['list'] = $res['orderlist'];
+	    } else {
+	        $return['msg'] = '没有符合条件的订单';
+	        $return['list'] = array();
+	    }
+	    return $return;
+
 	public function getParentAccountByCoustomerId($params = array())
 	{
 		$url = '/customer/get_parent_info';
@@ -219,7 +316,11 @@ class OrderLogic{
 		$url = $this->server . $url;
 		$map = json_encode($map);
 		$res = $this->request->post($url,$map);
+		if($this->debug) {
+			dump($res);
+		}
 		$res = json_decode($res,true);
+
 		return $res;
 	}
 }
