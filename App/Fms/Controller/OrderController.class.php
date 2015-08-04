@@ -180,9 +180,7 @@ class OrderController extends \Common\Controller\AuthController {
         }
         $dist_detail_id = $dist_detail_id['id'];
         $data['status']     = 1; //重置为已装车状态
-        if ($dist_detail_id['pay_status'] != 1 ) {
-            $data['real_sum']   = 0; //实收金额置0
-        }
+        $data['real_sum']   = 0; //实收金额置0
         $data['deposit']    = 0;
         $data['wipe_zero']  = 0;
         $data['sign_msg']   = '';

@@ -131,13 +131,20 @@ class FmsController extends \Common\Controller\AuthController{
                     $row['actual_sum_price'] = 0;
                     $map['order_details'][]  = $row;
                 }
-                if($val['pay_status']=='已付款'){
-                    $val['pay_for_price']=0;
-                }
             }
-            $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee']; 
-            //抹零
-            $val['pay_for_price'] = $DistLogic->wipeZero($val['pay_for_price']);
+            if ($val['actual_price'] > 0) {
+                $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee']; 
+                //抹零
+                if ($val['pay_status'] != '已付款') {
+                    $val['pay_for_price'] = $DistLogic->wipeZero($val['pay_for_price']);
+                 }
+            } else {
+                $val['pay_for_price']=0;
+            }
+            if($val['pay_status']=='已付款'){
+                $val['pay_for_price']=0;
+            }
+            
             $map['status']  = '1';//已完成
             $map['deal_price'] = $val['pay_for_price'];
             $order_ids[] = $val['id'];

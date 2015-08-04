@@ -112,7 +112,10 @@
       		deal_sum = accSub(deal_sum, minus);
           deal_sum = accAdd(deal_sum,delivery_fee);
           //抹零处理
-          deal_sum = wipeZero(deal_sum);
+          var paystatus = obj.parents('.order').find('input[name=final_price]').attr('paystatus');
+          if (paystatus != '已付款') {
+            deal_sum = wipeZero(deal_sum);
+          }
       		obj.parents('.order').find('.p_deal').val(deal_sum);
       	}
 
