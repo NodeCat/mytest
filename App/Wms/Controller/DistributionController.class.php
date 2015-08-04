@@ -679,6 +679,7 @@ class DistributionController extends CommonController {
             $map['id'] = array('in', $pass_ids);
             $data['status'] = 2; //已出库
             $data['dis_mark'] = 1; //已分拨
+            $data['act_delivery_date'] = date('Y-m-d H:i:s'); //实际发货时间
             if ($stock->create($data)) {
                 $stock->where($map)->save();
             }
@@ -687,7 +688,8 @@ class DistributionController extends CommonController {
 
             //更新库存充足的发货量
             $pass_ids_string = implode(',', $pass_ids);
-            $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty WHERE pid IN (" . $pass_ids_string . ")";
+            $act_delivery_date = date('Y-m-d H:i:s');
+            $sql = "UPDATE stock_bill_out_detail stock SET stock.delivery_qty = stock.order_qty,act_delivery_date = '{$act_delivery_date}' WHERE pid IN (" . $pass_ids_string . ")";
             M()->execute($sql);
         }
         
@@ -697,6 +699,7 @@ class DistributionController extends CommonController {
             $data['status'] = 2; //已出库
             $data['dis_mark'] = 1; //已分拨
             $data['refused_type'] = 2; //缺货
+            $data['act_delivery_date'] = date('Y-m-d H:i:s'); //实际发货时间
             if ($stock->create($data)) {
                 $stock->where($map)->save();
             }
@@ -707,6 +710,7 @@ class DistributionController extends CommonController {
             foreach($reduce_delivery_qty_list as $key_id => $reduce_delivery_qty){
                 $map['id'] = $key_id;
                 $data['delivery_qty'] = $reduce_delivery_qty;
+                $data['act_delivery_date'] = date('Y-m-d H:i:s');
                 M('stock_bill_out_detail')->where($map)->save($data);
                 unset($map);
                 unset($data);
