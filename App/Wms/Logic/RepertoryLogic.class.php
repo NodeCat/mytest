@@ -330,7 +330,6 @@ class RepertoryLogic
         $refundList     = $this->getRefundList($start_time, $end_time, $pro_codes);
 
         $getPrice       = D('Process', 'Logic');
-
         foreach ($data as $key => $val) {
             //初期成本
             $data[$key]['first_nums']           = $this->numbers_format_2($startList[$val['pro_code']]['stock_qty']);        //期初数量
@@ -361,16 +360,24 @@ class RepertoryLogic
 
             //销售出库
             //获取单价
-            $price_unit = $getPrice->get_price_by_sku($stockOutList[$val['pro_code']]['batch'], $val['pro_code']);
-            $data[$key]['sale_cost_nums']       =  $this->numbers_format_2($stockOutList[$val['pro_code']]['delivery_qty']);//销售数量
-            if ($price_unit > 0) {
-                $data[$key]['sale_cost_amount'] = $this->numbers_format_2($price_unit * $stockOutList[$val['delivery_qty']]);
+            if (empty($stockOutList[$val['pro_code']])) {
+                $data[$key]['sale_cost_nums'] = 0;
+                $data[$key]['sale_cost_amount'] = 0;
+                $data[$key]['sale_cost_amounts'] = 0;
+                $data[$key]['sale_income'] = 0;
             } else {
-                $data[$key]['sale_cost_amount'] =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);     //销售成本（含税）
+                $price_unit = $getPrice->get_price_by_sku($stockOutList[$val['pro_code']]['batch'], $val['pro_code']);
+                $data[$key]['sale_cost_nums']       =  $this->numbers_format_2($stockOutList[$val['pro_code']]['delivery_qty']);//销售数量
+                //销售成本（含税）
+                if ($price_unit > 0) {
+                    $data[$key]['sale_cost_amount'] = $this->numbers_format_2($price_unit * $stockOutList[$val['pro_code']]['delivery_qty']);
+                } else {
+                    $data[$key]['sale_cost_amount'] =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);
+                }
+                //销售成本（未含税）
+                $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($data[$key]['sale_cost_amount'] / $price_rate);
+                $data[$key]['sale_income']          =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);
             }
-            //销售成本（未含税）
-            $data[$key]['sale_cost_amounts']    =  $this->numbers_format_2($data[$key]['sale_cost_amount'] / $price_rate);
-            $data[$key]['sale_income']          =  $this->numbers_format_2($stockOutList[$val['pro_code']]['total_amount']);
 
             //加工出库
             $data[$key]['process_out_num']      = $this->numbers_format_2($processOutList[$val['pro_code']]['pro_qty']);      //加工出库数
