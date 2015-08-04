@@ -66,7 +66,18 @@ class ReportErrorController extends Controller{
                 $report['created_user'] = UID;
                 $count = $M->add($report);
                 if($count){
+                    //获取司机当前的签到id
+                    $id = M('tms_sign_list')
+                        ->field('tms_sign_list.id')
+                        ->join('tms_user ON tms_user.id = tms_sign_list.userid')
+                        ->where(array('tms_user.mobile' => session('user.mobile')))
+                        ->order(array('tms_sign_list.created_time' => 'DESC'))
+                        ->find();
+                    M('tms_sign_list')->save(array('id' => $id['id'],'report_error_time' => $report['report_time']));
                     $data = array('status' => '1','msg' => '报错成功');
+                    $this->ajaxReturn($data);
+                } else {
+                    $data = array('status' => '0','msg' => '报错失败');
                     $this->ajaxReturn($data);
                 }
             }
