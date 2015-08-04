@@ -284,6 +284,11 @@ class StockController extends CommonController {
 			$map['code'] = I('dest_location_code');
 			$map['wh_id'] = session('user.wh_id');
 			$dest_location_code = M('location')->where($map)->find();
+
+			if(empty($dest_location_code)){
+				$this->msgReturn(0,'目标库位不存在');
+			}
+
 			$dest_location_id = $dest_location_code['id'];
 			if($src_location_id === $dest_location_id){
 				$this->msgReturn(0,'请修改库位信息');
