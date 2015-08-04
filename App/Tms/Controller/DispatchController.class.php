@@ -105,9 +105,8 @@ class DispatchController extends Controller{
             unset($map);
             $map['driver_mobile'] = $value['mobile'];
             $map['is_deleted']    = '0';
-            $end_time = date('Y-m-d',strtotime($value['created_time'])+86400);
-            $map['created_time']  = array('between',$value['created_time'].','.$end_time);
-            $res = M('tms_report_error')->where($map)->find();
+            $map['created_time']  = array('between',$value['created_time'].','.$value['report_error_time']);
+            $res = M('tms_report_error')->field('id')->where($map)->find();
             if ($res) {
                 $value['report_error'] = '1';
             }
