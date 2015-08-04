@@ -665,7 +665,7 @@ class CommonController extends AuthController {
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;
         if(empty($template)){//这里根据是否ajax显示不同的模版
-           $template= IS_AJAX ? 'Common@Table/list':'Common@Table/index';
+           $template= IS_AJAX ? 'Table/list':'Table/index';
         }
         $this->display($template);
     }
