@@ -136,8 +136,7 @@
                 <div class="form-group normal-node open" style="position:relative; margin-right:10px;margin-top:5px;">
                   <input type="txt" class="form-control" name="node[]" placeholder="选择记录点">
                   <a class="btn btn-xs btn-danger" style="position:absolute;top:-5px;right:-5px;" onclick="removeNode(this)"><span class="glyphicon glyphicon-remove" ></span></a>
-                    <ul class="dropdown-menu">
-                      <li><a href="javascript:void(0);"><span class="text-info"></span></a></li>
+                    <ul class="dropdown-menu hidden" style="margin-top:-1px;">
                     </ul>
                 </div>
                 <input type="txt" class="form-control end-node" name="node[]" placeholder="选择结束任务点">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -227,15 +226,19 @@
     }
     $('.normal-node').find('input').each(function(){
       var _this = $(this);
-      _this.change(function(){
+      _this.on('input',function(){
         var param = {keyword:_this.val()};
         $.ajax({
           url:"{:U('getCustomerList')}",
-          type:'post',
+          type:'get',
           dataType:'json',
           data:param,
           success:function(res){
-            
+            var info = '';
+            for(var c in res){
+              info += '<li><a href="javascript:void(0);">'+res[c].shop_name+'，<span class="text-info">'+res[c].name+' ('+res[c].mobile+') </span></a></li>';
+            }
+            _this.siblings('ul').append(info).removeClass('hidden');
           }
         })
       })
