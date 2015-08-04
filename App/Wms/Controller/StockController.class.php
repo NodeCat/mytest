@@ -280,7 +280,11 @@ class StockController extends CommonController {
             }
     
 			$src_location_id = I('src_location_id');
-			$dest_location_id = I('location_id');
+			//查询对应的location_id
+			$map['code'] = I('dest_location_code');
+			$map['wh_id'] = session('user.wh_id');
+			$dest_location_code = M('location')->where($map)->find();
+			$dest_location_id = $dest_location_code['id'];
 			if($src_location_id === $dest_location_id){
 				$this->msgReturn(0,'请修改库位信息');
 			}
@@ -304,7 +308,7 @@ class StockController extends CommonController {
 			$params['variable_qty'] = $variable_qty;
 			$params['wh_id'] = I('wh_id');
 			$params['src_location_id'] = I('src_location_id');
-			$params['dest_location_id'] = I('location_id');
+			$params['dest_location_id'] = $dest_location_id;
 			$params['pro_code'] = I('pro_code');
 			$params['batch'] = I('batch');
 			$params['status'] = I('status');
