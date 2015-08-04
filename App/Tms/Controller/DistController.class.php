@@ -422,7 +422,7 @@ class DistController extends Controller {
                 $bill_out_detail_ids = array_keys($bill_id_details);
                 $bdmap['bill_out_detail_id'] = array('in', $bill_out_detail_ids);
                 $sdM = M('tms_sign_in_detail');
-                $sdM->where($map)->save(array('is_deleted' => 1));
+                $sdM->where($bdmap)->save(array('is_deleted' => 1));
                 //添加签收详情数据
                 $sdM->addAll($cdata);
                 //更新配送单详情－>配送单状态
