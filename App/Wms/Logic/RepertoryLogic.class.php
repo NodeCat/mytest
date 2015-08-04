@@ -354,10 +354,10 @@ class RepertoryLogic
             $data[$key]['process_in_amounts']   = $this->numbers_format_2($data[$key]['process_in_amount'] / $price_rate);  //加工入库金额(不含税)
 
             //入库数
-            $data[$key]['instock_num']          = $this->numbers_format_2($data[$key]['process_in_amount'] + $data[$key]['purchase_nums']);      //入库数
+            $data[$key]['instock_num']          = $this->numbers_format_2($data[$key]['process_nums'] + $data[$key]['purchase_nums']);           //入库数
             $data[$key]['instock_amount']       = $this->numbers_format_2($data[$key]['purchase_amount'] + $data[$key]['process_in_amount']);    //入库金额(含税)
-            $data[$key]['instock_amounts']      = $this->numbers_format_2($data[$key]['purchase_in_amount'] + $data[$key]['process_in_amount']); //入库金额(不含税)
-            $data[$key]['insotck_cost']         = $this->numbers_format_2($data[$key]['instock_amounts'] / $data[$key]['instock_num']);          //入库加权平均成本
+            $data[$key]['instock_amounts']      = $this->numbers_format_2($data[$key]['instock_amount'] / $price_rate);                          //入库金额(不含税)
+            $data[$key]['insotck_cost']         = $this->numbers_format_2($data[$key]['instock_amount'] / $data[$key]['instock_num']);           //入库加权平均成本
 
             //销售出库
             //获取单价
