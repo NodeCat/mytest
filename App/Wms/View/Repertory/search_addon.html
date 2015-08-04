@@ -1,6 +1,8 @@
 <button type="button" data-title="导出" id="export" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" ><i class="glyphicon glyphicon-pencil"></i> 导出</button>
 <script type="text/javascript">
 $(function(){
+    $("#export").prev().children().find('a').remove();
+    $("#export").prev().addClass('col-lg-2');
     var url = '/category/getCatInfoByPid';
     var param = {};
     var callback = function(json){

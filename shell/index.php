@@ -74,12 +74,12 @@ while ($startId < $maxId) {
 
     foreach ($insert_array as $key => $val) {
         $insert_array[$key]['pro_uom'] = $sku_number[$val['pro_code']]['unit_name'];
-        $insert_array[$key]['category1'] = $sku_number[$val['pro_code']]['category_info']['top']['id'];
-        $insert_array[$key]['category2'] = $sku_number[$val['pro_code']]['category_info']['second']['id'];
-        $insert_array[$key]['category3'] = $sku_number[$val['pro_code']]['category_info']['third']['id'];
-        $insert_array[$key]['category_name1'] = $sku_number[$val['pro_code']]['category_info']['top']['name'];
-        $insert_array[$key]['category_name2'] = $sku_number[$val['pro_code']]['category_info']['second']['name'];
-        $insert_array[$key]['category_name3'] = $sku_number[$val['pro_code']]['category_info']['third']['name'];
+        $insert_array[$key]['category1'] = $sku_number[$val['pro_code']]['category_info']['top'][0]['id'];
+        $insert_array[$key]['category2'] = $sku_number[$val['pro_code']]['category_info']['second'][0]['id'];
+        $insert_array[$key]['category3'] = $sku_number[$val['pro_code']]['category_info']['third'][0]['id'];
+        $insert_array[$key]['category_name1'] = $sku_number[$val['pro_code']]['category_info']['top'][0]['name'];
+        $insert_array[$key]['category_name2'] = $sku_number[$val['pro_code']]['category_info']['second'][0]['name'];
+        $insert_array[$key]['category_name3'] = $sku_number[$val['pro_code']]['category_info']['third'][0]['name'];
     }
 
     foreach ($insert_array as $item) {
