@@ -137,7 +137,18 @@ class OrderLogic{
 		return $res;
 
 	}
-	
+
+	/**
+	 * [getCustomerList 获取客户信息列表]
+	 * @param  array  $params [description]
+	 * @return [type]         [description]
+	 */
+	public function getCustomerList($params = array())
+	{
+		$url = '/customer/lists';
+		$res = $this->get($url,$params);
+		return $res['list'];
+	}
 	public function get($url,$map='') {
 		$url = $this->server . $url;
 		$map = json_encode($map);

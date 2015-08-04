@@ -131,33 +131,25 @@
           <tr>
             <td colspan="4">
               <div class="form-group">
-                <label for="" class="control-label">选择记录点</label>
-                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse" data-val="">
-                    <option value="0">选择记录点</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select>&nbsp;
-                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
-                    <option value="0">选择记录点</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select>&nbsp;
-                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
-                    <option value="0">选择记录点</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select>&nbsp;
-                <select autocomplete="off" style="" class="form-control"  id="warehouse" name="warehouse">
-                    <option value="0">选择记录点</option>
-                    <volist name='car.warehouse' id='storge'>
-                    <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
-                    </volist>
-                </select>&nbsp;
+                <label for="" class="control-label">选择记录点:</label>
+                <input type="txt" class="form-control start-node" name="node[]" placeholder="选择起始任务点">&nbsp;&nbsp;
+                <div class="form-group normal-node open" style="position:relative; margin-right:10px;margin-top:5px;">
+                  <input type="txt" class="form-control" name="node[]" placeholder="选择记录点">
+                  <a class="btn btn-xs btn-danger" style="position:absolute;top:-5px;right:-5px;" onclick="removeNode(this)"><span class="glyphicon glyphicon-remove" ></span></a>
+                    <ul class="dropdown-menu">
+                      <li><a href="javascript:void(0);"><span class="text-info"></span></a></li>
+                    </ul>
+                </div>
+                <input type="txt" class="form-control end-node" name="node[]" placeholder="选择结束任务点">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="javascript:void(0);" class="btn btn-primary" onclick="addNode(this)">+任务点</a>
               </div>
             </td>
+            <div id="task-node" class="hidden">
+              <div class="form-group normal-node" style="position:relative; margin-right:10px;margin-top:5px;">
+                  <input type="txt" class="form-control" name="node[]" placeholder="选择记录点">
+                  <a class="btn btn-xs btn-danger" style="position:absolute;top:-5px;right:-5px;" onclick="removeNode(this)"><span class="glyphicon glyphicon-remove" ></span></a>
+                </div>
+            </div>
           </tr>
           <tr>
             <td colspan="4">
@@ -224,5 +216,29 @@
     function delTask(obj){
       $(obj).parents('table').remove();
     }
+    //添加任务点
+    function addNode(obj){
+      var node = $('#task-node').html();
+      $(obj).siblings('.end-node').before(node);
+    }
+    //移除任务点
+    function removeNode(obj){
+      $(obj).parent('.normal-node').remove();
+    }
+    $('.normal-node').find('input').each(function(){
+      var _this = $(this);
+      _this.change(function(){
+        var param = {keyword:_this.val()};
+        $.ajax({
+          url:"{:U('getCustomerList')}",
+          type:'post',
+          dataType:'json',
+          data:param,
+          success:function(res){
+            
+          }
+        })
+      })
+    })
 </script>
 

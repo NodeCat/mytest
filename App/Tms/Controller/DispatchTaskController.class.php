@@ -206,6 +206,10 @@ class DispatchTaskController extends Controller
         
     }
 
+    /**
+     * [taskDetail 任务详情]
+     * @return [type] [description]
+     */
     public function taskDetail()
     {
         $id = I('get.id/d', 0);
@@ -225,5 +229,127 @@ class DispatchTaskController extends Controller
         $task['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($task['driver_id']);
         $this->task = $task;
         $this->display('tms:task-detail');
+    }
+
+    /**
+     * [departAudit 部门审批]
+     * @return [type] [description]
+     */
+    public function departAudit()
+    {
+        $id = I('post.id/d', 0);
+        $approve = I('post.approve/d', 0);
+        if (empty($id)) {
+            $re = array(
+                'status' => -1,
+                'msg'    => '参数错误'
+            );
+            $this->ajaxReturn($re);
+        }
+        $M = M('tms_dispatch_task');
+        $map['id'] = $id;
+        $task = $M->field('status')->where($map)->find();
+        //先判断当前任务状态，为1执行部门审批
+        if ($task['status'] == 1) {
+            $status = $approve ? 2 : 6;
+            $data = array('status' => $status);
+            $flag = $M->where($map)->save($data);
+            if ($flag) {
+                $re = array(
+                    'status' => 0,
+                    'msg'    => '操作成功'
+                );
+            } else {
+                $re = array(
+                    'status' => -1,
+                    'msg'    => '操作失败'
+                );
+            }
+        } else {
+            $re = array(
+                'status' => -1,
+                'msg'    => '已经过部门审批，请勿重复操作'
+            );
+        }
+        $this->ajaxReturn($re);
+        
+    }
+
+    /**
+     * [logisAudit 物流审批]
+     * @return [type] [description]
+     */
+    public function logisAudit()
+    {
+        $id = I('post.id/d', 0);
+        $approve = I('post.approve/d', 0);
+        if (empty($id)) {
+            $re = array(
+                'status' => -1,
+                'msg'    => '参数错误'
+            );
+            $this->ajaxReturn($re);
+        }
+        $M = M('tms_dispatch_task');
+        $map['id'] = $id;
+        $task = $M->field('status')->where($map)->find();
+        //先判断当前任务状态，为1执行部门审批
+        if ($task['status'] == 2) {
+            $status = $approve ? 3 : 6;
+            $data = array('status' => $status);
+            $flag = $M->where($map)->save($data);
+            if ($flag) {
+                $re = array(
+                    'status' => 0,
+                    'msg'    => '操作成功'
+                );
+            } else {
+                $re = array(
+                    'status' => -1,
+                    'msg'    => '操作失败'
+                );
+            }
+        } else {
+            $re = array(
+                'status' => -1,
+                'msg'    => '只有待物流审批状态的任务才能进行物流审批...'
+            );
+        }
+        $this->ajaxReturn($re);
+        
+    }
+
+    //统一的返回方法
+    protected function msgReturn($res, $msg='', $data = '', $url=''){
+        $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
+        if(IS_AJAX){
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
+        }
+        else if($res){ 
+                $this->success($msg,$url);
+            }
+            else{
+                $this->error($msg,$url);
+            }
+        exit();
+    }
+
+    /**
+     * [getCustomerList 获取客户信息列表]
+     * @return [type] [description]
+     */
+    public function getCustomerList()
+    {
+        $searchValue = I('get.keyword');
+        $map = array(
+            'searchKey'=>'shop_name',
+            'fields'=>'name,lng,lat',
+            'currentPage'=> 0,
+            'itemsPerPage'=> 15
+        );
+        $map['searchValue'] = $searchValue;
+        $cA = A('Common/Order', 'Logic');
+        $res = $cA->getCustomerList($map);
+        $this->ajaxReturn($res);
     }
 }
