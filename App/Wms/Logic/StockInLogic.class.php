@@ -299,6 +299,14 @@ class StockInLogic{
 		if($status == 'unqualified'){
 			M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$qty);
 		}
+		//更新上架日期
+		$stock_bill_in_detail_info = M('stock_bill_in_detail')->where($map)->find();
+		if($stock_bill_in_detail_info['shelves_date'] == '0000-00-00 00:00:00'){
+			$data['shelves_date'] = date('Y-m-d H:i:s');
+			M('stock_bill_in_detail')->where($map)->save($data);
+			unset($data);
+		}
+		
 		//是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
         if(strtotime($line['product_date']) > strtotime($product_date) || $line['product_date'] == '0000-00-00 00:00:00'){
             $stock_bill_in_detail = D('stock_bill_in_detail');
@@ -350,13 +358,13 @@ class StockInLogic{
 		$bill_in_detail_info = M('stock_bill_in_detail')->where($map)->select();
 		$diff = $qty;//要上架的数量
 		foreach ($bill_in_detail_info as $key => $value) {
-			if(intval($diff*100) <= 0){
+			if($diff <= 0){
 				break;
 			}
 			//可验收数量 = 预计数量 - 实际验收数
 			$qtyForCanIn = f_sub($value['expected_qty'], $value['receipt_qty'], 2);
-			$qtycom = intval($qtyForCanIn*100);
-			$diffcom = intval($diff*100);
+			$qtycom = $qtyForCanIn;
+			$diffcom = $diff;
 			if ($qtycom == 0){
 				continue; //收货完成
 			} elseif ($qtycom <= $diffcom) {
@@ -369,9 +377,15 @@ class StockInLogic{
 			}
 		}
 
+		//更新收货时间
+		if($bill_in_detail_info[0]['receipt_date'] == '0000-00-00 00:00:00'){
+			$data['receipt_date'] = date('Y-m-d H:i:s');
+			M('stock_bill_in_detail')->where($map)->save($data);
+		}
+
 		unset($map);
 
-		if(intval($diff*100) == 0) {
+		if($diff == 0) {
 			$ined = $this->checkIn($inId);
 			// $ined == 2 不可以验收 待上架 等于1时候 可以验收
 			if($ined == 2) { //
@@ -390,7 +404,7 @@ class StockInLogic{
 			A('TransferIn','Logic')->updateTransferInStatus($bill_in_r['code']);
 		}
 
-		if (intval($diff*100) == 0) {
+		if ($diff == 0) {
 			$qtys = $qty;
 		}elseif(f_sub($cate_qty, $qty, 2) > 0) {
 			$qtys = $qty;
