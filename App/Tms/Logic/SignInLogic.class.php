@@ -150,20 +150,12 @@ class SignInLogic
        //请求母账户信息
        $umap = array('customer_id' => $data['user_id']);
        $parent = $cA->getParentAccountByCoustomerId($umap);
-       if (is_array($parent)) {
+       if (is_array($parent) 
+            && $parent['data']['account_type'] == 1 
+            && $parent['data']['account_type'] != $data['user_id']
+        ) {
             //要发送的母账户手机号
-            if ($parent['data']['account_type'] == 1) {
-                $mobile = $parent['data']['mobile'];
-            }
-            if ($parent['data']['account_type'] == 2) {
-                $mobile = $parent['data']['parent_mobile'];
-            }
-            if (empty($mobile)) {
-                return array(
-                   'status' => 0,
-                   'msg'    => '母账户手机号不存在'
-                );
-            }
+            $mobile = $parent['data']['mobile'];
             //组合信息内容
             $content = "亲爱的老板，分店“{$data['shop_name']}”的产品已成功送达，完成签收，请您放心，";
             $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491。";
