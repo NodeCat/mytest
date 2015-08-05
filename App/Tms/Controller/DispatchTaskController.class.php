@@ -95,6 +95,7 @@ class DispatchTaskController extends Controller
                 'apply_mobile'     => I('post.apply_mobile', array()),
                 'apply_department' => I('post.apply_department', array()),
                 'op_time'          => I('post.op_time', array()),
+                'nodes'             => I('post.node', array()),
             );
             //判断必选信息是否完整
             foreach ($rdata as $r) {
@@ -135,6 +136,40 @@ class DispatchTaskController extends Controller
                 if ($id) {
                     $cdata = array('code' => 'DT' . $id);
                     $M->where(array('id'=>$id))->save($cdata);
+                    //任务节点数据
+                    $task_node = $rdata['nodes'][$key];
+                    $nodeData = array();
+                    foreach ($task_node as $k => $v) {
+                        $info = explode(',', $v);
+                        if ($info[3] && $info[3]) {
+                            $geo = array(
+                                'lat' => $info[3],
+                                'lng' => $info[4],
+                            );
+                            $geo = json_encode($geo);
+                        } else {
+                            $geo = '';
+                        }
+                        $tmp = array(
+                            'pid'          => $id,
+                            'name'         => $info[0],
+                            'customer'     => $info[1],
+                            'mobile'       => $info[2],
+                            'geo'          => $geo,
+                            'queue'        => $k,
+                            'created_time' => get_time(),
+                        );
+                        $nodeData[] = $tmp;
+                    }
+                    //添加节点数据
+                    $ns = M('tms_task_node')->addAll($nodeData);
+                    if (empty($ns)) {
+                        $res = array(
+                            'status' => -1,
+                            'msg'    => '创建失败'
+                        );
+                        $this->ajaxReturn($res);
+                    }
                 } else {
                     $res = array(
                         'status' => -1,
