@@ -116,8 +116,9 @@ class SignInLogic
         $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491。";
         $content .= "退订请回复TD";
         $cA = A('Common/Order', 'Logic');
+        dump($mobiles);
         $map = array(
-            'mobile'   => $mobiles,
+            'mobile'   => '18701346697',
             'content'  => $content,
             'sms_type' => 1,
             'delay'    => 1200,
@@ -129,7 +130,9 @@ class SignInLogic
         }
         //加入消息队列并缓存该job_id
         $res = $cA->sendPushMsg($map);
+        dump($res);die();
         S(md5($id), $res['job_id'], 1200);
+
         return $res;
     }
 
