@@ -75,7 +75,6 @@ class ListLogic {
      */
     public function can_pay($dist_id) {
         $flag = false;
-        $exist = false;
         $list_logic = A('Tms/List','Logic');
         //获得出库单列表
         unset($map); 
@@ -118,8 +117,13 @@ class ListLogic {
             //有拒收
             if ($flag) {
                 //是否已创建拒收入库单
-                $exist = $list_logic->view_return_goods_status($dist_id);
-                if ($exist) {
+                $codes = array_column($bill_outs,'code');
+                unset($map);
+                $map['refer_code'] = array('in',$codes); 
+                $map['type']       = 7;//拒收入库单
+                $map['is_deleted'] = 0;
+                $back_in = M('stock_bill_in')->where($map)->select();
+                if (!empty($back_in)) {
                     return 2;
                 } else {
                     return 3;
