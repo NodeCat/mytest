@@ -175,7 +175,7 @@ class OrderController extends \Common\Controller\AuthController {
         $fms_list = A('Fms/List','Logic');
         //查询订单是否有退货，并且已创建拒收入库单
         $is_can = $fms_list->can_replace($bill_out_id);
-        if ($is_can) {
+        if ($is_can == 2) {
             $this->error('此订单有退货且已经交货，不能重置订单状态。');exit;
         }
         $dist_detail_id = $dist_detail_id['id'];

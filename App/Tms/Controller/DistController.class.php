@@ -635,13 +635,16 @@ class DistController extends Controller {
                  
             }  
         }
-            
+
         $list['dist_id'] = $res['dist_id'];
         $list['sum_deal_price']  = $sum_deal_price;//回款数
         $list['sign_orders'] = $sign_orders;//已签收
         $list['unsign_orders'] = $unsign_orders;//未签收
         $list['sign_finished']  = $sign_finished;  // 已完成
         $list['delivering'] = $all_orders - $sign_orders - $unsign_orders - $sign_finished;//派送中
+        $L = A('Tms/List','Logic');
+        $status = $L->view_return_goods_status($dist_id);
+        $this->status = $status;
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';

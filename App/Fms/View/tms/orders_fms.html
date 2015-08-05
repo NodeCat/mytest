@@ -40,9 +40,16 @@
   <div class="col-md-2">
     <h4>押金总计：{$dist['deposit_sum']}</h4>
   </div>
-  <div class="col-md-3">
+  <div class="col-md-2">
   <h4>结算金额：{$dist['pay_for_price_total']}</h4>
   </div>
+    <notempty name="status">
+    <div class="col-md-1">
+      <volist name="status" id="vo">
+        {$key}:{$vo}
+      </volist>
+    </div>
+    </notempty>
   </div>
 
 

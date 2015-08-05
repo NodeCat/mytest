@@ -15,7 +15,14 @@ class ListLogic{
      *输入参数：$dist_id,配送单id
     */
     public function view_return_goods_status($dist_id){
-        $status = false;
+        $status = array();
+        $status_filter = array(
+            '0' => '草稿',
+            '21'=>'待收货',
+            '31'=>'待上架',
+            '33'=>'已上架',
+            '04'=>'已作废'
+        );
         if(!empty($dist_id)) {
             unset($map);
             //查询条件为配送单id
@@ -34,12 +41,16 @@ class ListLogic{
                     $codes = array_column($codes,'code');
                     unset($map);
                     $map['refer_code'] = array('in',$codes); 
+                    $map['type']       = 7; //拒收入库单
                     $map['is_deleted'] = 0;
                     $back_in = M('stock_bill_in')->where($map)->select();
                     if(!empty($back_in)) {
-                        $status = true;
-                    }else{      //如果没有查到相应的拒收入库单，直接返回FALSE
-                        $status = false;
+                        foreach ($back_in as $value) {
+                            if (array_key_exists($value['status'], $status_filter)) {
+                                $key = $status_filter[$value['status']];
+                                $status[$key] += 1; 
+                            }
+                        }
                     }
                 }
             }  

@@ -29,6 +29,13 @@
 			<h4>交货款{$list['sum_deal_price']|sprintf="%1.2f",###}元</h4>
 		</span>
 	</div
+	<notempty name="status">
+	<div>
+		<volist name="status" id="vo">
+			{$key}:{$vo}
+		</volist>
+	</div>
+	</notempty>
 <div class="table-responsive">
 
 	<table class="table table-bordered" style="text-align:center">
