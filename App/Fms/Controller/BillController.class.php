@@ -79,7 +79,7 @@ class BillController extends \Wms\Controller\CommonController
                 'control_type' => 'select',
                 'value' => $query['bd']
             ),
-            'billing_status' => array(
+            'status' => array(
         		'title' => '账单状态',
         		'query_type' => 'eq',
                 'control_type' => 'select',
@@ -92,12 +92,18 @@ class BillController extends \Wms\Controller\CommonController
                 'value' => $query['expire_status']
             ),
             'start_time' =>    array (    
-			'title' => '账单时间',     
-			'query_type' => 'between',     
-			'control_type' => 'datetime',     
-			'value' => '',   
-		),
-            
+    			'title' => '账单时间',     
+    			'query_type' => 'between',     
+    			'control_type' => 'datetime',     
+    			'value' => '',   
+    		  ),
+            'keywords' =>    array (    
+                'title' => '关键字搜索',     
+                'query_type' => 'eq',     
+                'control_type' => 'text',     
+                'value' => '',  
+
+            ),
         );
     }
 
@@ -241,15 +247,29 @@ class BillController extends \Wms\Controller\CommonController
 
         $data = $A->billDetail($map);
         if ($data['billing_info']['status_code'] == '4' ) {
+            $payType = '结算';
             $map['payment'] = '1';
         } else {
+            $payType = '一键结算';
             $map['payment'] = '0';
         }
         $res = $A->billPay($map);
         $url = $res['status'] == '0' ? U('view',array('id'=>$map[   'id'])) : '';
         $status = $res['status'] == 0 ? 1 : 0;
-
+        if($status == 1) {
+            $this->addRemark($map['id'], $payType);
+        }
         $this->msgReturn($status, $res['msg'], '', $url);
+    }
+
+    protected function addRemark($id, $remark) {
+        $map['author_id'] = session('user.uid');
+        $map['author_name'] = session('user.username');
+        $map['role_id'] = session('user.role');
+        $map['role_name'] = session('user.role');
+        $map['content'] = $remark;
+        $map['id'] = $id;
+        $res = A('Common/Order', 'Logic')->billAddRemark($map);
     }
 
     public function remark()
@@ -257,14 +277,9 @@ class BillController extends \Wms\Controller\CommonController
         $A = A('Common/Order', 'Logic');
 
         if(IS_POST) {
-            $map['author_id'] = session('user.uid');
-            $map['author_name'] = session('user.username');
-            $map['role_id'] = session('user.role');
-            $map['role_name'] = session('user.role');
-            $map['content'] = I('remark');
-            $map['id'] = I('id');
-            $res = $A->billAddRemark($map);
-            unset($map);
+            $remark = I('remark');
+            $id = I('id');
+            $this->addRemark($id, $remark);
         }
         
         $map['id'] = I('id');
