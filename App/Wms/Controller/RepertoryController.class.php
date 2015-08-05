@@ -60,9 +60,9 @@ class RepertoryController extends CommonController
         'purchase_return_nums'  => '采购正品退货数量',
         'purchase_return_amount'=> '采购正品退货金额（含税）',
         'purchase_return_amounts'=> '采购正品退货金额（未含税）',
+        'sale_cost_nums'    => '销售数量',
         'sale_cost_amount'  => '销售成本（含税）',
         'sale_cost_amounts' => '销售成本（未含税）',
-        'sale_cost_nums'    => '销售数量',
         'sale_income'       => '销售收入',
         'last_nums'         => '期末数量',
         'last_amount'       => '期末成本（含税）',
@@ -345,9 +345,9 @@ class RepertoryController extends CommonController
         $sheet->setCellValue('AF1', '采购正品退货数量');
         $sheet->setCellValue('AG1', '采购正品退货金额（含税）');
         $sheet->setCellValue('AH1', '采购正品退货金额（未含税）');
-        $sheet->setCellValue('AI1', '销售成本（含税）');
-        $sheet->setCellValue('AJ1', '销售成本（未含税）');
-        $sheet->setCellValue('AK1', '销售数量');
+        $sheet->setCellValue('AI1', '销售数量');
+        $sheet->setCellValue('AJ1', '销售成本（含税）');
+        $sheet->setCellValue('AK1', '销售成本（未含税）');
         $sheet->setCellValue('AL1', '销售收入');
         $sheet->setCellValue('AM1', '期末数量');
         $sheet->setCellValue('AN1', '期末成本（含税）');
@@ -390,9 +390,9 @@ class RepertoryController extends CommonController
             $sheet->setCellValue('AF'.$i, $value['purchase_return_nums']);
             $sheet->setCellValue('AG'.$i, $value['purchase_return_amount']);
             $sheet->setCellValue('AH'.$i, $value['purchase_return_amounts']);
-            $sheet->setCellValue('AI'.$i, $value['sale_cost_amount']);
-            $sheet->setCellValue('AJ'.$i, $value['sale_cost_amounts']);
-            $sheet->setCellValue('AK'.$i, $value['sale_cost_nums']);
+            $sheet->setCellValue('AI'.$i, $value['sale_cost_nums']);
+            $sheet->setCellValue('AJ'.$i, $value['sale_cost_amount']);
+            $sheet->setCellValue('AK'.$i, $value['sale_cost_amounts']);
             $sheet->setCellValue('AL'.$i, $value['sale_income']);
             $sheet->setCellValue('AM'.$i, $value['last_nums']);
             $sheet->setCellValue('AN'.$i, $value['last_amount']);
