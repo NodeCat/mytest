@@ -80,7 +80,7 @@
             <td>{$k.distance}</br>
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
-            <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
+            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
@@ -142,7 +142,7 @@ function saveFee(obj) {
 }
 function cancleEdit(obj) {
     tds.each(function(){
-        var fee = parseInt($(this).find('input').val());
+        var fee = parseInt($(this).data('fee'));
             fee = fee ? fee : 0;
         $(this).text(fee);
     })
