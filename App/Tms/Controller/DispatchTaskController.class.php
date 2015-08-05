@@ -287,7 +287,10 @@ class DispatchTaskController extends Controller
         //先判断当前任务状态，为1执行部门审批
         if ($task['status'] == 1) {
             $status = $approve ? 2 : 6;
-            $data = array('status' => $status);
+            $data = array(
+                'status'          => $status,
+                'department_time' => get_time(),
+            );
             $flag = $M->where($map)->save($data);
             if ($flag) {
                 $re = array(
@@ -331,7 +334,10 @@ class DispatchTaskController extends Controller
         //先判断当前任务状态，为1执行部门审批
         if ($task['status'] == 2) {
             $status = $approve ? 3 : 6;
-            $data = array('status' => $status);
+            $data = array(
+                'status'         => $status,
+                'logistics_time' => get_time(),
+            );
             $flag = $M->where($map)->save($data);
             if ($flag) {
                 $re = array(
