@@ -1,6 +1,8 @@
 <?php
 namespace Tms\Controller;
+
 use Think\Controller;
+
 class DistController extends Controller {
 
 	//司机提货

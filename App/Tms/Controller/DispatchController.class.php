@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class DispatchController extends Controller{
+class DispatchController extends \Common\Controller\AuthController{
 
 	protected $columns = array (   
         'username'     => '姓名',   
