@@ -20,6 +20,16 @@
 <a href="{:U('pay','id='.$dist['id'])}" class="btn-sign btn btn-lg btn-success btn-block"> 结 款 </a>
 </notempty>
  </div>
+ <div class="col-md-3 col-xs-6">
+    <span style="color:red">
+      <switch name="status">
+      <case value="1">交货状态：没有退货。</case>
+      <case value="2">交货状态：交货申请已经收到。</case>
+      <case value="3">交货状态：有退货，请司机点击“交货”按钮交货。</case>
+      <default />
+      </switch>
+    </span>
+ </div>
  <div class="clearfix"></div>
  </div>
 </form>

@@ -10,7 +10,7 @@ class FmsController extends \Common\Controller\AuthController{
     public function orders(){
         $id = I('id',0);
         if(!empty($id)){
-            $L = A('Ｆms/List','Logic');
+            $L = A('Fms/List','Logic');
             $status = $L->can_pay($id);
             $this->assign('status',$status);
             //根据配送单id或配送单号获得配送单信息及订单信息

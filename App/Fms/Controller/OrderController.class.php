@@ -4,11 +4,7 @@ class OrderController extends \Common\Controller\AuthController {
 
 	public function index() 
     {
-        if (IS_POST) {
-            $order_id = I('post.id',0);
-        } elseif (IS_GET) {
-            $order_id = I('get.id',0);
-        }
+        $order_id = I('id',0);
         
         if ($order_id) {
             $map['refer_code'] = $order_id;

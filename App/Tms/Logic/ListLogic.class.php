@@ -11,8 +11,9 @@ class ListLogic{
 		return $storge;
 	}
 	/*
-     *功   能：根据配送单id查询客退入库单状态
+     *功   能：根据配送单id查询拒收入库单状态
      *输入参数：$dist_id,配送单id
+     *返回值：  $status ,拒收入库单的状态及个数
     */
     public function view_return_goods_status($dist_id){
         $status = array();
