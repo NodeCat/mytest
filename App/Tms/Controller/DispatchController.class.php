@@ -23,6 +23,9 @@ class DispatchController extends \Common\Controller\AuthController{
         'mark'         => '备注',
          
     );
+    public function home () {
+        $this->display('Index/index');
+    }
     protected $car = array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
