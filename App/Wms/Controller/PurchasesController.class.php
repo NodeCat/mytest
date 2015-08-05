@@ -76,7 +76,7 @@ class PurchasesController extends CommonController {
         $maps['delivery_date']  = $delivery_date;
         $maps['delivery_ampm']  = $delivery_ampm;
         foreach ($data as $key => $value) {
-            //$data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
+            $data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
             //解决不选日期和时间段是应该是根据空汇总
             $data[$key]['delivery_date'] = $delivery_date;
             $data[$key]['delivery_ampm'] = $delivery_ampm;
@@ -95,6 +95,7 @@ class PurchasesController extends CommonController {
             $requirement_qty = f_mul($down_qty,$value['ratio']);
             $data[$key]['requirement_qty'] = $requirement_qty;
             //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
+            $data[$key]['c_purchase_qty'] = f_sub($requirement_qty,$available_qty);
             $data[$key]['c_purchase_qty'] = f_sub($requirement_qty,$available_qty);
             /*if ($data[$key]['purchase_num'] < 0) {
                 unset($data[$key]);
@@ -152,7 +153,7 @@ class PurchasesController extends CommonController {
             $this->msgReturn(false, '导出数据为空！');
         }
         foreach ($pro_codeArr as $key => $value) {
-            //$pro_codeArr[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
+            $pro_codeArr[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
             //解决不选日期和时间段是应该是根据空汇总
             $pro_codeArr[$key]['delivery_date'] = $delivery_date;
             $pro_codeArr[$key]['delivery_ampm'] = $delivery_ampm;
@@ -188,13 +189,14 @@ class PurchasesController extends CommonController {
         $sheet->setCellValue('D1', '仓库');
         $sheet->setCellValue('E1', '父SKU在库存量');
         $sheet->setCellValue('F1', '父SKU下单量');
-        //$sheet->setCellValue('G1', '父SKU采购量');
-        $sheet->setCellValue('G1', '子SKU货号');
-        $sheet->setCellValue('H1', '子SKU名称');
-        $sheet->setCellValue('I1', '子SKU在库存量');
-        $sheet->setCellValue('J1', '子SKU总可用量');
-        $sheet->setCellValue('K1', '子SKU总需求量');
-        $sheet->setCellValue('L1', '子SKU采购量');
+        $sheet->setCellValue('G1', '父SKU采购量');
+        $sheet->setCellValue('H1', '比例关系');
+        $sheet->setCellValue('I1', '子SKU货号');
+        $sheet->setCellValue('J1', '子SKU名称');
+        $sheet->setCellValue('K1', '子SKU在库存量');
+        $sheet->setCellValue('L1', '子SKU总可用量');
+        $sheet->setCellValue('M1', '子SKU总需求量');
+        $sheet->setCellValue('N1', '子SKU采购量');
         $i = 1;
         foreach ($pro_codeArr as $value){
             $i++;
@@ -204,14 +206,15 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
             $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
             $sheet->setCellValue('F'.$i, formatMoney(getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id'])));
-            //$sheet->setCellValue('G'.$i, $value['purchase_num']);
-            $sheet->setCellValue('G'.$i, $value['c_pro_code']);
-            $sheet->setCellValue('H'.$i, getPronameByCode('name', $value['c_pro_code']));
-            $sheet->setCellValue('I'.$i, formatMoney(getStockQtyByWpcode($value['c_pro_code'], $value['wh_id'])));
-            $sheet->setCellValue('J'.$i, $value['available_qty']);
-            $sheet->setCellValue('K'.$i, $value['requirement_qty']);
+            $sheet->setCellValue('G'.$i, $value['purchase_num']);
+            $sheet->setCellValue('H'.$i, $value['ratio']);
+            $sheet->setCellValue('I'.$i, $value['c_pro_code']);
+            $sheet->setCellValue('J'.$i, getPronameByCode('name', $value['c_pro_code']));
+            $sheet->setCellValue('K'.$i, formatMoney(getStockQtyByWpcode($value['c_pro_code'], $value['wh_id'])));
+            $sheet->setCellValue('L'.$i, $value['available_qty']);
+            $sheet->setCellValue('M'.$i, $value['requirement_qty']);
             //$sheet->setCellValue('L'.$i, getProcessByCode($value['pro_code'], $value['wh_id'],$value['delivery_date'], $value['delivery_ampm'], $value['c_pro_code']));
-            $sheet->setCellValue('L'.$i, $value['c_purchase_qty']);
+            $sheet->setCellValue('N'.$i, $value['c_purchase_qty']);
         }
         date_default_timezone_set("Asia/Shanghai");
         header("Content-Type: application/force-download");
