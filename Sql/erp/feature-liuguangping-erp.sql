@@ -1,15 +1,16 @@
 #菜单---
 INSERT INTO `wms`.`menu` (`id`, `name`, `icon`, `link`, `pid`, `level`, `queue`, `show`, `target`, `location`, `status`, `is_deleted`, `memo`, `module`) VALUES 
 (NULL, '主页', '', 'Index/index', '0', '0', '0', '1', '_self', 'top', '1', '0', '', 'Erp');
+#erp管理系统
+INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES 
+(NULL, 'Wms', '2', 'Wms', 'Erp', '', '', 'Erp', '', '', '企业资源规划系统', '1', '1', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0');
+
 INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES 
 (NULL, 'index', '4', 'Wms', 'Erp', 'Index', 'index', 'Erp/Index/index', '', '', '主页', '1', '460', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0');
 
 #商家
 INSERT INTO `wms`.`menu` (`id`, `name`, `icon`, `link`, `pid`, `level`, `queue`, `show`, `target`, `location`, `status`, `is_deleted`, `memo`, `module`) VALUES 
 (NULL, '商家', '', 'Partner/index', '0', '0', '1', '1', '_self', 'top', '1', '0', '', 'Erp');
-#erp管理系统
-INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES 
-(NULL, 'Wms', '2', 'Wms', 'Erp', '', '', 'Erp', '', '', 'ERP管理系统', '1', '1', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0');
 #商家菜单
 UPDATE `wms`.`menu` SET `pid` = '193', `module` = 'Erp' WHERE `menu`.`id` = 27;
 UPDATE `wms`.`menu` SET `module` = 'Erp' WHERE `menu`.`pid` = 27;
