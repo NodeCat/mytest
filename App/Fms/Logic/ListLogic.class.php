@@ -88,6 +88,7 @@ class ListLogic {
         if (!empty($bill_outs)) { 
             for ($n = 0; $n < count($bill_outs); $n++) { 
                 switch ($bill_outs[$n]['sign_status']) {
+                    case '4':
                     case '2':
                         $sign_orders++; //已签收订单数加1
                         foreach ($bill_outs[$n]['detail'] as $value) {
