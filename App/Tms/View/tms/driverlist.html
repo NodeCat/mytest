@@ -80,7 +80,7 @@
             <td>{$k.distance}</br>
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
-            <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
+            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
@@ -101,11 +101,12 @@ function select(){
 }
 //编辑运费
 var tds;
-var btn = '<a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>';
+var btn = '<button class="btn btn-success" onclick="editFee(this)" >编辑当天运费</button>';
+
 function editFee(obj) {
-    var save   = '<a class="btn btn-primary btn-sm pull-right" onclick="saveFee(this)" >保存</a>',
+    var save   = '<a class="btn btn-primary btn-sm pull-right btn-option" onclick="saveFee(this)" >保存</a>',
         sp     = '<span class="pull-right">&nbsp;&nbsp;&nbsp;&nbsp;</span>'
-        cancle = '<a class="btn btn-default btn-sm pull-right" onclick="cancleEdit(this)" > 取消</a>';
+        cancle = '<a class="btn btn-default btn-sm pull-right btn-option" onclick="cancleEdit(this)" > 取消</a>';
         $(obj).after(cancle+sp+save);
         $(obj).remove();
     tds = $('.delivery-fee');
@@ -134,18 +135,18 @@ function saveFee(obj) {
         }else{
             alert(res.msg);
         }
-        $(obj).siblings().remove();
+        $(obj).siblings('.btn-option').remove();
         $(obj).after(btn);
         $(obj).remove();
     })
 }
 function cancleEdit(obj) {
     tds.each(function(){
-        var fee = parseInt($(this).find('input').val());
+        var fee = parseInt($(this).data('fee'));
             fee = fee ? fee : 0;
         $(this).text(fee);
     })
-    $(obj).siblings().remove();
+    $(obj).siblings('.btn-option').remove();
     $(obj).after(btn);
     $(obj).remove();
 }
