@@ -411,7 +411,7 @@ class RepertoryLogic
         }
         $p= stripos($number, '.');
         if ($p) {
-            return substr($number,0,$p+3);
+            return sprintf("%.2f", substr($number,0,$p+3));
         } else {
             return sprintf("%.2f",$number);
         }
