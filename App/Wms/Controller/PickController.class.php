@@ -154,11 +154,19 @@ class PickController extends CommonController {
       unset($map);
       if($pickArr){
           foreach($pickArr as $key => $value){
+              //查询查单号
+              $map['bill_out_id'] = array('in',$value['bill_out_ids']);
+              $dist_info = M('stock_wave_distribution_detail')
+              ->field('dist_code')
+              ->join('stock_wave_distribution on stock_wave_distribution.id = stock_wave_distribution_detail.pid')
+              ->where($map)->find();
+              unset($map);
 
               $items[$key]['items'] = '';
               $items[$key]['detail'] = '';
               $items[$key]['items'] = $value;
               $items[$key]['items']['barcode'] = "http://api.pda.dachuwang.com/barcode/get?text=".$value['code'];
+              $items[$key]['items']['dist_code'] = $dist_info['dist_code'];
               $map['stock_wave_picking_detail.pid'] = $value['id'];
               $map['stock_wave_picking_detail.is_deleted'] = 0;
 
