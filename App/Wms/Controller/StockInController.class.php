@@ -809,8 +809,16 @@ class StockInController extends CommonController {
         	$status = 'qualified';
         	$product_date = date('Y-m-d');
         	//直接上架
-        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
+        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
         }
+
+        //更新到货单状态为已上架
+        $map['wh_id'] = session('user.wh_id');
+        $map['id'] = array('in',$ids);
+        $data['status'] = 33;
+        M('stock_bill_in')->where($map)->save($data);
+        unset($map);
+        unset($data);
 
         $this->msgReturn(1);
     }
