@@ -10,6 +10,11 @@ class IndexController extends Controller {
 
     protected function _initialize() {
         layout('siji');
+
+        if (session('?user') && !session('?user.mobile')) {
+            $this->redirect('Dispatch/home');exit();
+        }
+
         if(!session('?user.mobile')) {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
