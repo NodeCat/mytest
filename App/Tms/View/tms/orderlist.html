@@ -28,14 +28,21 @@
 		<span>
 			<h4>交货款{$list['sum_deal_price']|sprintf="%1.2f",###}元</h4>
 		</span>
-	</div
-	<notempty name="status">
+	</div>
+	<!--<notempty name="status">
 	<div>
 		<volist name="status" id="vo">
 			{$key}:{$vo}
 		</volist>
+	</div> -->
+	<div>
+		<switch name="status">
+			<case value="1">交货状态：没有退货。</case>
+			<case value="2">交货状态：交货申请已经收到。</case>
+			<case value="3">交货状态：有退货，请点击“交货”按钮交货。</case>
+			<default />
+		</switch>
 	</div>
-	</notempty>
 <div class="table-responsive">
 
 	<table class="table table-bordered" style="text-align:center">

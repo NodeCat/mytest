@@ -754,7 +754,8 @@ class IndexController extends Controller {
         }else{
             $this->error("没有找到相应的订单");
         }
-        $this->success("交货申请已收到",U('Dist/orderList',array('id' => $dist_id)),2);
+        
+        $this->success("交货申请已收到");
     }
 
 
