@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class DispatchController extends Controller{
+class DispatchController extends \Common\Controller\AuthController{
 
 	protected $columns = array (   
         'username'     => '姓名',   
@@ -32,10 +32,6 @@ class DispatchController extends Controller{
         'warehouse'=>array(7=>'北京白盆窑仓库',8=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
     );
 	public function index() {
-        $this->auth = array(
-            'saveFee' => 1,
-            'export' => 1
-        );
         $D=D("TmsSignList");
         $sign_date = I('post.sign_date', '' , 'trim');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
