@@ -617,6 +617,12 @@ class StockInController extends CommonController {
             $this->msgReturn(0, '请选择入库类型');
             return;
         }
+
+        if(count($pros) > 150){
+        	$this->msgReturn(0, '一次提交的产品不能超过150个');
+            return;
+        }
+
         $stock_type = M('stock_bill_in_type');
         $type_name = $stock_type->field('type')->where(array('id' => $type))->find();
         $numbs = M('numbs');
@@ -730,7 +736,7 @@ class StockInController extends CommonController {
             //$purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
         }
 
-        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes,150);
 
         //拼接模板
         foreach($pro_codes as $key => $pro_code){
