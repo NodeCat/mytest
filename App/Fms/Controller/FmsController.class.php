@@ -11,13 +11,13 @@ class FmsController extends \Common\Controller\AuthController{
         $id = I('id',0);
         if(!empty($id)){
             $L = A('Fms/List','Logic');
-            $status = $L->can_pay($id);
-            $this->assign('status',$status);
             //根据配送单id或配送单号获得配送单信息及订单信息
             $array_result = $this->get_orders($id);
             $dist = $array_result['dist'];
             $orders = $array_result['orders'];
-            
+            //获得配送单的交货状态
+            $status = $L->can_pay($dist['id']);
+            $this->assign('status',$status);
             $this->assign('dist', $dist);
             $this->assign('data', $orders);
         }
