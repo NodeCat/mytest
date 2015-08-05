@@ -98,7 +98,6 @@ class PurchasesController extends CommonController {
             $data[$key]['requirement_qty'] = $requirement_qty;
             //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
             $data[$key]['c_purchase_qty'] = f_sub($requirement_qty,$available_qty);
-            $data[$key]['c_purchase_qty'] = f_sub($requirement_qty,$available_qty);
             /*if ($data[$key]['purchase_num'] < 0) {
                 unset($data[$key]);
             }*/
@@ -164,7 +163,7 @@ class PurchasesController extends CommonController {
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
             //父采购量
-            $data[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
+            $pro_codeArr[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //子Sku在库量
