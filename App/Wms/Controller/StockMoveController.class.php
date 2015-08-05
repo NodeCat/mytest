@@ -23,13 +23,38 @@ class StockMoveController extends CommonController {
             $location_id = $location->where($map)->getField('id');
             $data['wh_id'] = $wh_id;
             $data['location_id'] = $location_id;
+            unset($map);
+
+            //如果是从WORK-02移出，则认为是加工完毕
+            if($data['location_code'] == 'WORK-02'){
+                //查询库位上的库存信息 关联查询加工入库单表
+                $map['stock.location_id'] = $data['location_id'];
+                $map['stock.pro_code'] = $data['pro_code'];
+                $map['stock.wh_id'] = session('user.wh_id');
+                $stock_info = M('stock')
+                ->field('erp_process_in.id')
+                ->join('inner join erp_process_in on erp_process_in.code = stock.batch')
+                ->where($map)->find();
+                unset($map);
+
+                //根据pid pro_code 更新加工入库单详情的updated_time
+                if(!empty($stock_info['id'])){
+                    $map['pid'] = $stock_info['id'];
+                    $map['pro_code'] = $data['pro_code'];
+                    $upd_data['updated_time'] = date('Y-m-d H:i:s');
+
+                    M('erp_process_in_detail')->where($map)->save($upd_data);
+                    unset($map);
+                    unset($upd_data);
+                }
+            }
                         
             //获取产品信息
             $pro_codes = array($data['pro_code']);
             $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
             $data['pro_name'] = $pms[$data['pro_code']]['wms_name'];
             
-            unset($map);
+            
             $map['location_id'] = $location_id;
             $map['pro_code'] = $data['pro_code'];
             $stock_info_list = $stock->where($map)->select();

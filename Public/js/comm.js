@@ -9,6 +9,7 @@ $(function () {
 	$('body').popover({
 	    selector: '[rel="popover"]'
 	});
+	$('[data-toggle="popover"]').popover()
     $(document).ajaxStart(function() {
 	  loading();
 	});
@@ -140,6 +141,30 @@ $(function () {
 	$('select').each(function (){
 		$(this).val($(this).attr('value'));
 	});
+
+	$('.a-ajax').on('click',function(){
+		var addr,params;
+		addr=$(this).data('href');
+		$.ajax({
+			url:addr,
+			type:'get',
+			cache : false,
+			async:true,
+			dataType:'json',
+			data:params,
+			success: function(msg){
+				alert(msg.msg);
+				if(msg.url != '' && msg.url != null ){
+		          setTimeout(function() {document.location=msg.url}, 0);
+		        }
+		        if(msg.data != '' && msg.data != null ){
+		            $('.content').html(msg.data);
+		        }
+			}
+		}); 
+		return false;
+	});
+
 
 init();
 
@@ -341,6 +366,33 @@ $('.modal').on('shown.bs.modal', function (e) {
 	    });
 	});
 	alerts=$('#alert');
+
+	$('body').delegate( '[data-toggle=modal]','click',function (e) {
+	    e.preventDefault();
+	    var target=$(this).data('target');
+	    var href = $(this).data("href");
+	    if(href==null || href == '') {
+	    	href = $(this).attr('href');
+	    }
+	    if(href !=null && href !='#'){
+	    	$(target+ " .modal-body").load(href, function(response,status,xhr) { 
+		    	if (status == "success") {
+			        $(target).modal("show");
+			    }
+	    	});
+	    } else {
+	    	var content = $(this).data("content");
+	    	var cp = $(content).clone(true);
+	    	cp.removeClass('hidden');
+	    	$(target+ " .modal-body").html(cp);
+	    	$(target).modal("show");
+	    }
+	    
+	    return false;
+	});
+
+
+
 });
 
 $('#alert').on('close.bs.alert', function () {
@@ -364,21 +416,7 @@ function init(){
         $($(this).parent().parent().children('select')).select2('open');
     });
 
-	$('body').on('click', '[data-toggle=modal]',function (e) {
-	    e.preventDefault();
-	    var target=$(this).data('target');
-	    var href = $(this).data("href");
-	    if(href==null || href == '') {
-	    	href = $(this).attr('href');
-	    }
-	    if(target ==null)return;
-	    $(target+ " .modal-body").load(href, function(response,status,xhr) { 
-	    	if (status == "success") {
-		        $(target).modal("show");
-		    }
-	    });
-	    return false;
-	});
+
 
 	$('.dropdown .input-group li a').on('click',function(){
 	    $(this).parents('.input-group').find("input[type=text]").val($(this).text());

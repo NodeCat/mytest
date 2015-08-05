@@ -39,21 +39,6 @@ class DistLogic {
     }
 
     /**
-     * [formateSum 格式化应收金额]
-     * @param  [type] $sum [应收]
-     * @return [type]      [返回格式好的数据]
-     */
-    public function formateSum($sum)
-    {
-        $sum = sprintf('%.1f', $sum);
-        $s = substr($sum, -1, 1);
-        $s = intval($s);
-        $s = ($s < 5) ? 0 : $s;
-        $sum = ($s === 0) ? sprintf('%.2f', intval($sum)) : sprintf('%.2f', $sum);
-        return $sum;
-    }
-
-    /**
      * [getPayStatusByCode 根据支付状态码获取中文状态]
      * @param  [type] $code [description]
      * @return [type]       [description]

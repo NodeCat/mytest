@@ -96,13 +96,7 @@ class StockInController extends CommonController {
 			'query_type' => 'between',     
 			'control_type' => 'datetime',     
 			'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
-		),
-		'stock_bill_in.pid' => array (     
-			'title' =>  '提货码',
-			'query_type' => 'eq',     
-			'control_type' => 'text',     
-			'value' => '',   
-		),  
+		), 
 	);
 	public function after_search(&$map) {
 	    if (array_key_exists('stock_bill_in.pro_code',$map)) {
@@ -281,7 +275,7 @@ class StockInController extends CommonController {
 			$type = I('post.t');
 			if($type == 'scan_procode') {
 				$A = A('StockIn','Logic');
-				$res = $A->getInQty($id,$code);
+				$res = $A->getInQty($id,$code,1);
 				if($res['res'] == true) {
 					$this->assign($res['data']);
 					layout(false);
@@ -396,11 +390,11 @@ class StockInController extends CommonController {
 		$A = A('StockIn','Logic');
 		$qtyForPrepare = 0;
 		foreach ($pros as $key => $val) {
-			$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
+			//$qtyPrepare = $A->getQtyForIn($id,$val['pro_code']);
 			//$qtyOn = $A->getQtyForOn($id,$val['pro_code']);
 			$getQtyForReceipt = $A->getQtyForReceipt($id,$val['pro_code']);
 			
-			$qtyForPrepare += $qtyPrepare;
+			$qtyForPrepare += $val['prepare_qty'];
 			//$qtyForOn += $qtyOn;
 			//$pros[$key]['moved_qty'] = $val['pro_qty'] - $qtyIn;
 			//$pros[$key]['moved_qty'] = $qtyIn;
@@ -815,8 +809,16 @@ class StockInController extends CommonController {
         	$status = 'qualified';
         	$product_date = date('Y-m-d');
         	//直接上架
-        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
+        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
         }
+
+        //更新到货单状态为已上架
+        $map['wh_id'] = session('user.wh_id');
+        $map['id'] = array('in',$ids);
+        $data['status'] = 33;
+        M('stock_bill_in')->where($map)->save($data);
+        unset($map);
+        unset($data);
 
         $this->msgReturn(1);
     }

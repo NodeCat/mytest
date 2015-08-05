@@ -53,6 +53,13 @@
               </span>
             </a>
           </h4>
+          <a class="report" data-userid="{$vo.user_id}">
+          <i style="color:red"class="glyphicon glyphicon-remove-circle">
+          </i>
+            <span >
+              地址报错
+            </span>
+          </a>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
           {$vo.realname} &nbsp;&nbsp;
@@ -224,7 +231,7 @@
                   </span>
                   元
                 </span>
-                <input type="hidden" name="final_price" class="form-control p_final" placeholder="{$vo.receivable_sum}"
+                <input type="hidden" name="final_price" class="form-control p_final" paystatus="{$vo.pay_status}" placeholder="{$vo.receivable_sum}"
                 value="{$vo.receivable_sum}" readonly>
                 <span class="input-group-addon">
                   实收

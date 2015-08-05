@@ -84,6 +84,7 @@ class ProcessLogic {
             $param['pro_qty'] = $value['qty'];
             $param['price'] = $this->get_price_by_sku($value['batch'], $data['pro_code']);
             $param['batch'] = $value['batch'];
+            $param['code'] = $data['refer_code'];
             $param['location_id'] = $value['location_id'];
             $param['created_time'] = get_time();
             $param['created_user'] = session('user.uid');
@@ -92,7 +93,7 @@ class ProcessLogic {
             if ($M->create($param)) {
                 $M->add();
             }
-            $price += $param['price'] * $param['pro_qty'];
+            $price = f_add($price, f_mul($param['price'], $param['pro_qty']));
         }
         $return['price'] = formatMoney($price, 2);
         $return['status'] = true;
@@ -108,32 +109,46 @@ class ProcessLogic {
     public function get_price_by_sku($batch = '', $sku_code = '') {
         $return = 0;
         
+        
         if (empty($batch) || empty($sku_code)) {
             return $return;
         }
-        $map['code'] = $batch;
-        $res = M('stock_bill_in')->where($map)->find();
-        if (empty($res)) {
-            return $return;
-        }
-        unset($map);
-        $map['code'] = $res['refer_code'];
-        $pur = M('stock_purchase')->where($map)->find();
-        if (empty($pur)) {
-            return $return;
-        }
-        unset($map);
-        $map['pid'] = $pur['id'];
-        $result = M('stock_purchase_detail')->where($map)->select();
-        if (empty($result)) {
-            return $return; 
-        }
-        foreach ($result as $value) {
-            if ($value['pro_code'] == $sku_code) {
-                $return = $value['price_unit'];
-                break;
+        $pos = strpos($batch, 'ASN');
+        if ($pos !== false) {
+            //采购入库
+            $map['code'] = $batch;
+            $res = M('stock_bill_in')->where($map)->find();
+            if (empty($res)) {
+                return $return;
+            }
+            unset($map);
+            $map['code'] = $res['refer_code'];
+            $pur = M('stock_purchase')->where($map)->find();
+            if (empty($pur)) {
+                return $return;
+            }
+            unset($map);
+            $map['pid'] = $pur['id'];
+            $map['pro_code'] = $sku_code;
+            $result = M('stock_purchase_detail')->where($map)->find();
+            if (empty($result)) {
+                return $return; 
+            }
+        } else {
+            //加工入库
+            $result['price_unit'] = 0;
+            $map['erp_process_in_detail.pro_code'] = $sku_code;
+            $map['erp_process_in.code'] = $batch;
+            $result = M('erp_process_in_detail')
+                                    ->join('erp_process_in ON erp_process_in.id=erp_process_in_detail.pid')
+                                    ->where($map)
+                                    ->find();
+            
+            if (!empty($result)) {
+                $result['price_unit'] = $result['price'];
             }
         }
+        $return = formatMoney($result['price_unit'], 2);
         return $return;
     }
     /**
@@ -158,7 +173,8 @@ class ProcessLogic {
                 $data['pro_qty'],
                 '',
                 'qualified',
-                $product_date
+                $product_date,
+                $data['pid']
         );
         
         return $return;
@@ -352,7 +368,7 @@ class ProcessLogic {
                 if (!isset($format['detail'][$v['pro_code']])) {
                     $format['detail'][$v['pro_code']] = $v;
                 } else {
-                    $format['detail'][$v['pro_code']]['plan_qty'] += $v['plan_qty'];
+                    $format['detail'][$v['pro_code']]['plan_qty'] = f_add($format['detail'][$v['pro_code']]['plan_qty'], $v['plan_qty']);
                 }
                 unset($format['detail'][$index]);
             }
@@ -516,7 +532,8 @@ class ProcessLogic {
             $return['wh_id'] = $data['wh_id'];
             $return['pro_code'] = $data['p_pro_code'];
             $return['pro_qty'] = $data['true_qty'];
-            $return['refer_code'] = $res['code']; //出库单号
+            $return['refer_code'] = $res['code']; 
+            $return['pid'] = $res['id']; 
             $return['location_id'] = $this->get_process_stock_id($this->mark, $mark, $data['wh_id']); //库位
         } elseif ($type == 'c') {
             //格式化子SKU
@@ -524,7 +541,8 @@ class ProcessLogic {
                 $return[$key]['wh_id'] = $data['wh_id'];
                 $return[$key]['pro_code'] = $value['c_pro_code'];
                 $return[$key]['pro_qty'] = $value['true_qty'];
-                $return[$key]['refer_code'] = $res['code']; //出库单号
+                $return[$key]['refer_code'] = $res['code'];
+                $return[$key]['pid'] = $res['id'];
                 $return[$key]['location_id'] = $this->get_process_stock_id($this->mark, $mark, $data['wh_id']); //库位
             }
         }
@@ -856,7 +874,7 @@ class ProcessLogic {
         if ($res['status'] != 2) {
             $detail['status'] = 2; //已出库
         }
-        $detail['delivery_qty'] = $res['delivery_qty'] + $data['true_qty'];
+        $detail['delivery_qty'] = f_add($res['delivery_qty'], $data['true_qty']);
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         if ($assist->create($detail)) {
@@ -901,7 +919,7 @@ class ProcessLogic {
         $map['pid'] = $id;
         $map['pro_code'] = $data['pro_code'];
         $res = $assist->where($map)->find();
-        $detail['real_qty'] = $res['real_qty'] + $data['true_qty'];
+        $detail['real_qty'] = f_add($res['real_qty'], $data['true_qty']);
         if ($res['status'] !=  2) {
             $detail['status'] = 2; //已出库
         }
@@ -995,15 +1013,12 @@ class ProcessLogic {
         $map['pro_code'] = $data['pro_code'];
         //计算单价 @todo 单价 pm liuyonghao=>价格抹掉 
         $res = $assist->where($map)->find();
-        $price_unit = ($res['price'] * $res['real_qty'] + $price) / ($res['real_qty'] + $data['true_qty']);
+        $price_unit = f_add(f_mul($res['price'], $res['real_qty']), $price) / f_add($res['real_qty'], $data['true_qty']);
         if ($res['status'] != 2) {
             $detail['status'] = 2;
         }
-        $detail['real_qty'] = $data['true_qty'] + $res['real_qty'];
-        //
-        if ($price_unit != formatMoney($price_unit, 2)) {
-            $detail['price'] = formatMoney($price_unit, 2);
-        }
+        $detail['real_qty'] = f_add($data['true_qty'], $res['real_qty']);
+        $detail['price'] = formatMoney($price_unit, 2);
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         $detail['product_date'] = date('Y-m-d');
@@ -1045,14 +1060,14 @@ class ProcessLogic {
         $map['pid'] = $id;
         $map['p_pro_code'] = $data['p_pro_code'];
         $res = $assist->where($map)->find();
-        $detail['real_qty'] = $res['real_qty'] + $data['real_qty'];
+        $detail['real_qty'] = f_add($res['real_qty'], $data['real_qty']);
         $detail['updated_time'] = get_time();
         $detail['updated_user'] = session('user.uid');
         $affect = $assist->where($map)->save($detail);
         if (!$affect) {
             return $return;
         }
-        if ($detail['real_qty'] >= $res['plan_qty']) {
+        if ($detail['real_qty'] * 100 >= $res['plan_qty'] * 100) {
             //更新任务数
             $map['id'] = $id;
             $over = $main->where($map)->setInc('over_task', 1);

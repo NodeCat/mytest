@@ -40,7 +40,7 @@ class DistController extends Controller {
                 else {
                     //如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
                     $map['dist_id'] = $id;
-                    $map['order'] = array('created_time' => 'DESC');
+                    $map['order'] = 'created_time DESC';
                     $bills = A('Tms/Dist', 'Logic')->billOut($map);
                     $orders = $bills['orders'];
                     unset($map);
@@ -100,7 +100,7 @@ class DistController extends Controller {
                 $cA = A('Common/Order','Logic');
                 if (!isset($orders) || empty($orders)) {
                     $map['dist_id'] = $dist['id'];
-                    $map['order'] = array('created_time' => 'DESC');
+                    $map['order'] = 'created_time DESC';
                     $bills = A('Tms/Dist', 'Logic')->billOut($map);
                     $orders = $bills['orders'];
                     unset($map);
@@ -128,7 +128,7 @@ class DistController extends Controller {
                 foreach ($delivery_all as $va) {
                     unset($map);
                     $map['dist_id'] = $va['dist_id'];
-                    $map['order'] = array('created_time' => 'DESC');
+                    $map['order'] = 'created_time DESC';
                     $bill_outs = A('Tms/Dist', 'Logic')->billOut($map);
                     $ords = $bill_outs['orders'];
                     foreach ($ords as $v) {
@@ -142,6 +142,7 @@ class DistController extends Controller {
                     }
                 }
                 unset($map);
+
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 foreach ($orders as $val) {
@@ -155,6 +156,7 @@ class DistController extends Controller {
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
                 unset($map);
                 if ($res) {
+                    $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
                     $M = M('TmsUser');                    
                     $map['mobile'] = session('user.mobile');
@@ -225,7 +227,7 @@ class DistController extends Controller {
             $this->dist = $res;
             //查询出库单列表
             $map['dist_id'] = $res['dist_id'];
-            $map['order'] = array('created_time' => 'DESC');
+            $map['order'] = 'created_time DESC';
             $A = A('Tms/Dist','Logic');
             $bills = $A->billOut($map);
             if($bills) {
@@ -248,7 +250,11 @@ class DistController extends Controller {
                     $val['deliver_fee']     = $val['order_info']['deliver_fee'];
                     $val['final_price']     = $val['order_info']['final_price'];
                     $val['receivable_sum']  = $val['order_info']['final_price'];
-                    $val['real_sum']        = $A->wipeZero($val['order_info']['final_price']);
+                    if ($val['pay_status'] != '已付款') {
+                        $val['real_sum']   = $A->wipeZero($val['order_info']['final_price']);
+                    } else {
+                       $val['real_sum']    = $val['order_info']['final_price'];
+                    }
                     $val['sign_msg']        = $val['order_info']['sign_msg'];
                     $val['user_id']         = $val['order_info']['user_id'];
                     //收获地址坐标
@@ -259,7 +265,10 @@ class DistController extends Controller {
                     foreach ($val['detail'] as &$v) {
                         if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
                             //该出库单详情对应的签收数据
-                            $sign_in_detail = $M->table('tms_sign_in_detail')->where(array('bill_out_detail_id' => $v['id']))->find();
+                            $dmap['bill_out_detail_id'] = $v['id'];
+                            $dmap['is_deleted'] = 0;
+                            $sign_in_detail = $M->table('tms_sign_in_detail')->where($dmap)->find();
+                            unset($dmap);
                             $val['receivable_sum'] = $sign_in['receivable_sum'];
                             $val['real_sum'] = $sign_in['real_sum'];
                             $v['quantity']  = $sign_in_detail['real_sign_qty'];
@@ -305,6 +314,19 @@ class DistController extends Controller {
 
     //司机签收
     public function sign() {
+        //实收数量或重量
+        $quantity    = I('post.quantity');
+        $weight      = I('post.weight', 0);
+        $flagQty = array_sum($quantity);
+        $flagWgt = empty($weight) ? 0 : array_sum($weight);
+        
+        if (ceil($flagQty) == 0 && ceil($flagWgt) == 0) {
+            $re = array(
+                'status' => -1,
+                'msg'    => '签收数量不能全部为空'
+            );
+            $this->ajaxReturn($re);           
+        }
         $bill_out_id = I('post.bid/d', 0);
         if (!$bill_out_id) {
             $res = array(
@@ -340,9 +362,6 @@ class DistController extends Controller {
             );
             $this->ajaxReturn($res);
         }
-        //实收数量或重量
-        $quantity    = I('post.quantity');
-        $weight      = I('post.weight', 0);
         $receivable_sum = 0;
         //出库单详情关联订单详情,计算应收总额
         $bill_id_details = array();
@@ -365,7 +384,11 @@ class DistController extends Controller {
         $A = A('Tms/Dist','Logic');
         $receivable_sum -= $orderInfo['info']['minus_amount'];
         $receivable_sum += $orderInfo['info']['deliver_fee'];
-        $deal_price = $A->wipeZero($receivable_sum);
+        if ($orderInfo['info']['pay_status'] != 1) {
+            $deal_price = $A->wipeZero($receivable_sum);
+        } else {
+            $deal_price = $receivable_sum;
+        }
         $sign_msg = I('post.sign_msg', '' ,'trim');
         //签收表主表数据
         $fdata = array(
@@ -406,19 +429,12 @@ class DistController extends Controller {
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
-                if($dist_detail['status'] == 2) {
-                    //更新签收数据
-                    foreach ($cdata as $value) {
-                        unset($value['created_time']);
-                        M('tms_sign_in_detail')
-                            ->where(array('bill_out_detail_id' => $value['bill_out_detail_id']))
-                            ->save($value);
-                    }
-                }
-                else {
-                    //添加签收数据
-                    M('tms_sign_in_detail')->addAll($cdata);
-                }
+                $bill_out_detail_ids = array_keys($bill_id_details);
+                $bdmap['bill_out_detail_id'] = array('in', $bill_out_detail_ids);
+                $sdM = M('tms_sign_in_detail');
+                $sdM->where($bdmap)->save(array('is_deleted' => 1));
+                //添加签收详情数据
+                $sdM->addAll($cdata);
                 //更新配送单详情－>配送单状态
                 $map['dist_id'] = $dist_id;
                 $map['status']  = 2;
@@ -426,7 +442,8 @@ class DistController extends Controller {
                 $status = $s['status'];
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
-            
+            //给母账户发送短信
+            $sres = A('Tms/SignIn', 'Logic')->sendParentAccountMsg($orderInfo['info']);
             $json = array('status' => $status, 'msg' => $msg);
             //status:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
@@ -464,11 +481,16 @@ class DistController extends Controller {
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
+        $orderInfo = $cA->getOrderInfoByOrderId($map['suborder_id']);
         if($res['status'] === 0) {
+            $sA = A('Tms/SignIn', 'Logic');
+            $reject_codes = I('post.reject_reason');
+            $reasons = $sA->getReasonByCode($reject_codes);
             unset($map);
             //签收表主表数据
             $fdata = array(
                 'sign_msg'       => I('post.sign_msg', '' ,'trim'),
+                'reject_reason'  => $reasons,
                 'status'         => 3,//拒收
                 'sign_time'      => get_time(),
                 'sign_driver'    => session('user.mobile'),
@@ -479,13 +501,17 @@ class DistController extends Controller {
             $dist_details = $wA->getDistDetails($map);
             //该出库单对应配送单详情
             $dist_detail = $dist_details['list'][0];
-            //向出库单详情更新拒收信息
+            //向配送单详情更新拒收信息
             if($dist_detail) {
                 $datas = array(
                     'id'   => $dist_detail['id'],
                     'data' => $fdata,
                 );
                 $s = $wA->saveSignDataToDistDetail($datas);
+                //发送短信
+                if ($reasons) {
+                    $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
+                }
                 $res = array(
                     'status' => 0,
                     'msg'    => '更新成功'
@@ -558,11 +584,15 @@ class DistController extends Controller {
         if (!empty($bill_outs)) { 
             //总订单数
             $all_orders = count($bill_outs);
-            for ($n = 0; $n < count($bill_outs); $n++) { 
-                switch ($bill_outs[$n]['sign_status']) {
+            foreach ($bill_outs as $bill_out) { 
+                unset($map);
+                $map['bill_out_id'] = $bill_out['id'];
+                $map['is_deleted']  = 0;
+                $sign_data = M('stock_wave_distribution_detail')->where($map)->find();
+                switch ($bill_out['sign_status']) {
                     case '2':
                         $sign_orders++; //已签收订单数加1
-                        foreach ($bill_outs[$n]['detail'] as $value) {
+                        foreach ($bill_out['detail'] as $value) {
                             unset($map);
                             $map['bill_out_detail_id'] = $value['id'];
                             $map['is_deleted'] = 0;
@@ -577,16 +607,18 @@ class DistController extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            if ($sign_data[$n]['pay_status'] != 1) {
-                                $sum_deal_price += f_mul($sign_qty, $sign_in_detail['price_unit']);  //回款
+                            if ($sign_data['pay_status'] != 1) {
+                                $sum_deal_price += $sign_qty * $sign_in_detail['price_unit'];  //回款
                             }
                         }
-                        $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);  
+                        if ($sign_data['pay_status'] != 1) {
+                            $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);
+                        }  
                         break;
 
                     case '3':
                         $unsign_orders++;   //已拒收订单数加1
-                        foreach ($bill_outs[$n]['detail'] as $val) {
+                        foreach ($bill_out['detail'] as $val) {
                             $key  = $val['pro_code'];    //sku号
                             $arrays[$key]['quantity'] +=  $val['delivery_qty']; //回仓数量
                             $arrays[$key]['name'] =  $val['pro_name'];   //sku名称

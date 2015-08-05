@@ -53,6 +53,12 @@ class StockOutController extends CommonController {
             'control_type' => 'text',     
             'value' => 'code',   
         ),
+        'stock_bill_out.refer_code' =>    array (     
+            'title' => '关联单号',     
+            'query_type' => 'eq',     
+            'control_type' => 'text',     
+            'value' => '',   
+        ),
         'stock_bill_out.wave_id' =>    array (     
             'title' => '波次号',     
             'query_type' => 'eq',     
@@ -237,9 +243,19 @@ class StockOutController extends CommonController {
             }else {
                 $val['delivery_date'] = date('Y-m-d',strtotime($val['delivery_date'])) .'<br>'. $val['delivery_time'];
             }
-            
+            $map['stock_bill_out.id'] = $val['id'];
+            $map['stock_wave_distribution_detail.is_deleted'] = 0;
+            $dist = M('stock_wave_distribution')->field('dist_code')
+                                                ->join('stock_wave_distribution_detail ON stock_wave_distribution.id=stock_wave_distribution_detail.pid')
+                                                ->join('stock_bill_out ON stock_bill_out.id=stock_wave_distribution_detail.bill_out_id')
+                                                ->where($map)
+                                                ->find();
+            if (empty($dist)) {
+                $val['packing_code'] = '无';
+            } else {
+                $val['packing_code'] = $dist['dist_code'];
+            }
         }
-        //dump($data);die;
     }
     protected function before_add(&$M) {
         $post = I('post.');

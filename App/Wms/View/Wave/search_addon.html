@@ -9,7 +9,28 @@
 	<a href="#" id='delAll' class="btn btn-sm btn-default btn-tool">删除</a>
 	</div>
 </notempty>
+<include file="pick-info"/>
 <script type="text/javascript">
+var alert_dialog = {
+		
+		close:function(){
+			this.hide();
+			window.location.reload();
+		},
+		show:function(title, content){
+			title  = title?title:'提示框';
+			content = content?content:"<div class='row'>content</div>";
+			$('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+			$('[aria-labelledby = gridSystemModalLabeldialog]').show();
+			$("#gridSystemModalLabelalert").html(title);
+			$(".lgo").html(content);
+		},
+		hide:function(){
+			$('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+			$('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+			$('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+		}
+	};
 $(function(){
 	$('#packing').on('click',function(){
 		var ids = getChecked();
@@ -29,10 +50,22 @@ $(function(){
                     refresh_list();
 				}
 				if(json.status=='0'){
-					alert(json.msg);
-					//请求分拣任务
-					$.post(urls,param,function(json){},'json');
-                    refresh_list();
+                    $.ajax({
+	        				url:urls,
+	        				type:'post',
+	        				cache : false,
+	        				async:true,
+	        				data:param,
+	        				success: function(msg){
+	        					if (msg.data == '') {
+	        						alert(msg.msg);
+	        						return false;
+	        					}
+	      					msg.data.title = '波次运行完成';
+	      					var html = template('dialog_pick_over', msg.data);
+	     					$('body').append(html);
+	        				},
+        				});
 				}
 			}
 		});
