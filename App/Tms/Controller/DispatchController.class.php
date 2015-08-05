@@ -115,9 +115,10 @@ class DispatchController extends \Common\Controller\AuthController{
             }
         }
         if (defined('VERSION')) {
-            $this->car['warehouse'] = array(8 =>'北京北仓');
+            $this->car['warehouse'] = array(8 =>'北京北仓',7 =>'北京白盆窑仓库');
         } else {
             unset($this->car['warehouse'][8]);
+            unset($this->car['warehouse'][7]);
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
