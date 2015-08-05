@@ -270,11 +270,16 @@ class RepertoryController extends CommonController
         $start_time  = I('get.start_time');
         $end_time    = I('get.end_time');
 
-        if (empty($ids) || empty($start_time) || empty($end_time)){
+        if (empty($start_time) || empty($end_time)){
             $this->msgReturn(false, '参数错误');
         }
 
-        $where['stock_snap.id']    = array('in', $ids);
+        if (!empty($ids)) {
+            $where['stock_snap.id']    = array('in', $ids);
+        } else {
+            $where['DATE_FORMAT(stock_snap.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
+        }
+
         $where['stock_snap.is_deleted'] = 0;
         $join = array(
             "inner join warehouse on warehouse.id=stock_snap.wh_id ",
@@ -282,7 +287,7 @@ class RepertoryController extends CommonController
         $field = "stock_snap.pro_code, stock_snap.pro_name, stock_snap.category1, stock_snap.category_name1, stock_snap.category_name2, stock_snap.category_name3, stock_snap.pro_uom, stock_snap.pro_attrs, warehouse.name as wh_name";
         $model = M('stock_snap');
 
-        $data = $model->field($field)->join($join)->where($where)->select();
+        $data = $model->field($field)->join($join)->where($where)->group('stock_snap.pro_code')->select();
 
         if (!$data) {
             $this->msgReturn(false, '导出数据为空！');
@@ -292,6 +297,7 @@ class RepertoryController extends CommonController
         foreach ($data as $val) {
             $start_sku[] = $val['pro_code'];
         }
+
         //sku查询条件
         $pro_codes  = array('in', implode(',', $start_sku));
 
@@ -329,22 +335,23 @@ class RepertoryController extends CommonController
         $sheet->setCellValue('V1', '盘盈数量');
         $sheet->setCellValue('W1', '盘盈金额（含税）');
         $sheet->setCellValue('X1', '盘盈金额（未含税）');
-        $sheet->setCellValue('Y1', '出库金额（含税）');
-        $sheet->setCellValue('Z1', '出库金额（未含税）');
-        $sheet->setCellValue('AA1', '出库加权平均成本');
-        $sheet->setCellValue('AB1', '加工出库数量');
-        $sheet->setCellValue('AC1', '加工出库金额（含税）');
-        $sheet->setCellValue('AD1', '加工出库金额（未含税）');
-        $sheet->setCellValue('AE1', '采购正品退货数量');
-        $sheet->setCellValue('AF1', '采购正品退货金额（含税）');
-        $sheet->setCellValue('AG1', '采购正品退货金额（未含税）');
-        $sheet->setCellValue('AH1', '销售成本（含税）');
-        $sheet->setCellValue('AI1', '销售成本（未含税）');
-        $sheet->setCellValue('AJ1', '销售数量');
-        $sheet->setCellValue('AK1', '销售收入');
-        $sheet->setCellValue('AL1', '期末数量');
-        $sheet->setCellValue('AM1', '期末成本（含税）');
-        $sheet->setCellValue('AN1', '期末成本（未含税）');
+        $sheet->setCellValue('Y1', '出库数量');
+        $sheet->setCellValue('Z1', '出库金额（含税）');
+        $sheet->setCellValue('AA1', '出库金额（未含税）');
+        $sheet->setCellValue('AB1', '出库加权平均成本');
+        $sheet->setCellValue('AC1', '加工出库数量');
+        $sheet->setCellValue('AD1', '加工出库金额（含税）');
+        $sheet->setCellValue('AE1', '加工出库金额（未含税）');
+        $sheet->setCellValue('AF1', '采购正品退货数量');
+        $sheet->setCellValue('AG1', '采购正品退货金额（含税）');
+        $sheet->setCellValue('AH1', '采购正品退货金额（未含税）');
+        $sheet->setCellValue('AI1', '销售成本（含税）');
+        $sheet->setCellValue('AJ1', '销售成本（未含税）');
+        $sheet->setCellValue('AK1', '销售数量');
+        $sheet->setCellValue('AL1', '销售收入');
+        $sheet->setCellValue('AM1', '期末数量');
+        $sheet->setCellValue('AN1', '期末成本（含税）');
+        $sheet->setCellValue('AO1', '期末成本（未含税）');
 
         $i = 1;
         foreach ($data as $value){
@@ -373,22 +380,23 @@ class RepertoryController extends CommonController
             $sheet->setCellValue('V'.$i, '');
             $sheet->setCellValue('W'.$i, '');
             $sheet->setCellValue('X'.$i, '');
-            $sheet->setCellValue('Y'.$i, $value['sale_cost_nums']);
-            $sheet->setCellValue('Z'.$i, $value['sale_cost_amount']);
-            $sheet->setCellValue('AA'.$i, $value['sale_cost_amounts']);
-            $sheet->setCellValue('AB'.$i, $value['process_out_num']);
-            $sheet->setCellValue('AC'.$i, $value['process_out_amount']);
-            $sheet->setCellValue('AD'.$i, $value['process_out_amounts']);
-            $sheet->setCellValue('AE'.$i, $value['purchase_return_nums']);
-            $sheet->setCellValue('AF'.$i, $value['purchase_return_amount']);
-            $sheet->setCellValue('AG'.$i, $value['purchase_return_amounts']);
-            $sheet->setCellValue('AH'.$i, $value['stock_out_amount']);
-            $sheet->setCellValue('AI'.$i, $value['stock_out_amounts']);
-            $sheet->setCellValue('AJ'.$i, $value['stock_out_num']);
-            $sheet->setCellValue('AK'.$i, $value['stock_out_cost']);
-            $sheet->setCellValue('AL'.$i, $value['last_nums']);
-            $sheet->setCellValue('AM'.$i, $value['last_amount']);
-            $sheet->setCellValue('AN'.$i, $value['last_amounts']);
+            $sheet->setCellValue('Y'.$i, $value['stock_out_nums']);
+            $sheet->setCellValue('Z'.$i, $value['stock_out_amount']);
+            $sheet->setCellValue('AA'.$i, $value['stock_out_amounts']);
+            $sheet->setCellValue('AB'.$i, $value['stock_out_cost']);
+            $sheet->setCellValue('AC'.$i, $value['process_out_num']);
+            $sheet->setCellValue('AD'.$i, $value['process_out_amount']);
+            $sheet->setCellValue('AE'.$i, $value['process_out_amounts']);
+            $sheet->setCellValue('AF'.$i, $value['purchase_return_nums']);
+            $sheet->setCellValue('AG'.$i, $value['purchase_return_amount']);
+            $sheet->setCellValue('AH'.$i, $value['purchase_return_amounts']);
+            $sheet->setCellValue('AI'.$i, $value['sale_cost_amount']);
+            $sheet->setCellValue('AJ'.$i, $value['sale_cost_amounts']);
+            $sheet->setCellValue('AK'.$i, $value['sale_cost_nums']);
+            $sheet->setCellValue('AL'.$i, $value['sale_income']);
+            $sheet->setCellValue('AM'.$i, $value['last_nums']);
+            $sheet->setCellValue('AN'.$i, $value['last_amount']);
+            $sheet->setCellValue('AO'.$i, $value['last_amounts']);
         }
 
         date_default_timezone_set("Asia/Shanghai");

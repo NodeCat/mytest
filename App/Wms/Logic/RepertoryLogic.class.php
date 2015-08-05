@@ -335,6 +335,7 @@ class RepertoryLogic
         $processOutList = $this->getProcessOutList($start_time, $end_time, $pro_codes);
         //采购退货单
         $refundList     = $this->getRefundList($start_time, $end_time, $pro_codes);
+        console($purchaseList);
 
         $getPrice       = D('Process', 'Logic');
         foreach ($data as $key => $val) {
@@ -398,8 +399,8 @@ class RepertoryLogic
 
             //期末成本
             $data[$key]['last_nums']            = $this->numbers_format_2($endList[$val['pro_code']]['stock_qty']);         //期末数量
-            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);         //期末成本(含税)
-            $data[$key]['last_amounts']         = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);        //期末成本(不含税)
+            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);        //期末成本(含税)
+            $data[$key]['last_amounts']         = $this->numbers_format_2($data[$key]['last_amount'] / $price_rate);        //期末成本(不含税)
         }
     }
 
