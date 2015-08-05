@@ -387,4 +387,11 @@ class DispatchTaskController extends Controller
         $res = $cA->getCustomerList($map);
         $this->ajaxReturn($res);
     }
+
+    public function warehouse()
+    {
+        layout(false);
+        $lists = A('Wms/Distribution', 'Logic')->getAllWarehouse();
+        $this->display('DispatchTask:warehouse-list');
+    }
 }
