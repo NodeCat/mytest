@@ -296,4 +296,44 @@
           tmsReportError(report);
         }
     });
+
+    $('.task-sign').on('click',function() {
+          var id = $(this).data('id');
+          var addr = "{:U('taskSign')}";
+          $.ajax({
+            url: addr,
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            data:{'id':id},
+            success: function(msg) {
+              if (typeof HostApp == "undefined") {
+                alert(msg.msg);
+              } else {
+                HostApp.toast(msg.msg);
+              }
+              location.reload();
+            }  
+          });
+    });
+
+    $('#sign-finished').on('click',function() {
+          var id = $(this).data('distid');
+          var addr = "{:U('signFinished')}";
+          $.ajax({
+            url: addr,
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            data:{'id':id},
+            success: function(msg) {
+              if (typeof HostApp == "undefined") {
+                alert(msg.msg);
+              } else {
+                HostApp.toast(msg.msg);
+              }
+              location.reload();
+            }  
+          });
+    });
   </script>
