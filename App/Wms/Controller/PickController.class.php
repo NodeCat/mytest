@@ -175,6 +175,7 @@ class PickController extends CommonController {
               ->join('location on stock_wave_picking_detail.src_location_id = location.id')
               ->where($map)
               ->order('location.code')->select();
+              unset($map);
               
               $child = A('Pms','Logic')->add_fields($child,'pro_name');
               if($child){
