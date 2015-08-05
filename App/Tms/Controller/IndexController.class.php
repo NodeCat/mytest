@@ -10,7 +10,7 @@ class IndexController extends Controller {
 
     protected function _initialize() {
         layout('siji');
-        if(!session('?user')) {
+        if(!session('?user.mobile')) {
             if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
                 $this->redirect('logout');
             }
