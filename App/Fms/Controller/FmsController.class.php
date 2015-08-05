@@ -10,11 +10,14 @@ class FmsController extends \Common\Controller\AuthController{
     public function orders(){
         $id = I('id',0);
         if(!empty($id)){
+            $L = A('Fms/List','Logic');
             //根据配送单id或配送单号获得配送单信息及订单信息
             $array_result = $this->get_orders($id);
             $dist = $array_result['dist'];
             $orders = $array_result['orders'];
-            
+            //获得配送单的交货状态
+            $status = $L->can_pay($dist['id']);
+            $this->assign('status',$status);
             $this->assign('dist', $dist);
             $this->assign('data', $orders);
         }
@@ -38,7 +41,8 @@ class FmsController extends \Common\Controller\AuthController{
         $fms_list = A('Fms/List','Logic');
         //查询是否有退货，并且已创建拒收入库单
         $can = $fms_list->can_pay($id);
-        if (!$can) {
+        if ($can == 3) {
+            //有退货没有创建拒收入库单
             $this->msgReturn('0','结算失败，该配送单中有退货，请交货后再做结算');
         }
 

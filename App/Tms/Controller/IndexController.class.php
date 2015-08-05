@@ -620,13 +620,16 @@ class IndexController extends Controller {
     public function deliver_goods(){
         //配送单id
         $dist_id = I('get.dist_id/d',0);
+        $fms_list = A('Fms/List','Logic');
         if(!empty($dist_id)){
-            //判断是否已经创建过客退入库单
-            $L = A('Tms/List','Logic');
-            $status = $L->view_return_goods_status($dist_id);
-            if($status){ 
-                $this->error("交货申请已收到");
+            $is_can = $fms_list->can_pay($dist_id);
+            if ($is_can == 1) {
+                $this->error("此车单没有退货，无需交货。");
             }
+            if ($is_can == 2) {
+                $this->error("已经交货，无需再次交货。");
+            }
+            
         }else{
             $this->error("没有找到相应的车单");
         }
@@ -652,7 +655,7 @@ class IndexController extends Controller {
         if(!empty($stock_bill_out)){
             $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
             for($n = 0; $n < count($stock_bill_out); $n++){
-                //创建客退入库单
+                //创建拒收入库单
                 unset($bill);
                 $bill['pid'] = $dist_id;
                 $bill['refer_code'] = $stock_bill_out[$n]['code'];//关联单据为出库单号
@@ -757,7 +760,7 @@ class IndexController extends Controller {
         }else{
             $this->error("没有找到相应的订单");
         }
-            
+        
         $this->success("交货申请已收到");
     }
 
