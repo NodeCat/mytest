@@ -335,7 +335,6 @@ class RepertoryLogic
         $processOutList = $this->getProcessOutList($start_time, $end_time, $pro_codes);
         //采购退货单
         $refundList     = $this->getRefundList($start_time, $end_time, $pro_codes);
-        console($purchaseList);
 
         $getPrice       = D('Process', 'Logic');
         foreach ($data as $key => $val) {
