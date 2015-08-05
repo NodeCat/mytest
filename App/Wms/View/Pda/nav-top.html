@@ -8,8 +8,12 @@
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="{:U('Pda/index')}">大厨网</a>
-      <div class="navbar-brand">{$warehouse_name}</div>
     </div>
+    <php>
+      $map['id'] = session('user.wh_id');
+      $warehouse_info = M('warehouse')->where($map)->find();
+    </php>
+    <div class="navbar-brand navbar-right">{$warehouse_info['name']}</div>
 
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav hidden">
