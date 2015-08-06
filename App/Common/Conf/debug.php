@@ -8,8 +8,6 @@ return array(
     'HTML_CACHE_ON'   => FALSE,   // 默认关闭静态缓存
     'DATA_CACHE_TIME' => 1, // 数据缓存有效期 0表示永久缓存
 
-    'LOAD_EXT_CONFIG' =>'columns',
-    
     //Database
     'DB_TYPE'           =>     'mysql',     // 数据库类型
     'DB_HOST'           =>     '123.59.54.246',// 服务器地址
@@ -24,7 +22,7 @@ return array(
     'AUTH_KEY'            => '1&%^$@(',
 
     'PMS_API'            => 'http://s.test3.dachuwang.com',
-    'HOP_API_PATH'        => 'http://s.test3.dachuwang.com',
+    'HOP_API_PATH'        => 'http://s.test.dachuwang.com',
     'DACHUWANG_API_PATH'  => 'http://api.test3.dachuwang.com',
     'TMS_API_PATH'        => 'http://api.tms.dev5.dachuwang.com',
 );

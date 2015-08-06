@@ -13,7 +13,14 @@ class WavePickingLogic{
         //获取 收货区 发货区 降级存储区 加工损耗区 加工区 库内报损区 下的库位信息
         $area_name = array('RECV','PACK','Downgrade','Loss','WORK','Breakage');
         $not_in_location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
-
+        
+        //创建成功分拣任务数量
+        $pickTaskSum      = 0;
+        //创建成功分拣任务包含的总订单数
+        $pickTaskOrderSum = 0;
+        //因库存不足被打回的订单id
+        $rejectOrderArr   = array(); 
+        
         foreach($wave_ids as $wave_id){
             //根据波次id查询 出库单id
             $map['pid'] = $wave_id;
@@ -47,6 +54,8 @@ class WavePickingLogic{
                 } else {
                     $this->order_max = 10;
                 }
+                //这个车单下是否有订单创建了分拣任务
+                $orderSumTask = 0;
                 //遍历出库单id
                 foreach($dist_group as $bill_out_id){
                     //根据bill_out_id 查询出库单信息
@@ -73,6 +82,9 @@ class WavePickingLogic{
                     $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
                     //如果不够 处理下一个订单
                     if($is_enough['status'] == 0){
+                        //记录出库单ID
+                        $rejectOrderArr[] = $bill_out_info['id'];
+                        
                         $data['status'] = 1;
                         //$data['refused_type'] = 2;
                         $map['id'] = $bill_out_info['id'];
@@ -149,6 +161,13 @@ class WavePickingLogic{
                     unset($data);
                     //处理分拣单 每个分拣单最多处理$order_max个订单
                     $this->exec_order($result_arr,$wave_id);
+                    //订单量自增
+                    $orderSumTask++;
+                    $pickTaskOrderSum++;
+                }
+                if ($orderSumTask > 0) {
+                    //分拣任务量自增
+                    $pickTaskSum++;
                 }
             }
             //查询当前仓库的发货区的location_id
@@ -183,6 +202,10 @@ class WavePickingLogic{
                         $v['batch'] = $val['batch'];
                         $v['src_location_id'] = $val['src_location_id'];
                         $v['dest_location_id'] = $dest_location_id;
+                        $v['created_user'] = session('user.uid');
+                        $v['created_time'] = date('Y-m-d H:i:s');
+                        $v['updated_user'] = session('user.uid');
+                        $v['updated_time'] = date('Y-m-d H:i:s');
                         $data['detail'][] = $v;
                     }
                     //创建分拣单
@@ -198,7 +221,12 @@ class WavePickingLogic{
             unset($data);
             unset($map);
         }
-        return array('status'=>1);
+        $hintInfo = array(
+        	   'tasksum'  => $pickTaskSum,
+           'ordersum' => $pickTaskOrderSum,
+           'orderids' => $rejectOrderArr
+        );
+        return array('status'=>1, 'alert' => $hintInfo);
     }
     /**
     * 处理分拣单 每个分拣单最多处理$order_max个订单
@@ -238,6 +266,10 @@ class WavePickingLogic{
                     $v['batch'] = $val['batch'];
                     $v['src_location_id'] = $val['src_location_id'];
                     $v['dest_location_id'] = $dest_location_id;
+                    $v['created_user'] = session('user.uid');
+                    $v['created_time'] = date('Y-m-d H:i:s');
+                    $v['updated_user'] = session('user.uid');
+                    $v['updated_time'] = date('Y-m-d H:i:s');
                     $data['detail'][] = $v;
                 }
                 //创建分拣单
@@ -287,6 +319,7 @@ class WavePickingLogic{
             $param['batch'] = $value['batch'];
             $param['status'] = 'qualified';
             $param['change_src_assign_qty'] = '1';
+            $param['refer_code'] = $code;
             try{
                 $res = A('Stock','Logic')->adjustStockByMove($param);
             }catch(Exception $e){

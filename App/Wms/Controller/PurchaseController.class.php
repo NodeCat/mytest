@@ -215,7 +215,7 @@ class PurchaseController extends CommonController {
 				continue;
 			}
 			if (strlen(formatMoney($pros['pro_qty'][$j], 2, 1))>2) {
-				$mes = $pro_code . '采购数量只能精确到两位小数点';
+				$mes = $pros['pro_qty'][$j].$pro_code . '采购数量只能精确到两位小数点'.strlen(formatMoney($pros['pro_qty'][$j], 2, 1));
 				$this->msgReturn(0,$mes);
 			}
 

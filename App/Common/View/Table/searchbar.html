@@ -15,7 +15,7 @@
         </case>
         <case value="date|datetime|time">{~$a++}
             {~$datetime_format=array('datetime'=>'yyyy-mm-dd hh:ii:ss','date'=>'yyyy-mm-dd','time'=>'hh:ii:ss')}
-            <div class="input-group input-group-sm">
+            <div class="input-group input-group-s">
             <input type="txt" rel='datepicker' name="query[{$key}]" class="form-control input-sm form_{$vo['control_type']}" data-date-format="{$datetime_format[$vo['control_type']]}">
              <!--<span class="input-group-btn">
                 <button class="btn btn-default" type="button"><i class="glyphicon glyphicon-calendar"></i></button>

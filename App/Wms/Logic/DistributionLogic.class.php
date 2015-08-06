@@ -1263,4 +1263,57 @@ class DistributionLogic {
         $res = $M->field('name')->where($map)->find();
         return $res['name'];
     }
+    
+    /*
+    * 根据配送id，查询当前详情，更新配送单主表数据
+    * @param $ids = array()
+    * @return true/false
+    */
+    public function updDistInfoByIds($ids = array()){
+        if(empty($ids)){
+            return false;
+        }
+        foreach($ids as $id){
+            $map['pid'] = $id;
+            $map['is_deleted'] = 0;
+            $dist_detail_infos = M('stock_wave_distribution_detail')->where($map)->select();
+            unset($map);
+            foreach($dist_detail_infos as $dist_detail_info){
+                $bill_out_ids[] = $dist_detail_info['bill_out_id'];
+            }
+
+            //更新配送单中总件数 总条数 总行数 总金额
+            if(!empty($bill_out_ids)){
+                $map['id'] = array('in', $bill_out_ids);
+                //获取出库单
+                $sur_info = M('stock_bill_out')->where($map)->select();
+                unset($map);
+            }else{
+                $sur_info = array();
+            }
+            
+            $sur_detail = $this->get_out_detail($bill_out_ids); //通过审核的sku详情
+            $total['order_count'] = count($bill_out_ids); //总单数
+            $total['sku_count'] = 0; //总件数
+            $total['line_count'] = 0; //总行数
+            $total['total_price'] = 0; //总金额
+            $det_merge = array();
+            foreach ($sur_info as $surmain) {
+                //总价格
+                $total['total_price'] += $surmain['total_amount'];
+            }
+            foreach ($sur_detail as $sur) {
+                //总数量
+                $total['sku_count'] += $sur['order_qty'];
+                $det_merge[$sur['pro_code']] = null; //总行数
+            }
+            $total['line_count'] = count($det_merge);
+            if (M('stock_wave_distribution')->create($total)) {
+                //更新操作
+                $map['id'] = $id;
+                M('stock_wave_distribution')->where($map)->save();
+            }
+            return true;
+        }
+    }
 }

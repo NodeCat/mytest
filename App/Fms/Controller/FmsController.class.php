@@ -10,11 +10,14 @@ class FmsController extends \Common\Controller\AuthController{
     public function orders(){
         $id = I('id',0);
         if(!empty($id)){
+            $L = A('Fms/List','Logic');
             //根据配送单id或配送单号获得配送单信息及订单信息
             $array_result = $this->get_orders($id);
             $dist = $array_result['dist'];
             $orders = $array_result['orders'];
-            
+            //获得配送单的交货状态
+            $status = $L->can_pay($dist['id']);
+            $this->assign('status',$status);
             $this->assign('dist', $dist);
             $this->assign('data', $orders);
         }
@@ -27,14 +30,22 @@ class FmsController extends \Common\Controller\AuthController{
     */
     public function pay() {
         $id = I('get.id',0);
-        if(empty($id)) {
+        if (empty($id)) {
             $this->msgReturn('0','结算失败，提货码不能为空');
         }
         $map['id'] = $id;
         $dist = $this->distInfo($map);
-        if(empty($dist)) {
+        if (empty($dist)) {
             $this->msgReturn('0','结算失败，未找到该配送单。');
         }
+        $fms_list = A('Fms/List','Logic');
+        //查询是否有退货，并且已创建拒收入库单
+        $can = $fms_list->can_pay($id);
+        if ($can == 3) {
+            //有退货没有创建拒收入库单
+            $this->msgReturn('0','结算失败，该配送单中有退货，请交货后再做结算');
+        }
+
         //获得所有出库单id 
         $bill_out_ids = array_column($dist['detail'],'bill_out_id');
         $bill_outs = array();
@@ -45,7 +56,7 @@ class FmsController extends \Common\Controller\AuthController{
                 $bill_outs[] = $bill_out;
             }
         }
-        if(empty($bill_outs)) {
+        if (empty($bill_outs)) {
             $this->msgReturn('0','查询失败，未找到该配送单中的订单。');
         }
         //遍历所有出库单，并判断是否已经结算过，是否含有未处理的订单
@@ -84,8 +95,9 @@ class FmsController extends \Common\Controller\AuthController{
             $map['is_deleted'] = 0;
             $data['status'] = 4; //已完成
             $data['real_sum'] = $value['pay_for_price'];
+            $data['wipe_zero'] = $value['wipe_zero'];
             $s = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
-            
+            logs($value['id'],'修改订单实收金额，'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
         }
         //回写配送单状态
         unset($map);
@@ -123,13 +135,20 @@ class FmsController extends \Common\Controller\AuthController{
                     $row['actual_sum_price'] = 0;
                     $map['order_details'][]  = $row;
                 }
-                if($val['pay_status']=='已付款'){
-                    $val['pay_for_price']=0;
-                }
             }
-            $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee']; 
-            //抹零
-            $val['pay_for_price'] = $DistLogic->wipeZero($val['pay_for_price']);
+            if ($val['actual_price'] > 0) {
+                $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee']; 
+                //抹零
+                if ($val['pay_status'] != '已付款') {
+                    $val['pay_for_price'] = $DistLogic->wipeZero($val['pay_for_price']);
+                 }
+            } else {
+                $val['pay_for_price']=0;
+            }
+            if($val['pay_status']=='已付款'){
+                $val['pay_for_price']=0;
+            }
+            
             $map['status']  = '1';//已完成
             $map['deal_price'] = $val['pay_for_price'];
             $order_ids[] = $val['id'];
@@ -172,10 +191,12 @@ class FmsController extends \Common\Controller\AuthController{
                 $this->msgReturn('0','查询失败，未找到该单据');
             }
         }
+        
         //抹零总计
         $wipe_zero_sum = 0;
+        //押金总计
+        $deposit_sum = 0;
         $Dist_Logic = A('Tms/Dist','Logic');
-        //dump($dist);
         //获得所有出库单id 
         $bill_out_ids = array_column($dist['detail'],'bill_out_id');
         $bill_outs = array();
@@ -266,11 +287,16 @@ class FmsController extends \Common\Controller\AuthController{
             //优惠金额
             $value['minus_amount'] = $sign_data['minus_amount'];
             //支付减免
-            $value['pay_reduce'] = $sign_data['pay_reduce'];
+            $value['pay_reduce']   = $sign_data['pay_reduce'];
             //运费
-            $value['deliver_fee'] = $sign_data['deliver_fee'];
+            $value['deliver_fee']  = $sign_data['deliver_fee'];
             //司机实收金额
-            $value['deal_price'] = $sign_data['real_sum'];
+            $value['deal_price']   = $sign_data['real_sum'];
+            $value['sign_msg']     = $sign_data['sign_msg'];
+            //押金
+            $value['deposit']      = $sign_data['deposit'];
+            //抹零
+            $value['wipe_zero']    = $sign_data['wipe_zero'];
             
             if($value['actual_price'] > 0) {
                 //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费
@@ -279,8 +305,16 @@ class FmsController extends \Common\Controller\AuthController{
                     $old_value = $value['pay_for_price'];
                     //抹零处理
                     $value['pay_for_price'] = $Dist_Logic->wipeZero($value['pay_for_price']);
-                    //抹零总计
-                    $wipe_zero_sum += round($old_value - $value['pay_for_price'],2);
+                    
+                    if ($value['status_cn'] == '已完成') {
+                        $wipe_zero_sum += $value['wipe_zero'];
+                        $deposit_sum   += $value['deposit'];
+                    } else {
+                        $value['wipe_zero'] = round($old_value - $value['pay_for_price'],2);
+                        //抹零总计
+                        $wipe_zero_sum += $value['wipe_zero'];
+                    }
+                    
                 }
             }
             else {
@@ -305,7 +339,7 @@ class FmsController extends \Common\Controller\AuthController{
             }
             elseif($value['status_cn'] == '已完成') {
                 //结算金额 ＋＝ 应收总计
-                $dist['pay_for_price_total'] += $value['pay_for_price'];
+                $dist['pay_for_price_total'] += $value['deal_price'];
             }
             elseif($value['status_cn'] == '已签收') {
                 //结算金额 ＋＝ 应收总计
@@ -315,8 +349,9 @@ class FmsController extends \Common\Controller\AuthController{
         }
         //抹零总计
         $dist['wipe_zero_sum'] = $wipe_zero_sum;
+        $dist['deposit_sum'] = $deposit_sum;
         $array_result = array('dist' => $dist,'orders' => $orders);
-        //dump($array_result);
+        
         return $array_result;
     }
 
@@ -344,13 +379,15 @@ class FmsController extends \Common\Controller\AuthController{
         }
         $map['is_deleted'] = 0;
         $dist = M('stock_wave_distribution')->where($map)->find();
-        unset($map);
-        //查询条件为配送单id
-        $map['pid'] = $dist['id'];
-        $map['is_deleted'] = 0;
-        //根据配送单id查配送详情单里与出库单相关联的出库单id
-        $dist_detail = M('stock_wave_distribution_detail')->where($map)->select();
-        $dist['detail'] = $dist_detail;
+        if (!empty($dist)) {
+            unset($map);
+            //查询条件为配送单id
+            $map['pid'] = $dist['id'];
+            $map['is_deleted'] = 0;
+            //根据配送单id查配送详情单里与出库单相关联的出库单id
+            $dist_detail = M('stock_wave_distribution_detail')->where($map)->select();
+            $dist['detail'] = $dist_detail;
+        }
         return $dist;
     }
     /*根据出库单id获得出库单信息

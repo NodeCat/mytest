@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class DispatchController extends Controller{
+class DispatchController extends \Common\Controller\AuthController{
 
 	protected $columns = array (   
         'username'     => '姓名',   
@@ -23,6 +23,9 @@ class DispatchController extends Controller{
         'mark'         => '备注',
          
     );
+    public function home () {
+        $this->display('Index/index');
+    }
     protected $car = array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
@@ -100,12 +103,22 @@ class DispatchController extends Controller{
                 $lines = '无';
             }
             $value['line_name'] = $lines;// 保存路线
-            $lines = NULL;// 清空上一配送单路线    
+            $lines = NULL;// 清空上一配送单路线
+            //查看是否有报错
+            unset($map);
+            $map['driver_mobile'] = $value['mobile'];
+            $map['is_deleted']    = '0';
+            $map['created_time']  = array('between',$value['created_time'].','.$value['report_error_time']);
+            $res = M('tms_report_error')->field('id')->where($map)->find();
+            if ($res) {
+                $value['report_error'] = '1';
+            }
         }
         if (defined('VERSION')) {
-            $this->car['warehouse'] = array(8 =>'北京北仓');
+            $this->car['warehouse'] = array(8 =>'北京北仓',7 =>'北京白盆窑仓库');
         } else {
             unset($this->car['warehouse'][8]);
+            unset($this->car['warehouse'][7]);
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
@@ -326,7 +339,7 @@ class DispatchController extends Controller{
     }
 
     //保存运费
-    public function save_fee() {
+    public function saveFee() {
         $fees = I('post.fees');
         if(empty($fees)) {
             $re = array(

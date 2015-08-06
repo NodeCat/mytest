@@ -67,7 +67,6 @@
 $(function() {
   var td =  $('.list_info_all').children('td[rowspan]');
   td.each(function(i) {
-	  //alert($(this).attr('index'));
 	  if ($(this).attr('index') > 1) {
 		  $(this).remove();
 	  }
@@ -97,27 +96,75 @@ $(function() {
           
         }
    });
-
+   var mapObj;
+   var markerArr = [];
+   var markerPositionArr = [];
+   var data = [];
    function display(){
-          var mapObj;
-          // 地图初始化
-          mapObj = new AMap.Map("mapContainer",{
-          center:new AMap.LngLat(116.397428,39.90923), //地图中心点
-          level:11  //地图显示的比例尺级别
-          //zoomEnable:false
+      // 地图初始化
+      mapObj = new AMap.Map("mapContainer",{
+      center:new AMap.LngLat(116.397428,39.90923), //地图中心点
+      level:11  //地图显示的比例尺级别
+      //zoomEnable:false
+    });
+    data = {:json_encode($data);};
+    if(data=="") return;
+    for(var i = 0;i< data.length; i++){
+      markerPositionArr[i] = new AMap.LngLat(data[i]["map_pos"]["lng"],data[i]["map_pos"]["lat"]);
+      markerArr[i] = new AMap.Marker({  
+            position:markerPositionArr[i],
+            content:'<div class="mapIcon"  style="background:url(http://hop.test3.dachuwang.com/assets/images/will.png); color:red; width:45px; height:38px;text-align: right; padding-right: 5px;">'+data[i]["order_id"]+'</div>',
         });
-        <volist name="data" id="attrs">
-           <notempty name="attrs['map_pos']['lng']">
-           var markerPosition = new AMap.LngLat({$attrs['map_pos']['lng']},{$attrs['map_pos']['lat']});
-           var marker = new AMap.Marker({  
-                position:markerPosition,
-                content:'<div class="mapIcon"  style="background:url(http://hop.test3.dachuwang.com/assets/images/will.png); color:red; width:45px; height:38px;text-align: right; padding-right: 5px;">'+"{$attrs.order_id}"+'</div>',
-            });
-           marker.setMap(mapObj);
-           </notempty>
-        </volist>
-        
+     }   
+     for (var m = 0; m < $(".order-remove").length; m++) {
+        var id = $(".order-remove").parents('tbody tr').eq(m).find('.so-id').html();
+        for(var k = 0;k< data.length; k++){
+            if(data[k]["out_id"]==id){
+                markerArr[k].setMap(mapObj);
+          }
+        }
+     };
    }
+   $('#table-content').delegate('input[type=checkbox]','change',function(){
+    if($(this).hasClass('select-all')) {
+      //找到tbody中的所有checkbox
+      $("#table-content tbody input[type='checkbox']").each(function(){  
+        if($(".select-all").prop('checked')){
+          for (var i = 0; i < markerArr.length; i++) {
+            markerArr[i].setMap(mapObj);
+          };
+        }
+        else{
+          for (var j = 0; j < markerArr.length; j++) {
+            markerArr[j].setMap(null);
+          };
+        }
+      });
+    }else{
+      for(var k = 0;k< data.length; k++){
+          if(data[k]["out_id"]==$(this).parents('tr').find('.order-id').val()){
+            if($(this).prop('checked') == true) {
+                markerArr[k].setMap(mapObj);
+              }
+              else {
+                $(".select-all").attr('checked',false)
+                markerArr[k].setMap(null);
+              }
+            break;  
+          }
+      }; 
+    }
+  });
+  $('.content').delegate('.order-remove','click',function(){
+    var id =$(this).parents('tr').find('.so-id').html();
+    for(var m = 0;m< data.length; m++){
+          if(data[m]["out_id"]==$(this).parents('tr').find('.so-id').html()){
+                markerArr[m].setMap(null);
+                break; 
+            }
+             
+        } 
+  })
   $.extend($.tablesorter.themes.bootstrap, {
     // these classes are added to the table. To see other table classes available,
     // look here: http://twitter.github.com/bootstrap/base-css.html#tables

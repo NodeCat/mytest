@@ -34,20 +34,23 @@
     });
 
     function tmsReportError(para) {
-    	if(typeof HostApp == "undefined") {
+      /*if(typeof HostApp == "undefined") {
           alert('使用报错功能请您先下载大厨网配送app.');
           return false;
-        }
-    	$.ajax({
-          url:'{:U("ReportError/report_error")}',
+        }*/
+      $.ajax({
+          url:'{:U("Index/report_error")}',
           type:'post',
           cache : false,
           dataType:'json',
           async:true,
-		      data:{"id":para.user_id,"type":para.type},
+          data:{"id":para.user_id,"type":para.type},
           success: function(msg){
+            alert(msg.msg);
+            if (typeof HostApp != "undefined") {
               HostApp.toast(msg.msg);
-        }
-    	});
+            }
+          }
+      });
     }
 </script>
