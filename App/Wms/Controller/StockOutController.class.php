@@ -351,11 +351,6 @@ class StockOutController extends CommonController {
         $map['id'] = $data['wh_id'];
         $data['wh_name'] = $warehouse->where($map)->getField('name');
         
-        if($data['op_date'] == "0000-00-00 00:00:00") {
-            //$data['delivery_time'] = '无';
-        }else {
-            //$data['delivery_time'] = date('Y-m-d', strtotime($data['op_date'])) . $this->filter['op_time'][$data['op_time']];
-        }
         $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
                        'type' => array('1'=>'普通订单','2'=>'采购退货','3'=>'库内样品出库'),
                        'process_type' => array('1'=>'正常单','2'=>'取消单'),
