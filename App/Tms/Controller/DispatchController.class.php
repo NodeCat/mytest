@@ -78,6 +78,7 @@ class DispatchController extends Controller{
             $map['mobile']      = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
+            $map['type'] = '0';
             //获取司机配送单的线路和id信息
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
@@ -219,6 +220,7 @@ class DispatchController extends Controller{
             $map['mobile'] = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
             $map['status'] = '1';
+            $map['type']   = '0';
             //获取司机配送单的线路和id信息取出来
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收

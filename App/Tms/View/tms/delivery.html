@@ -87,7 +87,7 @@ $('#sub').on('click',function(){
               alert(msg.message);
               if(typeof HostApp != "undefined"){
                 HostApp.toast(msg.message);
-                HostApp.startLocate(msg.code);
+                HostApp.startLocate(msg.code,msg.type);
                 HostApp.toast('计程开始,请不要退出');
               }
               

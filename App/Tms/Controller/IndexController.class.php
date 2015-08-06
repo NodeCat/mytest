@@ -104,6 +104,7 @@ class IndexController extends Controller {
     public function report() {
 
         $map['mobile'] = session('user.mobile');
+        $map['type']   = '0';
         $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
@@ -602,7 +603,7 @@ class IndexController extends Controller {
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => '0');
             } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
@@ -775,6 +776,7 @@ class IndexController extends Controller {
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $map['status'] = '1';
+        $map['type'] = '0';
         unset($M);
         $M = M('tms_delivery');
         $data = $M ->where($map)->select();
@@ -863,7 +865,7 @@ class IndexController extends Controller {
         if (empty($task)) {
             $this->error = '领单失败，未找到该单据';
         } elseif ($task['status'] != '3' && $task['status'] != '4') {//该单据不是配送中或待派车就不能认领
-            $this->error = '领单失败,该单不能被认领';
+            //$this->error = '领单失败,该单不能被认领';
         } elseif ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
             //$this->error = '领单失败，该任务单已过期';
         }
@@ -889,7 +891,7 @@ class IndexController extends Controller {
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => '1');
         } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
@@ -964,7 +966,7 @@ class IndexController extends Controller {
     //任务结束
     public function signFinished()
     {
-        $dist_id = I('id');
+        $dist_id = I('post.id');
         $nodes = M('tms_task_node')->where(array('pid' => $dist_id))->select();
         foreach ($nodes as $value) {
             if($value['status'] != '2') {
@@ -980,7 +982,6 @@ class IndexController extends Controller {
             if ($res) {
                 $result = M('tms_task_node')->where(array('pid' => $dist_id))->save(array('status' => '3'));
             }
-
         }
         if ($result) {
             $return = array(
@@ -996,5 +997,27 @@ class IndexController extends Controller {
         $this->ajaxReturn($return);
     }
 
+    // 司机任务签到收集点
+    public function getPoint()
+    {
+    //"{'id':2,'lng':'12112','lat':'1213','time':'2015-08-09'}"
+        $point = I('post.');
+        //dump($point);exit;
+        $geo = array('lng' => $point['lng'],'lat' => $point['lat']);
+        $geo = json_encode($geo);
+        $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'sign_time' => $point['time']));
+        if ($res) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '收集成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '点位收集失败',
+            );
+        }
+        $this->ajaxReturn($return);
+    }
     
 }

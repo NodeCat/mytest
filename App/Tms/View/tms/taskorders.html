@@ -36,15 +36,13 @@
 </div>
 
 <div class="col-xs-12" id="orders">
-  <!-- {:dump($dist)}
-  {:dump($data)} -->
   <volist name="data" id="vo">
     <div class="panel panel-default">
         <div class="list-group-item list-group-item-inf">
           <h4 class="list-group-item-heading">
-            <span class="order-id">
+            <small class="order-id">
               {$vo.id}
-            </span>
+            </small>
             <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
               【{$vo.name}】
               <i class="glyphicon glyphicon-map-marker">
@@ -67,7 +65,7 @@
           <if condition="$vo.status eq '派遣中'">
             <botton style="float:right;" class="btn btn-primary task-sign" data-id="{$vo.id}">签到</botton>
           <else/>
-            <botton style="float:right;"  class='btn btn-primary disabled'>已签到</botton>
+            <botton style="float:right;"  class='btn btn-default disabled'>已签到</botton>
           </if>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
@@ -93,7 +91,7 @@
       </notempty>
     </volist>
     <if condition="$over eq 1">
-      <botton id="sign-finished" class='btn btn-primary btn-lg btn-block disabled' data-distid="{$dist['dist_id']}" >任务已结束</botton>
+      <botton id="sign-finished" class='btn btn-default btn-lg btn-block disabled' data-distid="{$dist['dist_id']}" >任务已结束</botton>
     <else />
       <botton id="sign-finished" class='btn btn-primary btn-lg btn-block' data-distid="{$dist['dist_id']}" >任务结束</botton>
     </if>

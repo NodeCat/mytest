@@ -182,6 +182,7 @@ class ListLogic{
         $map['mobile'] = $mobile;
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['status'] = '1';
+        $map['type']   = '0';
         $data = M('tms_delivery')->where($map)->select();
         unset($map);
         $A = A('Common/Order','Logic');

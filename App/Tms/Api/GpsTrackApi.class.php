@@ -21,7 +21,18 @@ class GpsTrackApi extends CommApi {
         $map['userid'] = $data['id'];
         $sign_mg = $D->relation('TmsUser')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
         unset($map);
-        $key = $sign_mg['id'].$sign_mg['mobile'];// 键名
+        if ($data['type']=='1') {//提任务
+            $dist = M('tms_delivery')
+                    ->field('dist_id,dist_code')
+                    ->where(array('mobile' => $sign_mg['mobile']))
+                    ->order('created_time DESC')
+                    ->find();
+
+            $key = $dist['dist_code'];// 任务号
+        } else {提货
+            $key = $sign_mg['id'].$sign_mg['mobile'];// 键名
+        }
+        //$key = $sign_mg['id'].$sign_mg['mobile'];// 键名
         if (floatval($sign_mg['distance']) > 0) {
             $data_old = S(md5($key));
             $data['points'] = array_merge($data_old['points'],$data['points']);
@@ -44,10 +55,18 @@ class GpsTrackApi extends CommApi {
         }
         $distance = sprintf('%.3f',$distance/1000);
         // 写入路程和时间
-        $map['id'] = $sign_mg['id'];
-        $map['distance'] = $distance;
-        $map['delivery_end_time'] = $value['time'];//配送完成时间
-        $res = $D->save($map);// 把路程和时间写入签到表
+        if ($data['type']=='1') {//提任务
+            $time = A('Tms/List','Logic')->timediff($data['points'][0]['time'],$value['time']);
+            $time = json_encode($time);
+            $res = M('tms_dispatch_task')->save(array('id' => $dist['dist_id'],'distance' => $distance,'take_time' => $time));
+
+        } else {// 提货
+            $map['id'] = $sign_mg['id'];
+            $map['distance'] = $distance;
+            $map['delivery_end_time'] = $value['time'];//配送完成时间
+            $res = $D->save($map);// 把路程和时间写入签到表
+        }
+
         if ($res) {
             S(md5($key),$data,3600*24*5);
             $return = array('status' =>'1', 'message' => '成功');

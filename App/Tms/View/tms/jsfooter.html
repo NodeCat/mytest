@@ -309,13 +309,23 @@
             success: function(msg) {
               if (typeof HostApp == "undefined") {
                 alert(msg.msg);
+                //newPoint(id);
+                location.reload();
               } else {
                 HostApp.toast(msg.msg);
+                HostApp.cellectPoint(id);
               }
-              location.reload();
             }  
           });
     });
+
+    function getPoint(str) {
+      $.post("{:U('Index/getPoint')}",str,function(res) {
+        //alert(res.msg);
+        HostApp.toast(res.msg);
+        location.reload();
+        });
+      }
 
     $('#sign-finished').on('click',function() {
           var id = $(this).data('distid');
@@ -329,8 +339,10 @@
             success: function(msg) {
               if (typeof HostApp == "undefined") {
                 alert(msg.msg);
+                
               } else {
                 HostApp.toast(msg.msg);
+                HostApp.stopLocate();
               }
               location.reload();
             }  
