@@ -91,7 +91,6 @@ class PurchaseOutController extends CommonController {
             'query_type'        => 'eq', 
             'control_type'      => 'select', 
             'value'             => array( 
-              'draft' => '草稿',
               'audit'=>'待审核',
               'tbr'=>'待出库',
               'refunded'=>'已出库',
