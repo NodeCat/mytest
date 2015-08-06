@@ -107,7 +107,6 @@ class SignInLogic
         foreach ($data as $value) {
             $mobiles[] = $value['order_info']['mobile'];
         }
-        dump($data);
         $mobiles = array_unique($mobiles);
         //司机信息
         $driver_mobile = session('user.mobile');
@@ -117,7 +116,6 @@ class SignInLogic
         $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491。";
         $content .= "退订请回复TD";
         $cA = A('Common/Order', 'Logic');
-        dump($mobiles);
         $map = array(
             'mobile'   => $mobiles,
             'content'  => $content,
@@ -128,12 +126,10 @@ class SignInLogic
         if ($job_id = S(md5($id))) {
             $dmap = array('job_id' => $job_id);
             $pes = $cA->sendPullMsg($dmap);
-            dump($pes);
         }
         //加入消息队列并缓存该job_id
         $res = $cA->sendPushMsg($map);
         S(md5($id), $res['job_id'][0], 1200);
-        dump($res);die();
         return $res;
     }
 
@@ -154,12 +150,14 @@ class SignInLogic
        //请求母账户信息
        $umap = array('customer_id' => $data['user_id']);
        $parent = $cA->getParentAccountByCoustomerId($umap);
-       if (is_array($parent) 
-            && $parent['data']['account_type'] == 1 
-            && $parent['data']['account_type'] != $data['user_id']
-        ) {
+       if (is_array($parent)) {
             //要发送的母账户手机号
-            $mobile = $parent['data']['mobile'];
+            if ($parent['data']['account_type'] == 1 && $parent['data']['id'] != $data['user_id']) {
+                $mobile = $parent['data']['mobile'];
+            }
+            if ($parent['data']['account_type'] == 2 && $parent['data']['parent_mobile']) {
+                $mobile = $parent['data']['parent_mobile'];
+            }
             //组合信息内容
             $content = "亲爱的老板，分店“{$data['shop_name']}”的产品已成功送达，完成签收，请您放心，";
             $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491。";
