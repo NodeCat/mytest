@@ -107,6 +107,7 @@ class SignInLogic
         foreach ($data as $value) {
             $mobiles[] = $value['order_info']['mobile'];
         }
+        dump($data);
         $mobiles = array_unique($mobiles);
         //司机信息
         $driver_mobile = session('user.mobile');
@@ -118,7 +119,7 @@ class SignInLogic
         $cA = A('Common/Order', 'Logic');
         dump($mobiles);
         $map = array(
-            'mobile'   => '18701346697',
+            'mobile'   => $mobiles,
             'content'  => $content,
             'sms_type' => 1,
             'delay'    => 1200,
@@ -127,12 +128,12 @@ class SignInLogic
         if ($job_id = S(md5($id))) {
             $dmap = array('job_id' => $job_id);
             $pes = $cA->sendPullMsg($dmap);
+            dump($pes);
         }
         //加入消息队列并缓存该job_id
         $res = $cA->sendPushMsg($map);
+        S(md5($id), $res['job_id'][0], 1200);
         dump($res);die();
-        S(md5($id), $res['job_id'], 1200);
-
         return $res;
     }
 
