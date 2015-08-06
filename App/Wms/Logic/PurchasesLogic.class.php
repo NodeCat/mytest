@@ -38,7 +38,7 @@ class PurchasesLogic{
             $where['b.delivery_ampm'] = $delivery_ampm; 
         }
         $page_size = C('PAGE_SIZE');
-        $where['b.status'] = 1;//待生产
+        $where['b.status'] = array('in','1,3');//待生产or波次中
         $where['b.type'] = 1;//销售订单
         $returnRes = array();
         $total = count($pro_codeArr);
@@ -76,7 +76,7 @@ class PurchasesLogic{
     public function getSkuInfoByWhIdUp($wh_id,$delivery_date='', $delivery_ampm='', $offset='',$limit=''){
         $m               = M();
         $where           = array();
-        $where['b.status'] = 1;//待生产
+        $where['b.status'] = array('in','1,3');//待生产or波次中
         $where['b.type'] = 1;//销售订单
       
         if($wh_id){
