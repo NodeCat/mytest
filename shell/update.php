@@ -4,11 +4,14 @@ date_default_timezone_set('PRC');
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 define('ROOT', __DIR__);
 
-include_once ROOT."/ezsql/ez_sql_core.php";
-include_once ROOT."/ezsql/ez_sql_mysqli.php";
-include_once ROOT."/ezsql/config.inc.php";
+include_once ROOT . "/ezsql/ez_sql_core.php";
+include_once ROOT . "/ezsql/ez_sql_mysqli.php";
+include_once ROOT . "/ezsql/config.inc.php";
 
-$db 	= new ezSQL_mysqli($user, $pwd, $db, $host);
+//引入配置文件
+$db_config = require(ROOT . "/../App/Wms/Conf/production.php");
+
+$db 	= new ezSQL_mysqli($db_config['DB_USER'], $db_config['DB_PWD'], $db_config['DB_NAME'], $db_config['DB_HOST'], 'utf8');
 //获取数据库中最大的ID
 $query= "SELECT pro_code FROM `stock_snap` group by pro_code";
 $result  = $db->get_results($query);
