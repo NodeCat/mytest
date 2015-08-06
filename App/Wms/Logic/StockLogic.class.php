@@ -823,6 +823,7 @@ class StockLogic{
     *    'batch'=>xxxx,
     *    'status'=>xxxx,
     *    'change_src_assign_qty'=>xxxx, 是否减少src的assign_qty
+    *    'refer_code'=>xxxx, 关联单号
     * )
     *
     */
@@ -889,6 +890,7 @@ class StockLogic{
                     'new_qty' => $param['variable_qty'],
                     'batch' => $src_stock_info['batch'],
                     'status' => $param['status'],
+                    'refer_code' => $param['refer_code'],
                     );
                 $stock_move = D('StockMoveDetail');
                 $stock_move_data = $stock_move->create($stock_move_data);
@@ -966,6 +968,7 @@ class StockLogic{
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
                         'batch' => $param['batch'],
                         'status' => $param['status'],
+                        'refer_code' => $param['refer_code'],
                         );
                     $stock_move = D('StockMoveDetail');
                     $stock_move_data = $stock_move->create($stock_move_data);

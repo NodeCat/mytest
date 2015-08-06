@@ -5,3 +5,6 @@ ALTER TABLE `wms`.`tms_sign_list`
 ADD COLUMN `delivery_end_time` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '配送结束时间' AFTER `delivery_time`;
 
 UPDATE `wms`.`tms_user` SET `tms_user`.`warehouse`='8' where `tms_user`.`warehouse`='6' and `id` >='1';
+
+ALTER TABLE `wms`.`tms_sign_list` 
+ADD COLUMN `report_error_time` DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '商家点位报错时间' AFTER `delivery_end_time`;

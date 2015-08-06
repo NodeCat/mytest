@@ -8,8 +8,6 @@ return array(
     'HTML_CACHE_ON'   => FALSE,   // 默认关闭静态缓存
     'DATA_CACHE_TIME' => 1, // 数据缓存有效期 0表示永久缓存
 
-    'LOAD_EXT_CONFIG' =>'columns',
-    
     //Database
     'DB_TYPE'           =>     'mysql',     // 数据库类型
     'DB_HOST'           =>     '123.59.54.246',// 服务器地址

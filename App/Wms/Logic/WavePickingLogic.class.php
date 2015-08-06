@@ -202,6 +202,10 @@ class WavePickingLogic{
                         $v['batch'] = $val['batch'];
                         $v['src_location_id'] = $val['src_location_id'];
                         $v['dest_location_id'] = $dest_location_id;
+                        $v['created_user'] = session('user.uid');
+                        $v['created_time'] = date('Y-m-d H:i:s');
+                        $v['updated_user'] = session('user.uid');
+                        $v['updated_time'] = date('Y-m-d H:i:s');
                         $data['detail'][] = $v;
                     }
                     //创建分拣单
@@ -262,6 +266,10 @@ class WavePickingLogic{
                     $v['batch'] = $val['batch'];
                     $v['src_location_id'] = $val['src_location_id'];
                     $v['dest_location_id'] = $dest_location_id;
+                    $v['created_user'] = session('user.uid');
+                    $v['created_time'] = date('Y-m-d H:i:s');
+                    $v['updated_user'] = session('user.uid');
+                    $v['updated_time'] = date('Y-m-d H:i:s');
                     $data['detail'][] = $v;
                 }
                 //创建分拣单
@@ -311,6 +319,7 @@ class WavePickingLogic{
             $param['batch'] = $value['batch'];
             $param['status'] = 'qualified';
             $param['change_src_assign_qty'] = '1';
+            $param['refer_code'] = $code;
             try{
                 $res = A('Stock','Logic')->adjustStockByMove($param);
             }catch(Exception $e){
