@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: 123.59.54.246
--- Generation Time: 2015-08-03 05:42:10
+-- Generation Time: 2015-08-06 02:59:27
 -- 服务器版本： 5.5.44-0ubuntu0.14.04.1
 -- PHP Version: 5.5.9-1ubuntu4.9
 
@@ -36,12 +36,12 @@ CREATE TABLE IF NOT EXISTS `tms_delivery_fee` (
   `remark` varchar(200) NOT NULL DEFAULT '' COMMENT '备注',
   `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `created_user` int(11) unsigned NOT NULL DEFAULT '0',
-  `update_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `update_user` int(11) unsigned NOT NULL DEFAULT '0',
-  `status` varchar(45) NOT NULL DEFAULT '',
+  `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_user` int(11) unsigned NOT NULL DEFAULT '0',
+  `status` varchar(45) NOT NULL DEFAULT '0',
   `is_deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='运费表' ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='运费表' AUTO_INCREMENT=5 ;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

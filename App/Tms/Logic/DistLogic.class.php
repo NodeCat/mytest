@@ -88,7 +88,7 @@ class DistLogic {
         $price = 0;
         $map['car_platform'] = $car_platform;
         $map['car_type']     = $car_type;
-        $map['min_mile']     = array('elt',$mile);
+        $map['min_mile']     = array('lt',$mile);
         $map['max_mile']     = array('egt',$mile);
         $map['is_deleted']   = 0;
         $M = M('tms_delivery_fee');
