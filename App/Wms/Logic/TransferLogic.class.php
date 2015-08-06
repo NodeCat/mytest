@@ -116,6 +116,7 @@ class TransferLogic
                     $stock_bill_out['refer_code'] = $transfer_re['trf_code'];
                     $stock_bill_out['notes'] = $transfer_re['remark'];
                     $stock_bill_out['status'] = 1;
+                    $stock_bill_out['op_date'] = get_time();
                     $stock_bill_out['created_time'] = get_time();
                     $stock_bill_out['created_user'] = UID;
                     $stock_bill_out['updated_user'] = UID;

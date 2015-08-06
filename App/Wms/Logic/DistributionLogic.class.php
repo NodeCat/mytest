@@ -715,9 +715,9 @@ class DistributionLogic {
         if(!empty($params['type'])){
             $map['order_type'] = $params['type'];
         }
-        if(!empty($params['line'])){
+        /*if(!empty($params['line'])){
             $map['line_id'] = $params['line'];
-        }
+        }*/
         if(!empty($params['date'])){
             $map['create_time'] = array(array('like',$params['date'].'%'));
         }
