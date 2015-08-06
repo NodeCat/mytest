@@ -130,7 +130,7 @@ class DispatchTaskController extends Controller
                 );
                 //创建人、创建时间
                 $data['created_time'] = get_time();
-                $data['created_user'] = 0;
+                $data['created_user'] = session('user.uid');
                 $M = M('tms_dispatch_task');
                 $id = $M->add($data);
                 if ($id) {
@@ -158,6 +158,7 @@ class DispatchTaskController extends Controller
                             'geo'          => $geo,
                             'queue'        => $k,
                             'created_time' => get_time(),
+                            'created_user' => session('user.uid'),
                         );
                         $nodeData[] = $tmp;
                     }
@@ -288,8 +289,9 @@ class DispatchTaskController extends Controller
         if ($task['status'] == 1) {
             $status = $approve ? 2 : 6;
             $data = array(
-                'status'          => $status,
-                'department_time' => get_time(),
+                'status'              => $status,
+                'department_time'     => get_time(),
+                'department_approver' => session('user.uid'),
             );
             $flag = $M->where($map)->save($data);
             if ($flag) {
@@ -337,6 +339,7 @@ class DispatchTaskController extends Controller
             $data = array(
                 'status'         => $status,
                 'logistics_time' => get_time(),
+                'logistics_approver' => session('user.uid'),
             );
             $flag = $M->where($map)->save($data);
             if ($flag) {
@@ -383,21 +386,15 @@ class DispatchTaskController extends Controller
     {
         $searchValue = I('get.keyword');
         $map = array(
-            'searchKey'=>'shop_name',
-            'fields'=>'name,lng,lat',
-            'currentPage'=> 0,
-            'itemsPerPage'=> 15
+            'searchKey'    => 'shop_name',
+            'searchValue'  => $searchValue,
+            'fields'       => 'name,lng,lat,shop_name,mobile',
+            'currentPage'  => 0,
+            'itemsPerPage' => 15
         );
-        $map['searchValue'] = $searchValue;
         $cA = A('Common/Order', 'Logic');
         $res = $cA->getCustomerList($map);
         $this->ajaxReturn($res);
     }
 
-    public function warehouse()
-    {
-        layout(false);
-        $lists = A('Wms/Distribution', 'Logic')->getAllWarehouse();
-        $this->display('DispatchTask:warehouse-list');
-    }
 }
