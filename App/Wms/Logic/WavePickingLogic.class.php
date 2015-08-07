@@ -98,6 +98,8 @@ class WavePickingLogic{
                         $distribution_id = M('stock_wave_distribution')->where(array('dist_code' => $key))->getField('id');
                         //将出库单从波次中踢出
                         M('stock_wave_detail')->where(array('id' => $bill_out_id['id']))->save(array('is_deleted' => 1));
+                        //更新波次总单数
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count');
                         //删除出库单 并踢出车单
                         M('stock_wave_distribution_detail')->where(array('pid' => $distribution_id, 'bill_out_id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
                         M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
