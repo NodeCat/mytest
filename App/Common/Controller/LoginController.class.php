@@ -167,7 +167,7 @@ class LoginController extends Controller {
             $data['password'] = $new;
             $uid = is_login();
             //$Api = new UserApi();
-            $Api = A('User','Api');
+            $Api = A('Common/User','Api');
             $res = $Api->updateInfo($uid, $old, $data);
             if($res['status']){
                 $this->success('修改密码成功！');
