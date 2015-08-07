@@ -98,9 +98,6 @@ class SkuApi extends CommApi
         }
         //根据SKU编号获取 实际销售额 实际销售件数 平均采购价 拒收SKU数 SKU出库总数
         
-        //dump($skuCodeArr);
-        //dump(($newSkuCodeArr));
-        //dump($sellSkuArr);
         //分组计算SKU信息
         $stockSellQtyArr = array(); //SKU出库总数
         $salePriceArr    = array(); //平均采购价
@@ -127,7 +124,6 @@ class SkuApi extends CommApi
         }
         $returnSkuCodeArr = array_merge($salseSkuIndexArr, $stockSkuIndexArr);
         $returnSkuCodeArr = array_unique($returnSkuCodeArr);
-        //dump($returnSkuCodeArr);exit;
         //TMS数据 实际销售额 实际销售件数 拒收SKU数
         $tmsInfo = $SkuInfo->getTmsInfo($condition['stime'], $condition['etime'], $condition['warehouse_id']);
         $average_buy_price        = 0; //平均采购价

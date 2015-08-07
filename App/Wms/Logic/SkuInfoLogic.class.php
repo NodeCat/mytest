@@ -31,7 +31,6 @@ class SkuInfoLogic
         if (empty($skuCodeArr)) {
             return $return;
         }
-        dump($skuCodeArr);
         //查询SKU采购信息
         $map['stock_purchase_detail.pro_code']   = array('in', $skuCodeArr);
         $map['stock_purchase_detail.is_deleted'] = 0;
@@ -81,7 +80,6 @@ class SkuInfoLogic
                 $return[$index] = bcdiv($total_price, $total_num, 2);
             }
         }
-        dump($return);
         return $return;
     }
     
@@ -122,7 +120,6 @@ class SkuInfoLogic
             $index = strval($detail['pro_code']) . '#';
             $return[$index] = $detail['qty'];
         }
-        dump($return);exit;
         return $return;
     }
     
