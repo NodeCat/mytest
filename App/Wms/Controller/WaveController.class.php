@@ -202,7 +202,7 @@ class WaveController extends CommonController {
       //被踢回的订单数
       $orderInfo['rejectsum'] = count($hintInfo['orderids']);
       //被删除的订单
-      $orderInfo['sumZero'] = $hintInfo['sumZero'];
+      $orderInfo['sumZero'] = count($hintInfo['sumZero']);
       $this->msgReturn(true, '已完成', $orderInfo);
   }
 }
