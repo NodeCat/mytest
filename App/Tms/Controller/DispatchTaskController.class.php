@@ -130,7 +130,8 @@ class DispatchTaskController extends Controller
                 );
                 //创建人、创建时间
                 $data['created_time'] = get_time();
-                $data['created_user'] = session('user.uid');
+                // $data['created_user'] = session('user.uid');
+                $data['created_user'] = 1;
                 $M = M('tms_dispatch_task');
                 $id = $M->add($data);
                 if ($id) {
@@ -158,7 +159,8 @@ class DispatchTaskController extends Controller
                             'geo'          => $geo,
                             'queue'        => $k,
                             'created_time' => get_time(),
-                            'created_user' => session('user.uid'),
+                            // 'created_user' => session('user.uid'),
+                            'created_user' => 1,
                         );
                         $nodeData[] = $tmp;
                     }
@@ -414,6 +416,30 @@ class DispatchTaskController extends Controller
         $cA = A('Common/Order', 'Logic');
         $res = $cA->getCustomerList($map);
         $this->ajaxReturn($res);
+    }
+
+    /**
+     * [getExpectFee 计算预估运费]
+     * @return [type] [description]
+     */
+    public function getExpectFee()
+    {
+        $car_type = I('post.type_id/d', 0);
+        $distance = I('post.distance/d', 0);
+        $info = A('Tms/Dist', 'Logic')->get_delivery_fee($car_type, $distance);
+        if (empty($info)) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '未找到运费记录',
+            );
+        } else {
+            $res = array(
+                'status' => 0,
+                'data'    => $info,
+            );
+        }
+        $this->ajaxReturn($res);
+
     }
 
 }

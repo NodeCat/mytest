@@ -288,8 +288,44 @@
     }
     //移除任务点
     function removeNode(obj){
-      $(obj).parent('.normal-node').remove();
+      var input = $(obj).siblings('input');
+      if(input.data('lat') && input.data('lng')){
+        var nodes = input.parents('table').find('.normal-node input');
+        var latlng = [];
+        nodes.each(function(){
+          var lat = $(this).data('lat'),
+              lng = $(this).data('lng');
+          if(lat && lng){
+            tmp = {lat:lat,lng:lng};
+            latlng.push(tmp);
+          }
+        })
+        if(latlng.length > 1){
+          dealNode(input,latlng,1);
+        }else{
+          obj.parents('table').find("input[name='expect_fee[]']").val('');
+        }
+      }else{
+        $(obj).parent('.normal-node').remove();
+      }
     }
+    $("select[name='expect_car_type[]']").on('change',function(){
+      var nodes = $(this).parents('table').find('.normal-node input');
+      var latlng = [];
+      nodes.each(function(){
+        var lat = $(this).data('lat'),
+            lng = $(this).data('lng');
+        if(lat && lng){
+          tmp = {lat:lat,lng:lng};
+          latlng.push(tmp);
+        }
+      })
+      if(latlng.length > 1){
+        dealNode($(this),latlng,2);
+      }else{
+        $(this).parents('table').find("input[name='expect_fee[]']").val('');
+      }
+    })
     //任务节点输入处理
     $('#task-form').on('input','.normal-node input',function(){
       var _this = $(this);
@@ -314,29 +350,27 @@
       //选择节点单击
       _this.siblings('ul').on('click','li',function(){
         var li = $(this);
-        var slat = li.data('lat'),
-            slng = li.data('lng');
-        var prev = li.parents('.normal-node').prev();
-        if(prev.length == 0){
+        var elat = li.data('lat'),
+            elng = li.data('lng'),
+            input = li.parent().siblings('input');
+        input.removeAttr('data-lng').removeAttr('data-lat');
+        var nodes = li.parents('table').find('.normal-node input');
+        var latlng = [{lat:elat,lng:elng}];
+        nodes.each(function(){
+          var lat = $(this).data('lat'),
+              lng = $(this).data('lng');
+          if(lat && lng){
+            tmp = {lat:lat,lng:lng};
+            latlng.push(tmp);
+          }
+        })
+        if(latlng.length > 1){
+          dealNode(li,latlng,0);
+        }else{
           //不触发运费计算
           choice(li);
-          return false;
-        }else{
-          elat = prev.find('input').data('lat'),
-          elng = prev.find('input').data('lng');
-          if(slat && slng && elat && elng){
-            latlng = {
-              'slat':slat,
-              'slng':slng,
-              'elat':elat,
-              'elng':elng
-            };
-            //计算运费
-            dealNode(li,latlng);
-          }else{
-            choice(li);
-          }
         }
+        return false;
       })
       //任务节点列表消失
       $(window).on('click',function(e){
@@ -362,15 +396,15 @@
         obj.parent().siblings('input').attr('data-shop_name',shop_name).attr('data-name',name).attr('data-mobile',mobile).attr('data-lat',lat).attr('data-lng',lng).attr('data-action','node').val(shop_name);
         obj.parent().addClass('hidden');
   }
-  var expect_fee = 0;
-  function calFee(obj,distance){
+  function calFee(obj,distance,del){
     var expect_car_type = obj.parents('table').find("select[name='expect_car_type[]']");
     var type_id = expect_car_type.val();
     if(!type_id){
       alert('请先选择期望车型来预估运费');
       expect_car_type.focus();
-      obj.parent().siblings('input').removeAttr('data-shop_name').removeAttr('data-name').removeAttr('data-mobile').removeAttr('data-lat').removeAttr('data-lng').removeAttr('data-action').val('');
-
+      if(del == 0){
+        obj.parent().siblings('input').removeAttr('data-shop_name').removeAttr('data-name').removeAttr('data-mobile').removeAttr('data-lat').removeAttr('data-lng').removeAttr('data-action').val('');
+      }
     }else{
       var params = {
         type_id:type_id,
@@ -382,13 +416,22 @@
         dataType:'json',
         data:params,
         success:function(res){
-          // expect_fee += res.fee;
+          if(res.status == 0){
+            expect_fee = parseInt(res.data['price']);
+            obj.parents('table').find("input[name='expect_fee[]']").val(expect_fee);
+            if(del == 1){
+              obj.parent('.normal-node').remove();
+            }
+          }else{
+            alert(res.msg);
+            obj.parents('table').find("input[name='expect_fee[]']").val('');
+          }
         }
       })
     }
   }
   //单击选择节点后，页面效果+运费计算
-  function dealNode(obj,latlng){
+  function dealNode(obj,latlng,del){
     var map,route,marker;
     //基本地图加载
     map = new AMap.Map("mapContainer", {
@@ -396,18 +439,22 @@
     });
     //绘制初始路径
     var path = [];
-    path.push(new AMap.LngLat(latlng.slng,latlng.slat));
-    path.push(new AMap.LngLat(latlng.elng,latlng.elat));
+    for(var i=0;i<latlng.length;i++){
+      path.push(new AMap.LngLat(latlng[i].lng,latlng[i].lat));
+    }
+    console.log(path);
     map.plugin("AMap.DragRoute",function(){
       route = new AMap.DragRoute(map, path, AMap.DrivingPolicy.LEAST_TIME); //构造拖拽导航类
       AMap.event.addListener(route, "complete", routeCallBack);
       route.search();
     });
     function routeCallBack(data){
-      choice(obj);
+      if(del == 0){
+        choice(obj);
+      }
       distance =  data.data.routes[0].distance;
-      distance = (distance/1000).toFixed(2);
-      calFee(obj,distance);
+      distance = parseInt(distance/1000);
+      calFee(obj,distance,del);
     }
   }
 </script>

@@ -70,7 +70,7 @@
             <td>里程/km</td>
             <td>{$task.distance}</td> 
             <td>任务用时/小时</td>
-            <td>{$task.take_time}</td>  
+            <td>{$time.hour}小时{$time.min}分{$time.sec}秒</td>  
             <td>总费用/元</td>
             <td>{$task.delivery_fee}</td>
           </tr>
@@ -80,21 +80,22 @@
           </tr>
       </table>
     </form>
-    <div class="row col-lg-10 col-md-10 col-sm-10 col-xs-10">
+    <!-- 地图模式 -->
+    <br><br>
+    <div class="row col-lg-12 col-md-12 col-sm-12 col-xs-12 hidden-print">
       <div class="center-block">
-        <h4>
+        <h4 class="text-center">
           客户量:<span>{$customer_count}</span>
           总里程:<span>{$distance}km</span>
           总耗时:<span>{$time.hour}小时{$time.min}分{$time.sec}秒</span></br>
-          路线:<span>{$lines}</span>
         </h4>
         </div>
-        <div id="tip">
+        <div id="tip" class="row center-block text-center">
           <input type="button" value="显示线路" onClick="javascript:polyline.setMap(map)"/>
           <input type="button" value="隐藏线路" onClick="javascript:polyline.setMap(null)"/>
           <input type="button" value="测量距离" onClick="javascript:ruler.turnOn()"/>
-        </div>
-        <div id="mapContainer"></div>
+        </div><br>
+        <div id="mapContainer" class="center-block"></div>
     </div>
     </div>
 
