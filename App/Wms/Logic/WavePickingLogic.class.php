@@ -77,6 +77,30 @@ class WavePickingLogic{
                         }
                         
                     }
+                    //根据bill_out_id 查询出库单详情
+                    $map['pid'] = $bill_out_info['id'];
+                    $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+                    //优先判断出库单详情中SKU数量是否全部大于0
+                    $sku_pro_qty = 0; //出库SKU总数
+                    foreach ($bill_out_detail_infos as $bill_out_detail_info_pro_qty) {
+                        $sku_pro_qty += $bill_out_detail_info_pro_qty['order_qty'];
+                    }
+                    dump($key);
+                    if ($sku_pro_qty <= 0 && !empty($key)) {
+                        //此出库单下SKU出库数量全部为0
+                        //获取车单ID
+                        $distribution_id = M('stock_wave_distribution')->where(array('dist_code' => $key))->getField('id');
+                        dump($distribution_id);dump($bill_out_id);
+                        //将出库单从波次中踢出
+                        M('stock_wave_detail')->where(array('id' => $bill_out_id['id']))->save(array('is_deleted' => 1));
+                        //删除出库单 并踢出车单
+                        M('stock_wave_distribution_detail')->where(array('pid' => $distribution_id, 'bill_out_id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
+                        M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
+                        
+                        //更新车单信息
+                        D('Distribution', 'Logic')->updDistInfoByIds(array($distribution_id));
+                        continue;
+                    }
 
                     //查看出库单中所有sku是否满足数量需求
                     $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
@@ -110,9 +134,7 @@ class WavePickingLogic{
                     if (!isset($result_arr[$code_mark])) {
                         $result_arr[$code_mark] = array();
                     }
-                    //根据bill_out_id 查询出库单详情
-                    $map['pid'] = $bill_out_info['id'];
-                    $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+                    
                     unset($map);
                     //遍历出库单详情
                     foreach($bill_out_detail_infos as $bill_out_detail_info){
