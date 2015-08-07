@@ -35,7 +35,7 @@ class SkuInfoLogic
         //查询SKU采购信息
         $map['stock_purchase_detail.pro_code']   = array('in', $skuCodeArr);
         $map['stock_purchase_detail.is_deleted'] = 0;
-        $map['stock_purchase.expecting_date']    = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
+        $map['stock_purchase.created_time']    = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
         if ($warehouseId > 0) {
             $map['stock_purchase.wh_id'] = $warehouseId;
         }
