@@ -110,6 +110,7 @@ class IndexController extends Controller {
     public function report() {
 
         $map['mobile'] = session('user.mobile');
+        $map['type']   = '0';
         $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
@@ -345,7 +346,7 @@ class IndexController extends Controller {
                     default:
                         # code...
                         break;
-                };
+                }
                 $val['pay_status'] = $s;
                 $val['geo'] = json_decode($val['geo'],TRUE);
                 foreach ($val['detail'] as &$v) {
@@ -422,7 +423,7 @@ class IndexController extends Controller {
     }
     //司机提货
     public function delivery() {
-        $id = I('post.code/d',0);
+        $id = I('post.code',0);
         if (IS_GET) {
             //只显示当天的记录
             $map['mobile'] = session('user.mobile');
@@ -436,6 +437,11 @@ class IndexController extends Controller {
             $this->display('tms:delivery');
             exit;
         } elseif (IS_POST && !empty($id)) {
+            if (stripos($id,'DT')===0) {
+                $this->dist_id = strtoupper($id);
+                $this->taskDelivery();
+                exit;
+            }
             $map['dist_id'] = $id;
             //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
@@ -496,7 +502,7 @@ class IndexController extends Controller {
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
 
             if ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                //$this->error = '提货失败，该配送单已过期';
             }
             // 用配送单id获取订单详情
             $map['dist_id'] = $id;
@@ -605,7 +611,7 @@ class IndexController extends Controller {
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => 0);
             } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
@@ -781,6 +787,7 @@ class IndexController extends Controller {
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $map['status'] = '1';
+        $map['type'] = '0';
         unset($M);
         $M = M('tms_delivery');
         $data = $M ->where($map)->select();
@@ -830,6 +837,203 @@ class IndexController extends Controller {
         $geo_arrays =json_encode($geo_array,JSON_UNESCAPED_UNICODE);
         $this->ajaxReturn($geo_arrays);
     }
+
+
+    //任务提货
+    private function taskDelivery()
+    {   
+        $id             = $this->dist_id;
+        $map['dist_code'] = $id;
+        $map['status']  = '1';
+        $start_date     = date('Y-m-d',NOW_TIME);
+        $end_date       = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $dist = M('tms_delivery')->field('id,mobile,dist_id')->where($map)->find();// 取出当前提货单信息
+        unset($map);
+        if (!empty($dist)) {//若该配送单已被认领
+            if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
+                $this->error = '领单失败,该单据您已提过';
+            } else {//如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
+                $nodes = M('tms_task_node')->field('status')->where(array('pid' => $dist['dist_id']))->select();
+                foreach ($nodes as $value) {
+                    if($value['status'] != '1') {
+                        $status = '1';//不是已领单,就停止
+                        break;
+                    } else {
+                        $status = '2';
+                    }
+                }
+                if ($status == '2') {//如果别人提的还是已领单，那就还可以提
+                    M('tms_delivery')->save(array('id' => $dist['id'],'status'=>'0'));
+                } else {// 如果别人提了，并且只要一单不是已领单，就不能提了
+                    $this->error = '该配送单已被他人提走并且在配送中,不能被认领';
+                }
+                unset($status);
+            }
+        }
+        $task = M('tms_dispatch_task')->where(array('code' => $id))->find();
+        $ctime = strtotime($task['created_time']);
+        $start_date1 = date('Y-m-d',strtotime('-1 Days'));
+        $end_date1 = date('Y-m-d',strtotime('+1 Days'));
+        if (empty($task)) {
+            $this->error = '领单失败，未找到该单据';
+        } elseif ($task['status'] != '3' && $task['status'] != '4') {//该单据不是配送中或待派车就不能认领
+            //$this->error = '领单失败,该单不能被认领';
+        } elseif ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
+            //$this->error = '领单失败，该任务单已过期';
+        }
+        if (empty($this->error)) {
+            $data['dist_id']      = $task['id'];
+            $data['dist_code']    = $task['code'];
+            $data['mobile']       = session('user.mobile');
+            $data['total_price']  = $task['task_fee'];
+            $data['created_time'] = get_time();
+            $data['updated_time'] = get_time();
+            $data['status']       = '1';
+            $data['line_name']    = $task['task_name'];
+            $data['type']         = '1';
+            $res = M('tms_delivery')->add($data);
+            if ($res) {
+                M('tms_dispatch_task')->save(array('id' => $task['id'],'status'=>'4'));
+                M('tms_task_node')->where(array('pid' => $task['id']))->save(array('status' =>'1'));
+                $this->msg = "提货成功";    
+            } else {
+                $this->error = "提货失败";
+            }
+        }
+        if (empty($this->error)) {
+            $map['mobile'] = session('user.mobile');
+            $userid  = M('tms_user')->field('id')->where($map)->find();
+            $res = array('status' =>'1', 'message' => '提货成功','type' => 1);
+        } else {
+            $msg = $this->error;
+            $res = array('status' =>'0', 'message' =>$msg);
+        }
+        $this->ajaxReturn($res);
+    }
+
+    //配送任务列表
+    public function taskOrders()
+    {
+        $id = I('get.id',0);
+        if(!empty($id)) {
+            $res = M('tms_delivery')->find($id);
+            if(empty($res)) {
+                $this->error = '未找到该提货纪录。';
+            }
+            elseif($res['mobile'] != session('user.mobile')) {
+                $this->error ='不能查看该任务单，您的手机号码与领单人不符合';
+            }
+            if(!empty($this->error)) {
+                $this->title = "客户签收";
+                $this->display('tms:delivery');
+                exit();
+            }
+            $this->dist = $res;
+            $taskList = M('tms_task_node')
+                ->where(array('pid' => $res['dist_id']))
+                ->order(array('created_time' => 'ASC'))
+                ->select();
+            $this->taskCount = count($taskList);
+            foreach ($taskList as &$val) {
+                $val['geo'] = json_decode($val['geo'],TRUE);
+                switch ($val['status']) {
+                    case '1':
+                        $val['status'] = '派遣中';
+                        break;
+                    case '2':
+                        $val['status'] = '已签到';
+                        $this->signed = 1;
+                        break;
+                    case '3':
+                        $val['status'] = '已完成';
+                        $this->over = 1;
+                        break;
+                }
+            }
+            $this->data = $taskList;
+        }
+        $this->title = "任务签到";
+        $this->display('tms:taskorders');
+    }
+
+    //任务签到
+    public function taskSign()
+    {
+        $id  = I('post.id');
+        $res = M('tms_task_node')->save(array('id' => $id,'status' => '2'));
+        if ($res) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '签到成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '签到成功',
+            );
+        }
+
+        $this->ajaxReturn($return);
+    }
+
+    //任务结束
+    public function signFinished()
+    {
+        $dist_id = I('post.id');
+        $nodes = M('tms_task_node')->where(array('pid' => $dist_id))->select();
+        foreach ($nodes as $value) {
+            if($value['status'] != '2') {
+                $status = '1';//不是已签收,就停止
+                break;
+            } else {
+                $status = '2';
+            }
+        }
+        //如果全部签收
+        if ($status == '2') {        
+            $res = M('tms_dispatch_task')->save(array('id' => $dist_id,'status' => '5'));
+            if ($res) {
+                $result = M('tms_task_node')->where(array('pid' => $dist_id))->save(array('status' => '3'));
+            }
+        }
+        if ($result) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '任务结束成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '任务结束失败,你有未签到的任务单',
+            );
+        }
+        $this->ajaxReturn($return);
+    }
+
+    // 司机任务签到收集点
+    public function getPoint()
+    {
+    //"{'id':2,'lng':'12112','lat':'1213','time':'2015-08-09'}"
+        $point = I('post.');
+        //dump($point);exit;
+        $geo = array('lng' => $point['lng'],'lat' => $point['lat']);
+        $geo = json_encode($geo);
+        $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'sign_time' => $point['time']));
+        if ($res) {
+            $return = array(
+                'status' => 1,
+                'msg'    => '收集成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '点位收集失败',
+            );
+        }
+        $this->ajaxReturn($return);
+    }
+    
 
     //根据客户id和报错类型type保存报错信息
     public function report_error(){
