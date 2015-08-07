@@ -73,9 +73,13 @@ class DistController extends Controller {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if ($dist['status'] == '2') {
-                //已发运的单据不能被认领
-                //$this->error = '提货失败，该单据已发运';
+            if ($dist['status'] == '1') {
+                // 未发运的单据不能被认领
+                $this->error = '提货失败，未发运的配送单不能提货';
+            }
+            if ($dist['status'] == '3' || $dist['status'] == '4') {
+                //已配送或已结算的配送单不能认领
+                $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
@@ -145,6 +149,8 @@ class DistController extends Controller {
 
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+                $map['driver_name'] = session('user.username');
+                $map['driver_mobile'] = session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['refer_code'];
                     $map['suborder_id'] = $val['refer_code'];
@@ -200,8 +206,8 @@ class DistController extends Controller {
             $userid  = M('tms_user')->field('id')->where($map)->find();
             $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
         } else {
-                $msg = $this->error;
-                $res = array('status' =>'0', 'message' =>$msg);
+            $msg = $this->error;
+            $res = array('status' =>'0', 'message' =>$msg);
         }
         $this->ajaxReturn($res);     
     }
