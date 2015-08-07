@@ -100,6 +100,8 @@ class WavePickingLogic{
                         M('stock_wave_detail')->where(array('id' => $bill_out_id['id']))->save(array('is_deleted' => 1));
                         //更新波次总单数
                         M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count');
+                        dump($wave_id);
+                        echo M('stock_wave')->getLastSql();
                         //删除出库单 并踢出车单
                         M('stock_wave_distribution_detail')->where(array('pid' => $distribution_id, 'bill_out_id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
                         M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
@@ -125,7 +127,7 @@ class WavePickingLogic{
                     if($is_enough['status'] == 0){
                         //记录出库单ID
                         $rejectOrderArr[] = $bill_out_info['id'];
-                        
+                        echo 'rrrrrr';
                         $data['status'] = 1;
                         //$data['refused_type'] = 2;
                         $map['id'] = $bill_out_info['id'];
@@ -275,6 +277,7 @@ class WavePickingLogic{
            'orderids' => $rejectOrderArr,
            'sumZero'  => $sumZero,
         );
+        dump($hintInfo);exit;
         return array('status'=>1, 'alert' => $hintInfo);
     }
     /**
