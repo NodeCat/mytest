@@ -85,12 +85,10 @@ class WavePickingLogic{
                     foreach ($bill_out_detail_infos as $bill_out_detail_info_pro_qty) {
                         $sku_pro_qty += $bill_out_detail_info_pro_qty['order_qty'];
                     }
-                    dump($key);
                     if ($sku_pro_qty <= 0 && !empty($key)) {
                         //此出库单下SKU出库数量全部为0
                         //获取车单ID
                         $distribution_id = M('stock_wave_distribution')->where(array('dist_code' => $key))->getField('id');
-                        dump($distribution_id);dump($bill_out_id);
                         //将出库单从波次中踢出
                         M('stock_wave_detail')->where(array('id' => $bill_out_id['id']))->save(array('is_deleted' => 1));
                         //删除出库单 并踢出车单
@@ -260,10 +258,12 @@ class WavePickingLogic{
         $map['wh_id'] = session('user.wh_id');
         $map['code'] = 'PACK';
         $pack_info = M('Location')->where($map)->field('id')->find();
+        dump($pack_info);
         unset($map);
         $map['pid'] = $pack_info['id'];
         $pack_location_info = M('Location')->where($map)->field('id')->find();
         $dest_location_id = $pack_location_info['id'];
+        dump($dest_location_id);
         unset($map);
         //开始创建分拣单 按照线路
         foreach($result_arr as $line => $result){
