@@ -603,7 +603,7 @@ class IndexController extends Controller {
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => '0');
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => 0);
             } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
@@ -837,6 +837,7 @@ class IndexController extends Controller {
         $end_date       = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $dist = M('tms_delivery')->field('id,mobile,dist_id')->where($map)->find();// 取出当前提货单信息
+        unset($map);
         if (!empty($dist)) {//若该配送单已被认领
             if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                 $this->error = '领单失败,该单据您已提过';
@@ -891,10 +892,10 @@ class IndexController extends Controller {
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => '1');
+            $res = array('status' =>'1', 'message' => '提货成功','type' => 1);
         } else {
-                $msg = $this->error;
-                $res = array('status' =>'0', 'message' =>$msg);
+            $msg = $this->error;
+            $res = array('status' =>'0', 'message' =>$msg);
         }
         $this->ajaxReturn($res);
     }
@@ -930,6 +931,7 @@ class IndexController extends Controller {
                         break;
                     case '2':
                         $val['status'] = '已签到';
+                        $this->signed = 1;
                         break;
                     case '3':
                         $val['status'] = '已完成';

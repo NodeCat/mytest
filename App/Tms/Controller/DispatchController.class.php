@@ -128,6 +128,7 @@ class DispatchController extends Controller{
         $mobile = I('get.mobile');
         $sign_msg = M('tms_sign_list')->find($id);
         $map['status'] = '1';
+        $map['type']   = '0';
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['mobile'] = $mobile ;
         $line = M('tms_delivery')->field('line_name')->where($map)->select();
@@ -155,6 +156,31 @@ class DispatchController extends Controller{
         $this->assign('address',$customerAddress['geo_arrays']);
         $this->assign('points',$location['points']);
         $this->display('tms:line');
+    }
+
+    // 任务详情轨迹
+    public function lines() {
+        $id = I('get.id');
+        $task= M('tms_dispatch_task')->field('code,distance,take_time')->find($id);
+        $nodes = M('tms_task_node')->where(array('pid'=>$id))->select();
+        $this->customer_count = count($nodes);
+        foreach ($nodes as &$value) {
+            if ($value['status'] == '2' || $value['status'] == '3' ) {
+                $value['color_type'] = 3;
+            } else {
+                $value['color_type'] = 0;
+            }
+            $value['geo']     = isset($value['geo']) ? json_decode($value['geo'],true) : '';
+            $value['geo_new'] = isset($value['geo']) ? json_decode($value['geo_new'],true) : '';
+
+        }
+        $code = $task['code'];
+        $location = S(md5($code));
+        $this->time=json_decode($task['take_time'],true);
+        $this->distance = $task['distance'];
+        $this->assign('address',$nodes);
+        $this->assign('points',$location['points']);
+        $this->display('tms:lines');
     }
 
 

@@ -10,7 +10,7 @@
   <div class="input-group">
       <span class="input-group-addon">
       <i class="glyphicon glyphicon-pencil"></i>
-    	</span>
+      </span>
       <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" placeholder="请输入提货码">
     </div>
   </div>
@@ -44,7 +44,7 @@
       <p class="list-group-item-text"> &nbsp;&nbsp;
         <i class="glyphicon glyphicon-list-alt"></i> {$vo.order_count} 订单&nbsp;&nbsp;
         <i class="glyphicon glyphicon-th-large"></i> {$vo.line_count} 种 &nbsp;&nbsp;
-        <i class="glyphicon glyphicon-th"></i> {$vo.sku_count} 件 &nbsp;&nbsp;	
+        <i class="glyphicon glyphicon-th"></i> {$vo.sku_count} 件 &nbsp;&nbsp; 
       </p>
     </a>
   <else />
@@ -59,42 +59,43 @@
 
 
 <style type="text/css">
-	hr{
+  hr{
 margin-top: 10px;
   margin-bottom: 10px;
-  	}
+    }
 
 </style>
 
 <script type="text/javascript">
 $('#sub').on('click',function(){
-        var code = $('#code').val();
-        var addr = "{:U('Index/delivery')}";
-        $.ajax({
-          url:addr,
-          type:'post',
-          cache :false,
-          dataType:'json',
-          async:true,
-          data:{"code":code},
-          success: function(msg){
-            if(msg.status=='0'){
-              alert(msg.message);
-              if(typeof HostApp != "undefined"){ 
-                HostApp.toast(msg.message);
-              }
-            }else if(msg.status=='1'){
-              alert(msg.message);
-              if(typeof HostApp != "undefined"){
-                HostApp.toast(msg.message);
-                HostApp.startLocate(msg.code,msg.type);
-                HostApp.toast('计程开始,请不要退出');
-              }
-              
-            }
-            location.reload();
-          },
-        });
-    });
+  var code = $('#code').val();
+  var addr = "{:U('Index/delivery')}";
+  $.ajax({
+    url:addr,
+    type:'post',
+    cache :false,
+    dataType:'json',
+    async:true,
+    data:{"code":code},
+    success: function(msg){
+    if(msg.status=='0'){
+      alert(msg.message);
+      if(typeof HostApp != "undefined"){ 
+        HostApp.toast(msg.message);
+      }
+      }else if(msg.status=='1'){
+        alert(msg.message);
+        if(typeof HostApp != "undefined"){
+          HostApp.toast(msg.message);
+          if (msg.type == 0) {
+            HostApp.startLocate(msg.code,msg.type);
+            HostApp.toast('计程开始,请不要退出');
+          }
+        }
+      }
+      location.reload();
+    },
+  });
+});
 
 </script>

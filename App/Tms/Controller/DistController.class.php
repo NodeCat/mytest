@@ -196,7 +196,7 @@ class DistController extends Controller {
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'tyep' => 0);
         } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
