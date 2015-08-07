@@ -67,7 +67,6 @@ class WavePickingLogic{
                     $bill_out_info = M('stock_bill_out')->where($map)->find();
                     unset($map);
                     
-                    $is_enough = true;
                     $is_continue_qty = false;
                     $is_continue_stock = false;
 
@@ -118,7 +117,6 @@ class WavePickingLogic{
                             $is_continue_qty = true;
                         }
                     }
-
                     //查看出库单中所有sku是否满足数量需求
                     if ($is_continue_qty == false) {
                         $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
