@@ -264,6 +264,25 @@ class DispatchTaskController extends Controller
         $task['car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($task['car_type']);
         $task['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($task['driver_id']);
         $this->task = $task;
+        //显示轨迹
+        $nodes = M('tms_task_node')->where(array('pid'=>$id))->select();
+        $this->customer_count = count($nodes);
+        foreach ($nodes as &$value) {
+            if ($value['status'] == '2' || $value['status'] == '3' ) {
+                $value['color_type'] = 3;
+            } else {
+                $value['color_type'] = 0;
+            }
+            $value['geo']     = isset($value['geo']) ? json_decode($value['geo'],true) : '';
+            $value['geo_new'] = isset($value['geo']) ? json_decode($value['geo_new'],true) : '';
+
+        }
+        $code = $task['code'];
+        $location = S(md5($code));
+        $this->time=json_decode($task['take_time'],true);
+        $this->distance = $task['distance'];
+        $this->assign('address',$nodes);
+        $this->assign('points',$location['points']);
         $this->display('DispatchTask:task-detail');
     }
 

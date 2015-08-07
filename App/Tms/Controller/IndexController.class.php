@@ -947,6 +947,7 @@ class IndexController extends Controller {
                         break;
                     case '3':
                         $val['status'] = '已完成';
+                        $this->signed = 1;
                         $this->over = 1;
                         break;
                 }
