@@ -109,8 +109,8 @@ class SettlementLogic
             $where['stock_purchase_out.' . $key] = $val;
         }
 
-        $where['stock_purchase_out.status'] = 'refunded';    //已出库状态
-        $where['stock_purchase_out.receivables_state'] = 'wait';        //已收款状态
+        $where['stock_purchase_out.status'] = 'refunded';               //已出库状态
+        $where['stock_purchase_out.receivables_state'] = 'wait';        //待收款状态
 
         $model = M('stock_purchase_out');
 

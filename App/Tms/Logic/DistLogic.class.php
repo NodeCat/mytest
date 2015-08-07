@@ -76,7 +76,6 @@ class DistLogic {
         $price = round($price, 1);
         return $price;
     }
-
     /**
      * [getCatesByType 按类型获取如车型、平台、任务类型等数据]
      * @return [type] [description]
@@ -169,5 +168,27 @@ class DistLogic {
             '6' => '未通过',
         );
         return $task_type;
+    }
+    
+    /**
+     * [get_delivery_fee 根据车型、公里数获取运费价格最便宜的运力平台及运费]
+     * @param  [int] $car_type     [车型]
+     * @param  [int] $mile         [公里数]
+     * @return [array] $result        [运力平台及运费价格]
+     */
+    public function get_delivery_fee($car_type = 0, $mile = 0) 
+    {
+        $result = array();
+        $map['car_type']     = $car_type;
+        $map['min_mile']     = array('lt',$mile);
+        $map['max_mile']     = array('egt',$mile);
+        $map['is_deleted']   = 0;
+        $M = M('tms_delivery_fee');
+        $res = $M->where($map)->order('price asc')->find();
+        if (!empty($res)) {
+            $result['price']        = $res['price'];
+            $result['car_platform'] = $res['car_platform'];
+        }
+        return $result;
     }
 }

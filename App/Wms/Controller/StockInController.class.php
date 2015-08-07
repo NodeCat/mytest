@@ -778,14 +778,24 @@ class StockInController extends CommonController {
         }
 
         //查询收货区库位
-        $map['code'] = '001-001';
+        $map['code'] = 'WORK-01';
         $map['wh_id'] = session('user.wh_id');
         $rev_location_info = M('location')->where($map)->find();
         unset($map);
 
         if(empty($rev_location_info['id'])){
-        	$this->msgReturn(0,'请添加库位001-001');
+        	$this->msgReturn(0,'请添加库位WORK-01');
         }
+
+        //查询到货单信息
+        $map['id'] = array('in',$ids);
+        $stock_bill_in_infos = M('stock_bill_in')->where($map)->select();
+        foreach($stock_bill_in_infos as $stock_bill_in_info){
+        	if($stock_bill_in_info['status'] == 33){
+        		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
+        	}
+        }
+        unset($map);
 
         //根据到货单查询相关SKU信息
         $map['stock_bill_in_detail.pid'] = array('in',$ids);

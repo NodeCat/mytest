@@ -24,7 +24,11 @@ class LocationLogic{
         foreach($location_infos as $location_info){
             $location_id[] = $location_info['id'];
         }
-
+        //@如果库查不到库位 则返回空 liuguangping 2015-08-06 解决因为库位id 不影响下面的sql 语句
+        $location_ids = array();
+        if (!$location_id) {
+            return $location_ids;
+        } 
         $map['pid'] = array('in',$location_id);
         $area_location_infos = M('Location')->where($map)->field('id')->select();
 
