@@ -57,7 +57,10 @@ class WavePickingLogic{
                 //这个车单下是否有订单创建了分拣任务
                 $orderSumTask = 0;
                 //遍历出库单id
+                $continue_num = 0; //已经循环次数
+                $dist_group_long = count($dist_group); //循环数组长度
                 foreach($dist_group as $bill_out_id){
+                    $continue_num++;
                     //根据bill_out_id 查询出库单信息
                     $map['id'] = $bill_out_id['bill_out_id'];
                     $bill_out_info = M('stock_bill_out')->where($map)->find();
@@ -85,7 +88,7 @@ class WavePickingLogic{
                     foreach ($bill_out_detail_infos as $bill_out_detail_info_pro_qty) {
                         $sku_pro_qty += $bill_out_detail_info_pro_qty['order_qty'];
                     }
-                    if ($sku_pro_qty <= 0 && !empty($key)) {
+                    if ($sku_pro_qty <= 0) {
                         //此出库单下SKU出库数量全部为0
                         //获取车单ID
                         $distribution_id = M('stock_wave_distribution')->where(array('dist_code' => $key))->getField('id');
@@ -97,7 +100,11 @@ class WavePickingLogic{
                         
                         //更新车单信息
                         D('Distribution', 'Logic')->updDistInfoByIds(array($distribution_id));
-                        continue;
+                        //总数量-1
+                        $this->order_max = $this->order_max - 1;
+                        if ($continue_num < $dist_group_long) {
+                            continue;
+                        }
                     }
 
                     //查看出库单中所有sku是否满足数量需求
@@ -122,7 +129,9 @@ class WavePickingLogic{
                         unset($data);
                         //把订单 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
                         A('Distribution', 'Logic')->getReduceSkuCodesAndUpdate(array($bill_out_info['id']));
-                        continue;
+                        if ($continue_num < $dist_group_long) {
+                            continue;
+                        }
                     }
 
                     //按照line_id 创建数组 OR 根据配送单号创建数组
@@ -193,13 +202,12 @@ class WavePickingLogic{
             //查询当前仓库的发货区的location_id
             $map['wh_id'] = session('user.wh_id');
             $map['code'] = 'PACK';
-            $pack_info = M('Location')->where($map)->field('id')->find();
+            $pack_info = M('location')->where($map)->field('id')->find();
             unset($map);
             $map['pid'] = $pack_info['id'];
             $pack_location_info = M('Location')->where($map)->field('id')->find();
             $dest_location_id = $pack_location_info['id'];
             unset($map);
-            
             //处理剩余的线路数据
             if (!empty($result_arr)) {
                 foreach($result_arr as $line => $result){
@@ -258,12 +266,10 @@ class WavePickingLogic{
         $map['wh_id'] = session('user.wh_id');
         $map['code'] = 'PACK';
         $pack_info = M('Location')->where($map)->field('id')->find();
-        dump($pack_info);
         unset($map);
         $map['pid'] = $pack_info['id'];
         $pack_location_info = M('Location')->where($map)->field('id')->find();
         $dest_location_id = $pack_location_info['id'];
-        dump($dest_location_id);
         unset($map);
         //开始创建分拣单 按照线路
         foreach($result_arr as $line => $result){
