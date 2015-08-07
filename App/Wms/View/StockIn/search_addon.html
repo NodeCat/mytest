@@ -18,8 +18,23 @@ $(document).on('click','#print-page',function(){
   window.open(url);
 });
 $(document).on('click','#on-all',function(){
-  var ids = getChecked();
-  var url = "/StockIn/onall?id="+ids;
-  window.open(url);
+  var _ids = getChecked();
+  var _url = "/StockIn/onall";
+  //提交数据到后端处理
+  $.ajax({
+    url:_url,
+    type:'post',
+    cache : false,
+    dataType:'json',
+    data:'id='+_ids,
+    success: function(json){
+      if(json.status == 0){
+        alert(json.msg);
+      }else{
+        alert('上架成功');
+        refresh_list();
+      }
+    }
+  });
 });
 </script>

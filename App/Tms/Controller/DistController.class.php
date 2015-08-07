@@ -1,6 +1,8 @@
 <?php
 namespace Tms\Controller;
+
 use Think\Controller;
+
 class DistController extends Controller {
 
 	//司机提货
@@ -71,9 +73,13 @@ class DistController extends Controller {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if ($dist['status'] == '2') {
-                //已发运的单据不能被认领
-                //$this->error = '提货失败，该单据已发运';
+            if ($dist['status'] == '1') {
+                // 未发运的单据不能被认领
+                $this->error = '提货失败，未发运的配送单不能提货';
+            }
+            if ($dist['status'] == '3' || $dist['status'] == '4') {
+                //已配送或已结算的配送单不能认领
+                $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
@@ -143,6 +149,8 @@ class DistController extends Controller {
 
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+                $map['driver_name'] = session('user.username');
+                $map['driver_mobile'] = session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['refer_code'];
                     $map['suborder_id'] = $val['refer_code'];
@@ -198,8 +206,8 @@ class DistController extends Controller {
             $userid  = M('tms_user')->field('id')->where($map)->find();
             $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'tyep' => 0);
         } else {
-                $msg = $this->error;
-                $res = array('status' =>'0', 'message' =>$msg);
+            $msg = $this->error;
+            $res = array('status' =>'0', 'message' =>$msg);
         }
         $this->ajaxReturn($res);     
     }
@@ -248,7 +256,11 @@ class DistController extends Controller {
                     $val['deliver_fee']     = $val['order_info']['deliver_fee'];
                     $val['final_price']     = $val['order_info']['final_price'];
                     $val['receivable_sum']  = $val['order_info']['final_price'];
-                    $val['real_sum']        = $A->wipeZero($val['order_info']['final_price']);
+                    if ($val['pay_status'] != '已付款') {
+                        $val['real_sum']   = $A->wipeZero($val['order_info']['final_price']);
+                    } else {
+                       $val['real_sum']    = $val['order_info']['final_price'];
+                    }
                     $val['sign_msg']        = $val['order_info']['sign_msg'];
                     $val['user_id']         = $val['order_info']['user_id'];
                     //收获地址坐标
@@ -378,7 +390,11 @@ class DistController extends Controller {
         $A = A('Tms/Dist','Logic');
         $receivable_sum -= $orderInfo['info']['minus_amount'];
         $receivable_sum += $orderInfo['info']['deliver_fee'];
-        $deal_price = $A->wipeZero($receivable_sum);
+        if ($orderInfo['info']['pay_status'] != 1) {
+            $deal_price = $A->wipeZero($receivable_sum);
+        } else {
+            $deal_price = $receivable_sum;
+        }
         $sign_msg = I('post.sign_msg', '' ,'trim');
         //签收表主表数据
         $fdata = array(
@@ -422,7 +438,7 @@ class DistController extends Controller {
                 $bill_out_detail_ids = array_keys($bill_id_details);
                 $bdmap['bill_out_detail_id'] = array('in', $bill_out_detail_ids);
                 $sdM = M('tms_sign_in_detail');
-                $sdM->where($map)->save(array('is_deleted' => 1));
+                $sdM->where($bdmap)->save(array('is_deleted' => 1));
                 //添加签收详情数据
                 $sdM->addAll($cdata);
                 //更新配送单详情－>配送单状态
@@ -627,13 +643,16 @@ class DistController extends Controller {
                  
             }  
         }
-            
+
         $list['dist_id'] = $res['dist_id'];
         $list['sum_deal_price']  = $sum_deal_price;//回款数
         $list['sign_orders'] = $sign_orders;//已签收
         $list['unsign_orders'] = $unsign_orders;//未签收
         $list['sign_finished']  = $sign_finished;  // 已完成
         $list['delivering'] = $all_orders - $sign_orders - $unsign_orders - $sign_finished;//派送中
+        $L = A('Fms/List','Logic');
+        $status = $L->can_pay($res['dist_id']);
+        $this->status = $status;
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';

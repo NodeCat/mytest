@@ -1,0 +1,3 @@
+ALTER TABLE `stock_bill_out` ADD `act_delivery_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' COMMENT '实际发运时间' AFTER `order_type`;
+ALTER TABLE `stock_bill_in_detail` ADD `receipt_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' COMMENT '收货时间' AFTER `is_deleted`, ADD `shelves_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' COMMENT '上架时间' AFTER `receipt_date`;
+ALTER TABLE `stock_bill_out_detail` ADD `act_delivery_date` DATETIME NULL DEFAULT '0000-00-00 00:00:00' COMMENT '实际发货时间' AFTER `measure_unit`;

@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class DispatchController extends Controller{
+class DispatchController extends \Common\Controller\AuthController{
 
 	protected $columns = array (   
         'username'     => '姓名',   
@@ -23,6 +23,9 @@ class DispatchController extends Controller{
         'mark'         => '备注',
          
     );
+    public function home () {
+        $this->display('Index/index');
+    }
     protected $car = array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
         'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
@@ -113,9 +116,10 @@ class DispatchController extends Controller{
             }
         }
         if (defined('VERSION')) {
-            $this->car['warehouse'] = array(8 =>'北京北仓');
+            $this->car['warehouse'] = array(8 =>'北京北仓',7 =>'北京白盆窑仓库');
         } else {
             unset($this->car['warehouse'][8]);
+            unset($this->car['warehouse'][7]);
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);

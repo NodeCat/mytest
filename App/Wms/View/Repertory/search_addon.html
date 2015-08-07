@@ -1,0 +1,127 @@
+<button type="button" data-title="导出" id="export" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" ><i class="glyphicon glyphicon-pencil"></i> 导出</button>
+<script type="text/javascript">
+$(function(){
+    $("#export").prev().children().find('a').remove();
+    $("#export").prev().addClass('col-lg-2');
+    var url = '/category/getCatInfoByPid';
+    var param = {};
+    var callback = function(json){
+        if(json.status == 0){
+            var _all_option = '<option value="">全部</option>';
+            $("select[name='query[stock_snap.category2]']").empty();
+            $("select[name='query[stock_snap.category2]']").append(_all_option);
+            $("select[name='query[stock_snap.category3]']").empty();
+            $("select[name='query[stock_snap.category3]']").append(_all_option);
+            return false;
+        }
+        if(json.status == 1){
+            //清空 二级 三级分类
+            var _all_option = '<option value="">全部</option>';
+            $("select[name='query[stock_snap.category2]']").empty();
+            $("select[name='query[stock_snap.category2]']").append(_all_option);
+            $("select[name='query[stock_snap.category3]']").empty();
+            $("select[name='query[stock_snap.category3]']").append(_all_option);
+            var _cat_info = json.data;
+            var _cat_1_option =  '<option value="">全部</option>';
+            for(var i = 0; i<_cat_info.length;i++){
+                //拼接cat_1的数据
+                _cat_1_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+            }
+
+            //追加一级分类的option
+            $("select[name='query[stock_snap.category1]']").html(_cat_1_option);
+        }
+
+    };
+    $.post(url,param,callback,'json');
+
+    $("select[name='query[stock_snap.category1]']").change(function(){
+        //获得当前option的值
+        var _cat_1_id = $(this).val();
+        //查询子分类信息
+        $.ajax({
+            url: '/category/getCatInfoByPid?pid='+_cat_1_id+'&level=top',
+            dataType: "json",
+            type: "GET",
+            cache: false,
+            success: function(json){
+                if(json.status == 0){
+                    var _all_option = '<option value="">全部</option>';
+                    $("select[name='query[stock_snap.category2]']").empty();
+                    $("select[name='query[stock_snap.category2]']").append(_all_option);
+                    $("select[name='query[stock_snap.category3]']").empty();
+                    $("select[name='query[stock_snap.category3]']").append(_all_option);
+                    return false;
+                }
+                if(json.status == 1){
+                    //清空 二级 三级分类
+                    var _all_option = '<option value="">全部</option>';
+                    $("select[name='query[stock_snap.category2]']").empty();
+                    $("select[name='query[stock_snap.category2]']").append(_all_option);
+                    $("select[name='query[stock_snap.category3]']").empty();
+                    $("select[name='query[stock_snap.category3]']").append(_all_option);
+                    var _cat_info = json.data;
+                    var _cat_2_option = '';
+                    for(var i = 0; i<_cat_info.length;i++){
+                        //拼接cat_2的数据
+                        _cat_2_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+                    }
+
+                    //追加二级分类的option
+                    $("select[name='query[stock_snap.category2]']").append(_cat_2_option);
+                }
+            }
+        });
+    });
+
+    $("select[name='query[stock_snap.category2]']").change(function(){
+        //获得当前option的值
+        var _cat_2_id = $(this).val();
+        //查询子分类信息
+        $.ajax({
+            url: '/category/getCatInfoByPid?pid='+_cat_2_id+'&level=second',
+            dataType: "json",
+            type: "GET",
+            cache: false,
+            success: function(json){
+                if(json.status == 0){
+                    var _all_option = '<option value="">全部</option>';
+                    $("select[name='query[stock_snap.category3]']").empty();
+                    $("select[name='query[stock_snap.category3]']").append(_all_option);
+                    return false;
+                }
+                if(json.status == 1){
+                    //清空 二级 三级分类
+                    var _all_option = '<option value="">全部</option>';
+                    $("select[name='query[stock_snap.category3]']").empty();
+                    $("select[name='query[stock_snap.category3]']").append(_all_option);
+                    var _cat_info = json.data;
+                    var _cat_3_option = '';
+                    for(var i = 0; i<_cat_info.length;i++){
+                        //拼接cat_2的数据
+                        _cat_3_option += '<option value="'+_cat_info[i].id+'">'+_cat_info[i].name+'</option>';
+                    }
+
+                    //追加二级分类的option
+                    $("select[name='query[stock_snap.category3]']").append(_cat_3_option);
+                }
+            }
+        });
+    });
+
+    $(document).on('click','#export',function(msg){
+        var wh_id = ($("select[name='query[stock_snap.wh_id]']").val() == '全部') ? '' : $("select[name='query[stock_snap.wh_id]']").val();
+        var start_time = $("input[name='query[stock_snap.snap_time]']").val() ? $("input[name='query[stock_snap.snap_time]']").val() :'';
+        var end_time = $("input[name='query[stock_snap.snap_time_1]']").val() ? $("input[name='query[stock_snap.snap_time_1]']").val() :'';
+
+        var ids = getChecked();
+
+        if (!start_time || !end_time) {
+            alert('请选择导出日期');
+            return false;
+        }
+        var url   = "{:U('Repertory/exportData')}"+'?wh_id='+wh_id+"&start_time="+start_time+"&end_time="+end_time+"&ids="+ids;
+        window.location.href = url;
+    });
+});
+</script>

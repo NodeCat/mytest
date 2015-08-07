@@ -31,11 +31,11 @@ class SkuInfoLogic
         if (empty($skuCodeArr)) {
             return $return;
         }
+        
         //查询SKU采购信息
-        $map['stock_purchase_detail.pro_code'] = array('in', $skuCodeArr);
+        $map['stock_purchase_detail.pro_code']   = array('in', $skuCodeArr);
         $map['stock_purchase_detail.is_deleted'] = 0;
-        $map['stock_purchase.expecting_date'] = array('gt', date('Y-m-d H:i:s', $stime));
-        $map['stock_purchase.expecting_date'] = array('lt', date('Y-m-d H:i:s', $etime));
+        $map['stock_purchase.created_time']    = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
         if ($warehouseId > 0) {
             $map['stock_purchase.wh_id'] = $warehouseId;
         }
@@ -44,16 +44,30 @@ class SkuInfoLogic
                               ->join('stock_purchase ON stock_purchase.id=stock_purchase_detail.pid')
                               ->where($map)->select();
         unset($map);
-        if (empty($purchaseDetail)) {
+        //查询加工信息
+        $map['erp_process_in_detail.pro_code']   = array('in', $skuCodeArr);
+        $map['erp_process_in_detail.is_deleted'] = 0;
+        $map['erp_process_in.created_time']      = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
+        if ($warehouseId > 0) {
+            $map['erp_process_in.wh_id'] = $warehouseId;
+        }
+        $erpProcessInDetail = M('erp_process_in_detail')
+                              ->field('pro_code,real_qty as pro_qty,price as price_unit')
+                              ->join('erp_process_in ON erp_process_in.id=erp_process_in_detail.pid')
+                              ->where($map)->select();
+        unset($map);
+        
+        if (empty($erpProcessInDetail) && empty($purchaseDetail)) {
             return $return;
         }
+        $mergeDetail = array_merge($erpProcessInDetail, $purchaseDetail);
         //按照SKU将数据分类
-        foreach ($purchaseDetail as $key => $detail) {
-            $purchaseDetail[$detail['pro_code']][] = $detail;
-            unset($purchaseDetail[$key]);
+        foreach ($mergeDetail as $key => $detail) {
+            $mergeDetail[$detail['pro_code']][] = $detail;
+            unset($mergeDetail[$key]);
         }
         
-        foreach ($purchaseDetail as $k => $value) {
+        foreach ($mergeDetail as $k => $value) {
             $index = strval($k) . '#';
             //BCMATH高精度运算
             $total_num   = 0; //总数量
@@ -67,7 +81,6 @@ class SkuInfoLogic
                 $return[$index] = bcdiv($total_price, $total_num, 2);
             }
         }
-        
         return $return;
     }
     
@@ -94,8 +107,7 @@ class SkuInfoLogic
             $map['stock_bill_out.wh_id'] = $warehouseId;
         }
         $map['stock_bill_out.type']  = 1; //销售类型
-        $map['stock_bill_out.delivery_date'] = array('gt', date('Y-m-d H:i:s', $stime));
-        $map['stock_bill_out.delivery_date'] = array('lt', date('Y-m-d H:i:s', $etime));
+        $map['stock_bill_out.op_date'] = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
         $stockOutDetail = M('stock_bill_out_detail')
                               ->field('pro_code,SUM(delivery_qty) as qty')
                               ->join('stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid')
@@ -164,7 +176,6 @@ class SkuInfoLogic
                 $return[] = $value['pro_code'];
             }
         }
-        
         return $return;
     }
 }

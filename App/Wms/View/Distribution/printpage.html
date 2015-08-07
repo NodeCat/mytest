@@ -92,6 +92,7 @@
         <table class="table table-condensed table-bordered table-striped">
           <thead>
             <tr>
+              <td>序号</td>
               <td>货品号</td>
               <td>产品名称</td>
               <!--<td>规格</td>-->
@@ -102,6 +103,7 @@
           <tbody>
             <volist name="attrs['sku_list']" id="detail">
               <tr>
+              	<td>{$i}</td>
                 <td>{$detail.pro_code}</td>
                 <td>{$detail.pro_name}</td>
                 <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
@@ -115,6 +117,7 @@
               <td colspan="1"></td>
               <td>{$attrs.sku_count}</td>
               <td>{$delivery_sku_count_group}</td>
+              <td></td>
             </tr>
           </tbody>
         </table>

@@ -1,4 +1,4 @@
-
+<br/>
 <div class="row-fluid">
 <form class="form-horizontal form-pda form-scan" action="{:U('Order/index')}" method="POST">
   <div class="row-fluid">
@@ -18,7 +18,7 @@
  <div class="col-md-2 col-xs-6 col-md-offset-1">
 <notempty name="data">
   <if condition="($data['status_cn'] eq '已签收') OR ($data['status_cn'] eq '已拒收')">
-<a href="{:U('replace','id='.$data['refer_code'])}" class="btn-sign btn btn-lg btn-success btn-block">重置订单状态</a>
+<a href="{:U('reset','id='.$data['refer_code'])}" class="btn-sign btn btn-lg btn-success btn-block">重置订单状态</a>
   </if>
 </notempty>
  </div>
@@ -166,7 +166,7 @@
     </div>
   </form>
   <if condition="($data.status_cn eq '已完成') AND ($data.pay_status neq '已付款')">
-    <form class="form-inline" action="{:U('Order/modify')}" method="POST">
+    <form class="form-inline" action="{:U('Order/pay')}" method="POST">
       <input type="hidden" name="order_id" value="{$data.refer_code}" />
       <input type="hidden" name="bill_id" value="{$data.id}" />
       <input type="hidden" name="deposit_sum" value="{$data.deposit_sum}" />

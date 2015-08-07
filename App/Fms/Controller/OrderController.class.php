@@ -4,11 +4,7 @@ class OrderController extends \Common\Controller\AuthController {
 
 	public function index() 
     {
-        if (IS_POST) {
-            $order_id = I('post.id',0);
-        } elseif (IS_GET) {
-            $order_id = I('get.id',0);
-        }
+        $order_id = I('id',0);
         
         if ($order_id) {
             $map['refer_code'] = $order_id;
@@ -154,7 +150,7 @@ class OrderController extends \Common\Controller\AuthController {
         $this->display('tms:order_pay');
     }
     //重置订单状态
-    public function replace()
+    public function reset()
     {
         $order_id = I('get.id',0);
         $map['refer_code'] = $order_id;
@@ -175,12 +171,14 @@ class OrderController extends \Common\Controller\AuthController {
         $fms_list = A('Fms/List','Logic');
         //查询订单是否有退货，并且已创建拒收入库单
         $is_can = $fms_list->can_replace($bill_out_id);
-        if ($is_can) {
+        if ($is_can == 2) {
             $this->error('此订单有退货且已经交货，不能重置订单状态。');exit;
         }
         $dist_detail_id = $dist_detail_id['id'];
         $data['status']     = 1; //重置为已装车状态
         $data['real_sum']   = 0; //实收金额置0
+        $data['deposit']    = 0;
+        $data['wipe_zero']  = 0;
         $data['sign_msg']   = '';
         $data['reject_reason'] = '';
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
@@ -203,12 +201,14 @@ class OrderController extends \Common\Controller\AuthController {
         $map['cur']['name'] = '财务'.session('user.username');
         $res2 = $A->set_status($map);
 
-        if ($res && $res1 && $res2) {
+        if ($res && $res1) {
             $this->success('重置成功！',U('Order/index',array('id' => $order_id)),2);
+        } else {
+            $this->error('重置失败！');
         }
     }
     //修改订单实收金额，减去抹零和押金
-    public function modify()
+    public function pay()
     {
         $order_id = I('post.order_id',0);
         $bill_id  = I('post.bill_id',0);
@@ -218,6 +218,10 @@ class OrderController extends \Common\Controller\AuthController {
         $deposit_sum   = I('post.deposit_sum',0);
         $deal_price    = I('post.deal_price',0);
         $sign_msg      = I('post.sign_msg',0);
+
+        if ($wipezero == 0 && $deposit == 0){
+            $this->error('输入的抹零或押金有误！');exit;
+        }
         
         if ($wipezero < 0 || $deposit < 0){
             $this->error('输入的抹零或押金有误！');exit;

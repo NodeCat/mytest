@@ -53,10 +53,11 @@ class CommonController extends AuthController {
         //将参数并入$condition
         $get_len = count($get);
         for ($i = 0;$i < $get_len;++$i) {
-            if(array_key_exists($get[$i], $query) && !array_key_exists($get[$i], $condition)) {
+            if((array_key_exists($get[$i], $query) || array_key_exists(str_replace('_1', '', $get[$i]), $query)) && !array_key_exists($get[$i], $condition)) {
                 $condition[$get[$i]] = $get[++$i];
             }
         }
+
         $this->condition = $condition;
         !empty($condition) && $this->filter_list($condition, '1');//反向转义，反向转filter
         if(!empty($condition)){
@@ -236,6 +237,13 @@ class CommonController extends AuthController {
         
         $data = $M->select();//真正的数据查询在这里生效
         $count  = $M2->page()->limit()->count();//获取查询总数
+        //进销存分页总数统计
+        $count_param = array(
+            'model' => $M2,
+            'map'   => $map,
+            'count' => &$count,
+        );
+        $this->after($count_param,'count');
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换
         $this->data = $data;
@@ -638,7 +646,7 @@ class CommonController extends AuthController {
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;
         if(empty($template)){
-           $template= IS_AJAX ? 'Table:list':'Table:index';
+           $template= IS_AJAX ? 'Table/list':'Table/index';
         }
         $this->display($template);
     }
@@ -665,7 +673,7 @@ class CommonController extends AuthController {
         $this->pageinfo = $Page->nowPage.'/'.$Page->totalPages;
         $this->jump_url = $Page->jump_url;
         if(empty($template)){//这里根据是否ajax显示不同的模版
-           $template= IS_AJAX ? 'Table:list':'Table:index';
+           $template= IS_AJAX ? 'Table/list':'Table/index';
         }
         $this->display($template);
     }

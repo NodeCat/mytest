@@ -617,6 +617,12 @@ class StockInController extends CommonController {
             $this->msgReturn(0, '请选择入库类型');
             return;
         }
+
+        if(count($pros) > 150){
+        	$this->msgReturn(0, '一次提交的产品不能超过150个');
+            return;
+        }
+
         $stock_type = M('stock_bill_in_type');
         $type_name = $stock_type->field('type')->where(array('id' => $type))->find();
         $numbs = M('numbs');
@@ -730,7 +736,7 @@ class StockInController extends CommonController {
             //$purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
         }
 
-        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes,150);
 
         //拼接模板
         foreach($pro_codes as $key => $pro_code){
@@ -772,14 +778,24 @@ class StockInController extends CommonController {
         }
 
         //查询收货区库位
-        $map['code'] = '001-001';
+        $map['code'] = 'WORK-01';
         $map['wh_id'] = session('user.wh_id');
         $rev_location_info = M('location')->where($map)->find();
         unset($map);
 
         if(empty($rev_location_info['id'])){
-        	$this->msgReturn(0,'请添加库位001-001');
+        	$this->msgReturn(0,'请添加库位WORK-01');
         }
+
+        //查询到货单信息
+        $map['id'] = array('in',$ids);
+        $stock_bill_in_infos = M('stock_bill_in')->where($map)->select();
+        foreach($stock_bill_in_infos as $stock_bill_in_info){
+        	if($stock_bill_in_info['status'] == 33){
+        		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
+        	}
+        }
+        unset($map);
 
         //根据到货单查询相关SKU信息
         $map['stock_bill_in_detail.pid'] = array('in',$ids);
@@ -809,8 +825,16 @@ class StockInController extends CommonController {
         	$status = 'qualified';
         	$product_date = date('Y-m-d');
         	//直接上架
-        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
+        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
         }
+
+        //更新到货单状态为已上架
+        $map['wh_id'] = session('user.wh_id');
+        $map['id'] = array('in',$ids);
+        $data['status'] = 33;
+        M('stock_bill_in')->where($map)->save($data);
+        unset($map);
+        unset($data);
 
         $this->msgReturn(1);
     }
