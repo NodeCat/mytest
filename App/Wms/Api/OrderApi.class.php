@@ -7,8 +7,10 @@ namespace Wms\Api;
 use Think\Controller;
 class OrderApi extends CommApi{
     //根据订单 创建出库单
-    public function addBillOut(){
-        $order_ids = I('orderIds');
+    public function addBillOut($order_ids=''){
+        if(empty($order_ids)) {
+            $order_ids = I('orderIds');
+        }
         if(empty($order_ids)){
             $return = array('error_code' => '101', 'error_message' => 'param is empty' );
             $this->ajaxReturn($return);

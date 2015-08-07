@@ -10,42 +10,6 @@ class ListLogic{
 
 		return $storge;
 	}
-	/*
-     *功   能：根据配送单id查询客退入库单状态
-     *输入参数：$dist_id,配送单id
-    */
-    public function view_return_goods_status($dist_id){
-        $status = false;
-        if(!empty($dist_id)) {
-            unset($map);
-            //查询条件为配送单id
-            $map['pid'] = $dist_id;
-            $map['is_deleted'] = 0;
-            //根据配送单id查配送详情单里与出库单相关联的出库单id
-            $bill_out_ids = M('stock_wave_distribution_detail')->field('bill_out_id')->where($map)->select();
-            //若查出的出库单id非空
-            if(!empty($bill_out_ids)){   
-                $bill_out_ids = array_column($bill_out_ids,'bill_out_id');
-                unset($map);
-                $map['id'] = array('in',$bill_out_ids);
-                $map['is_deleted'] = 0;
-                $codes = M('stock_bill_out')->field('code')->where($map)->select();
-                if(!empty($codes)) {
-                    $codes = array_column($codes,'code');
-                    unset($map);
-                    $map['refer_code'] = array('in',$codes); 
-                    $map['is_deleted'] = 0;
-                    $back_in = M('stock_bill_in')->where($map)->select();
-                    if(!empty($back_in)) {
-                        $status = true;
-                    }else{      //如果没有查到相应的拒收入库单，直接返回FALSE
-                        $status = false;
-                    }
-                }
-            }  
-        }
-        return $status;
-    }
 
     /*
      *功   能：根据配送单号和sku号获得最久远的批次
@@ -225,7 +189,15 @@ class ListLogic{
                 }
                 else{
                     $geo['color_type'] = 0;
-                }   
+                }
+                unset($map);
+                $map['is_deleted']  = '0';
+                $map['customer_id'] = $values['user_id'];
+                $res = M('tms_report_error')->field('id')->where($map)->find();
+                unset($map);
+                if ($res) {
+                    $geo['color_type'] = 2;
+                }
                 $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
             }            
         }

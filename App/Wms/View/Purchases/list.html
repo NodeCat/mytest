@@ -7,7 +7,8 @@
      <col style="width: 15%;" />
      <col style="width: 10%;" />
      <col style="width: 5%;" />
-     <!-- <col style="width: 5%;" /> -->
+     <col style="width: 5%;" />
+     <col style="width: 5%;" />
      <col style="width: 10%;" />
      <col style="width: 10%;" />
      <col style="width: 10%;" />
@@ -59,13 +60,20 @@
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
        </div></th>
-        <!-- <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
+        <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
          父SKU采购量 
          <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
         </div>
-       </div></th> -->
+       </div></th>
+      <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
+       <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
+        <div class="tablesorter-header-inner">
+         比例关系 
+         <i class="tablesorter-icon bootstrap-icon-unsorted"></i>
+        </div>
+       </div></th>
       <th id="location_code" data-column="5" class="tablesorter-header bootstrap-header" tabindex="0" unselectable="on" style="-webkit-user-select: none;">
        <div class="tablesorter-wrapper" style="position:relative;height:100%;width:100%">
         <div class="tablesorter-header-inner">
@@ -119,7 +127,8 @@
       <td>{$vo.wh_id|getTableFieldById='warehouse','name',###}</td> 
       <td>{$vo.wh_id|getStockQtyByWpcode=$vo['pro_code'],###}</td> 
       <td>{$vo.wh_id|getDownOrderNum=$vo['pro_code'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
-      <!-- <td>{$vo.purchase_num}</td> -->
+      <td>{$vo.purchase_num}</td>
+      <td>{$vo.ratio}</td>
       <td>{$vo.c_pro_code}</td>
       <td>{$vo.c_pro_code|getPronameByCode='name',###}</td>
       <td>{$vo.wh_id|getStockQtyByWpcode=$vo['c_pro_code'],###}</td>

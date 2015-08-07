@@ -97,6 +97,11 @@
       		//减去优惠金额
       		var minus = obj.parents('.order').find('.p_minus').text();
       		var sum = accSub(final_price, minus);
+
+          //加上运费
+          var delivery_fee = obj.parents('.order').find('.p_drive').text();
+          sum = accAdd(sum, delivery_fee);
+          
       		obj.parents('.order').find('.p_final').text(sum);
       		obj.parents('.order').find('.p_final').val(sum);
       		//计算实收金额，累加所有的小计，并减去优惠金额
@@ -105,8 +110,12 @@
       		  deal_sum = accAdd(deal_sum, $.trim($(item).text()));
       		});
       		deal_sum = accSub(deal_sum, minus);
+          deal_sum = accAdd(deal_sum,delivery_fee);
           //抹零处理
-          deal_sum = wipeZero(deal_sum);
+          var paystatus = obj.parents('.order').find('input[name=final_price]').attr('paystatus');
+          if (paystatus != '已付款') {
+            deal_sum = wipeZero(deal_sum);
+          }
       		obj.parents('.order').find('.p_deal').val(deal_sum);
       	}
 
@@ -118,6 +127,7 @@
               deal_sum = accAdd(deal_sum, $(item).text());
             });
             deal_sum = accSub(deal_sum, minus);
+            deal_sum = accAdd(deal_sum,delivery_fee);
             $(this).parents('.order').find('.p_deal').val(deal_sum);
         });
 
@@ -126,6 +136,7 @@
       function() {
         real_quantity = $(this).parents('form.order').find('input.real');
         var i = 1;
+        var flag = 0;
         real_quantity.each(function() {
           real = $(this).val();
           if (real == '') {
@@ -135,9 +146,12 @@
           } else {
             i = 1;
           }
+          if (Math.ceil(real) > 0){
+            flag = 1;
+          }
 
         });
-        if (i == 1) {
+        if (i == 1 && flag) {
           var params = $(this).closest('form.order').serialize();
           var addr = "{:U('sign')}";
           var oid = $(this).parents('.order').find('input[name=id]').val();
@@ -148,21 +162,19 @@
             dataType: 'json',
             data: params,
             success: function(msg) {
+              if (typeof HostApp == "undefined") {
+                alert(msg.msg);
+              } else {
+                HostApp.toast(msg.msg);
+              }
               if (msg.status == '0') {
-                if (typeof HostApp == "undefined") {
-                  alert(msg.msg);
-                } else {
-                  HostApp.toast(msg.msg);
-                }
                 var url = action + "/id/{$id}/oid/"+oid;
                 location.href = url;
-              } else {
-                alert_error(msg.msg);
               }
             }
           });
         } else {
-          alert('签收数量不能为空');
+          alert('签收数量不能为空,不能全为0');
         }
       });
       
@@ -278,5 +290,13 @@
         $(x).val(val2);
       }
     }
-
+    $('.report').on('click',
+      function() {
+        if (confirm('确定要报错吗')) {
+          var userid = $(this).data('userid');
+          var type    = '地址错误';
+          report = {'user_id':userid,'type':type};
+          tmsReportError(report);
+        }
+    });
   </script>
