@@ -77,7 +77,7 @@ class DispatchTaskController extends Controller
         $this->task_status = A('Tms/Dist', 'Logic')->getAllTaskStatus();
         $this->platforms = A('Tms/Dist', 'Logic')->getCatesByType('platform');
         $this->list = $list;
-        $this->display('tms:dispatch-task');
+        $this->display('DispatchTask:dispatch-task');
     }
 
     /**
@@ -185,7 +185,7 @@ class DispatchTaskController extends Controller
             );
             $this->ajaxReturn($res);
         } else {
-            $this->display('tms:add-task');
+            $this->display('DispatchTask:add-task');
         }
     }
     /**
@@ -264,7 +264,7 @@ class DispatchTaskController extends Controller
         $task['car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($task['car_type']);
         $task['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($task['driver_id']);
         $this->task = $task;
-        $this->display('tms:task-detail');
+        $this->display('DispatchTask:task-detail');
     }
 
     /**

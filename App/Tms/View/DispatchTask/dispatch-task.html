@@ -104,8 +104,8 @@
             <td>{$vo.distance}</td>
             <td>{$vo.status_cn}</td>
             <td>
-                <a data-id="{$vo.id}" data-step="1" data-desc="部门审批" data-toggle="modal" data-target="#exampleModal">部门审批</a>
-                <a data-id="{$vo.id}" data-step="2" data-desc="物流审批" data-toggle="modal" data-target="#exampleModal">物流审批</a>
+                <a data-id="{$vo.id}" data-step="1" data-desc="部门审批" data-toggle="modal" data-target="#AuditModal" onclick="changeData(this);">部门审批</a>
+                <a data-id="{$vo.id}" data-step="2" data-desc="物流审批" data-toggle="modal" data-target="#AuditModal" onclick="changeData(this);">物流审批</a>
                 <a href="{:U('taskDetail',array('id'=>$vo['id']))}" target="_blank">查看</a>
                 <a href="{:U('taskDel',array('id'=>$vo['id']))}" onclick="return confirm('确定要删除么');">删除</a>
             </td>
@@ -114,12 +114,13 @@
         </tbody>
       </table>
     </div>
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+    <!-- 审批模态框 -->
+    <div class="modal fade" id="AuditModal" tabindex="-1" role="dialog" aria-labelledby="AuditModalLabel">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title text-center" id="exampleModalLabel">部门审批</h4>
+            <h4 class="modal-title text-center" id="AuditModalLabel"></h4>
           </div>
           <!-- <div class="modal-body">
             
@@ -183,15 +184,21 @@
         $(obj).after(btn);
         $(obj).remove();
     }
-    $('#exampleModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget);
-      var id = button.data('id'),
-          step = button.data('step'),
-          desc = button.data('desc');
+    var step = 1;
+    function changeData(obj){
+        var tstep = $(obj).data('step'),
+            desc = $(obj).data('desc'),
+            id = $(obj).data('id');
+        var modal = $('#AuditModal');
+        modal.find('.modal-title').text(desc);
+        modal.find('.approve-data').attr('data-id',id);
+        step = tstep;
+    }
+    $('#AuditModal').on('show.bs.modal', function (event) {
+      var dataObj = $(this).find('.approve-data');
+      var id = dataObj.data('id');
       var addr = (step == 1) ? "{:U('departAudit')}" : "{:U('logisAudit')}";
-      var modal = $(this);
-      modal.find('.modal-title').text(desc);
-      modal.find('.approve-data').attr('data-step',step).attr('data-id',id);
+      dataObj.attr('data-step','').attr('data-id','')
       $('.js-pass').on('click',function(e){
         e.preventDefault();
         var params = {
@@ -223,7 +230,7 @@
                 }
             }
         })
-        $('#exampleModal').modal('hide');
+        $('#AuditModal').modal('hide');
         $('.js-pass').off('click');
         $('.js-refuse').off('click');
     }
