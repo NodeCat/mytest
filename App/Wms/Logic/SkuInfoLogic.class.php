@@ -51,8 +51,8 @@ class SkuInfoLogic
         $map['erp_process_in_detail.pro_code']   = array('in', $skuCodeArr);
         $map['erp_process_in_detail.is_deleted'] = 0;
         //$map['erp_process_in.created_time']      = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
-        $map['stock_purchase.expecting_date']    = array('egt', date('Y-m-d H:i:s', $stime));
-        $map['stock_purchase.expecting_date']    = array('elt', date('Y-m-d H:i:s', $stime));
+        $map['erp_process_in.created_time']    = array('egt', date('Y-m-d H:i:s', $stime));
+        $map['erp_process_in.created_time']    = array('elt', date('Y-m-d H:i:s', $stime));
         
         if ($warehouseId > 0) {
             $map['erp_process_in.wh_id'] = $warehouseId;
@@ -114,8 +114,8 @@ class SkuInfoLogic
         }
         $map['stock_bill_out.type']  = 1; //销售类型
         //$map['stock_bill_out.op_date'] = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
-        $map['stock_purchase.expecting_date']    = array('egt', date('Y-m-d H:i:s', $stime));
-        $map['stock_purchase.expecting_date']    = array('elt', date('Y-m-d H:i:s', $stime));
+        $map['stock_bill_out.op_date']    = array('egt', date('Y-m-d H:i:s', $stime));
+        $map['stock_bill_out.op_date']    = array('elt', date('Y-m-d H:i:s', $stime));
         
         $stockOutDetail = M('stock_bill_out_detail')
                               ->field('pro_code,SUM(delivery_qty) as qty')
