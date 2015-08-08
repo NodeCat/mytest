@@ -1,0 +1,38 @@
+<div class="well well-small col-lg-4">
+	<ul id="tree" class="ztree"></ul>
+</div>
+
+<link href="__PUBLIC__/zTree/css/zTreeStyle/zTreeStyle.css" rel="stylesheet">
+<script type="text/javascript">
+$(function(){
+head.js(
+	"__PUBLIC__/zTree/js/jquery.ztree.all-3.5.min.js",initTree
+	);
+});
+var setting = {
+	view: {
+		showLine: true,
+		showIcon: true,
+		expandSpeed:"",
+		dblClickExpand :false,
+		selectedMulti: false
+	},
+	data: {
+		simpleData: {
+			enable: true
+		}
+	}
+};
+function initTree(){
+	$.ajax({
+		url:"{:U(CONTROLLER_NAME.'/nodes')}",
+		type:'post',
+		data: { type: "all"},
+		cache : false,
+		success: function(msg){
+			var nodes =msg;
+			$.fn.zTree.init($("#tree"), setting, nodes);
+		}
+	});
+}
+</script>

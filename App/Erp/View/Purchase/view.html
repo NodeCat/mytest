@@ -1,0 +1,208 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+    <div class="col-lg-6 col-sm-6 col-md-6 col-xs-12">
+   <a href="{:U('add')}" data-title="添加" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-plus"></i> 添加</a>
+  <in name="data['state']" value="$toolbar_tr['edit']['domain']">
+  <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="修改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-edit"></i> 修改</a>
+  </in>
+
+  <in name="data['state']" value="$toolbar_tr['pass']['domain']">
+  <a href="{:U('pass',array($pk => $data[$pk]))}" data-title="审核通过" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-ok"></i> 批准</a>
+  </in>
+
+  <in name="data['state']" value="$toolbar_tr['reject']['domain']">
+  <a href="{:U('reject',array($pk => $data[$pk]))}" data-title="审核不通过" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-remove"></i> 驳回</a>
+  </in>
+
+  <in name="data['state']" value="$toolbar_tr['close']['domain']">
+  <a href="{:U('close',array($pk => $data[$pk]))}" data-title="作废单据" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-ban-circle"></i> 作废</a>
+  </in>
+
+  <notempty name="auth['out']">
+    <notempty name="purchase_in_code">
+    <in name="data['state']" value="$toolbar_tr['out']['domain']">
+    <a data-href="$data[$pk]" data-key="$pk" herf='javascript:void(0)' attr='out' data-title="退货" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-minus"></i> 退货</a>
+    </in>
+    </notempty>
+  </notempty>
+
+  <in name="data['state']" value="$toolbar_tr['refund']['domain']">
+    <eq name='data.invoice_method_code' value='0'>
+  <a href="{:U('refund',array($pk => $data[$pk]))}" data-title="生成冲红单" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-repeat"></i> 生成冲红单</a>
+    </eq>
+  </in>
+
+
+  </div>
+      <include file="status-bar" />
+      <div class="clearfix"></div>
+    </h3>
+  </div>
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>采购单 {$data.code}</h3></div>
+		<div class="col-lg-6">
+<div class="btn-group pull-right" role="group" aria-label="...">
+		  <a href="#" class="list-group-item">
+		  	<div class="media-left">
+		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+		        	<span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
+		        </div>
+		    </div>
+		    <div class="media-body">
+			  	<h4 class="list-group-item-heading">{$data.qty_total}</h4>
+			    <p class="list-group-item-text">总数量</p>
+			</div>
+		  </a>
+
+		  <a href="#" class="list-group-item">
+		  	<div class="media-left">
+		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+		        	<span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true"></span>
+		        </div>
+		    </div>
+		    <div class="media-body">
+			  	<h4 class="list-group-item-heading">{$data.price_total}</h4>
+			    <p class="list-group-item-text">总金额</p>
+			</div>
+		  </a>
+</div>
+
+
+</div>
+		</div>
+
+  	<hr/>
+  	
+
+<div class="row">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+        <label class="control-label label-field">{$data.company_name}</label>
+    </div>
+</div>
+
+<div class="form-group col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="wh_id">目的仓库</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.warehouse_name}</label>
+    </div>
+</div>
+<div class="form-group col-lg-3 hidden">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">送货日期</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.expecting_date}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购总数</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.cat_total} 种 / {$data.qty_total} 件</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购金额</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.price_total}</label>
+    </div>
+</div>
+</div>
+
+
+<div class="row">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">供货商</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.partner_name}</label>
+    </div>
+</div>
+
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购员</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.user_nickname}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购时间</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.created_time}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">审核时间</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.updated_time}</label>
+    </div>
+</div>
+</div>
+<div class="row"  style="margin-bottom: 15px;">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">付款方式</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.invoice_method}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购到货单号</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field"><a href="{:U('StockIn/pview','id='.$data['in_id'])}">{$data.in_code}</a></label>
+    </div>
+</div>
+</div>
+<include file="prolist-view" />
+</div>
+</div>
+
+<div>
+  <div class="tab-content">
+    <textarea name="remark" class="form-control" rows="5" placeholder="备注" disabled>{$data.remark}</textarea>
+  </div>
+</div>
+</form>
+<include file="dialog_out" />
+<script type="text/javascript">
+
+  var alert_dialog = {
+  
+      close:function(){
+        this.hide();
+        //window.location.reload();
+      },
+      show:function(title, content){
+        title  = title?title:'提示框';
+        content = content?content:"<div class='row'>content</div>";
+        $('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').show();
+        $("#gridSystemModalLabelalert").html(title);
+        $(".lgo").html(content);
+      },
+      hide:function(){
+        $('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+        $('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+      }
+  };
+  //退货弹框
+  $(document).on('click','[attr = out]',function(){
+      var id = $(this).attr('transfer_id');
+      var json = {};
+      json.title = "创建采购退货单";
+      json.successhref = "{:U('out',array($pk => $data[$pk],'flg'=>'success'))}";
+      json.errorhref = "{:U('out',array($pk => $data[$pk],'flg'=>'error'))}";
+      var callback = function(res){
+
+      };
+      var prams = {};
+      prams.id = id;
+      var url = "{:U('readBatch')}";
+      $.post(url,prams,callback);
+
+      var html = template('dialog_out',json);
+      $('body').append(html);
+      return false;
+  });
+</script>

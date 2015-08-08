@@ -1,0 +1,73 @@
+<tagLib name="html"/>
+
+<div class="col-lg-12">
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">应用列表</h3>
+  </div>
+  <div class="panel-body">
+    <html:select id='app_list' name='app' options='app' selected='0' change='app_change()' />
+    <html:select id="group_list" name='group' options='' first='分组' selected='0' change='group_change()' />
+    <html:select id="module_list" name='module' options='' first='模块' selected='0' change='module_change()' />
+    <html:select id="action_list" name='action' options='' first='操作' selected='0' change='module_change()' />
+     <html:list id="list" name="app" datasource="app" show="id:编号,name:类别名称,description:类别描述,parentid:所属类编号" checkbox="true" style="list" action="true" actionlist="edit:编辑,del:删除"/>
+  </div>
+</div>
+</div>
+<script type="text/javascript">
+var group;
+var module;
+var action;
+$(function(){
+	group={$group};
+	module={$module};
+	action={$action};
+	app_change();
+});
+function app_change(){
+	var list=$('#group_list');
+	list.empty();
+	$('#module_list').empty();
+	$('#module_list').append("<option>模块</option>");
+	$('#action_list').empty();
+	$('#action_list').append("<option>操作</option>");
+	
+	var app_item=$('#app_list').children('option:selected').text();
+try{
+	if(group[app_item] !=null)
+	$.each(group[app_item], function(key, val) {
+		list.append("<option value='" + key + "'>" + val + "</option>");
+	});
+}catch(err){};
+	group_change();
+	module_change();
+}
+function group_change(){
+	var list=$('#module_list');
+	list.empty();
+	$('#action_list').empty();
+	$('#action_list').append("<option>操作</option>");
+	var app_item=$('#app_list').children('option:selected').text();
+	var group_item=$('#group_list').children('option:selected').text();
+try{
+	if(module[app_item][group_item] !=null)
+	$.each(module[app_item][group_item], function(key, val) {
+		list.append("<option value='" + key + "'>" + val + "</option>");
+	});
+}catch(err){};
+	module_change();
+}
+function module_change(){
+	var list=$('#action_list');
+	list.empty();
+	var app_item=$('#app_list').children('option:selected').text();
+	var group_item=$('#group_list').children('option:selected').text();
+	var module_item=$('#group_list').children('option:selected').text();
+try{
+	if(action[app_item][group_item][module_item] !=null)
+	$.each(action[app_item][group_item][module_item], function(key, val) {
+		list.append("<option value='" + key + "'>" + val + "</option>");
+	});
+}catch(err){};
+}
+</script>

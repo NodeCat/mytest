@@ -1,0 +1,104 @@
+<include file="Index:header"/>
+<style type="text/css">
+.printpage {
+  width:100%;
+  margin:auto;
+  font-size:12px;
+  page-break-before:avoid;
+  page-break-inside:avoid;
+  page-break-after:always
+}
+</style>
+<body>
+
+<volist name="result" id="vo">
+<div class="container printpage">
+
+<div class="row">
+<div class="text-center"><h3>采购单</h3></div>
+</div>
+</br>
+</br>
+
+<div class="row">
+	<div class="text-center">
+		<div><h3>采购单号:{$vo.purchase_code}</h3></div>
+	</div>
+</div>
+
+<div class="row">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$vo.purchase_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
+</div>
+
+<br/>
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  </thead>
+
+  <tbody>
+  	<tr>
+  		<td>采购时间</td><td>{$vo.purchase_time}</td>
+  	</tr>
+  	<tr>
+  		<td>打印时间</td><td>{$vo.print_time}</td>
+  	</tr>
+  	<tr>
+  		<td>供应商</td><td>{$vo.partner}</td>
+  	</tr>
+  	<tr>
+  		<td>采购人员</td><td>{$vo.purchaser}</td>
+  	</tr>
+    <tr>
+  		<td>采购总数</td><td>{$vo.purchase_qty}</td>
+  	</tr>
+    <tr>
+  		<td>采购总金额</td><td>{$vo.purchase_amount}</td>
+  	</tr>
+    <tr>
+  		<td>付款方式</td><td>{$vo.purchase_pay}</td>
+  	</tr>
+  	<tr>
+  		<td>目的仓库</td><td>{$vo.warehouse}</td>
+  	</tr>
+  	<tr>
+  		<td>备注</td><td>{$vo.remark}</td>
+  	</tr>
+  </tbody>
+</table>
+</div>
+
+<div class="row">
+<div><h3>货品明细</h3></div>
+</div>
+
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  	<tr>
+  		<td>货品号</td><td>产品名称</td><td>产品规格</td><td>采购数量</td><td>计量单位</td><td>采购单价</td><td>小计</td>
+  	</tr>
+  </thead>
+
+  <tbody>
+  	<volist name="vo.purchase_detail" id="purchase_detail">
+	  	<tr>
+	  		<td>{$purchase_detail.pro_code}</td>
+            <td>{$purchase_detail.pro_name}</td>
+            <td>{$purchase_detail.pro_attrs}</td>
+            <td>{$purchase_detail.pro_qty}</td>
+            <td>{$purchase_detail.pro_uom}</td>
+            <td>{$purchase_detail.price_unit}</td>
+            <td>{$purchase_detail.price_subtotal}</td>
+	  	</tr>
+  	</volist>
+  </tbody>
+</table>
+</div>
+</br>
+</br>
+
+</div>
+</volist>
+</body>
+</html>

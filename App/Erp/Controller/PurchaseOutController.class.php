@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liuguangping <liuguangpingtest@163.com>
 // +----------------------------------------------------------------------
-namespace Wms\Controller;
+namespace Erp\Controller;
 use Think\Controller;
 class PurchaseOutController extends CommonController {
     protected $filter = array(
