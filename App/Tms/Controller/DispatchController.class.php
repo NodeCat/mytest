@@ -81,6 +81,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile']      = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
+            $map['type'] = '0';
             //获取司机配送单的线路和id信息
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
@@ -131,6 +132,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $mobile = I('get.mobile');
         $sign_msg = M('tms_sign_list')->find($id);
         $map['status'] = '1';
+        $map['type']   = '0';
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['mobile'] = $mobile ;
         $line = M('tms_delivery')->field('line_name')->where($map)->select();
@@ -159,7 +161,6 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->assign('points',$location['points']);
         $this->display('tms:line');
     }
-
 
      //导出司机信息
     public function export() {
@@ -223,6 +224,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile'] = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
             $map['status'] = '1';
+            $map['type']   = '0';
             //获取司机配送单的线路和id信息取出来
             $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收

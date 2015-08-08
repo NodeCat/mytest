@@ -76,5 +76,119 @@ class DistLogic {
         $price = round($price, 1);
         return $price;
     }
+    /**
+     * [getCatesByType 按类型获取如车型、平台、任务类型等数据]
+     * @return [type] [description]
+     */
+    public function getCatesByType($type)
+    {
+        $map['type'] = $type;
+        $map['is_deleted'] = 0;
+        $M = M('category');
+        $res = $M->field('id,name,type')->where($map)->select();
+        return $res;
+    }
 
+    /**
+     * [getTaskTypeById 根据分类ID获取分类名称]
+     * @return [type] [description]
+     */
+    public function getCateNameById($id)
+    {
+        if (empty($id)) {
+            return '';
+        }
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $M = M('category');
+        $res = $M->field('name')->where($map)->find();
+        return $res['name'];
+    }
+
+    /**
+     * [getDriverInfoById 根据ID获取一条司机信息]
+     * @param  [type] $uid [description]
+     * @return [type]      [description]
+     */
+    public function getDriverInfoById($uid)
+    {
+        if (empty($uid)) {
+            return array();
+        }
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $M = M('tms_user');
+        $res = $M->field('id,username,mobile')->where($map)->find();
+        return $res;
+    }
+
+    /**
+     * [getStatusCnByCode 根据状态码获取任务状态]
+     * @param  [type] $code [description]
+     * @return [type]       [description]
+     */
+    public function getStatusCnByCode($code)
+    {
+        $status = '';
+        switch ($code) {
+            case '1':
+                $status = '待部门审批';
+                break;
+            case '2':
+                $status = '待物流审批';
+                break;
+            case '3':
+                $status = '待派车';
+                break;
+            case '4':
+                $status = '配送中';
+                break;
+            case '5':
+                $status = '已完成';
+                break;
+            case '6':
+                $status = '未通过';
+                break;
+        }
+        return $status;
+    }
+
+    /**
+     * [getAllTaskStatus 获取所有的任务状态]
+     * @return [type] [description]
+     */
+    public function getAllTaskStatus()
+    {
+        $task_type = array(
+            '1' => '待部门审批',
+            '2' => '待物流审批',
+            '3' => '待派车',
+            '4' => '配送中',
+            '5' => '已完成',
+            '6' => '未通过',
+        );
+        return $task_type;
+    }
+    
+    /**
+     * [get_delivery_fee 根据车型、公里数获取运费价格最便宜的运力平台及运费]
+     * @param  [int] $car_type     [车型]
+     * @param  [int] $mile         [公里数]
+     * @return [array] $result        [运力平台及运费价格]
+     */
+    public function get_delivery_fee($car_type = 0, $mile = 0) 
+    {
+        $result = array();
+        $map['car_type']     = $car_type;
+        $map['min_mile']     = array('lt',$mile);
+        $map['max_mile']     = array('egt',$mile);
+        $map['is_deleted']   = 0;
+        $M = M('tms_delivery_fee');
+        $res = $M->where($map)->order('price asc')->find();
+        if (!empty($res)) {
+            $result['price']        = $res['price'];
+            $result['car_platform'] = $res['car_platform'];
+        }
+        return $result;
+    }
 }
