@@ -14,14 +14,15 @@ class ProcessLossController extends CommonController
     protected $columns = array (
         'id' => '',
         'p_pro_code' => '父SKU',
+        'p_pro_name' => '父SKU名称',
         'c_pro_code' => '子SKU',
         'ratio' => '比例',
         'c_pro_num' => '原料加工数',
         'p_pro_num' => '成品加工数',
         'loss_ratio' => '损耗率',
         'loss_number' => '原料损耗数',
-        'y_loss_amount' => '原料损耗成本',
-        'c_loss_amount' => '成品损耗成本',
+        'y_loss_amount' => '原料损耗成本(斤)',
+        'c_loss_amount' => '成品损耗成本(袋)',
     );
     protected $query   = array (
         'erp_process.created_time' => array (
@@ -78,9 +79,8 @@ class ProcessLossController extends CommonController
             $loss_ratio                  = ($data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']));       //损耗率
             $data[$key]['loss_ratio']    = sprintf('%.2f', $loss_ratio * 100).'%';
             $c_loss_amount               = ($result[$val['c_pro_code']]['total_amount'] / $result[$val['c_pro_code']]['stock_qty']) * $loss_ratio;    //原料损耗成本
-            $data[$key]['c_loss_amount'] = sprintf('%.2f', $c_loss_amount);
-            $data[$key]['y_loss_amount'] = sprintf('%.2f', $data[$key]['c_loss_amount'] * $val['ratio']);   //成品损耗成本
-
+            $data[$key]['y_loss_amount'] = sprintf('%.2f', $c_loss_amount);
+            $data[$key]['c_loss_amount'] = sprintf('%.2f', $data[$key]['y_loss_amount'] * $val['ratio']);   //成品损耗成本
         }
     }
 
@@ -106,21 +106,31 @@ class ProcessLossController extends CommonController
         if (empty($start_time) || empty($end_time)){
             $this->msgReturn(false, '参数错误');
         }
-        $model = D('ProcessLoss');
 
         if (!empty($ids)) {
-            $where['stock.id']    = array('in', $ids);
+            $model = M('erp_process_detail');
+            $field = 'erp_process_detail.id, erp_process.code, erp_process_detail.p_pro_name, erp_process_detail.p_pro_code, erp_process_sku_relation.c_pro_code, SUM(erp_process_detail.real_qty) as p_pro_num, erp_process_sku_relation.ratio';
+            $join = array(
+                'INNER JOIN erp_process ON erp_process.id=erp_process_detail.pid',
+                'INNER JOIN erp_process_sku_relation ON erp_process_sku_relation.p_pro_code=erp_process_detail.p_pro_code'
+            );
+            $where['erp_process_detail.id']    = array('in', $ids);
+            $data = $model->join($join)->field($field)->where($where)->group('erp_process_detail.p_pro_code')->select();
+
+        } else {
+            $model = D('ProcessLoss');
+            $where['DATE_FORMAT(erp_process.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
+            $data = $model->scope('default')->where($where)->select();
         }
-        $where['DATE_FORMAT(erp_process.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
-        $data = $model->scope('default')->where($where)->select();
+
 
         if (!$data) {
             $this->msgReturn(false, '导出数据为空！');
         }
         $pro_code = array();
-        foreach ($data as $key => &$value) {
-            $pro_code[] = $value['c_pro_code'];
-            $value['c_pro_num'] = sprintf('%.2f',$value['p_pro_num']*$value['ratio']);
+        foreach ($data as $key => &$values) {
+            $pro_code[] = $values['c_pro_code'];
+            $values['c_pro_num'] = sprintf('%.2f',$values['p_pro_num']*$values['ratio']);
         }
 
         $code   = implode(',', $pro_code);
@@ -129,12 +139,12 @@ class ProcessLossController extends CommonController
 
         foreach ($data as $key => $val) {
             $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
-            $data[$key]['y_loss_amount'] = sprintf('%.2f', $result[$val['c_pro_code']]['total_amount']);
-            $data[$key]['c_loss_amount'] = sprintf('%.2f', $result[$val['c_pro_code']]['total_amount'] * $result[$val['c_pro_code']]['stock_qty']);
-            $data[$key]['loss_ratio']    = sprintf('%.2f', $data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']) * 100).'%';
+            $loss_ratio                  = ($data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']));       //损耗率
+            $data[$key]['loss_ratio']    = sprintf('%.2f', $loss_ratio * 100).'%';
+            $c_loss_amount               = ($result[$val['c_pro_code']]['total_amount'] / $result[$val['c_pro_code']]['stock_qty']) * $loss_ratio;    //原料损耗成本
+            $data[$key]['y_loss_amount'] = sprintf('%.2f', $c_loss_amount);
+            $data[$key]['c_loss_amount'] = sprintf('%.2f', $data[$key]['y_loss_amount'] * $val['ratio']);   //成品损耗成本
         }
-
-        console($data);
 
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -142,27 +152,29 @@ class ProcessLossController extends CommonController
 
         $sheet = $Excel->createSheet('0');
         $sheet->setCellValue('A1', '父SKU');
-        $sheet->setCellValue('B1', '子SKU');
-        $sheet->setCellValue('C1', '比例');
-        $sheet->setCellValue('D1', '原料加工数');
-        $sheet->setCellValue('E1', '成品加工数');
-        $sheet->setCellValue('F1', '损耗率');
-        $sheet->setCellValue('G1', '原料损耗数');
-        $sheet->setCellValue('H1', '原料损耗成本');
-        $sheet->setCellValue('I1', '成品损耗成本');
+        $sheet->setCellValue('B1', '父SKU名称');
+        $sheet->setCellValue('C1', '子SKU');
+        $sheet->setCellValue('D1', '比例');
+        $sheet->setCellValue('E1', '原料加工数');
+        $sheet->setCellValue('F1', '成品加工数');
+        $sheet->setCellValue('G1', '损耗率');
+        $sheet->setCellValue('H1', '原料损耗数');
+        $sheet->setCellValue('I1', '原料损耗成本(斤)');
+        $sheet->setCellValue('J1', '成品损耗成本(袋)');
 
         $i = 1;
         foreach ($data as $value){
             $i++;
             $sheet->setCellValue('A'.$i, $value['p_pro_code']);
-            $sheet->setCellValue('B'.$i, $value['c_pro_code']);
-            $sheet->setCellValue('C'.$i, $value['ratio']);
-            $sheet->setCellValue('D'.$i, $value['c_pro_num']);
-            $sheet->setCellValue('E'.$i, $value['p_pro_num']);
-            $sheet->setCellValue('F'.$i, $value['loss_ratio']);
-            $sheet->setCellValue('G'.$i, $value['loss_number']);
-            $sheet->setCellValue('H'.$i, $value['y_loss_amount']);
-            $sheet->setCellValue('I'.$i, $value['c_loss_amount']);
+            $sheet->setCellValue('B'.$i, $value['p_pro_name']);
+            $sheet->setCellValue('C'.$i, $value['c_pro_code']);
+            $sheet->setCellValue('D'.$i, $value['ratio']);
+            $sheet->setCellValue('E'.$i, $value['c_pro_num']);
+            $sheet->setCellValue('F'.$i, $value['p_pro_num']);
+            $sheet->setCellValue('G'.$i, $value['loss_ratio']);
+            $sheet->setCellValue('H'.$i, $value['loss_number']);
+            $sheet->setCellValue('I'.$i, $value['y_loss_amount']);
+            $sheet->setCellValue('J'.$i, $value['c_loss_amount']);
         }
 
         date_default_timezone_set("Asia/Shanghai");
