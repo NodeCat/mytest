@@ -4,7 +4,7 @@
 * @version 2015-6-25
 * 采购需求报表
 */
-namespace Wms\Controller;
+namespace Erp\Controller;
 use Think\Controller;
 class PurchasesController extends CommonController {
     
