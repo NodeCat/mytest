@@ -13,10 +13,17 @@
           </div>
           <br>
           <div>
+			{{if rejectsum}}
             <div class="alert alert-danger" style="word-break: break-all;" role="alert">
                 有<strong>{{rejectsum}}</strong> 个出库单因库存不足未加入分拣任务，已踢回待生产！<br />
 				{{each detail as value}}出库单号为:<strong>{{value['code']}},缺货SKU:{{value['sku']}}</strong><br />{{/each}}
             </div>
+			{{/if}}
+			{{if sumZero}}
+            <div class="alert alert-danger" style="word-break: break-all;" role="alert">
+                有<strong>{{sumZero}}</strong> 个出库单因SKU数量为0，已被删除！<br />
+            </div>
+			{{/if}}
           </div>
         </div>
       </div>

@@ -556,6 +556,8 @@ class IndexController extends Controller {
                 // 设置订单状态
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+                $map['driver_name'] = session('user.username');
+                $map['driver_mobile'] = session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['id'];
                     $map['suborder_id'] = $val['id'];
