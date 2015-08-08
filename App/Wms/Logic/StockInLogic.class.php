@@ -658,12 +658,19 @@ class StockInLogic{
 		$out_m = M('stock_bill_out_container');
 		$map['o.type'] = 5;//调拨单
 		$map['o.status'] = 2;//已出库
-		$map['o.id'] = array('in',$pass_reduce_ids);
+		$map['d.pid'] = array('in',$pass_reduce_ids);
+		//$map['c.refer_code'] = $code_refer;
 		$map['o.is_deleted'] = 0;
 		$map['c.is_deleted'] = 0;
-		$out_m->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
-			left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-			left join stock_bill_out as o on wdd.bill_out_id = o.id')->where($map);
+
+
+		//查询发运后的商品
+		$out_m->join((' as c left join stock_bill_out_detail as d on d.pro_code=c.pro_code
+            left join stock_bill_out as o on d.pid = o.id')->where($map);
+
+		$stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_bill_out_detail as d on d.pro_code=c.pro_code
+            left join stock_bill_out as o on d.pid = o.id')->where($map)->select();
+		
 		$out_m2 = clone $out_m;//深度拷贝
 		//插入stokc_bill_in_detail表
 		$out_container = $out_m->field('c.batch,c.pro_code,o.*')->select();
@@ -714,9 +721,14 @@ class StockInLogic{
 							$map['c.pro_code'] = $val['pro_code'];
 							$map['o.refer_code'] = $val['refer_code'];
 							$map['c.batch'] = $val['batch'];
-							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
-								left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-								left join stock_bill_out as o on wdd.bill_out_id = o.id')->where($map)->sum('c.qty');
+
+
+							//查询出库量
+							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_bill_out_detail as od on c.pro_code = od.pro_code 
+								left join stock_bill_out as o on o.id = od.pid')->where($map)->sum('od.delivery_qty');
+
+
+
 							//查询出库商品的属性 同一个出库单只有唯一一个商品
 							$where = array();
 							$where['pid'] = $val['id'];

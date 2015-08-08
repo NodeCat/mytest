@@ -387,12 +387,13 @@ class PurchaseOutLogic{
     public function insertErpContainer($out_id){
         $stock_bill_out_container = M('stock_bill_out_container');
         $erp_bill_out_container = M('erp_transfer_out_container');
-        $map['wdd.bill_out_id'] = $out_id;
-        $map['wdd.status'] = 5;//已发运
-        $map['wdd.is_deleted'] = 0;
-        $stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
-            left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-            left join stock_bill_out as o on wdd.bill_out_id = o.id ')->where($map)->select();
+        $map['d.pid'] = $out_id;
+        $map['o.status'] = 2;//已出库
+        $map['o.type'] = 5;//调拨单
+        $map['d.is_deleted'] = 0;
+        $stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_bill_out_detail as d on d.pro_code=c.pro_code
+            left join stock_bill_out as o on d.pid = o.id')->where($map)->select();
+
         if($stock_container){
             $data = array();
             $process_logic = A('Process', 'Logic');

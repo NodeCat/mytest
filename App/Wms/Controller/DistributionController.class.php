@@ -592,6 +592,8 @@ class DistributionController extends CommonController {
             }
         }
 
+
+        /*
         //统计SKU数量扣减库存
         //获取库存充足的出库详情
         $pass_sku_detail = $D->get_out_detail($pass_ids);
@@ -608,6 +610,8 @@ class DistributionController extends CommonController {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
+
+
         //整理库存不足的出库详情
         foreach ($reduce_sku_detail as $v) {
             $total_stock_qty = 0;
@@ -635,6 +639,9 @@ class DistributionController extends CommonController {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
+
+
+
         //获取去拣货区库位
         $loc = M('location');
         $map['code'] = 'PACK';
@@ -654,7 +661,95 @@ class DistributionController extends CommonController {
                                                'pro_qty'=>$sku['order_qty'], 
                                                'refer_code'=>$post, 
                                                'location_ids'=>array($location_id['id'])));
+        }*/
+
+
+
+        //liuguangping 20150808 以前是整个车单加入明细，现在要改后的结果 ：一个出库单进入
+        //获取去拣货区库位
+        $loc = M('location');
+        $map['code'] = 'PACK';
+        $map['wh_id'] = session('user.wh_id');
+        $location = $loc->field('id')->where($map)->find();
+        unset($map);
+        $map['pid'] = $location['id'];
+        $location_id = $loc->field('id')->where($map)->find();
+        if (empty($location_id)) {
+            $this->msgReturn(false, '还没创建分拣区库位');
         }
+        unset($map);
+
+        if ($pass_ids && is_array($pass_ids)) {
+            //循环数组
+            foreach($pass_ids as $pass_val){
+                $pass_arr = array($pass_val);
+                $pass_sku_detail = $D->get_out_detail($pass_arr);
+
+                //查询出库单
+                $maos = array();
+                $maos['id'] = $pass_val;
+                $out_code_name = M('stock_bill_out')->where($maos)->getField('code');
+                //整理库存充足的出库详情
+                foreach ($pass_sku_detail as $v) {
+                    $stockOut->outStockBySkuFIFO(
+                        array('wh_id'=>session('user.wh_id'), 
+                        'pro_code'=>$v['pro_code'], 
+                        'pro_qty'=>$v['order_qty'], 
+                        'refer_code'=>$out_code_name, 
+                        'location_ids'=>array($location_id['id']))
+                    );
+                }
+
+            }
+        }
+
+        //整理库存不足的出库详情
+        if ($reduce_ids && is_array($reduce_ids)) {
+            //循环数组
+            foreach($reduce_ids as $reduce_val){
+                $reduce_arr = array($reduce_val);
+                $reduce_sku_detail = $D->get_out_detail($reduce_arr);
+                //统计
+                //查询出库单
+                $maos = array();
+                $maos['id'] = $reduce_val;
+                $out_code_name = M('stock_bill_out')->where($maos)->getField('code');
+                foreach ($reduce_sku_detail as $v) {
+                    $total_stock_qty = 0;
+                    //查询PACK区内所有该sku的库存量
+                    $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
+                        array(
+                            'pro_code'=>$v['pro_code'],
+                            'location_code'=>'PACK',
+                            'stock_status'=>'qualified')
+                    );
+                    //累加库存量集合
+                    foreach($stock_infos as $stock_info){
+                        $total_stock_qty += $stock_info['stock_qty'] - $stock_info['assign_qty'];
+                    }
+                    //如果库存不足 记录下实际发货量
+                    if(intval($total_stock_qty) < intval($v['order_qty'])){
+                        $v['order_qty'] = $total_stock_qty;
+                        $reduce_delivery_qty_list[$v['id']] = $total_stock_qty;
+                    } else {
+                        $reduce_delivery_qty_list[$v['id']] = $v['order_qty'];
+                    }
+
+                    //扣减库存
+                    $stockOut->outStockBySkuFIFO(
+                        array('wh_id'=>session('user.wh_id'), 
+                        'pro_code'=>$v['pro_code'], 
+                        'pro_qty'=>$v['order_qty'], 
+                        'refer_code'=>$out_code_name, 
+                        'location_ids'=>array($location_id['id']))
+                    );  
+
+                }
+
+            }
+
+        }
+
 
         $map['dist_code'] = $post;
         $data['status'] = 2; //已发运
@@ -759,7 +854,7 @@ class DistributionController extends CommonController {
         //加入erp调拨入库单
         $erp_stockin_logic = A('TransferIn', 'Logic');
         $erp_stockin_logic->addErpIn($pass_reduce_ids);
-
+        
         $this->msgReturn(true, '已完成', '', U('over'));
     }
     
