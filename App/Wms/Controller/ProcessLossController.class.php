@@ -102,9 +102,10 @@ class ProcessLossController extends CommonController
         $ids         = I('get.ids');
         $start_time  = I('get.start_time');
         $end_time    = I('get.end_time');
+        $where = array();
 
-        if (empty($start_time) || empty($end_time)){
-            $this->msgReturn(false, '参数错误');
+        if (!empty($start_time) && !empty($end_time)){
+            $where['DATE_FORMAT(erp_process.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
         }
 
         if (!empty($ids)) {
@@ -116,10 +117,8 @@ class ProcessLossController extends CommonController
             );
             $where['erp_process_detail.id']    = array('in', $ids);
             $data = $model->join($join)->field($field)->where($where)->group('erp_process_detail.p_pro_code')->select();
-
         } else {
             $model = D('ProcessLoss');
-            $where['DATE_FORMAT(erp_process.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
             $data = $model->scope('default')->where($where)->select();
         }
 

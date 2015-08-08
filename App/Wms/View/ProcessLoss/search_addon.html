@@ -7,10 +7,6 @@ $(function(){
 
         var ids = getChecked();
 
-        if (!start_time || !end_time) {
-            alert('请选择导出日期');
-            return false;
-        }
         var url = "{:U('ProcessLoss/exportData')}"+'?start_time='+start_time+'&end_time='+end_time+'&ids='+ids;
         window.location.href = url;
     });
