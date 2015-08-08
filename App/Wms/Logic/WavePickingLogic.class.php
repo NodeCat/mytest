@@ -154,6 +154,8 @@ class WavePickingLogic{
                         M('stock_wave')->where(array('id' => $wave_id))->setDec('total_count', $line_count_out_sku);
                         //把订单 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
                         A('Distribution', 'Logic')->getReduceSkuCodesAndUpdate(array($bill_out_info['id']));
+                        //总数量-1
+                        $this->order_max = $this->order_max - 1;
                         if ($continue_num < $dist_group_long) {
                             continue;
                         } else {
