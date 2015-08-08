@@ -5,7 +5,7 @@
  * Date: 15/8/6
  * Time: 上午11:08
  */
-namespace Wms\Controller;
+namespace Erp\Controller;
 
 use Think\Controller;
 

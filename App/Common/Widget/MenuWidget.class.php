@@ -56,9 +56,9 @@ class MenuWidget extends Controller {
         }
         $menu = $data;
         */
-		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3') );
+    
+		$cond=array('link' => CONTROLLER_NAME.'/'.ACTION_NAME,'level'=>array('in','2,3'), 'is_deleted'=>0,'module'=>MODULE_NAME);
 		$cur=M('Menu')->field('id,pid,name,level')->where($cond)->order('level desc')->find();
-
         $menu['tab'] = $menu[$cur['level']][$cur['pid']];
 
         $menu['pid'] =$cur['pid'];

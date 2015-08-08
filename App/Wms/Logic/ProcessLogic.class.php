@@ -775,6 +775,7 @@ class ProcessLogic {
         $param['notes'] = $data['remark'];
         $param['dis_mark'] = 0;
         $param['status'] = 1; //状态 待生产
+        $param['op_date'] = get_time();
         $param['company_id'] = $data['company_id'];
         $param['created_time'] = get_time();
         $param['created_user'] = session('user.uid');

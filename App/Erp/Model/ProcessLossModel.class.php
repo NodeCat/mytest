@@ -1,5 +1,5 @@
 <?php
-namespace Wms\Model;
+namespace Erp\Model;
 use Think\Model;
 class ProcessLossModel extends Model {
     protected $readonlyField = array('id');

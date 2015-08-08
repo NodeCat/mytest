@@ -98,23 +98,22 @@ class SkuApi extends CommApi
         }
         //根据SKU编号获取 实际销售额 实际销售件数 平均采购价 拒收SKU数 SKU出库总数
         
-        
         //分组计算SKU信息
         $stockSellQtyArr = array(); //SKU出库总数
         $salePriceArr    = array(); //平均采购价
         $tmsInfo         = array(); //TMS数据 实际销售额 实际销售件数 拒收SKU数
-        foreach ($newSkuCodeArr as $skuCodes) {
+        foreach ($sellSkuArr as $skuCodes) {
             //平均采购价
             $salePrice       = $SkuInfo->calculatePrice($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $salePriceArr    = array_merge($salePriceArr, $salePrice);
         }
-        foreach ($sellSkuArr as $skuCodesMerge) {
+        foreach ($newSkuCodeArr as $skuCodesMerge) {
             //SKU出库总数
             $stockSellQty    = $SkuInfo->stockSellQty($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $stockSellQtyArr = array_merge($stockSellQtyArr, $stockSellQty);
         }
         //组合最终返回的SKU数组
-        $reutrnSkuCodeArr = array();
+        $returnSkuCodeArr = array();
         $salseSkuIndexArr = array(); //采购
         $stockSkuIndexArr = array(); //出库
         foreach ($salePriceArr as $salseSkuIndex => $value) {
@@ -123,7 +122,8 @@ class SkuApi extends CommApi
         foreach ($stockSellQtyArr as $stockSkuIndex => $value) {
             $stockSkuIndexArr[] = $stockSkuIndex;
         }
-        $reutrnSkuCodeArr = array_merge($salseSkuIndexArr, $stockSkuIndexArr);
+        $returnSkuCodeArr = array_merge($salseSkuIndexArr, $stockSkuIndexArr);
+        $returnSkuCodeArr = array_unique($returnSkuCodeArr);
         //TMS数据 实际销售额 实际销售件数 拒收SKU数
         $tmsInfo = $SkuInfo->getTmsInfo($condition['stime'], $condition['etime'], $condition['warehouse_id']);
         $average_buy_price        = 0; //平均采购价
@@ -132,7 +132,7 @@ class SkuApi extends CommApi
         $actual_sale_amount       = 0; //实际销售额
         $actual_sale_count        = 0; //实际销售件数
         //遍历所有SKU 组合信息
-        foreach ($reutrnSkuCodeArr as $key => $skuCode) {
+        foreach ($returnSkuCodeArr as $key => $skuCode) {
             $index = rtrim($skuCode, '#');
             $returnSucess['list'][$key]['sku_number']               = $index;
             $returnSucess['list'][$key]['average_buy_price']       = 0;

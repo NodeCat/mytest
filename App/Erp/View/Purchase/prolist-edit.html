@@ -1,0 +1,181 @@
+<div role="tabpanel">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">产品列表</a></li>
+    <li role="presentation" class="hidden"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">批量添加</a></li>
+  </ul>
+
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+  			<th>产品名称</th><th>采购数量</th><th>计量单位</th><th>采购单价</th><th>总价</th><th>操作</th>
+  		</thead>
+  		<tbody>
+      <tr class="hidden tr-tpl">
+      <td style="width:50%;">
+      <input type="hidden" value="0" name="pros[id][]" />
+      <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" ><input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" ><input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+      <input type="text" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
+        <td  style="width:10%;">
+          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="1" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off">
+        </td>
+        <td style="width:10%;">
+          <select name="pros[pro_uom][]" class="form-control input-sm">
+            <!--<option value="箱">箱</option>-->
+            <option value="件">件</option>
+          </select>
+        </td>
+        <td style="width:10%;">
+          <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="0.00" class="form-control input-sm text-left p_price">
+        </td>
+        <td style="width:10%;" class="text-left"><label type="text" value="" class="text-left p_res"></label></td>
+        <td style="width:5%;" class="text-left">
+          <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+        </td>
+      </tr>
+
+      <volist name="pros" id="vo">
+        
+<tr class="tr-cur">
+      <td style="width:50%;">
+      <input type="hidden" value="{$vo.id}" name="pros[id][]" />
+      <input type="hidden" value="{$vo.pro_code}" name="pros[pro_code][]" class="pro_code form-control input-sm" >
+      <input type="hidden" value="{$vo.pro_name}" name="pros[pro_name][]" class="pro_name form-control input-sm" >
+      <input type="hidden" value="{$vo.pro_attrs}" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
+      <input type="text" value="{$vo.pro_names}"  placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" ></td>
+        <td  style="width:10%;">
+          <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量"  value="{$vo.pro_qty}" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off">
+        </td>
+        <td style="width:10%;">
+          <select name="pros[pro_uom][]" class="form-control input-sm selected" value="{$vo.pro_uom}">
+            <!--<option value="箱">箱</option>-->s
+            <option value="件">件</option>
+          </select>
+        </td>
+        <td style="width:10%;">
+          <input type="text"  id="price_unit" name="pros[price_unit][]" placeholder="单价"  value="{$vo.price_unit}" class="form-control input-sm text-left p_price">
+        </td>
+        <td style="width:10%;"  class="text-left">
+          <label type="text" value="" class="text-left p_res">{$vo.price_subtotal}</label>
+        </td>
+        <td style="width:10%;" class="text-left">
+          <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+        </td>
+      </tr>
+        
+      </volist>
+
+      <tr>
+        <td colspan="6"><a class="add-pro" href="javascript:void(0);">添加单个产品</a>
+        </td>
+      </tr>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+</div>
+
+  </div>
+</div>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>
+<script type="text/javascript">
+
+$(function(){
+
+$('#table-pro').delegate('.p_qty,.p_price','input',function(){
+    var qty = $(this).parents('tr').find('.p_qty').val();
+    var price = $(this).parents('tr').find('.p_price').val();
+    var price_total = accMul(qty,price);
+    $(this).parents('tr').find('.p_res').text(price_total); 
+});
+
+typehead();
+$('.add-pro').on('click',function(){
+    var val = $('.tr-cur .pro_code').val();
+    if(val == '' && val != null) {
+      $('.tr-cur .pro_names').focus();
+      alert('请输入产品编号选择产品。');
+      return;
+    }
+    $('.tr-cur').removeClass('tr-cur');
+    var tr = $('#table-pro tr.tr-tpl').clone();
+    tr.removeClass('tr-tpl');
+    tr.addClass('tr-cur');
+    tr.removeClass('hidden');
+    $('#table-pro tr:last').before(tr);
+    //$('#table-pro tr:eq(2)').after(tr);
+    typehead();
+    $('#table-pro tr.tr-cur .pro_names').focus();
+    
+});
+
+$('#table-pro').delegate('.pro_names','focus',function(){
+  $('.tr-active').removeClass('tr-active');
+  $(this).parents('tr').addClass('tr-active');
+});
+/*
+$('#table-pro').delegate('input','focus',function(){
+  $(this).select();
+});
+*/
+//删除操作
+$('.tab-content').delegate( '.btn-delete', 'click', function(){
+  $(this).closest('tr').remove();
+});
+
+});
+
+function typehead() {
+$('.tr-cur .pro_names').typeahead({ 
+    display: 'name',
+    val: 'val',
+    items:10,
+    ajax: {
+      url:"{:U('Purchase/match_code')}",
+      triggerLength: 1,
+      method: 'post',
+      preDispatch: function(data) {
+          return { 'q': data };
+      },
+      preProcess: function(data) {
+        var n =$.parseJSON(data);
+        $.each(n,function(a,b){
+          n[a]['val'] = JSON.stringify(b['val']);
+        }); 
+        return n;
+      }
+    },
+    itemSelected:function(item,val,text) {
+        val = $.parseJSON(val);
+        $('#table-pro .tr-active .pro_code').val(val['code']);
+        $('#table-pro .tr-active .pro_name').val(val['name']);
+        $('#table-pro .tr-active .pro_attrs').val(val['attrs']);
+        $('.tr-active').removeClass('tr-active');
+    }
+  });
+}
+
+   
+</script>
+
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

@@ -243,6 +243,9 @@ class StockOutController extends CommonController {
             }else {
                 $val['delivery_date'] = date('Y-m-d',strtotime($val['delivery_date'])) .'<br>'. $val['delivery_time'];
             }
+            if($val['op_date'] == "0000-00-00 00:00:00" || $val['op_date'] == "1970-01-01 00:00:00") {
+                $val['op_date'] = '无';
+            }
             $map['stock_bill_out.id'] = $val['id'];
             $map['stock_wave_distribution_detail.is_deleted'] = 0;
             $dist = M('stock_wave_distribution')->field('dist_code')
@@ -311,7 +314,7 @@ class StockOutController extends CommonController {
             $column['pro_name'] = $post['pro_name'][$i];
             $column['pro_attrs'] = $post['pro_attrs'][$i];
             $column['order_qty'] = $post['order_qty'][$i];
-            $column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
+            //$column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
             $data = $stock_bill_detail->create($column);
             if(! empty($post['id'][$i])) {
                 $map['id'] = $post['id'][$i];
@@ -348,11 +351,6 @@ class StockOutController extends CommonController {
         $map['id'] = $data['wh_id'];
         $data['wh_name'] = $warehouse->where($map)->getField('name');
         
-        if($data['op_date'] == "0000-00-00 00:00:00") {
-            //$data['delivery_time'] = '无';
-        }else {
-            $data['delivery_time'] = date('Y-m-d', strtotime($data['op_date'])) . $this->filter['op_time'][$data['op_time']];
-        }
         $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
                        'type' => array('1'=>'普通订单','2'=>'采购退货','3'=>'库内样品出库'),
                        'process_type' => array('1'=>'正常单','2'=>'取消单'),

@@ -1,0 +1,57 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="{:U('add')}" method="post" id='form'>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="name">名称</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {required:true,maxlength:45,}"  value="" name="name" id="name"  placeholder="名称">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="contact">联系人</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {required:true,maxlength:45,}"  value="" name="contact" id="contact"  placeholder="联系人">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="email">邮箱</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {required:true,maxlength:45,}"  value="" name="email" id="email"  placeholder="邮箱">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="mobile">电话</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {required:true,maxlength:45,}"  value="" name="mobile" id="mobile"  placeholder="电话">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="street">地址</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {required:true,maxlength:45,}"  value="" name="street" id="street"  placeholder="地址">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="company_id">所属系统</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <select id="company_id" name="company_id" class="form-control input-sm selected" >
+            <option value="">请选择</option>
+            <option value ="1">大厨网</option>
+            <option value ="2">大果网</option>
+        </select>
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+<div class="form-group ">
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="description">备注</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5">
+        <input type="text" class="form-control {required:true,maxlength:200,}"  value="" name="description" id="description"  placeholder="备注">
+    </div>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4"></label>
+</div>
+</form>
+</div>
