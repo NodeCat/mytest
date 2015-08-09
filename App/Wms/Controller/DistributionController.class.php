@@ -592,7 +592,6 @@ class DistributionController extends CommonController {
             }
         }
 
-
         /*
         //统计SKU数量扣减库存
         //获取库存充足的出库详情
@@ -610,8 +609,6 @@ class DistributionController extends CommonController {
                 $merg[$v['pro_code']]['order_qty'] += $v['order_qty']; 
             }
         }
-
-
         //整理库存不足的出库详情
         foreach ($reduce_sku_detail as $v) {
             $total_stock_qty = 0;
@@ -640,8 +637,6 @@ class DistributionController extends CommonController {
             }
         }
 
-
-
         //获取去拣货区库位
         $loc = M('location');
         $map['code'] = 'PACK';
@@ -662,8 +657,6 @@ class DistributionController extends CommonController {
                                                'refer_code'=>$post, 
                                                'location_ids'=>array($location_id['id'])));
         }*/
-
-
 
         //liuguangping 20150808 以前是整个车单加入明细，现在要改后的结果 ：一个出库单进入
         //获取去拣货区库位
@@ -854,7 +847,6 @@ class DistributionController extends CommonController {
         //加入erp调拨入库单
         $erp_stockin_logic = A('TransferIn', 'Logic');
         $erp_stockin_logic->addErpIn($pass_reduce_ids);
-        
         $this->msgReturn(true, '已完成', '', U('over'));
     }
     
