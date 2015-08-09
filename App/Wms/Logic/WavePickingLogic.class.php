@@ -140,22 +140,8 @@ class WavePickingLogic{
                         M('stock_wave_detail')->where($map)->save($data);
                         unset($map);
                         unset($data);
-                        //更新波次总单数
-                        M('stock_wave')->where(array('id' => $wave_id))->setDec('order_count');
-                        //更新波次总行数
-                        $line_count_out = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id'], 'is_deleted' => 0))->select();
-                        $line_count_out_sum = count($line_count_out);
-                        //统计出库单总件数
-                        $line_count_out_sku = 0;
-                        foreach ($line_count_out as $line_count_out_detail) {
-                            $line_count_out_sku += $line_count_out_detail['order_qty'];
-                        }
-                        M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_sum);
-                        M('stock_wave')->where(array('id' => $wave_id))->setDec('total_count', $line_count_out_sku);
                         //把订单 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
                         A('Distribution', 'Logic')->getReduceSkuCodesAndUpdate(array($bill_out_info['id']));
-                        //总数量-1
-                        $this->order_max = $this->order_max - 1;
                         if ($continue_num < $dist_group_long) {
                             continue;
                         } else {
