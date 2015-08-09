@@ -5,7 +5,7 @@
  * Time: 上午11:10
  */
 
-namespace Wms\Controller;
+namespace Erp\Controller;
 
 use Think\Controller;
 

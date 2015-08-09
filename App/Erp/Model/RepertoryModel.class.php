@@ -5,7 +5,7 @@
  * Time: 上午11:15
  */
 
-namespace Wms\Model;
+namespace Erp\Model;
 
 use Think\Model;
 
