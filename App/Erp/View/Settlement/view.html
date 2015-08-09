@@ -1,0 +1,180 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<div class="panel panel-default">
+    <if condition="($data.status neq '已作废')">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+    <div class="col-lg-6 col-sm-6 col-md-6 col-xs-12">
+        <input type="hidden" value="{$data[$pk]}" id="id" />
+
+        <if condition="($data.state neq '11')">
+            <a href="javascript:void(0);" data-title="修改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul" id="editInvoice">
+                <i class="glyphicon glyphicon-edit"></i> 修改
+            </a>
+        </if>
+
+        <if condition="($data[state] eq '0')">{$toolbar_tr['pass']['domain']}
+            <a href="{:U('pass',array($pk => $data[$pk]))}" data-title="审核通过" rel="tooltip" data-placement="bottom" class="btn btn-sm">
+                <i class="glyphicon glyphicon-ok"></i> 批准
+            </a>
+
+            <a href="{:U('close',array($pk => $data[$pk]))}" data-title="作废单据" rel="tooltip" data-placement="bottom" class="btn btn-sm">
+                <i class="glyphicon glyphicon-ban-circle"></i> 作废
+            </a>
+        </if>
+    </div>
+    <include file="status-bar" />
+    <div class="clearfix"></div>
+    </h3>
+    </div>
+    </if>
+
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>结算单 {$data.code}</h3></div>
+		<div class="col-lg-6">
+<div class="btn-group pull-right" role="group" aria-label="...">
+		  <a href="#" class="list-group-item">
+		  	<div class="media-left">
+		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+		        	<span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
+		        </div>
+		    </div>
+		    <div class="media-body">
+			  	<h4 class="list-group-item-heading">{$pros|count}</h4>
+			    <p class="list-group-item-text">总单量</p>
+			</div>
+		  </a>
+
+		  <a href="#" class="list-group-item">
+		  	<div class="media-left">
+		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+		        	<span class="glyphicon glyphicon-white glyphicon-usd" aria-hidden="true"></span>
+		        </div>
+		    </div>
+		    <div class="media-body">
+			  	<h4 class="list-group-item-heading">{$data.total_amount}</h4>
+			    <p class="list-group-item-text">总金额</p>
+			</div>
+		  </a>
+</div>
+</div>
+		</div>
+
+  	<hr/>
+  	
+
+<div class="row">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">供应商</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+        <label class="control-label label-field">{$data.partner_name}</label>
+    </div>
+</div>
+
+<div class="form-group col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="created_user">创建人</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.created_user}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="created_time">创建时间</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.created_time}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="audited_time">审核时间</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.audited_time}</label>
+    </div>
+</div>
+</div>
+
+
+<div class="row">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id"></label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    </div>
+</div>
+
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="settlement_user">结算人</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.settlement_user}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="settlement_time">结算时间</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.settlement_time}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="audited_user">审核人</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.audited_user}</label>
+    </div>
+</div>
+</div>
+<if condition="($data.status neq '已作废')">
+    <div class="row"  style="margin-bottom: 15px;">
+    <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="invoice">发票号</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+            <label class="control-label label-field">
+                <input type="text" value="{$data.invoice}" name="invoice" class="form-control input-sm" />
+                <input type="hidden" value="{$data.invoice}" name="invoice_hid" />
+            </label>
+        </div>
+    </div>
+    <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="invoice_amount">发票金额</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+        <label class="control-label label-field">
+            <input type="text" value='<if condition="($data.invoice_amount gt 0)">{$data.invoice_amount}</if>' name="invoice_amount" class="form-control input-sm" />
+            <input type="hidden" value="{$data.invoice_amount}" name="invoice_amount_hid"  />
+        </label>
+        </div>
+    </div>
+    </div>
+</if>
+<include file="prolist-view" />
+</div>
+</div>
+</form>
+
+<script type="text/javascript">
+    $("#editInvoice").click(function(){
+        var id             = $("#id").val();
+        var invoice_hidden = $("input[name='invoice_hid']").val();
+        var amount_hidden  = $("input[name='invoice_amount_hid']").val();
+        var invoice        = $("input[name='invoice']").val();
+        var amount         = $("input[name='invoice_amount']").val();
+        var url            = '/Settlement/editInvoice';
+
+        if((invoice == '' && amount == '') || (invoice_hidden == invoice) && (amount_hidden == amount)){
+            alert('没有需要更新的数据');
+            return false;
+        }
+
+        $.ajax({
+            url : url,
+            type : 'post',
+            cache : 'false',
+            dataType : 'json',
+            data : {'id': id, 'invoice':invoice, 'amount': amount},
+            success : function(data){
+                if(data.code == -1){
+                    alert(data.message);
+                    return false;
+                }else{
+                    alert('数据更新成功');
+                }
+            }
+
+        });
+    });
+
+</script>

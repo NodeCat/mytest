@@ -1,0 +1,155 @@
+<div class="row">
+	<div class="col-lg-6">
+	<div class="panel panel-default">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">仓库列表</h3>
+	  </div>
+	  <div class="panel-body" style="padding: 0 15px;">
+		<div class="row">
+			<div class="toolbar">
+				<!--<a class="select-all btn btn-sm" data-target="data-table" data-original-title="Refresh" rel="tooltip" data-placement="bottom">全选</a>
+			    <a class="select-invert btn  btn-sm" data-target="data-table" data-original-title="Refresh" rel="tooltip" data-placement="bottom">反选</a>
+			    <a class="select-cancel btn  btn-sm" data-target="data-table" data-original-title="Refresh" rel="tooltip" data-placement="bottom">取消</a>
+			    <a  role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-sm pull-right">设置</a>-->
+
+			</div>
+		</div>
+		<div class="row">
+			<table id="data-table" class="table table-condensed table-bordered  table-hover">
+			    <thead>
+			        <tr class="align-center">
+			            <th></th>
+			            <th>code</th>
+			            <th>名称</th>
+			            <th>地址</th>
+			        </tr>
+			    </thead>
+			    <tbody id="warehouse_list">
+			        <volist name="warehouse" id="vo">
+			        <tr>
+			            <td><label class="checkbox"><input type="checkbox" id="warehouse_{$vo['id']}" value="{$vo['id']}"/>{$row}</label></td>
+			            <td>{$vo.code}</td>
+			            <td>{$vo.name}</td>
+			            <td>{$vo.address}</td>
+			        </tr>
+			        </volist>
+			    </tbody>
+			</table>
+		</div>
+	  </div>
+	</div>
+	</div>
+
+	<div class="col-lg-6">
+	<div class="panel panel-default">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">用户列表</h3>
+	  </div>
+	  <div class="panel-body" style="padding: 0 15px;">
+		<div class="row">
+			<div class="toolbar">
+				<!--<a class="select-all btn btn-sm" data-target="data-table" data-original-title="Refresh" rel="tooltip" data-placement="bottom">全选</a>
+			    <a class="select-invert btn  btn-sm" data-target="data-table" data-original-title="Refresh" rel="tooltip" data-placement="bottom">反选</a>
+			    <a class="select-cancel btn  btn-sm" data-target="data-table" data-original-title="Refresh" rel="tooltip" data-placement="bottom">取消</a>
+			    <a  role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-sm pull-right">设置</a>-->
+
+			</div>
+		</div>
+		<div class="row">
+			<table id="data-table" class="table table-condensed table-bordered  table-hover">
+			    <thead>
+			        <tr class="align-center">
+			            <th></th>
+			            <th>名称</th>
+			            <th>邮箱</th>
+			            <th>昵称</th>
+			        </tr>
+			    </thead>
+			    <tbody id="user_list">
+			        <volist name="users" id="vo">
+			        <tr>
+			            <td><label class="checkbox"><input name="user_id" type="radio" value="{$vo['id']}"/>{$row}</label></td>
+			            <td>{$vo.username}</td>
+			            <td>{$vo.email}</td>
+			            <td>{$vo.nickname}</td>
+			        </tr>
+			        </volist>
+			    </tbody>
+			</table>
+		</div>
+	  </div>
+	</div>
+	<div class="col-lg-6 text-center">
+		<a role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-primary" id="save">保存</a>
+	</div>
+	<!--<div class="col-lg-6 text-center">
+		<a role="button" data-original-title="Save" rel="tooltip" data-placement="bottom" class="btn btn-lg btn-default">返回</a>
+	</div>-->
+	</div>
+</div>
+
+<script type="text/javascript">
+$(function(){
+	$('#user_list :radio').click(function(){
+		//清空所有的checkbox
+		$('#warehouse_list :checkbox').each(function(){
+			$(this).removeAttr("checked");
+		});
+
+		//获得选中的用户id
+		var _user_id = $(this).val();
+
+		//根据用户id 查询对应的仓库列表
+		$.ajax({
+	      url:'/AuthUserRule/getWhInfoByUserId',
+	      type:'post',
+	      cache : false,
+	      dataType:'json',
+	      data:'userId='+_user_id,
+	      success: function(json){
+	      	if(json.status == 'succ'){
+	      		var _return_data = json.data;
+	      		for(var i in _return_data){
+	      			//如果是warehouse仓库类型 则对对应的仓库列表操作
+	      			if(_return_data[i].type == 'warehouse'){
+	      				$('#warehouse_'+_return_data[i].rule_id).prop("checked",true);
+	      			}
+	      			
+	      		}
+
+	      	}
+
+	      }
+	    });
+	});
+
+	//保存
+	$('#save').click(function(){
+		//获得当前选定的user_id
+		var _user_id = $("#user_list input[type='radio']:checked").val();
+
+		//获得当前选定的仓库id
+		var _wh_id = '';
+		$("#warehouse_list input[type='checkbox']:checked").each(function(){
+			_wh_id += $(this).val()+',';
+		});
+
+
+		//根据用户id wh_id 设置对应关系
+		$.ajax({
+	      url:'/AuthUserRule/setWhIdAndUserId',
+	      type:'post',
+	      cache : false,
+	      dataType:'json',
+	      data:'userId='+_user_id+"&whId="+_wh_id+'&type=warehouse',
+	      success: function(json){
+	      	if(json.status == 'succ'){
+	      		alert('操作成功');
+	      	}
+
+	      }
+	    });
+	    return true;
+	});
+})
+</script>

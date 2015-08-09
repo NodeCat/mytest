@@ -20,7 +20,7 @@ if($_SERVER['SERVER_ENV'] == 'production') {
   define('APP_DEBUG',TRUE);
 }
 
-define('RUNTIME_PATH','../../Runtime/');
+define('RUNTIME_PATH','../Runtime/');
 
 define('BIND_MODULE','Erp');
 

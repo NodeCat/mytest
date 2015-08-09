@@ -663,19 +663,14 @@ class StockInLogic{
 		$map['o.is_deleted'] = 0;
 		$map['c.is_deleted'] = 0;
 
-
 		//查询发运后的商品
 		$out_m->join((' as c left join stock_bill_out_detail as d on d.pro_code=c.pro_code
             left join stock_bill_out as o on d.pid = o.id')->where($map);
-
-		$stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_bill_out_detail as d on d.pro_code=c.pro_code
-            left join stock_bill_out as o on d.pid = o.id')->where($map)->select();
-		
 		$out_m2 = clone $out_m;//深度拷贝
 		//插入stokc_bill_in_detail表
-		$out_container = $out_m->field('c.batch,c.pro_code,o.*')->select();
+		$out_container = $out_m->field('c.batch,c.pro_code,c.qty,o.*')->select();
 		//插入stock_bill_in表 根据同一个调拨单，同一件商品和批次生产一张调拨单
-        $out_infos = $out_m2->field('c.batch,c.pro_code,o.*')->group('o.refer_code')->select();
+        $out_infos = $out_m2->field('c.batch,c.pro_code,c.qty,o.*')->group('o.refer_code')->select();
     
 		if (!$out_infos) {
 			return false;
@@ -701,7 +696,7 @@ class StockInLogic{
 			$bill_in['refer_code'] = $value['refer_code'];//调拨单
 			$bill_in['pid'] = 0;
 			//$bill_in['batch_code'] = get_batch($value['batch']);
-			$bill_in['partner_id'] = 1;//供应商；@todoliuguangping
+			$bill_in['partner_id'] = '';//供应商；@todoliuguangping
 			$bill_in['remark'] = '调拨入库单';
 			$bill_in['updated_time'] = get_time();
 			$bill_in['created_user'] = session('user.uid');
@@ -722,12 +717,9 @@ class StockInLogic{
 							$map['o.refer_code'] = $val['refer_code'];
 							$map['c.batch'] = $val['batch'];
 
-
 							//查询出库量
-							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_bill_out_detail as od on c.pro_code = od.pro_code 
-								left join stock_bill_out as o on o.id = od.pid')->where($map)->sum('od.delivery_qty');
-
-
+							//$qty_out = M('stock_bill_out_container')->join(' as c left join stock_bill_out_detail as od on c.pro_code = od.pro_code 
+							//	left join stock_bill_out as o on o.id = od.pid')->where($map)->sum('od.delivery_qty');
 
 							//查询出库商品的属性 同一个出库单只有唯一一个商品
 							$where = array();
@@ -746,7 +738,8 @@ class StockInLogic{
 				            $detail[$i]['pro_name'] = $out_detail['pro_name']?$out_detail['pro_name']:'';
 				            $detail[$i]['pro_attrs'] = $out_detail['pro_attrs']?$out_detail['pro_attrs']:'';
 				            $detail[$i]['batch'] = $val['batch'];
-				            $detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
+				            //$detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
+				            $detail[$i]['expected_qty'] = $value['qty'];
 				            $detail[$i]['pro_uom'] = $out_detail['measure_unit']?$out_detail['measure_unit']:'';
 				            $detail[$i]['price_unit'] = $process_logic->get_price_by_sku($val['batch'], $val['pro_code']);//平均价
 				            $detail[$i]['prepare_qty'] = 0;

@@ -1,0 +1,76 @@
+<div class="col-lg-12">
+<form class="form-horizontal" action="<literal>{:U('add')}</literal>" method="post" id='form'>
+<volist name="data" id="vo">
+<if condition="($vo.add_show eq '1') OR ($vo.control_type eq 'hidden') ">
+    <div class="form-group <eq name='vo.control_type' value='hidden'></eq>"><php>echo PHP_EOL;</php>
+    <label class="control-label col-lg-3 col-sm-3 col-xs-3" for="{$vo.field}">{$vo.title}</label>
+    <div class="col-lg-5 col-sm-5 col-xs-5"><eq name="vo['control_type']" value="refer">
+        <div class="input-group" id="{$refers[$vo['field']]['id']}">
+            <input type="text" value="" data-target="{$refers[$vo['field']]['field_show']}" class="form-control {required}" placeholder="" readonly="">
+            <input type="hidden" value="" name="{$vo.field}" id="{$vo.field}" data-target="{$refers[$vo['field']]['pk']}" class="{$vo.validate}" placeholder="">
+            <span class="input-group-btn">
+            <a href="<literal>{:U('</literal>{:ucwords($refers[$vo['field']]['module_refer'])}/refer','refer={$refers[$vo['field']]['id']}<literal>')}</literal>" data-target="#modal-refer"  data-toggle="modal" class="btn btn-default"><i class="glyphicon glyphicon-search"></i></a>
+            </span>
+        </div>
+    </div>
+</div>{~continue;}</eq>
+<php>echo PHP_EOL;</php>
+<switch name="vo.control_type">
+    <case value="getField">
+            <literal>
+            <php>
+                $_parm=explode('.',"</literal>{$refers[$vo['field']]['module_refer']}.{$refers[$vo['field']]['field_show']}<literal>");
+                if(count($_parm)===2){
+                    $A=A($_parm[0]);
+                    $items=$A->get_list($_parm[0],$_parm[1]);
+                }
+            </php></literal>
+            <select id="{$vo.field}" name="{$vo.field}" class="form-control selected" data-value="{$vo.default}">
+                <option value ="">全部</option>
+                <literal>
+                <volist name="items" id="op">
+                    <option value ="{$key}">{$op}</option>
+                </volist>
+                </literal>
+            </select>
+        </case>
+    <case value="hidden">
+        <input type="hidden" value="" name="{$vo.field}" id="{$vo.field}" class="form-control {$vo.validate}" placeholder="{$vo.title}">
+    </case>
+    <case value="text | digit">
+        <input type="text" value="{$vo.default}" name="{$vo.field}" id="{$vo.field}" class="form-control {$vo.validate}"  placeholder="{$vo.title}">
+    </case>
+    <case value="area">
+        <textarea rows="5" name="{$vo.field}" id="{$vo.field}" class="form-control" placeholder="{$vo.title}" ></textarea>
+    </case>
+    <case value="select">
+        <select id="{$vo.field}" name="{$vo.field}" class="form-control selected" data-value="{$vo.default}"><php>echo PHP_EOL;</php>
+        <php>$ops = explode(',',substr($vo['type'],5,-1));</php>
+        <volist name="ops" id="op"><php>$op = substr($op,1,-1);</php>
+            <option value ="{$op}">{$op}</option><php>echo PHP_EOL;</php>
+        </volist>
+        </select>
+    </case>
+    <case value="datetime">
+        <input type="text" class="form-control date form_datetime {$vo.validate}" name="{$vo.field}" id="{$vo.field}"  rel="datepicker" data-date="{$data.default}" data-date-format="yyyy-mm-dd hh:ii:ss" placeholder="{$vo.title}">
+    </case>
+    <case value="date">
+        <input type="text" class="form-control date form_date {$vo.validate}" name="{$vo.field}" id="{$vo.field}"   rel="datepicker" data-date="{$data.default}" data-date-format="yyyy-mm-dd" placeholder="{$vo.title}">
+    </case>
+    <case value="time">
+        <input type="text" class="form-control date form_time {$vo.validate}" name="{$vo.field}" id="{$vo.field}"   rel="datepicker" data-date="{$data.default}" data-date-format="hh:ii:ss" placeholder="{$vo.title}">
+    </case>
+    <case value="checkbox">
+        <php>$checked=array('0'=>'','1'=>'checked');</php>
+        <input name="{$vo.field}" id="{$vo.field}" class="{$vo.validate}" type="checkbox" {$checked[$vo['field']]}>
+    </case>
+    <default />
+        <input type="text" class="form-control {$vo.validate}"  value="{$vo.default}" name="{$vo.field}" id="{$vo.field}"  placeholder="{$vo.title}">
+</switch><php>echo PHP_EOL;</php>
+    </div><php>echo PHP_EOL;</php>
+    <label class="control-label col-lg-4 col-md-4 col-sm-4">{$vo.tips}</label><php>echo PHP_EOL;</php>
+</div><php>echo PHP_EOL;</php>
+</if>
+</volist>
+</form>
+</div>
