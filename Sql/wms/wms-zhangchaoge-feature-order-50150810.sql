@@ -1,0 +1,1 @@
+ALTER TABLE  `stock_bill_out_detail` ADD  `former_qty` INT( 11 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '客户下单时的订单量' AFTER  `price` ;
