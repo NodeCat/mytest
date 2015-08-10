@@ -109,7 +109,7 @@ class SkuApi extends CommApi
         }
         foreach ($newSkuCodeArr as $skuCodesMerge) {
             //SKU出库总数
-            $stockSellQty    = $SkuInfo->stockSellQty($skuCodes, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
+            $stockSellQty    = $SkuInfo->stockSellQty($skuCodesMerge, $condition['warehouse_id'], $condition['stime'], $condition['etime']);
             $stockSellQtyArr = array_merge($stockSellQtyArr, $stockSellQty);
         }
         //组合最终返回的SKU数组
