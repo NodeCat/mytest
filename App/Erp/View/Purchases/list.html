@@ -122,16 +122,16 @@
     <volist name="data" id="vo" key="k">
      <tr class="list_info_all"> 
       <td>{$vo.pro_code}</td> 
-      <td>{$vo.p_pro_name}</td>
-      <td>{$vo.p_pro_attrs}</td>
-      <td>{$vo.wh_name}</td>
-      <td>{$vo.p_in_qty}</td>
-      <td>{$vo.p_down_qty}</td>
+      <td>{$vo.pro_code|getPronameByCode='name',###}</td>
+      <td>{$vo.pro_code|getSkuInfoByCode='pro_attrs_str',###}</td>
+      <td>{$vo.wh_id|getTableFieldById='warehouse','name',###}</td>
+      <td>{$vo.wh_id|getStockQtyByWpcode=$vo['pro_code'],###}</td>
+      <td>{$vo.wh_id|getDownOrderNum=$vo['pro_code'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td>
       <td>{$vo.purchase_num}</td>
       <td>{$vo.ratio}</td>
       <td>{$vo.c_pro_code}</td>
-      <td>{$vo.c_pro_name}</td>
-      <td>{$vo.c_in_qty}</td>
+      <td>{$vo.c_pro_code|getPronameByCode='name',###}</td>
+      <td>{$vo.wh_id|getStockQtyByWpcode=$vo['c_pro_code'],###}</td>
       <td>{$vo.available_qty}</td>
       <td>{$vo.requirement_qty}</td>
       <!-- <td>{$vo.c_pro_code|getProcessByCode=$vo['pro_code'],$vo['wh_id'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td> -->
