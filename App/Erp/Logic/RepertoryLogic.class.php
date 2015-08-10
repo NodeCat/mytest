@@ -4,7 +4,7 @@
  * Time: 下午6:15
  */
 
-namespace Wms\Logic;
+namespace Erp\Logic;
 
 class RepertoryLogic
 {

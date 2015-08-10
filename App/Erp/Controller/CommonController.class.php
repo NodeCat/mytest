@@ -53,7 +53,7 @@ class CommonController extends \Common\Controller\AuthController {
         //将参数并入$condition
         $get_len = count($get);
         for ($i = 0;$i < $get_len;++$i) {
-            if(array_key_exists($get[$i], $query) && !array_key_exists($get[$i], $condition)) {
+            if((array_key_exists($get[$i], $query) || array_key_exists(str_replace('_1', '', $get[$i]), $query)) && !array_key_exists($get[$i], $condition)) {
                 $condition[$get[$i]] = $get[++$i];
             }
         }
@@ -222,7 +222,7 @@ class CommonController extends \Common\Controller\AuthController {
         if(in_array(CONTROLLER_NAME, $controllers) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('eq',session('user.wh_id'));
         }
-        
+
         if(in_array(CONTROLLER_NAME, $controllers_muilt) && empty($map['warehouse.id'])) {
             $map['warehouse.id'] = array('in',session('user.rule'));
         }
@@ -233,9 +233,16 @@ class CommonController extends \Common\Controller\AuthController {
 
         $M2 = clone $M;//深度拷贝，M2用来统计数量, M 用来select数据。
         $M->page($p.','.$page_size);//设置分页
-        
+
         $data = $M->select();//真正的数据查询在这里生效
         $count  = $M2->page()->limit()->count();//获取查询总数
+        //进销存分页总数统计
+        $count_param = array(
+            'model' => $M2,
+            'map'   => $map,
+            'count' => &$count,
+        );
+        $this->after($count_param,'count');
         $this->after($data,'lists');//查询后的业务处理，传入了结果集
         $this->filter_list($data);//对结果集进行过滤转换
         $this->data = $data;
