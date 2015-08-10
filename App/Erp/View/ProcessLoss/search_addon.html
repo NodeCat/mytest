@@ -1,0 +1,14 @@
+<button type="button" data-title="导出" id="export" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" ><i class="glyphicon glyphicon-pencil"></i> 导出</button>
+<script type="text/javascript">
+$(function(){
+    $(document).on('click','#export',function(msg){
+        var start_time = $("input[name='query[erp_process.created_time]']").val() ? $("input[name='query[erp_process.created_time]']").val() :'';
+        var end_time   = $("input[name='query[erp_process.created_time_1]']").val() ? $("input[name='query[erp_process.created_time_1]']").val() :'';
+
+        var ids = getChecked();
+
+        var url = "{:U('ProcessLoss/exportData')}"+'?start_time='+start_time+'&end_time='+end_time+'&ids='+ids;
+        window.location.href = url;
+    });
+});
+</script>
