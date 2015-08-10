@@ -119,15 +119,20 @@ class InsalesLogic{
     public function getSkuInfoByWhIdUp($wh_id,$pro_code='',$offset='',$limit=''){
         $m               = M('stock');
         $where           = array();
-        $where['status'] = 'qualified';
+        $where['stock.status'] = 'qualified';
         if($wh_id){
-            $where['wh_id'] = $wh_id;
+            $where['stock.wh_id'] = $wh_id;
         }
         if($pro_code){
-            $where['pro_code'] = $pro_code;
+            $where['stock.pro_code'] = $pro_code;
         }
         $result = array();
-        $m->field('wh_id,pro_code,sum(stock_qty) as pro_qty')->where($where)->group('wh_id,pro_code');
+        $join   = array(//stock_bill_in_detail
+            'left join warehouse ON warehouse.id=stock.wh_id',
+            'left join stock_bill_in_detail ON stock_bill_in_detail.refer_code=stock.batch AND stock_bill_in_detail.pro_code=stock.pro_code'
+        );
+        $filed  = 'stock.wh_id,stock.pro_code,sum(stock.stock_qty) as pro_qty,warehouse.name as wh_name, stock_bill_in_detail.pro_name,stock_bill_in_detail.pro_attrs';
+        $m->field($filed)->join($join)->where($where)->group('stock.wh_id,stock.pro_code');
         if($limit){
             $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
             $count = count($m->select());

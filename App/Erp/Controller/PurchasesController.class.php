@@ -82,14 +82,17 @@ class PurchasesController extends CommonController {
             $data[$key]['delivery_ampm'] = $delivery_ampm;
             //父下单量
             $down_qty = getDownOrderNum($value['pro_code'],$delivery_date,$delivery_ampm,$value['wh_id']);
+            $data[$key]['p_down_qty'] = $down_qty;
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
+            $data[$key]['p_in_qty'] = $p_qty;
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //父采购量
             $data[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
             //子Sku在库量
             $c_qty = getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']);
+            $data[$key]['c_in_qty'] = $c_qty;
             //子sku总可用量 = 父在在库量 x 生产比例 + 子Sku在库量;
             $available_qty = f_add($c_qty_count, $c_qty);
             $data[$key]['available_qty'] = $available_qty;
