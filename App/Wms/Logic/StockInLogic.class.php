@@ -710,7 +710,6 @@ class StockInLogic{
 				foreach ($out_container as $ky => $val) {
 					if($value['refer_code'] == $val['refer_code']) {
 						if (!isset($issetCode[$val['pro_code'].'-'.$val['batch']])) {
-
 							//查询出库商品的属性 同一个出库单只有唯一一个商品
 							$where = array();
 							$where['pid'] = $val['id'];
@@ -720,7 +719,6 @@ class StockInLogic{
 							if($val['pro_code']){
 								$out_detail = M('stock_bill_out_detail')->where($where)->find();
 							}
-
 							$detail[$i]['wh_id'] = $bill_in['wh_id'];
 				            $detail[$i]['pid'] = $pid;
 				            $detail[$i]['refer_code'] = $value['refer_code']?$value['refer_code']:'';
