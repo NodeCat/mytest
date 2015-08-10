@@ -298,7 +298,6 @@ class PurchaseController extends CommonController {
 			$this->purchase_in_code = TRUE;
 		}
 
-
 		//view上方按钮显示权限
 		$this->toolbar_tr =array(
 			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
@@ -307,7 +306,7 @@ class PurchaseController extends CommonController {
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
-            'out'=>array('name'=>'out' ,'show' => isset($this->auth['out']),'new'=>'true','domain'=>array('13')),//退货已经生效的采购单，并且采购单已经上架的
+            'out'=>array('name'=>'out' ,'show' => isset($this->auth['out']),'new'=>'true','domain'=>'13,43'),//退货已经生效或已结算的采购单，并且采购单已经上架的
         );
 
     }
