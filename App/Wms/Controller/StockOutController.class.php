@@ -370,6 +370,7 @@ class StockOutController extends CommonController {
         foreach($ids_arr as $id) {
            $map['id'] = $id;
            $stock_status = $stock_out->where($map)->getField('status');
+           unset($map);
            if($stock_status == 2) {
                 $return['status'] = 0;
                 $return['msg'] = '已出库的出库单不能再次出库，请重新选择';
@@ -385,7 +386,8 @@ class StockOutController extends CommonController {
             //查找出库单信息
             $map['id'] = $id;
             $stock_info = $stock_out->field('wh_id,code,total_qty,status')->where($map)->find();
-            
+            unset($map);
+
             //根据出库单号 返回对应的库存区域标识
             $location_area_name = A('Location','Logic')->getAreaByBillCode($stock_info['code']);
 
@@ -395,10 +397,10 @@ class StockOutController extends CommonController {
             }
 
             //查找出库单明细
-            unset($map);
             $map['pid'] = $id;
-            $detail_info = $stock_detail->where($map)->field('pro_code,delivery_qty,order_qty')->select();
-            
+            $detail_info = $stock_detail->where($map)->field('id,pro_code,delivery_qty,order_qty')->select();
+            unset($map);
+
             $data['wh_id'] = $stock_info['wh_id'];
             $data['refer_code'] = $stock_info['code'];
             foreach($detail_info as $val) {
@@ -423,7 +425,7 @@ class StockOutController extends CommonController {
                 //销库存
                 foreach($detail_info as $val) {
                     //如果出库量是0 放弃处理 处理下一条
-                    if(intval($val['order_qty']) === 0){
+                    if(bccomp($val['order_qty'], 0, 2) == 0){
                         continue;
                     }
 
@@ -435,6 +437,12 @@ class StockOutController extends CommonController {
                         $data['location_ids'] = $in_location_ids;
                     }
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
+                    //更新出库单明细
+                    $map['id'] = $val['id'];
+                    $upd_data['delivery_qty'] = $val['order_qty'];
+                    M('stock_bill_out_detail')->where($map)->save($upd_data);
+                    unset($map);
+                    unset($upd_data);
                     //存储此货品出库的相关内容
                     /*$stock_container = D('stock_bill_out_container');
                     $container['refer_code'] = $stock_info['code'];
@@ -456,9 +464,10 @@ class StockOutController extends CommonController {
                 $list['status'] = 2;
                 $list['refused_type'] = 1;
             }
-            unset($map);
+            
             $map['id'] = $id;
             $stock_out->where($map)->save($list);
+            unset($map);
         }
         
         if($state == 'failed') {
