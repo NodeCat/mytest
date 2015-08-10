@@ -3,60 +3,60 @@ namespace Erp\Controller;
 use Think\Controller;
 use Wms\Model\Stock_bill_in_detailModel;
 class ProcessController extends CommonController {
-	protected $filter = array(
-	/*	'type' =>  array(
-			'unite' => '组合',
-			'split' => '拆分',
-		),
-		'status' => array(
-			'confirm' => '待审核',
-			'pass' => '已生效',
-			'reject' => '已驳回',
-			'close' => '已作废',
-		    'make' => '已生产', 
-		),*/
-	);
-	protected $face = array(
-	    1 => '待审核',
-	    2 => '已生效',
-	    3 => '已加工',
-	    4 => '已驳回',
-	    5 => '已作废',
-	);
-	protected $columns = array (
-		'id' => '',
-	    'code' => '加工单号',
-		'type' => '加工类型',
-		'wh_id' => '仓库',
-		'task' => '总任务数',
-	    'over_task' => '完成任务数',
-		'status' => '状态',
-		'remark' => '备注',
-	);
-	protected $query   = array (
+    protected $filter = array(
+    /*'type' =>  array(
+            'unite' => '组合',
+            'split' => '拆分',
+        ),
+        'status' => array(
+            'confirm' => '待审核',
+            'pass' => '已生效',
+            'reject' => '已驳回',
+            'close' => '已作废',
+            'make' => '已生产', 
+        ),*/
+    );
+    protected $face = array(
+        1 => '待审核',
+        2 => '已生效',
+        3 => '已加工',
+        4 => '已驳回',
+        5 => '已作废',
+    );
+    protected $columns = array (
+        'id' => '',
+        'code' => '加工单号',
+        'type' => '加工类型',
+        'wh_id' => '仓库',
+        'task' => '总任务数',
+        'over_task' => '完成任务数',
+        'status' => '状态',
+        'remark' => '备注',
+    );
+    protected $query   = array (
         'erp_process.code' => array(
                 'title' => '加工单号',
                 'query_type' => 'eq',
                 'control_type' => 'text',
                 'value' => 'code',
         ),
-	    'erp_process.p_pro_code' => array(
-		       'title' => '父SKU编号',
-	           'query_type' => 'eq',
-	           'control_type' => 'text',
-	           'value' => 'p_pro_code',
-	    ),
+        'erp_process.p_pro_code' => array(
+               'title' => '父SKU编号',
+               'query_type' => 'eq',
+               'control_type' => 'text',
+               'value' => 'p_pro_code',
+        ),
         'erp_process.status' => array(
                 'title' => '状态',
                 'query_type' => 'eq',
                 'control_type' => 'select',
                 'value' => array(
-        	            1 => '待审核',
-			        2 => '已生效',
+                        1 => '待审核',
+                    2 => '已生效',
                     3 => '已完成',
-			        4 => '已驳回',
-			        5 => '已作废',
-		            
+                    4 => '已驳回',
+                    5 => '已作废',
+                    
                 ),
         ),
         'erp_process.created_user' => array(
@@ -65,9 +65,9 @@ class ProcessController extends CommonController {
                 'control_type' => 'text',
                 'value' => ''
         ),
-	);
-	//设置列表页选项
-	protected function before_index() {
+    );
+    //设置列表页选项
+    protected function before_index() {
         $this->table = array(
             'toolbar'   => true,
             'searchbar' => true, 
@@ -150,8 +150,8 @@ class ProcessController extends CommonController {
             if (!empty($ids)) {
                 $map['erp_process.id'] = array('in', $ids);
             } else {
-	            $map['erp_process.id'] = array('eq', null);
-	        }
+                $map['erp_process.id'] = array('eq', null);
+            }
         }
         if (array_key_exists('erp_process.created_user', $map)) {
             $where['nickname'] = $map['erp_process.created_user'][1];
@@ -167,8 +167,8 @@ class ProcessController extends CommonController {
             if (!empty($uids)) {
                 $map['erp_process.created_user'] = array('in', $uids);
             } else {
-	            $map['erp_process.created_user'] = array('eq', null);
-	        }
+                $map['erp_process.created_user'] = array('eq', null);
+            }
         }
     }
     
@@ -192,73 +192,86 @@ class ProcessController extends CommonController {
      * @see 
      */
     public function save(){
-        	if(!IS_POST){
-        	    $this->msgReturn(false, '未知错误');
-        	}
-    	    $post = I('post.');
-    	    
-    	    if (empty($post)) {
-    	        $this->msgReturn(false, '参数有误');
-    	    }
-    	    $pros = $post['pros'];
-    	    unset($pros[0]); //删除默认提交数据
-    	    if (empty($pros)) {
-    	        $this->msgReturn(false, '请填写sku信息');
-    	    }
-    	    if (empty($post['type'])) {
-    	        $this->msgReturn(false, '请选择类型');
-    	    }
-    	    if (empty($post['wh_id'])) {
-    	        $this->msgReturn(false, '请选择所属仓库');
-    	    }
-    	    $process = D('Process' , 'Logic');
-    	    $data = array(); //加工单数据
-    	    $param = array(); //记录SKU
-    	    foreach ($pros as $key => $value) {
-    	        //判断是否有sku信息未填写
-    	        if (empty($value['pro_code'])) {
-    	            $this->msgReturn(false, '请选择sku');
-    	        }
-    	        if (empty($value['pro_qty']) || $value['pro_qty'] <= 0) {
-    	            $this->msgReturn(false, '请填写大于0的数量');
-    	        }
+        if(!IS_POST){
+            $this->msgReturn(false, '未知错误');
+        }
+        $post = I('post.');
+        
+        if (empty($post)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        $pros = $post['pros'];
 
-                //验证小数 liuguangping
-                $mes = '';
-                if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
-                    $mes = '计划加工数量只能精确到两位小数点';
-                    $this->msgReturn(0,$mes);exit;
+        //整理数据
+        $pros_new = array();
+        foreach($pros as $key => $value){
+            foreach($value as $k => $v){
+                if($k == 0){
+                    continue;
                 }
+                $pros_new[$k][$key] = $v;
+            }
+        }
+        $pros = $pros_new;
 
-    	        $result = $process->get_ratio_by_pro_code($value['pro_code']);
-    	        if (empty($result)) {
-    	            $this->msgReturn(false, '你添加的父sku中含有不存在物料清单的');
-    	        }
-    	        $data['detail'][$key] = $value; //加工详情数据
-    	        $data['detail'][$key]['real_qty'] = 0; //实际加工量 默认0
-    	        $param[] = $value['pro_code'];
-    	    }
-    	    if (count($param) > count(array_unique($param))) {
-    	        //发现重复的SKU
-    	        $this->msgReturn(false, '请叠加相同的SKU数量');
-    	    }
-    		$data['type'] = $post['type']; //加工类型
-    		$data['remark'] = !empty($post['remark']) ? $post['remark'] : ''; //备注
-    		//创建加工单
-    		if (ACTION_NAME == 'add') {
-    		    //添加操作
-    		    $back = $process->create_process($data);
-    		    if(!$back){
-    		        $this->msgReturn(false,'创建失败');
-    		    }
-    		} elseif (ACTION_NAME == 'edit') {
-    		    //编辑操作
-    		}
+        if (empty($pros)) {
+            $this->msgReturn(false, '请填写sku信息');
+        }
+        if (empty($post['type'])) {
+            $this->msgReturn(false, '请选择类型');
+        }
+        if (empty($post['wh_id'])) {
+            $this->msgReturn(false, '请选择所属仓库');
+        }
+        $process = D('Process' , 'Logic');
+        $data = array(); //加工单数据
+        $param = array(); //记录SKU
 
-    		if(!$back){
-    		    $this->msgReturn(false,'创建失败');
-    		}
-    		$this->msgReturn(true,'创建成功','','/Process/view/id/'.$back);
+        foreach ($pros as $key => $value) {
+            //判断是否有sku信息未填写
+            if (empty($value['pro_code'])) {
+                $this->msgReturn(false, '请选择sku');
+            }
+            if (empty($value['pro_qty']) || $value['pro_qty'] <= 0) {
+                $this->msgReturn(false, '请填写大于0的数量');
+            }
+
+            //验证小数 liuguangping
+            $mes = '';
+            if (strlen(formatMoney($value['pro_qty'], 2, 1))>2) {
+                $mes = '计划加工数量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);exit;
+            }
+
+            $result = $process->get_ratio_by_pro_code($value['pro_code']);
+            if (empty($result)) {
+                $this->msgReturn(false, '你添加的父sku中含有不存在物料清单的');
+            }
+            $data['detail'][$key] = $value; //加工详情数据
+            $data['detail'][$key]['real_qty'] = 0; //实际加工量 默认0
+            $param[] = $value['pro_code'];
+        }
+        if (count($param) > count(array_unique($param))) {
+            //发现重复的SKU
+            $this->msgReturn(false, '请叠加相同的SKU数量');
+        }
+        $data['type'] = $post['type']; //加工类型
+        $data['remark'] = !empty($post['remark']) ? $post['remark'] : ''; //备注
+        //创建加工单
+        if (ACTION_NAME == 'add') {
+            //添加操作
+            $back = $process->create_process($data);
+            if(!$back){
+                $this->msgReturn(false,'创建失败');
+            }
+        } elseif (ACTION_NAME == 'edit') {
+            //编辑操作
+        }
+
+        if(!$back){
+            $this->msgReturn(false,'创建失败');
+        }
+        $this->msgReturn(true,'创建成功','','/Process/view/id/'.$back);
     }
 
     //重写view
@@ -273,21 +286,21 @@ class ProcessController extends CommonController {
     }
     
     protected function after_save($pid){
-        	if(ACTION_NAME == 'edit'){
-        	    //更新状态
-        	    $M = M('erp_process');
-        	    $map['id'] = $pid;
-        	    $result = $M->where($map)->find();
-        	    if (!empty($result)) {
-        	        if ($result['status'] != 'confirm') {
-        	            $data['status'] = 'confirm';
-        	            if ($M->create($data)) {
-        	                $M->where($map)->save();
-        	            }
-        	        }
-        	    }
-        		$this->msgReturn(1,'','',U('view','id='.$pid));
-        	}
+            if(ACTION_NAME == 'edit'){
+                //更新状态
+                $M = M('erp_process');
+                $map['id'] = $pid;
+                $result = $M->where($map)->find();
+                if (!empty($result)) {
+                    if ($result['status'] != 'confirm') {
+                        $data['status'] = 'confirm';
+                        if ($M->create($data)) {
+                            $M->where($map)->save();
+                        }
+                    }
+                }
+                $this->msgReturn(1,'','',U('view','id='.$pid));
+            }
     }
 
     /**
@@ -399,26 +412,26 @@ class ProcessController extends CommonController {
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
-        	$id = I('get.id');
-        	if (empty($id)) {
-        	    $this->msgReturn(false, '参数有误');
-        	}
-        	$map['id'] = $id;
-        	$res = M('erp_process')->where($map)->find();
-        	if (empty($res)) {
-        	    $this->msgReturn(false, '不存在的加工单');
-        	}
-        	if ($res['status'] != 1) {
-        	    //状态为1 待审核
-        	    $this->msgReturn(false, '非新建加工单不能驳回');
-        	}
-        	$data['status'] = 4; //4驳回
-        	$res = M('erp_process')->where($map)->save($data);
-        	if (!$res) {
-        	    $this->msgReturn(false, '驳回失败');
-        	}
+            $id = I('get.id');
+            if (empty($id)) {
+                $this->msgReturn(false, '参数有误');
+            }
+            $map['id'] = $id;
+            $res = M('erp_process')->where($map)->find();
+            if (empty($res)) {
+                $this->msgReturn(false, '不存在的加工单');
+            }
+            if ($res['status'] != 1) {
+                //状态为1 待审核
+                $this->msgReturn(false, '非新建加工单不能驳回');
+            }
+            $data['status'] = 4; //4驳回
+            $res = M('erp_process')->where($map)->save($data);
+            if (!$res) {
+                $this->msgReturn(false, '驳回失败');
+            }
     
-        	$this->msgReturn(true, '已驳回');
+            $this->msgReturn(true, '已驳回');
     }
     
     /**
@@ -457,24 +470,24 @@ class ProcessController extends CommonController {
         }
         
         //获取详情
-        	$data['status'] = 5; //5作废
-        	$back = M('erp_process')->where($map)->save($data);
-        	if (!$back) {
-        	    $this->msgReturn(false, '作废失败');
-        	}
-        	
-        	//作废关联的出入库单
-        	unset($map);
-        	$map['refer_code'] = $res['code'];
-        	$wms_update['is_deleted'] = 1;
-        	M('stock_bill_out')->where($map)->save($wms_update);
-        	M('stock_bill_in')->where($map)->save($wms_update);
-        	
-        	$erp_update['status'] = 3; //已作废
+            $data['status'] = 5; //5作废
+            $back = M('erp_process')->where($map)->save($data);
+            if (!$back) {
+                $this->msgReturn(false, '作废失败');
+            }
+            
+            //作废关联的出入库单
+            unset($map);
+            $map['refer_code'] = $res['code'];
+            $wms_update['is_deleted'] = 1;
+            M('stock_bill_out')->where($map)->save($wms_update);
+            M('stock_bill_in')->where($map)->save($wms_update);
+            
+            $erp_update['status'] = 3; //已作废
         M('erp_process_out')->where($map)->save($erp_update);
         M('erp_process_in')->where($map)->save($erp_update);
         
-        	$this->msgReturn(true, '已作废');
+            $this->msgReturn(true, '已作废');
     }
     
     /**
@@ -565,12 +578,12 @@ class ProcessController extends CommonController {
                     $this->msgReturn(false, '此SKU已经加工完成');
                 }
                 switch ($res['type']) {
-                	    case 'unite':
-                	        $res['type'] = '组合';
-                	        break;
-                	    case 'split':
-                	        $res['type'] = '拆分';
-                	        break;
+                        case 'unite':
+                            $res['type'] = '组合';
+                            break;
+                        case 'split':
+                            $res['type'] = '拆分';
+                            break;
                 }
                 unset($value['id']);
                 $res = array_merge($res, $value);
@@ -815,31 +828,17 @@ class ProcessController extends CommonController {
         //拼接模板
         foreach($pro_codes as $pro_code){
             $result .= '<tr class="tr-cur">
-			    <td style="width:50%;">
-			    	<input type="hidden" value="'.$pro_code.'" name="pros[pro_code][]" class="pro_code form-control input-sm"><input type="hidden" value="'.$sku_list[$pro_code]['name'].'" name="pros[pro_name][]" class="pro_name form-control input-sm"><input type="hidden" value="'.$sku_list[$pro_code]['pro_attrs_str'].'" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm">
-			    	<input type="text" value="'.'['.$pro_code.'] '.$sku_list[$pro_code]['wms_name'].'" class="pro_names typeahead form-control input-sm" autocomplete="off">
-			    </td>
-			    <td style="width:10%;">
-			        <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="数量" value="'.$purchase_infos[$pro_code]['pro_qty'].'" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off">
-			    </td>
-			    <td style="width:10%;">
-			        <select name="pros[pro_uom][]" class="form-control input-sm">
-			            <!--<option value="箱">箱</option>-->
-			            <option value="件">件</option>
-			        </select>
-			    </td>
-			    <td style="width:10%;">
-			        <input type="text" id="price_unit" name="pros[price_unit][]" placeholder="单价" value="'.$purchase_infos[$pro_code]['price_unit'].'" class="form-control input-sm text-left p_price">
-			    </td>
-        
-			    <td style="width:10%;">
-			        <label type="text" class="text-left p_res">'.$purchase_infos[$pro_code]['price_unit'] * $purchase_infos[$pro_code]['pro_qty'].'</label>
-			    </td>
-        
-			    <td style="width:10%;" class="text-center">
-			        <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
-			    </td>
-			</tr>';
+                <td style="width:50%;">
+                    <input type="hidden" value="'.$pro_code.'" name="pros[pro_code][]" class="pro_code form-control input-sm"><input type="hidden" value="'.$sku_list[$pro_code]['name'].'" name="pros[pro_name][]" class="pro_name form-control input-sm"><input type="hidden" value="'.$sku_list[$pro_code]['pro_attrs_str'].'" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm">
+                    <input type="text" value="'.'['.$pro_code.'] '.$sku_list[$pro_code]['wms_name'].'" class="pro_names typeahead form-control input-sm" autocomplete="off">
+                </td>
+                <td style="width:10%;">
+                    <input type="text" id="pro_qty" name="pros[pro_qty][]" placeholder="计划加工量" value="'.$purchase_infos[$pro_code]['pro_qty'].'" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off">
+                </td>
+                <td style="width:10%;" class="text-center">
+                    <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
+                </td>
+            </tr>';
         }
          
         $this->msgReturn(1,'',array('html'=>$result));
