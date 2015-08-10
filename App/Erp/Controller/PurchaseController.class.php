@@ -867,6 +867,7 @@ class PurchaseController extends CommonController {
         }
 
         $map['stock_purchase_detail.pid'] = array('in',$ids);
+        $map['stock_bill_in.is_deleted'] = 0;
         $result = M('stock_purchase_detail')
         ->join('join stock_purchase on stock_purchase.id = stock_purchase_detail.pid')
         ->join('join warehouse on warehouse.id = stock_purchase.wh_id')
