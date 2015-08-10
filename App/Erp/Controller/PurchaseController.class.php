@@ -631,8 +631,11 @@ class PurchaseController extends CommonController {
         foreach($pro_infos_list as $pro_info){
             $pro_info_arr = explode("\t", $pro_info);
             $pro_codes[] = $pro_info_arr[0];
-            $purchase_infos[$pro_info_arr[0]]['pro_qty'] = $pro_info_arr[1];
-            $purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
+            $purchase_infos[$pro_info_arr[0]]['pro_qty'] = formatMoney($pro_info_arr[1],2);
+            $purchase_infos[$pro_info_arr[0]]['price_unit'] = formatMoney($pro_info_arr[2],2);
+            if(!is_numeric($purchase_infos[$pro_info_arr[0]]['pro_qty']) || !is_numeric($purchase_infos[$pro_info_arr[0]]['price_unit'])){
+                $this->msgReturn(0,'批量添加中含有非数字，请修改');
+            }
         }
 
         $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
