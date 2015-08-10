@@ -658,14 +658,12 @@ class StockInLogic{
 		$out_m = M('stock_bill_out_container');
 		$map['o.type'] = 5;//调拨单
 		$map['o.status'] = 2;//已出库
-		$map['d.pid'] = array('in',$pass_reduce_ids);
-		//$map['c.refer_code'] = $code_refer;
+		$map['o.id'] = array('in',$pass_reduce_ids);
 		$map['o.is_deleted'] = 0;
 		$map['c.is_deleted'] = 0;
 
 		//查询发运后的商品
-		$out_m->join((' as c left join stock_bill_out_detail as d on d.pro_code=c.pro_code
-            left join stock_bill_out as o on d.pid = o.id')->where($map);
+		$out_m->join(' as c left join stock_bill_out as o on o.code = c.refer_code')->where($map);
 		$out_m2 = clone $out_m;//深度拷贝
 		//插入stokc_bill_in_detail表
 		$out_container = $out_m->field('c.batch,c.pro_code,c.qty,o.*')->select();
@@ -712,14 +710,6 @@ class StockInLogic{
 				foreach ($out_container as $ky => $val) {
 					if($value['refer_code'] == $val['refer_code']) {
 						if (!isset($issetCode[$val['pro_code'].'-'.$val['batch']])) {
-							//统计同一批次 ，调拨单，商品
-							$map['c.pro_code'] = $val['pro_code'];
-							$map['o.refer_code'] = $val['refer_code'];
-							$map['c.batch'] = $val['batch'];
-
-							//查询出库量
-							//$qty_out = M('stock_bill_out_container')->join(' as c left join stock_bill_out_detail as od on c.pro_code = od.pro_code 
-							//	left join stock_bill_out as o on o.id = od.pid')->where($map)->sum('od.delivery_qty');
 
 							//查询出库商品的属性 同一个出库单只有唯一一个商品
 							$where = array();
@@ -738,8 +728,7 @@ class StockInLogic{
 				            $detail[$i]['pro_name'] = $out_detail['pro_name']?$out_detail['pro_name']:'';
 				            $detail[$i]['pro_attrs'] = $out_detail['pro_attrs']?$out_detail['pro_attrs']:'';
 				            $detail[$i]['batch'] = $val['batch'];
-				            //$detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
-				            $detail[$i]['expected_qty'] = $value['qty'];
+				            $detail[$i]['expected_qty'] = $val['qty'];
 				            $detail[$i]['pro_uom'] = $out_detail['measure_unit']?$out_detail['measure_unit']:'';
 				            $detail[$i]['price_unit'] = $process_logic->get_price_by_sku($val['batch'], $val['pro_code']);//平均价
 				            $detail[$i]['prepare_qty'] = 0;
