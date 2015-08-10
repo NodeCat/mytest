@@ -13,12 +13,12 @@ class ListLogic{
 
     /*
      *功   能：根据配送单号和sku号获得最久远的批次
-     *输入参数：$dist_code配送单号;$sku_number,SKU号
+     *输入参数：$code出库单号;$sku_number,SKU号
      *@return: 最久远的批次
     */
-    public function get_long_batch($dist_code,$sku_number){
+    public function get_long_batch($code,$sku_number){
         unset($map);
-        $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
+        $map = array('refer_code' => $code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
         $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->find();
         
@@ -27,12 +27,12 @@ class ListLogic{
 
     /*
      *功   能：根据配送单号和sku号获得最近的批次
-     *输入参数：$dist_code配送单号;$sku_number,SKU号
+     *输入参数：$code出库单号;$sku_number,SKU号
      *@return: 最近的批次
     */
-    public function get_lasted_batch($dist_code,$sku_number){
+    public function get_lasted_batch($code,$sku_number){
         unset($map);
-        $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
+        $map = array('refer_code' => $code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
         $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->find();
         
