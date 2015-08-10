@@ -68,25 +68,29 @@ class InsalesLogic{
     public function getSkuInfoByWhId($pro_codeArr = array(),$wh_id,$sku_number=''){
 
         if($wh_id){
-            $where['wh_id'] = $wh_id;
+            $where['stock.wh_id'] = $wh_id;
         }
         $page_size = C('PAGE_SIZE');
-        $where['status'] = 'qualified';
+        $where['stock.status'] = 'qualified';
         $returnRes = array();
         $total = count($pro_codeArr);
         $totalPage = ceil($total/$page_size);
         if(intval($total)>0){
             $m = M('stock');
+            $join = array(
+                'left join warehouse ON warehouse.id=stock.wh_id'
+            );
+            $filed = 'stock.stock_qty,stock.wh_id,stock.pro_code,warehouse.name as wh_name';
             for($j=1; $j<=$totalPage;$j++){
                 //加入sku_number检索条件
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 if($sku_number && in_array($sku_number, $pro_code)){
-                    $where['pro_code'] = $sku_number;
-                    $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
+                    $where['stock.pro_code'] = $sku_number;
+                    $result = $m->field($filed)->join($join)->where($where)->select();
                 }
                 if(!$sku_number){
-                    $where['pro_code'] = array('in',$pro_code);
-                    $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
+                    $where['stock.pro_code'] = array('in',$pro_code);
+                    $result = $m->field($filed)->join($join)->where($where)->select();
                 }
                 
                 if($result){
@@ -105,6 +109,7 @@ class InsalesLogic{
                 }else{
                     $set[$value['wh_id'].$value['pro_code']]['pro_qty'] = $value['stock_qty'];
                     $set[$value['wh_id'].$value['pro_code']]['wh_id'] = $value['wh_id'];
+                    $set[$value['wh_id'].$value['pro_code']]['wh_name'] = $value['wh_name'];
                     $set[$value['wh_id'].$value['pro_code']]['pro_code'] = $value['pro_code'];
                 }
             }
