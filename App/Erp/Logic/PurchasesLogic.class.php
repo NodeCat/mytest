@@ -91,17 +91,24 @@ class PurchasesLogic{
             $where['b.delivery_ampm'] = $delivery_ampm; 
         }
         $result = array();
+        $join   = array(
+            'left join stock_bill_out as b on b.id=d.pid',
+            'left join stock as s on d.pro_code=s.pro_code',
+            'left join erp_process_sku_relation as r on d.pro_code = r.p_pro_code and r.is_deleted=0',
+            'left join warehouse ON warehouse.id=s.wh_id',
+            'left join stock_bill_in_detail ON stock_bill_in_detail.pro_code=s.pro_code',
+            'left join stock_bill_in_detail as c_stock_bill_in ON c_stock_bill_in.pro_code=r.c_pro_code'
+        );
+        $filed = "r.ratio,b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types, warehouse.name as wh_name, stock_bill_in_detail.pro_name as p_pro_name, stock_bill_in_detail.pro_attrs as p_pro_attrs, c_stock_bill_in.pro_name as c_pro_name";
         //$where['r.is_deleted'] = 0;
         $subQuery = $m->table('stock_bill_out_detail as d')
-        ->join('left join stock_bill_out as b on b.id=d.pid
-                left join stock as s on d.pro_code=s.pro_code 
-                left join erp_process_sku_relation as r on d.pro_code = r.p_pro_code and r.is_deleted=0')
-        ->field("r.ratio,b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
-        ->where($where)
-        ->group('b.wh_id,d.pro_code,r.c_pro_code')->buildSql();
+                      ->join($join)
+                      ->field($filed)
+                      ->where($where)
+                      ->group('b.wh_id,d.pro_code,r.c_pro_code')->buildSql();
 
-        //$map['a.types'] = array('not in',array('unqualified','freeze'));
-        $m->table($subQuery.' a')->where($map);
+        //$map['a.types'] = array('not in',array('unqualified','freeze'));->where($map)
+        $m->table($subQuery.' a');
 
 
         if($limit){
