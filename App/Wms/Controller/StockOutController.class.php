@@ -388,6 +388,7 @@ class StockOutController extends CommonController {
             
             //根据出库单号 返回对应的库存区域标识
             $location_area_name = A('Location','Logic')->getAreaByBillCode($stock_info['code']);
+
             //根据标识 整理出应该从哪些库位出库的库位id
             if(!empty($location_area_name)){
                 $in_location_ids = A('Location','Logic')->getLocationIdByAreaName(array($location_area_name));
@@ -396,13 +397,13 @@ class StockOutController extends CommonController {
             //查找出库单明细
             unset($map);
             $map['pid'] = $id;
-            $detail_info = $stock_detail->where($map)->field('pro_code,delivery_qty')->select();
+            $detail_info = $stock_detail->where($map)->field('pro_code,delivery_qty,order_qty')->select();
             
             $data['wh_id'] = $stock_info['wh_id'];
             $data['refer_code'] = $stock_info['code'];
             foreach($detail_info as $val) {
                 $data['pro_code'] = $val['pro_code'];
-                $data['pro_qty'] = $val['delivery_qty'];
+                $data['pro_qty'] = $val['order_qty'];
                 //如果出库量是0 放弃处理 处理下一条
                 if(intval($data['pro_qty']) === 0){
                     continue;
@@ -422,12 +423,12 @@ class StockOutController extends CommonController {
                 //销库存
                 foreach($detail_info as $val) {
                     //如果出库量是0 放弃处理 处理下一条
-                    if(intval($val['delivery_qty']) === 0){
+                    if(intval($val['order_qty']) === 0){
                         continue;
                     }
 
                     $data['pro_code'] = $val['pro_code'];
-                    $data['pro_qty'] = $val['delivery_qty'];
+                    $data['pro_qty'] = $val['order_qty'];
                     $data['refer_code'] = $stock_info['code'];
                     $data['wh_id'] = $stock_info['wh_id'];
                     if(!empty($in_location_ids)){
