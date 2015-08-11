@@ -71,7 +71,7 @@
             </span>
           </a> -->
           <if condition="$vo.status eq '派遣中'">
-            <botton style="float:right;" class="btn btn-primary task-sign" data-id="{$vo.id}">签到</botton>
+            <botton style="float:right;" class="btn btn-primary task-sign" data-queue="{$vo.queue}" data-id="{$vo.id}" data-pid="{$vo.pid}">签到</botton>
           <else/>
             <botton style="float:right;"  class='btn btn-default disabled'>已签到</botton>
           </if>
@@ -80,9 +80,9 @@
           {$vo.customer} &nbsp;&nbsp;
           <i class="glyphicon glyphicon-phone"></i>
           <a href="tel:{$vo.mobile}" class="user-mobile">
-            <empty name="$vo.mobile">
+            <empty name="vo['mobile']">
              无 &nbsp;
-            </else>
+            <else />
              {$vo.mobile} &nbsp;
             <i class="glyphicon glyphicon-earphone"></i>
             <small>拨号</small>
