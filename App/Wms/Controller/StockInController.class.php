@@ -784,16 +784,16 @@ class StockInController extends CommonController {
         unset($map);
 
         if(empty($rev_location_info['id'])){
-        	$this->msgReturn(0,'请添加库位WORK-01');
+            	$this->msgReturn(0,'请添加库位WORK-01');
         }
 
         //查询到货单信息
         $map['id'] = array('in',$ids);
         $stock_bill_in_infos = M('stock_bill_in')->where($map)->select();
         foreach($stock_bill_in_infos as $stock_bill_in_info){
-        	if($stock_bill_in_info['status'] == 33){
-        		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
-        	}
+            	if($stock_bill_in_info['status'] == 33){
+            		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
+            	}
         }
         unset($map);
         unset($stock_bill_in_info);
@@ -838,21 +838,19 @@ class StockInController extends CommonController {
                     ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
                     ->find();
                     unset($map);
-                
                     $data['price_unit'] = $bill_in_detail_info_from_purchase['price_unit'];
                     $data['pro_code'] = $stock_bill_in_detail_info['pro_code'];
                     $data['pro_qty'] = $stock_bill_in_detail_info['expected_qty'];
                     $data['stock_in_code'] = $bill_in_detail_info_from_purchase['code'];
                     $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                     $data['pro_status'] = $status;
-                    $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $qty) / 100,2);
+                    $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
                 
                     if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
                         $data['status'] = 'paid';
                     }else{
                         $data['status'] = 'nopaid';
                     }
-                
                     $purchase_in_detail = D('PurchaseInDetail');
                     $data = $purchase_in_detail->create($data);
                     $purchase_in_detail->data($data)->add();
