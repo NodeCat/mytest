@@ -690,7 +690,7 @@ class StockInLogic{
 
 			//检查是否是调拨单
 			if (!$erp_transfer_win) {
-				return false;
+				continue;
 			}
 
 			$bill_in['wh_id'] = $erp_transfer_win?$erp_transfer_win:'';//入库仓库@todo

@@ -60,7 +60,7 @@ class TransferInLogic
 
             //检查是否是调拨单
             if (!$erp_transfer_wout) {
-                return false;
+                continue;
             }
 
             //查找本次入库的catgory 种类数
