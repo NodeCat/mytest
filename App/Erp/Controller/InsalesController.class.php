@@ -64,24 +64,23 @@ class InsalesController extends CommonController {
 
             $count          = count($array);
             $data           = array_splice($array, $offset, $page_size);
-            $sku            = array();
-            foreach ($data as $value) {
-                $sku[] = $value['pro_code'];
-            }
-            $where['pro_code'] = array('in', implode(',', array_unique($sku)));
-            $model = M('stock_bill_in_detail');
-            $filed = 'pro_code, pro_name, pro_attrs';
-            $list  = $model->field($filed)->where($where)->group('pro_code')->select();
-            $sku_info = array();
-            foreach ($list as $value) {
-                $sku_info[$value['pro_code']] = $value;
-            }
-            unset($list);
-            foreach ($data as $key => $val) {
-                $data[$key]['pro_name'] = $sku_info[$val['pro_code']]['pro_name'];
-                $data[$key]['pro_attrs'] = $sku_info[$val['pro_code']]['pro_attrs'];
-            }
+        }
 
+        $sku            = array();
+        foreach ($data as $value) {
+            $sku[] = $value['pro_code'];
+        }
+        $where['pro_code'] = array('in', implode(',', array_unique($sku)));
+        $model = M('stock_bill_in_detail');
+        $list  = $model->field('pro_code, pro_name, pro_attrs')->where($where)->group('pro_code')->select();
+        $sku_info = array();
+        foreach ($list as $value) {
+            $sku_info[$value['pro_code']] = $value;
+        }
+        unset($list);
+        foreach ($data as $key => $val) {
+            $data[$key]['pro_name'] = $sku_info[$val['pro_code']]['pro_name'];
+            $data[$key]['pro_attrs'] = $sku_info[$val['pro_code']]['pro_attrs'];
         }
 
         $maps           = array();
