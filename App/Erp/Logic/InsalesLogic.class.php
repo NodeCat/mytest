@@ -125,12 +125,12 @@ class InsalesLogic{
     public function getSkuInfoByWhIdUp($wh_id,$pro_code='',$offset='',$limit=''){
         $m               = M('stock');
         $where           = array();
-        $where['status'] = 'qualified';
+        $where['stock.status'] = 'qualified';
         if($wh_id){
-            $where['wh_id'] = $wh_id;
+            $where['stock.wh_id'] = $wh_id;
         }
         if($pro_code){
-            $where['pro_code'] = $pro_code;
+            $where['stock.pro_code'] = $pro_code;
         }
         $result = array();
         $join   = array(
