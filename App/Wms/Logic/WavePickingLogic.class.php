@@ -142,6 +142,22 @@ class WavePickingLogic{
                         unset($data);
                         //把订单 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
                         A('Distribution', 'Logic')->getReduceSkuCodesAndUpdate(array($bill_out_info['id']));
+                        //更新波次总单数
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('order_count');
+                        //更新波次总行数
+                        $line_count_reduce = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id']))->select();
+                        $line_count_out_reduce_sum = count($line_count_reduce);
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_reduce_sum);
+                        //更新总件数
+                        $order_max_qty_sum = 0;
+                        $order_max_qty = M('stock_wave_detail')->where(array('pid' => $wave_id, 'is_deleted' => 0))->select();
+                        foreach ($order_max_qty as $detail_bill_out_id) {
+                            $detail_info = M('stock_bill_out_detail')->where(array('pid' => $detail_bill_out_id['bill_out_id']))->select();
+                            foreach ($detail_info as $detail_order_qty) {
+                                $order_max_qty_sum += $detail_order_qty['order_qty'];
+                            }
+                        }
+                        M('stock_wave')->where(array('id' => $wave_id))->save(array('order_qty' => $order_max_qty_sum));
                         if ($continue_num < $dist_group_long) {
                             continue;
                         } else {
