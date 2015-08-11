@@ -313,7 +313,7 @@ class StockOutController extends CommonController {
             $column['pro_name'] = $post['pro_name'][$i];
             $column['pro_attrs'] = $post['pro_attrs'][$i];
             $column['order_qty'] = $post['order_qty'][$i];
-            if (ACTION_NAME != 'save') {
+            if (ACTION_NAME != 'edit') {
                 $column['former_qty'] = $post['order_qty'][$i];
             }
             //$column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
