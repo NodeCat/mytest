@@ -77,6 +77,7 @@ class InsalesController extends CommonController {
         foreach ($list as $value) {
             $sku_info[$value['pro_code']] = $value;
         }
+
         unset($list);
         foreach ($data as $key => $val) {
             $data[$key]['pro_name'] = $sku_info[$val['pro_code']]['pro_name'];
