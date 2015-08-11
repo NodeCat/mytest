@@ -75,7 +75,13 @@ class PurchasesController extends CommonController {
         $maps['wh_id']          = $wh_id;
         $maps['delivery_date']  = $delivery_date;
         $maps['delivery_ampm']  = $delivery_ampm;
+        $p_sku  = array();
+        $c_sku  = array();
         foreach ($data as $key => $value) {
+            $p_sku[] = $value['pro_code'];
+            if ($value['c_pro_code']) {
+                $c_sku[] = $value['c_pro_code'];
+            }
             //$data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
             //解决不选日期和时间段是应该是根据空汇总
             $data[$key]['delivery_date'] = $delivery_date;
@@ -104,6 +110,29 @@ class PurchasesController extends CommonController {
             /*if ($data[$key]['purchase_num'] < 0) {
                 unset($data[$key]);
             }*/
+        }
+        $model = M('stock_bill_in_detail');
+        $where['pro_code'] = array('in', implode(',', $p_sku));
+        $filed = 'pro_code, pro_name, pro_attrs';
+        $p_result = $model->field($filed)->where($where)->group('pro_code')->select();
+        $where['pro_code'] = array('in', implode(',', $c_sku));
+        $c_result = $model->field($filed)->where($where)->group('pro_code')->select();
+        $p_list   = array();
+        $c_list   = array();
+        foreach ($p_result as $p_value) {
+            $p_list[$p_value['pro_code']] = $p_value;
+        }
+        unset($p_result);
+        foreach ($c_result as $c_value) {
+            $c_list[$c_value['pro_code']] = $c_value;
+        }
+        unset($c_result);
+
+        foreach ($data as &$d_data) {
+            $d_data['p_pro_name'] = $p_list[$d_data['pro_code']]['pro_name'];
+            $d_data['p_pro_attrs'] = $p_list[$d_data['pro_code']]['pro_attrs'];
+            $d_data['c_pro_name'] = $c_list[$d_data['c_pro_code']]['pro_name'];
+            $d_data['c_pro_attrs'] = $c_list[$d_data['c_pro_code']]['pro_attrs'];
         }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
