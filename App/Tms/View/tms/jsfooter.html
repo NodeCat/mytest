@@ -294,30 +294,48 @@
       function() {
         if (confirm('确定要报错吗')) {
           var userid = $(this).data('userid');
-          var type    = '地址错误';
+          var type    = '定位错误';
           report = {'user_id':userid,'type':type};
           tmsReportError(report);
         }
     });
 
     $('.task-sign').on('click',function() {
-          var id = $(this).data('id');
+          var id   = $(this).data('id');
+          var queue= $(this).data('queue');
+          var pid  = $(this).data('pid');
+          var key  = $(this).data('key');
+          var fKey = $('.task-sign:first').data('key');
+          var lKey = $('.task-sign:last').data('key');
           var addr = "{:U('taskSign')}";
           $.ajax({
             url: addr,
             type: 'post',
             cache: false,
             dataType: 'json',
-            data:{'id':id},
+            data:{'id':id,'queue':queue,'pid':pid},
             success: function(msg) {
               if (typeof HostApp == "undefined") {
                 alert(msg.msg);
-                //newPoint(id);
-                location.reload();
+                if(msg.status == 1) {
+                  if(key == fKey) {
+                    start(pid);
+                  } else if(key == lKey) {
+                    last(pid);
+                  }
+                  location.reload();
+                }
               } else {
-                HostApp.toast('dbssdjdsbjdsks');
                 HostApp.toast(msg.msg);
-                HostApp.collectPoint(id);
+                if (msg.status == 1) { //任务签到成功的话收集信息
+                  HostApp.collectPoint(id);
+                  if(key == fKey) {
+                    start(pid);
+                  } else if(key == lKey) {
+                    last(pid);
+                  }
+                  location.reload();
+                }
               }
             }  
           });
@@ -327,12 +345,10 @@
       $.post("{:U('getPoint')}",str,function(res) {
         //alert(res.msg);
         HostApp.toast(res.msg);
-        location.reload();
         });
       }
-
-    $('#sign-finished').on('click',function() {
-          var id = $(this).data('distid');
+    function last(id) {
+          var id = id;
           var addr = "{:U('Index/signFinished')}";
           $.ajax({
             url: addr,
@@ -346,22 +362,18 @@
               } else {
                 HostApp.toast(msg.msg);
                 if(msg.status == 1) {
-                  HostApp.stopLocate();
+                  HostApp.stopLocate('D'+id);
                 }
-              }
-              location.reload();
+              } 
             }  
           });
-    });
-
-  $('#start-task').on('click',function(){
-    var id = $(this).data('distid');
-    alert('任务开始成功');
-    $(this).removeClass('btn-success');
-    $(this).addClass('disabled btn-default');
-    if(typeof HostApp != "undefined"){ 
-      HostApp.toast('任务开始成功');
-      HostApp.startLocate(id,1);
-    }
-  });
+  }
+  function start(id) {
+      var id = id;
+      if (typeof HostApp == "undefined") {
+      } else {
+        HostApp.toast('开始');
+        HostApp.startLocate('D'+id);
+      }
+  }
   </script>

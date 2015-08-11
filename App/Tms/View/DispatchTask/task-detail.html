@@ -145,34 +145,31 @@
         (function addMarker(){
           //商家标记
           <volist name='address' id='addr'>
-            marker{$i} = new AMap.Marker({
-            <if condition="$addr['color_type'] eq 0">
-              icon:"__PUBLIC__/img/red.png",
-            <elseif condition="$addr['color_type'] eq 3" />
-              icon:"__PUBLIC__/img/blue.png",
-            </if>
-
             <if condition="$addr['geo'] neq ''">
+            marker{$i} = new AMap.Marker({
+              <if condition="$addr['color_type'] eq 0">
+                icon:"__PUBLIC__/img/red.png",
+              <elseif condition="$addr['color_type'] eq 3" />
+                icon:"__PUBLIC__/img/blue.png",
+              </if>
             //icon:"http://webapi.amap.com/images/custom_a_j.png",
             position:new AMap.LngLat("{$addr['geo']['lng']}","{$addr['geo']['lat']}"),
-            </if>
-          });
+            });
           marker{$i}.setMap(map);
-          marker{$i}.setTitle("{$addr['name']} 时间:{$addr['sign_time']}"); 
+          marker{$i}.setTitle("{$addr['name']} 时间:{$addr['sign_time']}");
+          </if>
           </volist>
 
-         <volist name='address' id='addr'>
-            markers{$i} = new AMap.Marker({
-
-              icon:"__PUBLIC__/img/green.png",
-            
-            <if condition="$addr['geo_new'] neq ''">
+          <volist name='address' id='addr1'>
+            <if condition="$addr1['geo_new'] neq ''">
+              markers{$i} = new AMap.Marker({
+                icon:"__PUBLIC__/img/green.png",
             //icon:"http://webapi.amap.com/images/custom_a_j.png",
-            position:new AMap.LngLat("{$addr['geo_new']['lng']}","{$addr['geo_new']['lat']}"),
+                position:new AMap.LngLat("{$addr1['geo_new']['lng']}","{$addr1['geo_new']['lat']}"),
+              });
+              markers{$i}.setMap(map);
+              markers{$i}.setTitle("{$addr1['name']} 时间:{$addr1['sign_time']}");
             </if>
-          });
-          markers{$i}.setMap(map);
-          markers{$i}.setTitle("{$addr['name']} 时间:{$addr['sign_time']}");
           </volist>
 
           <if condition="$points neq NULL">

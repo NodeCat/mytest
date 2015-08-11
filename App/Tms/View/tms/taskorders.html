@@ -36,11 +36,14 @@
 </div>
 
 <div class="col-xs-12" id="orders">
-  <if condition="$signed eq 1">
-  <botton id="start-task" class='btn btn-default btn-md btn-block' data-distid="{$dist['dist_id']}" >任务已开始</botton>
+
+  <!-- <if condition="$signed eq 1">
+  <botton id="start-task" class='btn btn-default btn-md btn-block disabled' data-distid="{$dist['dist_id']}" >任务已开始</botton>
+  <elseif condition="$signed eq 2"/>
   <else />
     <botton id="start-task" class='btn btn-success btn-md btn-block' data-distid="{$dist['dist_id']}" >开始任务</botton>
-  </if> 
+  </if> -->
+  <br />
   <volist name="data" id="vo">
     <div class="panel panel-default">
         <div class="list-group-item list-group-item-inf">
@@ -68,18 +71,18 @@
             </span>
           </a> -->
           <if condition="$vo.status eq '派遣中'">
-            <botton style="float:right;" class="btn btn-primary task-sign" data-id="{$vo.id}">签到</botton>
+            <botton style="float:right;" class="btn btn-primary task-sign" data-queue="{$vo.queue}" data-id="{$vo.id}" data-key="{$key}" data-distid="{$dist['dist_id']}" data-pid="{$vo.pid}">签到</botton>
           <else/>
-            <botton style="float:right;"  class='btn btn-default disabled'>已签到</botton>
+            <botton style="float:right;" data-key="{$key}" class='btn btn-default task-sign disabled'>已签到</botton>
           </if>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
           {$vo.customer} &nbsp;&nbsp;
           <i class="glyphicon glyphicon-phone"></i>
           <a href="tel:{$vo.mobile}" class="user-mobile">
-            <empty name="$vo.mobile">
+            <empty name="vo['mobile']">
              无 &nbsp;
-            </else>
+            <else />
              {$vo.mobile} &nbsp;
             <i class="glyphicon glyphicon-earphone"></i>
             <small>拨号</small>
@@ -95,11 +98,11 @@
         </div>
       </notempty>
     </volist>
-    <if condition="$over eq 1">
+<!--     <if condition="$over eq 1">
       <botton id="sign-finished" class='btn btn-default btn-md btn-block disabled' data-distid="{$dist['dist_id']}" >任务已结束</botton>
     <else />
       <botton id="sign-finished" class='btn btn-primary btn-md btn-block' data-distid="{$dist['dist_id']}" >任务结束</botton>
-    </if>
+    </if> -->
     <br/>
 </div>  
   <style type="text/css">

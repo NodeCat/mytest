@@ -13,16 +13,20 @@ class GpsTrackApi extends CommApi {
         $data = I('post.location');
         $data = htmlspecialchars_decode($data);
         //$data = '{"id":"3","points":[{"time":"afdsf","lng":116.382122,"lat":39.901176},{"time":"nsdfb","lng":116.387271,"lat":39.912501},{"time":"2015-07-18 01:58:28","lng":116.398258,"lat":39.904600}]}';
-        $data = json_decode($data,true);
+        $data = json_decode($data,true); 
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date   = date('Y-m-d',strtotime('+1 Days'));
-        if ($data['type'] == 1) {//提任务
+        $data['id'] = strtoupper($data['id']);
+        if(stripos($data['id'],'D')===0) {//单个任务轨迹
+            $type = 1;
+        } elseif (stripos($data['id'],'T')===0) {// 签到车次轨迹
+            $type = 0;
+        }
+        $data['id'] = substr($data['id'],1);
+        if ($type == 1) {//提任务
             $task = M('tms_dispatch_task')->field('id,code,distance')->find($data['id']);
             $key = $task['code'];// 任务号
         } else {//提货
-/*            $map['userid'] = $data['id'];
-            $map['created_time'] = array('between',$start_date.','.$end_date);
-            $sign_mg = D('TmsSignList')->relation('TmsUser')->order('created_time DESC')->where($map)->find();//获取最新的签到记录*/
             $sign_mg = M('tms_user')
             ->alias('A')
             ->join('tms_sign_list B ON A.id = B.userid')
@@ -32,7 +36,6 @@ class GpsTrackApi extends CommApi {
             ->find();
             $key = $sign_mg['id'].$sign_mg['mobile'];// 键名
         }
-        //$key = $sign_mg['id'].$sign_mg['mobile'];// 键名
         if (floatval($sign_mg['distance']) > 0 || floatval($task['distance']) > 0) {
             $data_old = S(md5($key));
             $data['points'] = array_merge($data_old['points'],$data['points']);
@@ -55,7 +58,7 @@ class GpsTrackApi extends CommApi {
         }
         $distance = sprintf('%.3f',$distance/1000);
         // 写入路程和时间
-        if ($data['type'] == 1) {//提任务
+        if ($type == 1) {//提任务
             $time = A('Tms/List','Logic')->timediff($data['points'][0]['time'],$value['time']);
             $time = json_encode($time);
             $res = M('tms_dispatch_task')->save(array('id' => $task['id'],'distance' => $distance,'take_time' => $time));

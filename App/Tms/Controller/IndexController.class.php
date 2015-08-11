@@ -23,7 +23,7 @@ class IndexController extends Controller {
 
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action2 = array('delivery','orders','sign','reject','orderlist','report');
+            $action2 = array('delivery','orders','sign','reject','orderList','report');
             if(in_array(ACTION_NAME, $action2)) {
                 R('Dist/'.ACTION_NAME);
                 exit();
@@ -110,6 +110,8 @@ class IndexController extends Controller {
     public function report() {
 
         $map['mobile'] = session('user.mobile');
+        $userid     = M('tms_user')->field('id')->where($map)->find();
+        $this->userid = $userid['id'];
         $map['type']   = '0';
         $map['status'] = '1';
         $start_date = date('Y-m-d',NOW_TIME);
@@ -183,7 +185,7 @@ class IndexController extends Controller {
             if($M->save($savedata)){
 
                 $user['username'] = $data['username'];
-                $user['mobile']   =$data['mobile'];
+                $user['mobile']   = $data['mobile'];
                 session('user',$user);
                 $this->msg='修改成功';
                 $this->person();
@@ -452,7 +454,7 @@ class IndexController extends Controller {
             $dist = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
             unset($map['dist_id']);
             $map['mobile'] = session('user.mobile');
-            $dist_all = $M->field('id,mobile,dist_id,order_count')->where($map)->select();//取出当前司机所有配送单信息
+            $dist_all = $M->field('id,mobile,dist_id,order_count,type')->where($map)->select();//取出当前司机所有配送单信息
             unset($map);
             if (!empty($dist)) {//若该配送单已被认领
                 if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
@@ -544,20 +546,32 @@ class IndexController extends Controller {
 
                 //判断是否已结款完成
                 foreach ($dist_all as $va) {
-                    $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-                    $map['dist_id'] = $va['dist_id'];
-                    $map['itemsPerPage'] = $va['order_count'];
-                    $ords = $A->order($map);
-                    foreach ($ords as $v) {
-                        if($v['status_cn'] != "已完成") {
-                            $status = '3';//只要有一个订单不是已完成，
-                            break 2;
+                    if ($va['type'] == '0') {
+                        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                        $map['dist_id'] = $va['dist_id'];
+                        $map['itemsPerPage'] = $va['order_count'];
+                        $ords = $A->order($map);
+                        foreach ($ords as $v) {
+                            if($v['status_cn'] != "已完成") {
+                                $status = '3';//只要有一个订单不是已完成，
+                                break 2;
+                            }
+                            else {
+                                $status = '4';// 已结款完成
+                            }
                         }
-                        else {
-                            $status = '4';// 已结款完成
+                    } else {
+                        $task = M('tms_dispatch_task')->field('id')->where(array('id' =>$va['dist_id'],'status' => array('neq','5')))->find();
+                        if ($task) {
+                            $status = '3';
+                            break;
+                        } else {
+                            $status = '4';
                         }
+
                     }
                 }
+
                 $res = $M->add($data);
                 // 设置订单状态
                 $map['status']  = '8';//已装车
@@ -609,9 +623,10 @@ class IndexController extends Controller {
           $this->error = '提货失败,提货码不能为空';
         }
         if (empty($this->error)) {
+            unset($map);
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'type' => 0);
+            $res = array('status' =>'1', 'message' => '提货成功','code' => $userid['id']);
             } else {
                 $msg = $this->error;
                 $res = array('status' =>'0', 'message' =>$msg);
@@ -848,7 +863,10 @@ class IndexController extends Controller {
         $start_date     = date('Y-m-d',NOW_TIME);
         $end_date       = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-        $dist = M('tms_delivery')->field('id,mobile,dist_id')->where($map)->find();// 取出当前提货单信息
+        $dist = M('tms_delivery')->field('id,mobile,dist_id,user_id')->where($map)->find();// 取出当前提货单信息
+        unset($map['dist_code']);
+        $map['mobile'] = session('user.mobile');
+        $dist_all = M('tms_delivery')->field('id,mobile,dist_id,order_count,type')->where($map)->select();//取出当前司机所有配送单信息
         unset($map);
         if (!empty($dist)) {//若该配送单已被认领
             if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
@@ -857,13 +875,13 @@ class IndexController extends Controller {
                 $nodes = M('tms_task_node')->field('status')->where(array('pid' => $dist['dist_id']))->select();
                 foreach ($nodes as $value) {
                     if($value['status'] != '1') {
-                        $status = '1';//不是已领单,就停止
+                        $status = '1';//不是派遣中,就停止
                         break;
                     } else {
                         $status = '2';
                     }
                 }
-                if ($status == '2') {//如果别人提的还是已领单，那就还可以提
+                if ($status == '2') {//如果别人提的还是派遣中，那就还可以提
                     M('tms_delivery')->save(array('id' => $dist['id'],'status'=>'0'));
                 } else {// 如果别人提了，并且只要一单不是已领单，就不能提了
                     $this->error = '该配送单已被他人提走并且在配送中,不能被认领';
@@ -886,6 +904,7 @@ class IndexController extends Controller {
             $data['dist_id']      = $task['id'];
             $data['dist_code']    = $task['code'];
             $data['mobile']       = session('user.mobile');
+            //$data['user_id']      = session('user.id');
             $data['total_price']  = $task['task_fee'];
             $data['created_time'] = get_time();
             $data['updated_time'] = get_time();
@@ -894,17 +913,69 @@ class IndexController extends Controller {
             $data['type']         = '1';
             $res = M('tms_delivery')->add($data);
             if ($res) {
-                M('tms_dispatch_task')->save(array('id' => $task['id'],'status'=>'4'));
+                foreach ($dist_all as $va) {
+                    if($va['type']=='0') {
+                        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                        $map['dist_id'] = $va['dist_id'];
+                        $map['itemsPerPage'] = $va['order_count'];
+                        $ords = A('Common/Order','Logic')->order($map);
+                        unset($map);
+                        foreach ($ords as $v) {
+                            if($v['status_cn'] != "已完成") {
+                                $status = '3';//只要有一个订单不是已完成，
+                                break 2;
+                            }
+                            else {
+                                $status = '4';// 已结款完成
+                            }
+                        }
+                    } else {
+                        $task = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
+                        if ($task) {
+                            $status = '3';
+                            break;
+                        } else {
+                            $status = '4';
+                        }
+
+                    }
+                }
+                $user = M('tms_user')->field('id,car_type,car_from')->where(array('mobile' => $data['mobile']))->find();
+                M('tms_dispatch_task')->save(array('id' => $task['id'],'status' => '4','driver_id' => $user['id']));
                 M('tms_task_node')->where(array('pid' => $task['id']))->save(array('status' =>'1'));
-                $this->msg = "提货成功";    
+                // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
+                if ($status=='4') {
+                    $map['updated_time'] = $data['updated_time'];
+                    $map['created_time'] = $data['created_time'];
+                    $map['userid']       = $user['id'];
+                    M('tms_sign_list')->add($map);
+                    unset($map);
+                    unset($status);
+                }
+                $map['is_deleted']   = '0';
+                $map['created_time'] = array('between',$start_date.','.$end_date);
+                $map['userid']       =  $user['id'];
+                $sign_id = M('TmsSignList')->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                unset($map);
+                if ($task['deliver_time']=='1') {
+                    $map['period'] = '上午';
+                } elseif ($task['deliver_time']=='2') {
+                    $map['period'] = '下午';
+                }
+                $map['delivery_time'] = $data['created_time'];//加入提货时间
+                $map['id']            = $sign_id['id'];
+                M('TmsSignList')->save($map); 
+                unset($map);
+                $this->msg = "提货成功"; 
             } else {
                 $this->error = "提货失败";
             }
         }
         if (empty($this->error)) {
+            unset($map);
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','type' => 1);
+            $res = array('status' =>'1', 'message' => '提货成功','code' => $userid['id']);
         } else {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);
@@ -947,7 +1018,7 @@ class IndexController extends Controller {
                         break;
                     case '3':
                         $val['status'] = '已完成';
-                        $this->signed = 1;
+                        $this->signed = 2;
                         $this->over = 1;
                         break;
                 }
@@ -958,20 +1029,59 @@ class IndexController extends Controller {
         $this->display('tms:taskorders');
     }
 
-    //任务签到
-    public function taskSign()
+    /*public function taskStart()
     {
-        $id  = I('post.id');
-        $res = M('tms_task_node')->save(array('id' => $id,'status' => '2'));
+        $dist_id = I('post.id');
+        $res = M('tms_task_node')->where(array('pid' => $dist_id))->save(array('status' => '2'));
         if ($res) {
             $return = array(
                 'status' => 1,
-                'msg'    => '签到成功',
+                'msg'    => '任务开始成功',
             );
         } else {
             $return = array(
                 'status' => 0,
-                'msg'    => '签到成功',
+                'msg'    => '任务开始失败,请重新开始',
+            );
+        }
+        $this->ajaxReturn($return);
+    }*/
+
+    //任务签到
+    public function taskSign()
+    {
+        $id    = I('post.id');
+        $queue = I('post.queue');
+        $pid   = I('post.pid');
+        $status = M('tms_task_node')->field('status')->find($id);
+        //如果状态不是任务开始
+        if ($status['status'] != '1') {
+            $return = array(
+                'status' => 0,
+                'msg'    => '签到失败下',
+            );
+            $this->ajaxReturn($return);
+            exit;
+        }
+        $result= M('tms_task_node')->field('id')->where(array('pid' => $pid,'queue'=>array('lt',$queue),'status' => '1'))->find();
+        if (!$result) {
+            $time = date('Y-m-d H:i:s',NOW_TIME);
+            $res = M('tms_task_node')->save(array('id' => $id,'status' => '2','sign_time' => $time));
+            if ($res) {
+                $return = array(
+                    'status' => 1,
+                    'msg'    => '签到成功',
+                );
+            } else {
+                $return = array(
+                    'status' => 0,
+                    'msg'    => '签到失败',
+                );
+            }
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '请按签到顺序签到',
             );
         }
 
@@ -982,7 +1092,7 @@ class IndexController extends Controller {
     public function signFinished()
     {
         $dist_id = I('post.id');
-        $nodes = M('tms_task_node')->where(array('pid' => $dist_id))->select();
+        $nodes = M('tms_task_node')->field('status')->where(array('pid' => $dist_id))->select();
         foreach ($nodes as $value) {
             if($value['status'] != '2') {
                 $status = '1';//不是已签收,就停止
@@ -1001,12 +1111,12 @@ class IndexController extends Controller {
         if ($result) {
             $return = array(
                 'status' => 1,
-                'msg'    => '任务结束成功',
+                'msg'    => '任务完成',
             );
         } else {
             $return = array(
                 'status' => 0,
-                'msg'    => '任务结束失败,你有未签到的任务单',
+                'msg'    => '任务结束失败',
             );
         }
         $this->ajaxReturn($return);
@@ -1020,7 +1130,8 @@ class IndexController extends Controller {
         //dump($point);exit;
         $geo = array('lng' => $point['lng'],'lat' => $point['lat']);
         $geo = json_encode($geo);
-        $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'sign_time' => $point['time']));
+        $time = date('Y-m-d H:i:s',NOW_TIME);
+        $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'updated_time' => $time));
         if ($res) {
             $return = array(
                 'status' => 1,
