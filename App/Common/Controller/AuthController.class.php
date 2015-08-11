@@ -59,10 +59,6 @@ class AuthController extends Controller {
     protected function check_rule($cur_rule){
         
         $cur_user = session('user');
-        if($cur_user['uid'] == 1){
-            //return true;
-        }
-
         $user_roles = session('user.role');
         
         if(empty($user_roles)){
@@ -106,6 +102,9 @@ class AuthController extends Controller {
             return true;
         }
 
+        if($cur_user['uid'] == 1){
+            return true;
+        }
         return false;
     }
 
