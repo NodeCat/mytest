@@ -146,63 +146,82 @@ class ListLogic{
         $map['mobile'] = $mobile;
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['status'] = '1';
-        $map['type']   = '0';
+        //$map['type']   = '0';
         $data = M('tms_delivery')->where($map)->select();
         unset($map);
         $A = A('Common/Order','Logic');
         $geo_array = array();
         $customer  = array();
         foreach ($data as $key => $value) {
+            if ($value['type'] == '0') {
             // dump($value['dist_id']);
-            $map['dist_id'] = $value['dist_id'];
-            if (defined('VERSION')) {
-                $map['order_by'] = array('created_time' => 'DESC');
-                $A = A('Tms/Dist','Logic');
-                $bills  = $A->billOut($map);
-                $orders = $bills['orders'];
-            } else { 
-                $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-                $map['itemsPerPage'] = $value['order_count'];
-                $orders = $A->order($map);
-            }
-            foreach ($orders as $keys => $values) {
+                $map['dist_id'] = $value['dist_id'];
                 if (defined('VERSION')) {
-                    $values = $values['order_info'];
+                    $map['order_by'] = array('created_time' => 'DESC');
+                    $A = A('Tms/Dist','Logic');
+                    $bills  = $A->billOut($map);
+                    $orders = $bills['orders'];
+                } else { 
+                    $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
+                    $map['itemsPerPage'] = $value['order_count'];
+                    $orders = $A->order($map);
                 }
-                $values['geo'] = json_decode($values['geo'],TRUE);
-                $customer[$values['user_id']] = 1;//统计商家数量
-                //如果地址为空的话跳过
-                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
-                    continue;
-                }
-                $geo = $values['geo'];
-                $geo['order_id'] = $value['id'];
-                $geo['user_id']  = $values['user_id'];
-                $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
-                // 只要有一单还没送完颜色就是0
-                if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
-                    if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
-                        $geo['color_type'] = 3;
+                foreach ($orders as $keys => $values) {
+                    if (defined('VERSION')) {
+                        $values = $values['order_info'];
                     }
-                    else{
+                    $values['geo'] = json_decode($values['geo'],TRUE);
+                    $customer[$values['user_id']] = 1;//统计商家数量
+                    //如果地址为空的话跳过
+                    if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
+                        continue;
+                    }
+                    $geo = $values['geo'];
+                    $geo['order_id'] = $value['id'];
+                    $geo['user_id']  = $values['user_id'];
+                    $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                    // 只要有一单还没送完颜色就是0
+                    if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                        if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                            $geo['color_type'] = 3;
+                        }
+                        else{
+                            $geo['color_type'] = 0;
+                        }      
+                    } else {
                         $geo['color_type'] = 0;
-                    }      
+                    }
+                    unset($map);
+                    $map['is_deleted']  = '0';
+                    $map['customer_id'] = $values['user_id'];
+                    $res = M('tms_report_error')->field('id')->where($map)->find();
+                    unset($map);
+                    if ($res) {
+                        $geo['color_type'] = 2;
+                    }
+                    $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
+                }            
+            } else {
+                $nodes = M('tms_task_node')->where(array('pid' => $value['dist_id']))->select();
+                $cus_count += count($nodes);
+                foreach ($nodes as &$value) {
+                    if ($value['status'] == '2' || $value['status'] == '3' ) {
+                        $value['color_type'] = 3;
+                    } else {
+                        $value['color_type'] = 0;
+                    }
+                    $value['geo']     = isset($value['geo']) ? json_decode($value['geo'],true) : '';
+                    //$value['geo_new'] = isset($value['geo']) ? json_decode($value['geo_new'],true) : '';
+                    if ($value['geo'] != '') {
+                        $geo = $value['geo'];
+                        $geo['address'] = $value['name'];
+                        $geo['color_type'] = $value['color_type'];
+                        $geo_array[]   = $geo;
+                    }
                 }
-                else{
-                    $geo['color_type'] = 0;
-                }
-                unset($map);
-                $map['is_deleted']  = '0';
-                $map['customer_id'] = $values['user_id'];
-                $res = M('tms_report_error')->field('id')->where($map)->find();
-                unset($map);
-                if ($res) {
-                    $geo['color_type'] = 2;
-                }
-                $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
-            }            
+            }
         }
-        $customer_count = count($customer);
+        $customer_count = count($customer) + $cus_count;
         $geo_arrays     = array_values($geo_array);
         unset($data);
         $data['customer_count'] = $customer_count;
