@@ -68,6 +68,7 @@ class OrderApi extends CommApi{
             }
             $params['delivery_ampm'] = $deliver_time_real;
             $params['customer_realname'] = $order_info['info']['realname'];
+            $params['customer_id'] = $order_info['info']['user_id'];
             $params['delivery_address'] = $order_info['info']['deliver_addr'];
             $params['company_id'] = $order_info['info']['site_src'];
             $params['order_type'] = $order_info['info']['order_type'];
