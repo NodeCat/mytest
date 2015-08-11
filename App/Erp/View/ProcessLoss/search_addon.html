@@ -4,10 +4,11 @@ $(function(){
     $(document).on('click','#export',function(msg){
         var start_time = $("input[name='query[erp_process.created_time]']").val() ? $("input[name='query[erp_process.created_time]']").val() :'';
         var end_time   = $("input[name='query[erp_process.created_time_1]']").val() ? $("input[name='query[erp_process.created_time_1]']").val() :'';
+        var wh_id      = $("select[name='query[erp_process.wh_id]']").val() ? $("select[name='query[erp_process.wh_id]']").val() :'';
 
         var ids = getChecked();
 
-        var url = "{:U('ProcessLoss/exportData')}"+'?start_time='+start_time+'&end_time='+end_time+'&ids='+ids;
+        var url = "{:U('ProcessLoss/exportData')}"+'?start_time='+start_time+'&end_time='+end_time+'&ids='+ids+'&wh_id='+wh_id;
         window.location.href = url;
     });
 });

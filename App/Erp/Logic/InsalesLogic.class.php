@@ -78,6 +78,7 @@ class InsalesLogic{
         if(intval($total)>0){
             $m = M('stock');
             for($j=1; $j<=$totalPage;$j++){
+                $result = array();
                 //加入sku_number检索条件
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 if($sku_number && in_array($sku_number, $pro_code)){
