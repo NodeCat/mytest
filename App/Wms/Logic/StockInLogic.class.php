@@ -688,6 +688,11 @@ class StockInLogic{
 			$wh_id_in_m['trf_code'] = $value['refer_code'];
 			$erp_transfer_win = $erp_transfer_m->where($wh_id_in_m)->getField('wh_id_in');
 
+			//检查是否是调拨单
+			if (!$erp_transfer_win) {
+				return false;
+			}
+
 			$bill_in['wh_id'] = $erp_transfer_win?$erp_transfer_win:'';//入库仓库@todo
 			$bill_in['type'] = 4;
 			$bill_in['company_id'] = 1;

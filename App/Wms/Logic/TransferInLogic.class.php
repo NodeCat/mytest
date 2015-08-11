@@ -58,6 +58,11 @@ class TransferInLogic
             $wh_id_in_m['trf_code'] = $value['refer_code'];
             $erp_transfer_wout = $erp_transfer_m->where($wh_id_in_m)->getField('wh_id_out');
 
+            //检查是否是调拨单
+            if (!$erp_transfer_wout) {
+                return false;
+            }
+
             //查找本次入库的catgory 种类数
             $array_m = array();
             $array_m['pid'] = $value['id'];
