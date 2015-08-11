@@ -176,14 +176,14 @@ class IndexController extends Controller {
             unset($M);
             $M = M('TmsUser');
             unset($map);
-            $map['mobile']=session('user.mobile');
-            $id=$M->field('id')->where($map)->order('updated_time')->find();
+            $id=$M->field('id')->where($map)->order('updated_time')->find(session('user.id'));
             $data['id']=$id['id'];
             $savedata = $M->create($data);
             if($M->save($savedata)){
 
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
+                $user['id']   =session('user.id');
                 session('user',$user);
                 $this->msg='修改成功';
                 $this->person();
@@ -267,10 +267,12 @@ class IndexController extends Controller {
             unset($M);
             $M = M('TmsUser');
             $data = $M->create($data);
-            if($M->add($data)){
+            $res = $M->add($data);
+            if($res){
                 unset($user);
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
+                $user['id']     = $res;
                 session('user',$user);
                 $userid = $M->field('id')->where($user)->find();
                 $data['userid'] = $userid['id'];
