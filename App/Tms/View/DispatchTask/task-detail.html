@@ -48,31 +48,37 @@
             <td>期望车型</td>
             <td>{$task.expect_car_type_name}</td> 
             <td>预计运费/元</td>
-            <td>{$task_expect_fee}</td> 
+            <td>{$task.expect_fee}</td> 
             <td>部门审批人</td>
-            <td>{$task.duser.username}</td>  
+            <td>{$task.da_user.nickname}</td>  
             <td>部门审批时间</td>
             <td>{$task.department_time}</td>
           </tr>
           <tr>
             <td>物流审批人</td>
-            <td>{$task.luser.username}</td> 
+            <td>{$task.la_user.nickname}</td> 
             <td>物流审批时间</td>
             <td>{$task.logistics_time}</td> 
             <td>平台</td>
-            <td>{$task.platform_name}</td>  
+            <td>{$task.driver.car_from}</td>  
             <td>车型</td>
-            <td>{$task.car_type_name}</td>
+            <td>{$task.driver.car_type}</td>
           </tr>
           <tr>
             <td>司机姓名&手机号</td>
-            <td>{$task.driver.username} {$task.driver.mobile}</td> 
+            <td>{$task.driver.username} ({$task.driver.mobile})</td> 
             <td>里程/km</td>
             <td>{$task.distance}</td> 
             <td>任务用时/小时</td>
             <td>{$time.hour}小时{$time.min}分{$time.sec}秒</td>  
             <td>总费用/元</td>
             <td>{$task.delivery_fee}</td>
+          </tr>
+          <tr>
+            <td>任务开始时间</td>
+            <td colspan="3">{$task.start_time}</td>  
+            <td>任务结束时间</td>
+            <td colspan="3">{$task.end_time}</td>
           </tr>
           <tr>
             <td>用车事由</td>

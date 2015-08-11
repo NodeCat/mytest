@@ -5,12 +5,16 @@
     <form action="{:U('index')}" method="post" class="form-inline">
     <div class="form-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <div class="text-center col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <notempty name="auth['addTask']">
             <div class="col-lg-11 col-md-11 col-sm-11 col-xs-11">
                 <a class='btn btn-info pull-right' href="{:U('addTask')}" target="_blank">新建任务</a>
             </div>
+            </notempty>
+            <notempty name="auth['saveFee']">
             <div>
                 <a class='btn btn-success pull-right' onclick="editFee(this)">编辑运费</a>
             </div>
+            </notempty>
         </div>
         <br />
         <br />
@@ -94,8 +98,8 @@
             <td>{$vo.op_time}</td>
             <td>{$vo.expect_car_type_name}</td>
             <td>{$vo.expect_fee}</td>
-            <td>{$vo.department_approver}</td>               
-            <td>{$vo.logistics_aaprover}</td>
+            <td>{$vo.da_user.nickname}</td>               
+            <td>{$vo.la_user.nickname}</td>
             <td>{$vo.platform_name}</td>
             <td>{$vo.car_type_name}</td>
             <td>{$vo.driver.name}</td>
@@ -104,10 +108,18 @@
             <td>{$vo.distance}</td>
             <td>{$vo.status_cn}</td>
             <td>
+                <eq name="vo['daudit_show']" value="true">
                 <a data-id="{$vo.id}" data-step="1" data-desc="部门审批" data-toggle="modal" data-target="#AuditModal" onclick="changeData(this);">部门审批</a>
+                </eq>
+                <eq name="vo['laudit_show']" value="true">
                 <a data-id="{$vo.id}" data-step="2" data-desc="物流审批" data-toggle="modal" data-target="#AuditModal" onclick="changeData(this);">物流审批</a>
+                </eq>
+                <notempty name="auth['taskDetail']">
                 <a href="{:U('taskDetail',array('id'=>$vo['id']))}" target="_blank">查看</a>
+                </notempty>
+                <notempty name="auth['taskDel']">
                 <a href="{:U('taskDel',array('id'=>$vo['id']))}" onclick="return confirm('确定要删除么');">删除</a>
+                </notempty>
             </td>
           </tr>
         </volist>

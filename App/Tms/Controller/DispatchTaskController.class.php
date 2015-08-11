@@ -6,10 +6,11 @@
 namespace Tms\Controller;
 use Think\Controller;
 
-class DispatchTaskController extends Controller
+class DispatchTaskController extends \Common\Controller\AuthController
 {
     protected function _initialize()
     {   
+        parent::_initialize();
         $this->warehouses = A('Wms/Distribution', 'Logic')->getAllWarehouse();
         $this->task_types = A('Tms/Dist', 'Logic')->getCatesByType('task_type');
         $this->car_types  = A('Tms/Dist', 'Logic')->getCatesByType('car_type');
@@ -64,18 +65,23 @@ class DispatchTaskController extends Controller
         $map['is_deleted'] = 0;
         $order = 'created_time DESC';
         $list = $M->where($map)->order($order)->select();
+        $dA = A('Tms/Dist', 'Logic');
         //获取任务类型用车平台和司机信息
         foreach ($list as &$val) {
             $val['warehouse_name'] = A('Wms/Distribution', 'Logic')->getWarehouseById($val['wh_id']);
-            $val['task_type_name'] = A('Tms/Dist', 'Logic')->getCateNameById($val['task_type']);
-            $val['platform_name'] = A('Tms/Dist', 'Logic')->getCateNameById($val['platform']);
-            $val['expect_car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($val['expect_car_type']);
-            $val['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($val['driver_id']);
-            $val['status_cn']  = A('Tms/Dist', 'Logic')->getStatusCnByCode($val['status']);
+            $val['task_type_name'] = $dA->getCateNameById($val['task_type']);
+            $val['platform_name']  = $dA->getCateNameById($val['platform']);
+            $val['expect_car_type_name']  = $dA->getCateNameById($val['expect_car_type']);
+            $val['driver']      = $dA->getDriverInfoById($val['driver_id']);
+            $val['da_user']     = $dA->getOneUser($val['department_approver']);
+            $val['la_user']     = $dA->getOneUser($val['logistics_approver']);
+            $val['status_cn']   = $dA->getStatusCnByCode($val['status']);
+            $val['daudit_show'] = $dA->getAuditShowStatus($this->auth, $val['status'], 1);
+            $val['laudit_show'] = $dA->getAuditShowStatus($this->auth, $val['status'], 2);
         }
         //所有的任务状态和用车平台
-        $this->task_status = A('Tms/Dist', 'Logic')->getAllTaskStatus();
-        $this->platforms = A('Tms/Dist', 'Logic')->getCatesByType('platform');
+        $this->task_status = $dA->getAllTaskStatus();
+        $this->platforms = $dA->getCatesByType('platform');
         $this->list = $list;
         $this->display('DispatchTask:dispatch-task');
     }
@@ -130,12 +136,16 @@ class DispatchTaskController extends Controller
                 );
                 //创建人、创建时间
                 $data['created_time'] = get_time();
-                // $data['created_user'] = session('user.uid');
-                $data['created_user'] = 1;
+                $data['created_user'] = UID;
+                //提货时间上下午
+                $h = date("H", strtotime($rdata['op_time'][$key]));
+                if (intval($h) > 12) {
+                    $data['delivery_time'] = '2';
+                }
                 $M = M('tms_dispatch_task');
                 $id = $M->add($data);
                 if ($id) {
-                    $cdata = array('code' => 'DT' . $id);
+                    $cdata = array('code' => 'D' . $id);
                     $M->where(array('id'=>$id))->save($cdata);
                     //任务节点数据
                     $task_node = $rdata['nodes'][$key];
@@ -159,8 +169,7 @@ class DispatchTaskController extends Controller
                             'geo'          => $geo,
                             'queue'        => $k,
                             'created_time' => get_time(),
-                            // 'created_user' => session('user.uid'),
-                            'created_user' => 1,
+                            'created_user' => UID,
                         );
                         $nodeData[] = $tmp;
                     }
@@ -258,13 +267,30 @@ class DispatchTaskController extends Controller
         $map['id'] = $id;
         $map['is_deleted'] = 0;
         $task = $M->where($map)->find();
+        unset($map);
+        $dA = A('Tms/Dist', 'Logic');
         //根据ID查询仓库、车型、平台、用户信息等
         $task['warehouse_name'] = A('Wms/Distribution', 'Logic')->getWarehouseById($task['wh_id']);
-        $task['task_type_name'] = A('Tms/Dist', 'Logic')->getCateNameById($task['task_type']);
-        $task['platform_name'] = A('Tms/Dist', 'Logic')->getCateNameById($task['platform']);
-        $task['expect_car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($task['expect_car_type']);
-        $task['car_type_name']  = A('Tms/Dist', 'Logic')->getCateNameById($task['car_type']);
-        $task['driver']  = A('Tms/Dist', 'Logic')->getDriverInfoById($task['driver_id']);
+        $task['task_type_name'] = $dA->getCateNameById($task['task_type']);
+        $task['platform_name']  = $dA->getCateNameById($task['platform']);
+        $task['expect_car_type_name']  = $dA->getCateNameById($task['expect_car_type']);
+        $task['car_type_name']  = $dA->getCateNameById($task['car_type']);
+        $task['driver']  = $dA->getDriverInfoById($task['driver_id']);
+        $task['da_user'] = $dA->getOneUser($task['department_approver']);
+        $task['la_user'] = $dA->getOneUser($task['logistics_approver']);
+        //任务节点数据，取开始结束时间
+        $map['pid'] = $id;
+        $map['is_deleted'] = 0;
+        $order = "queue ASC";
+        $task_nodes = M('tms_task_node')
+            ->field('id,sign_time,queue')
+            ->where($map)
+            ->order($order)
+            ->select();
+        $start_node = array_shift($task_nodes);
+        $end_node = array_pop($task_nodes);
+        $task['start_time'] = (strtotime($start_node['sign_time'])) < 0 ? '' : $start_node['sign_time'];
+        $task['end_time'] = (strtotime($end_node['sign_time'])) < 0 ? '' : $end_node['sign_time'];
         $this->task = $task;
         //显示轨迹
         $nodes = M('tms_task_node')->where(array('pid'=>$id))->select();
@@ -312,7 +338,7 @@ class DispatchTaskController extends Controller
             $data = array(
                 'status'              => $status,
                 'department_time'     => get_time(),
-                'department_approver' => session('user.uid'),
+                'department_approver' => UID,
             );
             $flag = $M->where($map)->save($data);
             if ($flag) {
@@ -360,7 +386,7 @@ class DispatchTaskController extends Controller
             $data = array(
                 'status'         => $status,
                 'logistics_time' => get_time(),
-                'logistics_approver' => session('user.uid'),
+                'logistics_approver' => UID,
             );
             $flag = $M->where($map)->save($data);
             if ($flag) {
@@ -411,7 +437,7 @@ class DispatchTaskController extends Controller
             'searchValue'  => $searchValue,
             'fields'       => 'name,lng,lat,shop_name,mobile',
             'currentPage'  => 0,
-            'itemsPerPage' => 15
+            'itemsPerPage' => 10
         );
         $cA = A('Common/Order', 'Logic');
         $res = $cA->getCustomerList($map);

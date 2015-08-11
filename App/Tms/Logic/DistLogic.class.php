@@ -116,9 +116,9 @@ class DistLogic {
             return array();
         }
         $map['is_deleted'] = 0;
-        $map['id'] = $id;
+        $map['id'] = $uid;
         $M = M('tms_user');
-        $res = $M->field('id,username,mobile')->where($map)->find();
+        $res = $M->field('id,username,mobile,car_type,car_from')->where($map)->find();
         return $res;
     }
 
@@ -190,5 +190,45 @@ class DistLogic {
             $result['car_platform'] = $res['car_platform'];
         }
         return $result;
+    }
+
+    /**
+     * [getAuditShowStatus 根据权限、状态、审批步骤判断审批按钮是否显示]
+     * @param  [type] $auth   [权限集]
+     * @param  [type] $status [当前任务状态]
+     * @param  [type] $type   [物流审批还是部门审批]
+     * @return [type]         [description]
+     */
+    public function getAuditShowStatus($auth, $status, $type = 1)
+    {
+        //部门审批
+        if ($type === 1) {
+            if (!empty($auth['departAudit']) && $status == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            //物流审批
+            if (!empty($auth['logisAudit']) && $status == 2) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * [getOneUser 根据uid获取一条用户信息]
+     * @param  [type] $uid [用户ID]
+     * @return [type]      [description]
+     */
+    public function getOneUser($uid)
+    {
+        $uM = M('user');
+        $map['id'] = $uid;
+        $map['is_deleted'] = 0;
+        $res = $uM->where($map)->find();
+        return $res;
     }
 }
