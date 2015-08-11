@@ -176,11 +176,9 @@ class IndexController extends Controller {
             unset($M);
             $M = M('TmsUser');
             unset($map);
-            $id=$M->field('id')->where($map)->order('updated_time')->find(session('user.id'));
-            $data['id']=$id['id'];
+            $data['id']=session('user.id');
             $savedata = $M->create($data);
             if($M->save($savedata)){
-
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
                 $user['id']   =session('user.id');
