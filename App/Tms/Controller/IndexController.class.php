@@ -65,6 +65,7 @@ class IndexController extends Controller {
                 $data=$M1->field('id,username')->where($user)->order('created_time DESC')->find();          
                 if($data['id']){ // 如果以前签到过
                     $user['username'] = $data['username'];// 把用户名写入session
+                    $user['id'] = $data['id'];      //把司机id写入session，键名是id，不是uid，需要区别业务人员
                     $date = date('Y-m-d H:i:s',NOW_TIME);
                     $userid['userid']=$data['id'];
                     $userid['updated_time']=$date;
@@ -507,7 +508,8 @@ class IndexController extends Controller {
             if (empty($this->error)) {
                 $data['dist_id'] = $dist['id'];
                 $data['dist_code'] = $dist['dist_number'];
-                $data['mobile'] = session('user.mobile');
+                $data['mobile']    = session('user.mobile');
+                $data['user_id'] = session('user.id');
                 $data['order_count'] = $dist['order_count'];
                 $data['sku_count'] = $dist['sku_count'];
                 $data['line_count'] = $dist['line_count'];
