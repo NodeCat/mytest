@@ -243,6 +243,7 @@ class DistController extends Controller {
                     //获取支付状态的中文
                     $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
                     $val['pay_status'] = $s;
+                    $val['pay_type']   = $val['order_info']['pay_type'];
                     $val['order_info']['pay_status'] = $s;
                     //从订单获取字段到出库单
                     $val['shop_name']       = $val['order_info']['shop_name'];
@@ -256,10 +257,10 @@ class DistController extends Controller {
                     $val['deliver_fee']     = $val['order_info']['deliver_fee'];
                     $val['final_price']     = $val['order_info']['final_price'];
                     $val['receivable_sum']  = $val['order_info']['final_price'];
-                    if ($val['pay_status'] != '已付款') {
-                        $val['real_sum']   = $A->wipeZero($val['order_info']['final_price']);
+                    if ($val['pay_status'] == '已付款' || $val['pay_type'] == 2) {
+                        $val['real_sum']   = $val['order_info']['final_price'];
                     } else {
-                       $val['real_sum']    = $val['order_info']['final_price'];
+                       $val['real_sum']    = $A->wipeZero($val['order_info']['final_price']);
                     }
                     $val['sign_msg']        = $val['order_info']['sign_msg'];
                     $val['user_id']         = $val['order_info']['user_id'];
@@ -390,8 +391,10 @@ class DistController extends Controller {
         $A = A('Tms/Dist','Logic');
         $receivable_sum -= $orderInfo['info']['minus_amount'];
         $receivable_sum += $orderInfo['info']['deliver_fee'];
-        if ($orderInfo['info']['pay_status'] != 1) {
+        //付款状态为已付款和账期支付的不进行抹零处理
+        if ($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2) {
             $deal_price = $A->wipeZero($receivable_sum);
+            $wipe_zero  = round($receivable_sum - $deal_price,2);
         } else {
             $deal_price = $receivable_sum;
         }
@@ -404,6 +407,8 @@ class DistController extends Controller {
             'pay_reduce'     => $orderInfo['info']['pay_reduce'],
             'deliver_fee'    => $orderInfo['info']['deliver_fee'],
             'pay_status'     => $orderInfo['info']['pay_status'],
+            'pay_type'       => $orderInfo['info']['pay_type'],
+            'wipe_zero'      => isset($wipe_zero) ? $wipe_zero : 0,
             'sign_msg'       => $sign_msg,
             'status'         => 2,//签收
             'sign_time'      => get_time(),
@@ -498,6 +503,8 @@ class DistController extends Controller {
                 'sign_msg'       => I('post.sign_msg', '' ,'trim'),
                 'reject_reason'  => $reasons,
                 'status'         => 3,//拒收
+                'pay_status'     => $orderInfo['info']['pay_status'],
+                'pay_type'       => $orderInfo['info']['pay_type'],
                 'sign_time'      => get_time(),
                 'sign_driver'    => session('user.mobile'),
             );
@@ -613,11 +620,14 @@ class DistController extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            if ($sign_data['pay_status'] != 1) {
+                            //付款状态不是已付款和帐期支付的才计算回款数
+                            if ($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2) {
+                                $sum_deal_price += 0;
+                            } else {
                                 $sum_deal_price += $sign_qty * $sign_in_detail['price_unit'];  //回款
                             }
                         }
-                        if ($sign_data['pay_status'] != 1) {
+                        if (!($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2)) {
                             $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);
                         }  
                         break;
