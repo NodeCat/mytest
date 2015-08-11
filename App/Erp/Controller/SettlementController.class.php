@@ -190,10 +190,10 @@ class SettlementController extends CommonController
     {
         if (IS_AJAX && IS_POST) {
             $post         = I('post.data');             //选择的结算订单
-            $total_amount = I('post.paid_amount/d');    //总金额
+            $total_amount = I('post.paid_amount');      //总金额
             $partner_id   = I('post.partner_id/d');     //供应商ID
             $bill_number  = I('post.bill_number');      //发票号
-            $bill_amount  = I('post.bill_amount/d');    //发票金额
+            $bill_amount  = I('post.bill_amount');      //发票金额
 
             if (empty($partner_id)) {
                 $this->ajaxReturn(array('code'=>'-1', 'message'=>'请选择供应商！'));

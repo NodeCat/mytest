@@ -65,9 +65,9 @@
     <volist name="data" id="vo" key="k">
      <tr class="list_info_all"> 
       <td>{$vo.pro_code}</td> 
-      <td>{$vo.pro_code|getPronameByCode='name',###}</td> 
-      <td>{$vo.pro_code|getSkuInfoByCode='pro_attrs_str',###}</td> 
-      <td>{$vo.wh_id|getTableFieldById='warehouse','name',###}</td> 
+      <td>{$vo.pro_code|getPronameByCode='name',###}</td>
+      <td>{$vo.pro_code|getSkuInfoByCode='pro_attrs_str',###}</td>
+      <td>{$vo.wh_id|getTableFieldById='warehouse','name',###}</td>
       <td>{$vo.pro_qty}</td> 
      </tr>
     </volist>

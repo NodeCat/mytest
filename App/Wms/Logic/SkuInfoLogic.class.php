@@ -108,6 +108,7 @@ class SkuInfoLogic
         }
         $map['stock_bill_out.type']  = 1; //销售类型
         $map['stock_bill_out.op_date'] = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
+        $map['stock_bill_out.status'] = 2; //已出库
         $stockOutDetail = M('stock_bill_out_detail')
                               ->field('pro_code,SUM(delivery_qty) as qty')
                               ->join('stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid')

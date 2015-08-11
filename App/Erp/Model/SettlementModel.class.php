@@ -40,6 +40,7 @@ class SettlementModel  extends RelationModel {
                 "left join user as a_user on erp_settlement.audited_user = a_user.id ",
             ),
             "field"=>"erp_settlement.id as id,erp_settlement.code as code,erp_settlement.created_time as created_time,user.nickname as created_user, partner.name as partner_name,erp_settlement.total_amount as total_amount,erp_settlement.status as status, erp_settlement.status as state, erp_settlement.settlement_time as settlement_time, s_user.nickname as settlement_user,erp_settlement.audited_time, a_user.nickname as audited_user, erp_settlement.invoice_amount as invoice_amount, erp_settlement.invoice as invoice ",
+            "order"=>"erp_settlement.id desc",
         )
     );
 }
