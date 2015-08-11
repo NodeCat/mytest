@@ -836,17 +836,32 @@ class DistributionController extends CommonController {
             unset($map);
         }
 
-        //修改采购退货已收货状态和实际收货量 liuguangping        
-        $distribution_logic = A('PurchaseOut','Logic');        
-        $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
+        
+        //查询采购正品退货单或erp调拨单
+        $map_refer = array();
+        $map_refer['id'] = array('in',$pass_reduce_ids);
+        $refer_out_res = $stock->where($map_refer)->select();
+        //关联单据单号
+        $refer_code_Arr = array_column($refer_out_res,'refer_code');
+        $erp_map = array();
+        $where_out = array();
+        $erp_map['trf_code'] = array('in',$refer_code_Arr);
+        $transfer_re = M('erp_transfer')->where($erp_map)->select();
+        $where_out['rtsg_code'] = array('in',$refer_code_Arr);
+        $purchase_out = M('stock_purchase_out')->where($where_out)->select();
+        if ($transfer_re || $purchase_out) {
+            //修改采购退货已收货状态和实际收货量 liuguangping        
+            $distribution_logic = A('PurchaseOut','Logic');        
+            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
+            //加入wms入库单 liuguangping
+            $stockin_logic = A('StockIn','Logic');        
+            $stockin_logic->addWmsIn($pass_reduce_ids);
 
-        //加入wms入库单 liuguangping
-        $stockin_logic = A('StockIn','Logic');        
-        $stockin_logic->addWmsIn($pass_reduce_ids);
+            //加入erp调拨入库单
+            $erp_stockin_logic = A('TransferIn', 'Logic');
+            $erp_stockin_logic->addErpIn($pass_reduce_ids);
+        }
 
-        //加入erp调拨入库单
-        $erp_stockin_logic = A('TransferIn', 'Logic');
-        $erp_stockin_logic->addErpIn($pass_reduce_ids);
         $this->msgReturn(true, '已完成', '', U('over'));
     }
     
