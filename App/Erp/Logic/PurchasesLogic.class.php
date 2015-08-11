@@ -96,6 +96,7 @@ class PurchasesLogic{
             $where['b.delivery_ampm'] = $delivery_ampm; 
         }
         $result = array();
+
         $join   = array(
             'left join stock_bill_out as b on b.id=d.pid',
             'left join stock as s on d.pro_code=s.pro_code',
@@ -103,6 +104,7 @@ class PurchasesLogic{
             'left join warehouse ON warehouse.id=s.wh_id'
         );
         $filed = "r.ratio,b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types, warehouse.name as wh_name";
+
         //$where['r.is_deleted'] = 0;
         $subQuery = $m->table('stock_bill_out_detail as d')
                       ->join($join)
@@ -110,8 +112,8 @@ class PurchasesLogic{
                       ->where($where)
                       ->group('b.wh_id,d.pro_code,r.c_pro_code')->buildSql();
 
-        //$map['a.types'] = array('not in',array('unqualified','freeze'));->where($map)
-        $m->table($subQuery.' a');
+        //$map['a.types'] = array('not in',array('unqualified','freeze'));
+        $m->table($subQuery.' a')->where($map);
 
 
         if($limit){

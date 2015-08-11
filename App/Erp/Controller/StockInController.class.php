@@ -491,6 +491,10 @@ class StockInController extends CommonController {
 		if(ACTION_NAME == 'pindex'){
 			//如果是采购到货单，只显示采购相关的到货单据
 			$map['stock_bill_in.type'] = 1;
+			//pindex代表是erp，不需要wh_id参数
+			$wMap['warehouse.id'] = array('in',session('user.rule'));
+			$M->where($wMap);
+			unset($map['wh_id']);
 		}
 		$res = $M_bill_in->field('status,count(status) as qty')->where($map)->group('status')->select();
 

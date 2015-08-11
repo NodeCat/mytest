@@ -82,6 +82,7 @@ class InsalesLogic{
             );
             $filed = 'stock.stock_qty,stock.wh_id,stock.pro_code,warehouse.name as wh_name';
             for($j=1; $j<=$totalPage;$j++){
+                $result = array();
                 //加入sku_number检索条件
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 if($sku_number && in_array($sku_number, $pro_code)){
@@ -124,12 +125,12 @@ class InsalesLogic{
     public function getSkuInfoByWhIdUp($wh_id,$pro_code='',$offset='',$limit=''){
         $m               = M('stock');
         $where           = array();
-        $where['stock.status'] = 'qualified';
+        $where['status'] = 'qualified';
         if($wh_id){
-            $where['stock.wh_id'] = $wh_id;
+            $where['wh_id'] = $wh_id;
         }
         if($pro_code){
-            $where['stock.pro_code'] = $pro_code;
+            $where['pro_code'] = $pro_code;
         }
         $result = array();
         $join   = array(

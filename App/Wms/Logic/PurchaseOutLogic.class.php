@@ -167,6 +167,7 @@ class PurchaseOutLogic{
                     $insertAll[$key]['pro_attrs'] = $value['pro_attrs'];
                     $insertAll[$key]['price'] = $value['price_unit'];
                     $insertAll[$key]['order_qty'] = $value['plan_return_qty'];
+                    $insertAll[$key]['former_qty'] = $value['plan_return_qty'];
                     $insertAll[$key]['status'] = 1;
                     $insertAll[$key]['created_user'] = UID;
                     $insertAll[$key]['created_time'] = get_time();

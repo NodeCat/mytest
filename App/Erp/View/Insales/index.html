@@ -76,7 +76,7 @@
                 var pro_code = $('[name = pro_code]').val()?$('[name = pro_code]').val():'';
                 var d = new Date();
                 var time = d.getTime();
-                var url   = "{:U('Insales/exportInsales')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+'&cat_3='+cat_3+"&pro_code="+pro_code+"&time="+time;
+                var url   = "{:U('Insales/exportInsales')}"+'?wh_id='+wh_id+'&cat_1='+cat_1+'&cat_2='+cat_2+'&cat_3='+cat_3+"&pro_code="+pro_code+"&time="+time;
                 window.location.href = url;
             });
             
