@@ -110,6 +110,14 @@
             $("#data-table").children("tbody").html("");
             $("#mapdisplay").html('显示地图');
             $('#mapContainer').css("display","none");
+
+            if($("#table-orders tr").find('.so-id').length==0){
+                $(".select-all").prop('disabled',false)
+            }
+            else{
+                $(".select-all").prop('disabled',true)
+            }
+                
             flg = 1;
             $.ajax({
                 url:url,

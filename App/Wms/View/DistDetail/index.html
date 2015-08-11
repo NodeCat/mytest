@@ -149,6 +149,7 @@ $('#add-dist').on('click',function(){
 	$('#table-content').delegate('input[type=checkbox]','change',function(){
 		if($(this).hasClass('select-all')) {
 			//找到tbody中的所有checkbox
+			Itemobj={};
 			$("#table-content tbody input[type='checkbox']").each(function(){
 				var tr = $(this).parents('tr');
 				var id = $(this).parents('tr').find('.order-id').val();
@@ -185,6 +186,7 @@ $('#add-dist').on('click',function(){
 				row['qty'] = tr.find('.order-qty').val();
 				addRow(row);
 				var key = tr.find('.order-line').val();
+				$(".select-all").prop('disabled',true)
 				if(Itemobj[key]==undefined)
 				Itemobj[key] = 1;
 			    else
@@ -196,6 +198,13 @@ $('#add-dist').on('click',function(){
 				var key = $(this).parents('tr').find('.order-line').val();
 				Itemobj[key] -=1;
 				removeRow(id);
+			    if($("#table-orders tr").find('.so-id').length == 0)
+			    $(".select-all").prop('disabled',false)
+			    else
+			    $(".select-all").prop('disabled',true)
+
+
+				
 			}
 		}
 		
