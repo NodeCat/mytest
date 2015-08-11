@@ -797,6 +797,7 @@ class ProcessLogic {
             $detail['pro_attrs'] = $value['pro_attrs'];
             $detail['price'] = 0;
             $detail['order_qty'] = formatMoney($value['plan_qty'], 2);
+            $detail['former_qty'] = formatMoney($value['plan_qty'], 2);
             $detail['status'] = 1; //待生产
             $detail['delivery_qty'] = formatMoney('0', 2);
             $detail['created_time'] = get_time();

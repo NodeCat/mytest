@@ -103,9 +103,9 @@ class WavePickingLogic{
                         $line_count_out = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id']))->select();
                         $line_count_out_sum = count($line_count_out);
                         M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_sum);
-                        //删除出库单 并踢出车单
+                        //关闭出库单 并踢出车单
                         M('stock_wave_distribution_detail')->where(array('pid' => $distribution_id, 'bill_out_id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
-                        M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
+                        M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('status' => 18));
                         
                         //更新车单信息
                         D('Distribution', 'Logic')->updDistInfoByIds(array($distribution_id));
