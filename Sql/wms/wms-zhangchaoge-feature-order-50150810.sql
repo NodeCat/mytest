@@ -1,6 +1,6 @@
 ALTER TABLE  `stock_bill_out_detail` ADD  `former_qty` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT '客户原始下单量' AFTER  `price` ;
 ALTER TABLE  `stock_bill_out` CHANGE  `status`  `status` VARCHAR( 45 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  '' COMMENT  '1待生产2已出库3波次中4待拣货5待复核18已关闭';
-INSERT INTO  `wms_20150804`.`auth_authority` (
+INSERT INTO  `wms`.`auth_authority` (
 `id` ,
 `name` ,
 `type` ,
