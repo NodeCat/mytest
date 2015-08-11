@@ -150,14 +150,10 @@ class WavePickingLogic{
                         M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_reduce_sum);
                         //更新总件数
                         $order_max_qty_sum = 0;
-                        $order_max_qty = M('stock_wave_detail')->where(array('pid' => $wave_id, 'is_deleted' => 0))->select();
-                        foreach ($order_max_qty as $detail_bill_out_id) {
-                            $detail_info = M('stock_bill_out_detail')->where(array('pid' => $detail_bill_out_id['bill_out_id']))->select();
-                            foreach ($detail_info as $detail_order_qty) {
-                                $order_max_qty_sum += $detail_order_qty['order_qty'];
-                            }
+                        foreach ($line_count_reduce as $detail_order_qty) {
+                            $order_max_qty_sum += $detail_order_qty['order_qty'];
                         }
-                        M('stock_wave')->where(array('id' => $wave_id))->save(array('order_qty' => $order_max_qty_sum));
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('total_count', $order_max_qty_sum);
                         if ($continue_num < $dist_group_long) {
                             continue;
                         } else {

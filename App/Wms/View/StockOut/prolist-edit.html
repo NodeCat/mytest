@@ -3,7 +3,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-            <th>产品名称</th><th>待拣货量</th><th>发货量</th>
+            <th>产品名称</th><th>原始订单量</th><th>待拣货量</th><th>发货量</th>
   		</thead>
   		<tbody>
       <tr class="hidden tr-tpl">
@@ -21,13 +21,16 @@
 
       <volist name="pros" id="vo">
         
-<tr class="tr-cur">
-      <td style="width:50%;">
+      <tr class="tr-cur">
+      <td style="width:40%;">
       <input type="hidden" value="{$vo.id}" name="pros[id][]" />
       <input type="hidden" value="{$vo.pro_code}" name="pros[pro_code][]" class="pro_code form-control input-sm" >
       <input type="hidden" value="{$vo.pro_name}" name="pros[pro_name][]" class="pro_name form-control input-sm" >
       <input type="hidden" value="{$vo.pro_attrs}" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
       <input type="text" value="{$vo.pro_names}"  placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" readonly="">
+      </td>
+      <td  style="width:10%;">
+      <input type="text" placeholder="数量"  value="{$vo.former_qty}" class="pro_names typeahead form-control input-sm" autocomplete="off" >
       </td>
       <td  style="width:10%;">
       <input type="text" id="order_qty" name="pros[order_qty][]" placeholder="数量"  value="{$vo.order_qty}" class="pro_qty order_qty form-control input-sm text-left" autocomplete="off" >
