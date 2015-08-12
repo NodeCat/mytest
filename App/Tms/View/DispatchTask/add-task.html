@@ -109,7 +109,12 @@
                 <label for="" class="control-label">用车部门
                   <span class="text-danger">*</span>&nbsp;
                 </label>
-                <input type="txt" name="apply_department[]" class="form-control require" placeholder="用车部门">
+                <select autocomplete="off" class="form-control require"  id="apply_department" name="apply_department[]" data-val="">
+                  <option value="">选择用车部门</option>
+                  <option value="物流部">物流部</option>
+                  <option value="仓储部">仓储部</option>
+                  <option value="技术部">技术部</option>
+                </select>
               </div>
             </td>
             <td>

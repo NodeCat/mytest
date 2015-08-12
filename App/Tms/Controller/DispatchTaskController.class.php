@@ -101,7 +101,7 @@ class DispatchTaskController extends \Common\Controller\AuthController
                 'apply_mobile'     => I('post.apply_mobile', array()),
                 'apply_department' => I('post.apply_department', array()),
                 'op_time'          => I('post.op_time', array()),
-                'nodes'             => I('post.node', array()),
+                'nodes'            => I('post.node', array()),
             );
             //判断必选信息是否完整
             foreach ($rdata as $r) {
