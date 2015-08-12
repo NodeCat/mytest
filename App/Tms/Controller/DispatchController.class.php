@@ -24,7 +24,74 @@ class DispatchController extends \Common\Controller\AuthController{
          
     );
     public function home () {
-        $this->display('Index/index');
+        $data['stockout']['title'] = '出库单实时统计';
+        $data['stockout']['data'] = M()->table('stock_wave_distribution_detail dd ')
+        ->field('wh.name,dd.status,date(deliver_date) deliver_date,deliver_time,count(*) qty')
+        ->join('stock_wave_distribution d on dd.pid = d.id and d.is_deleted = 0 and dd.is_deleted = 0')
+        ->join('warehouse wh on d.wh_id = wh.id')
+        ->where('d.deliver_date = date(now())')
+        ->group('d.wh_id,dd.status,deliver_date,deliver_time')
+        ->select();
+
+        $data['distribution']['title'] = '配送单实时统计';
+        $data['distribution']['data'] = M()->table('stock_wave_distribution d')
+        ->field('wh.name,d.status,date(deliver_date) deliver_date,d.deliver_time,count(*) qty')
+        ->join('warehouse wh on d.wh_id = wh.id')
+        ->where('deliver_date = date(now()) and d.is_deleted = 0')
+        ->group('wh_id,status,deliver_time')
+        ->select();
+
+        $status['stockout'] = array(
+                '0' => '已分拨',
+                '1' => '已装车',
+                '2' => '已签收',
+                '3' => '已拒收',
+                '4' => '已完成',
+                '5' => '已发运',
+        );
+
+        $status['distribution'] = array(
+                '0' => '未知',
+                '1' => '未发运',
+                '2' => '已发运',
+                '3' => '已配送',
+                '4' => '已结算',
+        );
+
+        $deliver_time = array(
+            '1' =>'上午',
+            '2' =>'下午'
+        );
+
+        foreach ($data['stockout']['data'] as &$value) {
+            $value['status_cn'] = $status['stockout'][$value['status']];
+            $value['deliver_time'] = $deliver_time[$value['deliver_time']];         
+        }
+        foreach ($data['distribution']['data'] as &$value) {
+            $value['status_cn'] = $status['distribution'][$value['status']];
+            $value['deliver_time'] = $deliver_time[$value['deliver_time']];         
+        }
+
+        $data['stockout']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'deliver_time' => '配送时间',
+            'status_cn' => '状态',
+            'qty' => '数量',
+        );
+
+        $data['distribution']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'deliver_time' => '配送时间',
+            'status_cn' => '状态',
+            'qty' => '数量',
+        );
+
+        $this->data = $data;
+
+
+        $this->display('tms/home');
     }
     protected $car = array(
         'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
