@@ -21,7 +21,7 @@ class DistributionController extends CommonController {
             'sku_count' => '总件数',
             'created_user' => '创建者',
             'created_time' => '创建时间',
-            'over_time' => '发运时间',
+            'end_time' => '发运时间',
             'status' => '状态',
     );
     protected $query   = array (
@@ -659,7 +659,7 @@ class DistributionController extends CommonController {
 
         $map['dist_code'] = $post;
         $data['status'] = 2; //已发运
-        $data['over_time'] = date('Y-m-d H:i:s',time()); //发运时间
+        $data['end_time'] = date('Y-m-d H:i:s',time()); //发运时间
         //更新配送状态为已完成
         if ($M->create($data)) {
             $M->where($map)->save();
