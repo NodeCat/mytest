@@ -734,7 +734,7 @@ class IndexController extends Controller {
                         $v['updated_time'] = get_time();
                         $v['created_user'] = 2;   //uid默认为2
                         $v['updated_user'] = 2;   //uid默认为2
-                        $v['batch'] = $batch;
+                        $v['batch'] = isset($batch) ? $batch : '';
                         $bill['detail'][] = $v;
                         
                         $container['refer_code'] = $bill['code'];   //关联拒收入库单号
