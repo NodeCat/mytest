@@ -31,6 +31,7 @@ class DispatchController extends \Common\Controller\AuthController{
         ->join('warehouse wh on d.wh_id = wh.id')
         ->where('d.deliver_date = date(now())')
         ->group('d.wh_id,dd.status,deliver_date,deliver_time')
+        ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
 
         $data['distribution']['title'] = '配送单实时统计';
@@ -39,6 +40,7 @@ class DispatchController extends \Common\Controller\AuthController{
         ->join('warehouse wh on d.wh_id = wh.id')
         ->where('deliver_date = date(now()) and d.is_deleted = 0')
         ->group('wh_id,status,deliver_time')
+        ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
 
         $status['stockout'] = array(
