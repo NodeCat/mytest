@@ -813,7 +813,6 @@ class StockInController extends CommonController {
                 M('stock_bill_in_detail')->where($map)->data($data)->save();
                 unset($map);
                 unset($data);
-            
                 $refer_code = $stock_bill_in_detail_info['code'];
                 $batch = $stock_bill_in_detail_info['code'];
                 $pro_code = $stock_bill_in_detail_info['pro_code'];
@@ -845,7 +844,6 @@ class StockInController extends CommonController {
                     $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                     $data['pro_status'] = $status;
                     $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
-                
                     if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
                         $data['status'] = 'paid';
                     }else{
@@ -854,10 +852,12 @@ class StockInController extends CommonController {
                     $purchase_in_detail = D('PurchaseInDetail');
                     $data = $purchase_in_detail->create($data);
                     $purchase_in_detail->data($data)->add();
+                    unset($data);
                 }
             }
         }
-
+        unset($map);
+        
         //更新到货单状态为已上架
         $map['wh_id'] = session('user.wh_id');
         $map['id'] = array('in',$ids);
