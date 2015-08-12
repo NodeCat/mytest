@@ -112,21 +112,13 @@ class PurchasesController extends CommonController {
             }*/
         }
         $model = M('stock_bill_in_detail');
+        //获取父SKU名称和规格
         $where['pro_code'] = array('in', implode(',', $p_sku));
         $filed = 'pro_code, pro_name, pro_attrs';
-        $p_result = $model->field($filed)->where($where)->group('pro_code')->select();
+        $p_list = $model->where($where)->group('pro_code')->getField($filed);
+        //获取子SKU名称和规格
         $where['pro_code'] = array('in', implode(',', $c_sku));
-        $c_result = $model->field($filed)->where($where)->group('pro_code')->select();
-        $p_list   = array();
-        $c_list   = array();
-        foreach ($p_result as $p_value) {
-            $p_list[$p_value['pro_code']] = $p_value;
-        }
-        unset($p_result);
-        foreach ($c_result as $c_value) {
-            $c_list[$c_value['pro_code']] = $c_value;
-        }
-        unset($c_result);
+        $c_list = $model->where($where)->group('pro_code')->getField($filed);
 
         foreach ($data as &$d_data) {
             $d_data['p_pro_name'] = $p_list[$d_data['pro_code']]['pro_name'];
@@ -179,8 +171,6 @@ class PurchasesController extends CommonController {
                 }
             }
         }
-        
-
 
         if(!$pro_codeArr){
             $this->msgReturn(false, '导出数据为空！');
