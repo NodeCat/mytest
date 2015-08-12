@@ -3,7 +3,11 @@ namespace Erp\Controller;
 use Think\Controller;
 class PurchaseInDetailController extends CommonController {
 	protected $filter = array(
-			'status' => array('paid' => '已支付', 'nopaid' => '待支付',),
+			'status' => array('paid' => '已支付', 'nopaid' => '待支付'),
+            'invoice_method' =>  array(
+                '0' => '预付款',
+                '1' => '货到付款'
+            ),
 		);
 	protected $columns = array(
         'id' => '',
@@ -11,7 +15,8 @@ class PurchaseInDetailController extends CommonController {
         'partner_name' => '供应商',
 		'purchase_code' => '采购单号',
 		'stock_in_code' => '到货单号',
-		'pro_code' => '货品号',
+		'pro_name' => '货品名称',
+        'pro_code' => '货品号',
 		'pro_qty' => '入库数量',
 		'price_unit' => '单价',
 		'price_subtotal' => '小计',
@@ -298,5 +303,45 @@ class PurchaseInDetailController extends CommonController {
             }
         }
         return false;
+    }
+
+    public function printpage() {
+        $id = I('get.id');
+
+        $purchase = M('erp_purchase_in_detail');
+        $field    = 'erp_purchase_in_detail.*, sum(erp_purchase_in_detail.pro_qty) as s_pro_qty, erp_purchase_in_detail.id as code,partner.name as partner_name, user.nickname as created_name, stock_purchase.invoice_method, stock_purchase.remark,  warehouse.name as wh_name';
+        $where['erp_purchase_in_detail.id'] = array('in', $id );
+        $join = array(
+            'inner join stock_purchase on stock_purchase.code=erp_purchase_in_detail.purchase_code',
+            'inner join partner on stock_purchase.partner_id=partner.id',
+            'user on user.id = stock_purchase.created_user',
+            'warehouse on warehouse.id = stock_purchase.wh_id'
+        );
+        $data = $purchase->field($field)->join($join)->where($where)->group('erp_purchase_in_detail.purchase_code, erp_purchase_in_detail.stock_in_code, erp_purchase_in_detail.pro_code')->select();
+        $purchase_detail    = M('stock_bill_in_detail');
+
+        foreach($data as $key => $value){
+            $map = array();
+            $map['refer_code']  = $value['stock_in_code'];
+            $map['pro_code']    = $value['pro_code'];
+            $list = $purchase_detail->where($map)->select();
+            $result[$key]['id']              = $value['id'];
+            $result[$key]['purchase_code']   = $value['purchase_code'];
+            $result[$key]['purchase_time']   = $value['created_time'];
+            $result[$key]['print_time']      = get_time();
+            $result[$key]['partner']         = $value['partner_name'];
+            $result[$key]['purchase_pay']    = $this->filter['invoice_method'][$value['invoice_method']];
+            $result[$key]['purchase_qty']    = '1种' . '/' . $value['s_pro_qty'] . '件';
+            $result[$key]['purchase_amount'] = $value['price_subtotal'];
+            $result[$key]['purchaser']       = $value['created_name'];
+            $result[$key]['warehouse']       = $value['wh_name'];
+            $result[$key]['remark']          = $value['remark'];
+            $result[$key]['purchase_detail'] = $list;
+        }
+        unset($data);
+
+        layout(false);
+        $this->assign('result',$result);
+        $this->display('PurchaseInDetail:print');
     }
 }

@@ -16,13 +16,13 @@
   		<tbody>
         <tr class="hidden tr-tpl">
         <td style="width:50%;">
-	        <input type="hidden" value="" name="pros[0][pro_code]" class="pro_code form-control input-sm" >
-	        <input type="hidden" value="" name="pros[0][pro_name]" class="pro_name form-control input-sm" >
-	        <input type="hidden" value="" name="pros[0][pro_attrs]" class="pro_attrs form-control input-sm" >
+	        <input type="hidden" value="" name="pros[pro_code][]" class="pro_code form-control input-sm" >
+	        <input type="hidden" value="" name="pros[pro_name][]" class="pro_name form-control input-sm" >
+	        <input type="hidden" value="" name="pros[pro_attrs][]" class="pro_attrs form-control input-sm" >
 	        <input type="text" id="typeahead" placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" >
 	    </td>
         <td  style="width:10%;">
-            <input type="text" name="pros[0][pro_qty]" placeholder="数量"  value="1.00" class="form-control input-sm text-left pro_qty" autocomplete="off">
+            <input type="text" name="pros[pro_qty][]" placeholder="数量"  value="1.00" class="form-control input-sm text-left pro_qty" autocomplete="off">
         </td>
         <td style="width:10%;" class="text-center">
             <a data-href="/Category/delete.htm" data-value="67" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" data-original-title="" title=""><i class="glyphicon glyphicon-trash"></i> </a>
@@ -37,12 +37,14 @@
   </div>
 </div>
 
-  </div><!-- 
+  </div>
+
 	<div class="">
-	  <textarea name="pro_infos" id="pro_infos" class="form-control" rows="5" placeholder="批量添加，请从excel中直接粘贴，数据格式：货品号 采购数量 采购单价 中间请用tab分割，每行请回车"></textarea>
+	  <textarea name="pro_infos" id="pro_infos" class="form-control" rows="5" placeholder="批量添加，请从excel中直接粘贴，数据格式：货品号 计划加工量 中间请用tab分割，每行请回车"></textarea>
 	  </br>
 	  <a id="preview" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon"></span>批量添加预览</a>
-	</div>-->
+	</div>
+
   <div class="row">
     <div class="tab-content">
       <textarea name="remark" class="form-control" rows="5" placeholder="备注"></textarea>
@@ -76,7 +78,7 @@ $('.add-pro').on('click',function(){
     tr.removeClass('tr-tpl');
     tr.addClass('tr-cur');
     tr.removeClass('hidden');
-    $('#table-pro tr:eq(2)').after(tr);
+    $('#table-pro tr:eq(1)').after(tr);
     typehead();
     $('#table-pro tr.tr-cur .pro_names').focus();
     $('#table-pro tr:eq(3)').find('input:not(#typeahead)').each(function() {
@@ -84,7 +86,7 @@ $('.add-pro').on('click',function(){
     		var new_name = old_name.replace('0', i);
     		$(this).attr('name', new_name);
     });
-    $('#table-pro tr:eq(3)').find('select').attr('name', 'pros[' + i + '][pro_uom]');
+    //$('#table-pro tr:eq(3)').find('select').attr('name', 'pros[' + i + '][pro_uom]');
 });
 
 

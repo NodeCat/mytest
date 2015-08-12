@@ -75,21 +75,30 @@ class PurchasesController extends CommonController {
         $maps['wh_id']          = $wh_id;
         $maps['delivery_date']  = $delivery_date;
         $maps['delivery_ampm']  = $delivery_ampm;
+        $p_sku  = array();
+        $c_sku  = array();
         foreach ($data as $key => $value) {
+            $p_sku[] = $value['pro_code'];
+            if ($value['c_pro_code']) {
+                $c_sku[] = $value['c_pro_code'];
+            }
             //$data[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
             //解决不选日期和时间段是应该是根据空汇总
             $data[$key]['delivery_date'] = $delivery_date;
             $data[$key]['delivery_ampm'] = $delivery_ampm;
             //父下单量
             $down_qty = getDownOrderNum($value['pro_code'],$delivery_date,$delivery_ampm,$value['wh_id']);
+            $data[$key]['p_down_qty'] = $down_qty;
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
+            $data[$key]['p_in_qty'] = $p_qty;
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //父采购量
             $data[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
             //子Sku在库量
             $c_qty = getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']);
+            $data[$key]['c_in_qty'] = $c_qty;
             //子sku总可用量 = 父在在库量 x 生产比例 + 子Sku在库量;
             $available_qty = f_add($c_qty_count, $c_qty);
             $data[$key]['available_qty'] = $available_qty;
@@ -101,6 +110,21 @@ class PurchasesController extends CommonController {
             /*if ($data[$key]['purchase_num'] < 0) {
                 unset($data[$key]);
             }*/
+        }
+        $model = M('stock_bill_in_detail');
+        //获取父SKU名称和规格
+        $where['pro_code'] = array('in', implode(',', $p_sku));
+        $filed = 'pro_code, pro_name, pro_attrs';
+        $p_list = $model->where($where)->group('pro_code')->getField($filed);
+        //获取子SKU名称和规格
+        $where['pro_code'] = array('in', implode(',', $c_sku));
+        $c_list = $model->where($where)->group('pro_code')->getField($filed);
+
+        foreach ($data as &$d_data) {
+            $d_data['p_pro_name'] = $p_list[$d_data['pro_code']]['pro_name'];
+            $d_data['p_pro_attrs'] = $p_list[$d_data['pro_code']]['pro_attrs'];
+            $d_data['c_pro_name'] = $c_list[$d_data['c_pro_code']]['pro_name'];
+            $d_data['c_pro_attrs'] = $c_list[$d_data['c_pro_code']]['pro_attrs'];
         }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
@@ -147,8 +171,6 @@ class PurchasesController extends CommonController {
                 }
             }
         }
-        
-
 
         if(!$pro_codeArr){
             $this->msgReturn(false, '导出数据为空！');

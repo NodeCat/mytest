@@ -298,7 +298,6 @@ class PurchaseController extends CommonController {
 			$this->purchase_in_code = TRUE;
 		}
 
-
 		//view上方按钮显示权限
 		$this->toolbar_tr =array(
 			'view'=>array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'),
@@ -307,7 +306,7 @@ class PurchaseController extends CommonController {
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"0,11"),
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
-            'out'=>array('name'=>'out' ,'show' => isset($this->auth['out']),'new'=>'true','domain'=>array('13')),//退货已经生效的采购单，并且采购单已经上架的
+            'out'=>array('name'=>'out' ,'show' => isset($this->auth['out']),'new'=>'true','domain'=>'13,43'),//退货已经生效或已结算的采购单，并且采购单已经上架的
         );
 
     }
@@ -632,8 +631,11 @@ class PurchaseController extends CommonController {
         foreach($pro_infos_list as $pro_info){
             $pro_info_arr = explode("\t", $pro_info);
             $pro_codes[] = $pro_info_arr[0];
-            $purchase_infos[$pro_info_arr[0]]['pro_qty'] = $pro_info_arr[1];
-            $purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
+            $purchase_infos[$pro_info_arr[0]]['pro_qty'] = formatMoney($pro_info_arr[1],2);
+            $purchase_infos[$pro_info_arr[0]]['price_unit'] = formatMoney($pro_info_arr[2],2);
+            if(!is_numeric($purchase_infos[$pro_info_arr[0]]['pro_qty']) || !is_numeric($purchase_infos[$pro_info_arr[0]]['price_unit'])){
+                $this->msgReturn(0,'批量添加中含有非数字，请修改');
+            }
         }
 
         $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
@@ -864,6 +866,7 @@ class PurchaseController extends CommonController {
         }
 
         $map['stock_purchase_detail.pid'] = array('in',$ids);
+        $map['stock_bill_in.is_deleted'] = 0;
         $result = M('stock_purchase_detail')
         ->join('join stock_purchase on stock_purchase.id = stock_purchase_detail.pid')
         ->join('join warehouse on warehouse.id = stock_purchase.wh_id')

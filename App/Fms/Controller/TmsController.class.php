@@ -125,7 +125,7 @@ class TmsController extends \Common\Controller\AuthController{
                     $row['actual_sum_price'] = 0;
                     $map['order_details'][]  = $row;
                 }
-                if($val['pay_status']=='已付款'){
+                if($val['pay_status']==1){
                     $val['pay_for_price']=0;
                 }
             }

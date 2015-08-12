@@ -21,10 +21,16 @@ class ProcessLossController extends CommonController
         'p_pro_num' => '成品加工数',
         'loss_ratio' => '损耗率',
         'loss_number' => '原料损耗数',
-        'y_loss_amount' => '原料损耗成本(斤)',
-        'c_loss_amount' => '成品损耗成本(袋)',
+        'y_loss_amount' => '原料损耗成本(元/斤)',
+        'c_loss_amount' => '成品损耗成本(元/袋)',
     );
     protected $query   = array (
+        'erp_process.wh_id' =>    array (
+            'title' => '仓库',
+            'query_type' => 'eq',
+            'control_type' => 'getField',
+            'value' => 'Warehouse.id,name',
+        ),
         'erp_process.created_time' => array (
             'title' => '加工时间',
             'query_type' => 'between',
@@ -102,10 +108,15 @@ class ProcessLossController extends CommonController
         $ids         = I('get.ids');
         $start_time  = I('get.start_time');
         $end_time    = I('get.end_time');
-        $where = array();
+        $wh_id       = I('get.wh_id');
+        $where       = array();
 
         if (!empty($start_time) && !empty($end_time)){
             $where['DATE_FORMAT(erp_process.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
+        }
+
+        if (!empty($wh_id)) {
+            $where['erp_process.`wh_id`'] = $wh_id;
         }
 
         if (!empty($ids)) {

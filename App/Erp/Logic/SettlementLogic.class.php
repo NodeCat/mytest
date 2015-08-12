@@ -89,12 +89,12 @@ class SettlementLogic
             "inner join warehouse on erp_purchase_refund.wh_id=warehouse.id ",
             "inner join partner on erp_purchase_refund.partner_id=partner.id ",
             "inner join user on erp_purchase_refund.created_user = user.id ",
+            "inner join erp_purchase_refund_detail on erp_purchase_refund_detail.pid=erp_purchase_refund.id"
         );
-        $field = "erp_purchase_refund.id as id,erp_purchase_refund.code as code, erp_purchase_refund.for_paid_amount as paid_amount,erp_purchase_refund.invoice_method as invoice_method_code,erp_purchase_refund.status as state, warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname";
+        $field = "erp_purchase_refund.id as id,erp_purchase_refund.code as code, SUM(erp_purchase_refund_detail.qualified_qty*erp_purchase_refund_detail.price_unit-erp_purchase_refund_detail.expected_qty*erp_purchase_refund_detail.price_unit) as paid_amount,erp_purchase_refund.invoice_method as invoice_method_code,erp_purchase_refund.status as state, warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname";
 
         $model = M('erp_purchase_refund');
-
-        $refundResult = $model->field($field)->join($join)->where($where)->select();
+        $refundResult = $model->field($field)->join($join)->where($where)->group('erp_purchase_refund.id')->select();
 
         return $refundResult;
     }
