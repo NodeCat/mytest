@@ -43,6 +43,23 @@ class DispatchController extends \Common\Controller\AuthController{
         ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
 
+        $data['summary']['title'] = '今日运费占比［粗略预估统计］';
+        $data['summary']['data'] = M()->table('stock_wave_distribution d')
+        ->field('
+            wh_id,wh.name,date(deliver_date) deliver_date,
+            SUM(total_price) total_price,
+            COUNT(*) dist_qty,
+            SUM(order_count) order_qty,
+            ROUND(SUM(total_price) / COUNT(*), 2) dist_price_average,
+            ROUND(SUM(total_price) / SUM(order_count), 2) decim_price_average,
+            ROUND(300 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
+            ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
+        ')
+        ->join('warehouse wh on d.wh_id = wh.id')
+        ->where('deliver_date = date(now()) and d.is_deleted = 0')
+        ->group('wh_id')
+        ->select(); 
+
         $status['stockout'] = array(
                 '0' => '已分拨',
                 '1' => '已装车',
@@ -89,6 +106,17 @@ class DispatchController extends \Common\Controller\AuthController{
             'status_cn' => '状态',
             'qty' => '数量',
         );
+
+        $data['summary']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'dist_qty' => '配送单数量',
+            'order_qty' => '出库单数量',
+            'dist_order_average' => '平均每个车单包含出库单数',
+            'dist_price_percent' => '预计运费比'
+            
+        );
+
 
         $this->data = $data;
 
