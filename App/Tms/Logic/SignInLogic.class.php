@@ -110,7 +110,7 @@ class SignInLogic
         $mobiles = array_unique($mobiles);
         //司机信息
         $driver_mobile = session('user.mobile');
-        $driver_name   = mb_substr(session('user.username'), 0, 1);
+        $driver_name   = mb_substr(session('user.username'), 0, 1, 'UTF-8');
         //组合短信内容
         $content = "亲爱的老板，您在大厨网订购的产品已从库房发出，正朝您赶来，请耐心等待。";
         $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491。";
