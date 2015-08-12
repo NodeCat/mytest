@@ -148,10 +148,11 @@ function checkForm(){
                     href  = 'href="/PurchaseInDetail/index/erp_purchase_in_detail.purchase_code/'+data[item].code;
                 }
                 html += '</td><td>';
-                if(data[item].state == 'norefund' || data[item].state == 'wait'){
+                if (data[item].state == 'wait'){
                     html += '-';
                 }
-                html +=  data[item].paid_amount
+                var amount = data[item].paid_amount;
+                html +=  amount.substr(0,amount.indexOf(".")+3);
                 html += '</td><td>'+data[item].user_nickname+'</td>';
                 html += '<td>';
                 html += '<a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" '+href+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a>';
