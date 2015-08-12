@@ -12,7 +12,7 @@ class StockOutController extends CommonController {
             '3'=>'波次中',
             '4'=>'待拣货',
             '5'=>'待复核',
-            //'6'=>'己复核'  
+            '18'=>'已关闭'  
             ),
        'process_type'=>array(
             '1'=>'正常单',
@@ -209,9 +209,8 @@ class StockOutController extends CommonController {
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
-                //'6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
-                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
-                
+                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary'),
+                '18'=>array('value'=>'18', 'title'=>'已关闭', 'class'=>'default'),
             )
         );
         $stock_out = M('stock_bill_out');
@@ -314,6 +313,9 @@ class StockOutController extends CommonController {
             $column['pro_name'] = $post['pro_name'][$i];
             $column['pro_attrs'] = $post['pro_attrs'][$i];
             $column['order_qty'] = $post['order_qty'][$i];
+            if (ACTION_NAME != 'edit') {
+                $column['former_qty'] = $post['order_qty'][$i];
+            }
             //$column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
             $data = $stock_bill_detail->create($column);
             if(! empty($post['id'][$i])) {
@@ -529,6 +531,30 @@ class StockOutController extends CommonController {
             }
         }
     
+    }
+    /**
+     * 开启出库单 zhangchaoge
+     */
+    public function open() {
+        $id = I('get.id');
+        
+        if (empty($id)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        //查询出库单
+        $stockInfo = M('stock_bill_out')->where(array('id' => $id))->find();
+        if (empty($stockInfo)) {
+            $this->msgReturn(false, '不存在的出库单');
+        }
+        if ($stockInfo['status'] != 18) {
+            $this->msgReturn(false, '没有关闭的出库单');
+        }
+        $update['status'] = 1;
+        $affected = M('stock_bill_out')->where(array('id' => $id))->save($update);
+        if (!$affected) {
+            $this->msgReturn(false, '开启失败');
+        }
+        $this->msgReturn(true, '已开启');
     }
     public function hasCreate(){
 

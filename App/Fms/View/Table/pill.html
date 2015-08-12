@@ -1,0 +1,38 @@
+<notempty name="pill">
+<div class="table-pill row-fluid">
+<div class="col-lg-12">
+<ul class="nav nav-pills" id="nav-pill" style="  position: relative;
+  display: inline-block;
+  vertical-align: middle;">
+	<li class="active"><a href="{:U('index')}">全部</a></li>
+	<volist name="pill" id="vo">
+		<li><a href="{:U('index',array('pill'=>$key))}">{$vo}</a></li>
+	</volist>
+</ul>
+<script type="text/javascript">
+$(function(){
+	$('#nav-pill a').on('click',function(){
+		$('#nav-pill .active').removeClass('active');
+		$(this).parent('li').addClass('active');
+		
+        var link=$(this).attr('href');
+        if(!link)return false;
+        $.ajax({
+            url: link,
+            dataType: "html",
+            type: "POST",
+            cache: false,
+            async:true,
+            success: function(html){
+                $(".table-content").html(html);
+            }
+        });
+		return false;
+	});
+});
+</script>
+</div>
+
+<div class="clearfix"></div>
+</div>
+</notempty>

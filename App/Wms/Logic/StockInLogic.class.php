@@ -661,14 +661,14 @@ class StockInLogic{
 		$map['o.id'] = array('in',$pass_reduce_ids);
 		$map['o.is_deleted'] = 0;
 		$map['c.is_deleted'] = 0;
-		$out_m->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
-			left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-			left join stock_bill_out as o on wdd.bill_out_id = o.id')->where($map);
+
+		//查询发运后的商品
+		$out_m->join(' as c left join stock_bill_out as o on o.code = c.refer_code')->where($map);
 		$out_m2 = clone $out_m;//深度拷贝
 		//插入stokc_bill_in_detail表
-		$out_container = $out_m->field('c.batch,c.pro_code,o.*')->select();
+		$out_container = $out_m->field('c.batch,c.pro_code,c.qty,o.*')->select();
 		//插入stock_bill_in表 根据同一个调拨单，同一件商品和批次生产一张调拨单
-        $out_infos = $out_m2->field('c.batch,c.pro_code,o.*')->group('o.refer_code')->select();
+        $out_infos = $out_m2->field('c.batch,c.pro_code,c.qty,o.*')->group('o.refer_code')->select();
     
 		if (!$out_infos) {
 			return false;
@@ -688,13 +688,18 @@ class StockInLogic{
 			$wh_id_in_m['trf_code'] = $value['refer_code'];
 			$erp_transfer_win = $erp_transfer_m->where($wh_id_in_m)->getField('wh_id_in');
 
+			//检查是否是调拨单
+			if (!$erp_transfer_win) {
+				continue;
+			}
+
 			$bill_in['wh_id'] = $erp_transfer_win?$erp_transfer_win:'';//入库仓库@todo
 			$bill_in['type'] = 4;
 			$bill_in['company_id'] = 1;
 			$bill_in['refer_code'] = $value['refer_code'];//调拨单
 			$bill_in['pid'] = 0;
 			//$bill_in['batch_code'] = get_batch($value['batch']);
-			$bill_in['partner_id'] = 1;//供应商；@todoliuguangping
+			$bill_in['partner_id'] = '';//供应商；@todoliuguangping
 			$bill_in['remark'] = '调拨入库单';
 			$bill_in['updated_time'] = get_time();
 			$bill_in['created_user'] = session('user.uid');
@@ -710,13 +715,6 @@ class StockInLogic{
 				foreach ($out_container as $ky => $val) {
 					if($value['refer_code'] == $val['refer_code']) {
 						if (!isset($issetCode[$val['pro_code'].'-'.$val['batch']])) {
-							//统计同一批次 ，调拨单，商品
-							$map['c.pro_code'] = $val['pro_code'];
-							$map['o.refer_code'] = $val['refer_code'];
-							$map['c.batch'] = $val['batch'];
-							$qty_out = M('stock_bill_out_container')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
-								left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-								left join stock_bill_out as o on wdd.bill_out_id = o.id')->where($map)->sum('c.qty');
 							//查询出库商品的属性 同一个出库单只有唯一一个商品
 							$where = array();
 							$where['pid'] = $val['id'];
@@ -726,7 +724,6 @@ class StockInLogic{
 							if($val['pro_code']){
 								$out_detail = M('stock_bill_out_detail')->where($where)->find();
 							}
-
 							$detail[$i]['wh_id'] = $bill_in['wh_id'];
 				            $detail[$i]['pid'] = $pid;
 				            $detail[$i]['refer_code'] = $value['refer_code']?$value['refer_code']:'';
@@ -734,7 +731,7 @@ class StockInLogic{
 				            $detail[$i]['pro_name'] = $out_detail['pro_name']?$out_detail['pro_name']:'';
 				            $detail[$i]['pro_attrs'] = $out_detail['pro_attrs']?$out_detail['pro_attrs']:'';
 				            $detail[$i]['batch'] = $val['batch'];
-				            $detail[$i]['expected_qty'] = $qty_out?$qty_out:0;
+				            $detail[$i]['expected_qty'] = $val['qty'];
 				            $detail[$i]['pro_uom'] = $out_detail['measure_unit']?$out_detail['measure_unit']:'';
 				            $detail[$i]['price_unit'] = $process_logic->get_price_by_sku($val['batch'], $val['pro_code']);//平均价
 				            $detail[$i]['prepare_qty'] = 0;

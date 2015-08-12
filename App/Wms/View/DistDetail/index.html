@@ -52,9 +52,8 @@
 
 <button class="btn btn-success" id="add-dist">创建配送单</button>
 </div>
-
 <script type="text/javascript">
-
+var Itemobj = {};
 //加入配送单按钮
 $('#add-order').on('click',function(){
 		if($("#table-orders tr").not(".hidden").length == 1){
@@ -123,10 +122,14 @@ $('#add-dist').on('click',function(){
 		$(".select-all").attr('checked',false)
 		$(this).parents('tr').remove();
 		calc();
+		var key = $(this).parents('tr').find('.so-line').text();
+		Itemobj[key] -=1;
+		console.log(Itemobj)
 	});
 
 	$('.content').delegate('.dist-remove','click',function(){
-		var ids =$(this).parents('tr').find('.order_ids').val();
+		var ids = $(this).parents('tr').find('.order_ids').val();
+		var text = $(this).parents('tr').find('.order_ids').innerText;
 		var row_ids = ids.split(',');
 
 		row_ids.forEach(function(id){
@@ -136,11 +139,17 @@ $('#add-dist').on('click',function(){
 			$('#table-orders #r-'+id).remove();
 		});
 		$(this).parents('tr').remove();
+		var arr = $(this).parent().next().text().split("/");
+		for(var i = 0;i< arr.length; i++){
+			Itemobj[arr[i]] -=1;
+		}
+		console.log(Itemobj)
 	});
-
+	
 	$('#table-content').delegate('input[type=checkbox]','change',function(){
 		if($(this).hasClass('select-all')) {
 			//找到tbody中的所有checkbox
+			Itemobj={};
 			$("#table-content tbody input[type='checkbox']").each(function(){
 				var tr = $(this).parents('tr');
 				var id = $(this).parents('tr').find('.order-id').val();
@@ -153,9 +162,16 @@ $('#add-dist').on('click',function(){
 				row['qty'] = tr.find('.order-qty').val();
 				if($(".select-all").prop('checked')){
 					addRow(row);
+					var key = tr.find('.order-line').val();
+					if(Itemobj[key]==undefined)
+					Itemobj[key] = 1;
+				    else
+				    Itemobj[key] +=1;
 				}
 				else{
 					removeRow(id);	
+					var key = $(this).parents('tr').find('.order-line').val();
+					Itemobj[key] -=1;
 				}
 			});
 		}else{
@@ -169,11 +185,26 @@ $('#add-dist').on('click',function(){
 				row['cat'] = tr.find('.order-cat').val();
 				row['qty'] = tr.find('.order-qty').val();
 				addRow(row);
+				var key = tr.find('.order-line').val();
+				$(".select-all").prop('disabled',true)
+				if(Itemobj[key]==undefined)
+				Itemobj[key] = 1;
+			    else
+			    Itemobj[key] +=1;
 			}
 			else {
 				$(".select-all").attr('checked',false)
 				var id = $(this).parents('tr').find('.order-id').val();
+				var key = $(this).parents('tr').find('.order-line').val();
+				Itemobj[key] -=1;
 				removeRow(id);
+			    if($("#table-orders tr").find('.so-id').length == 0)
+			    $(".select-all").prop('disabled',false)
+			    else
+			    $(".select-all").prop('disabled',true)
+
+
+				
 			}
 		}
 		

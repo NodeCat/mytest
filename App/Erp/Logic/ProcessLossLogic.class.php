@@ -20,12 +20,8 @@ class ProcessLossLogic
         }
         $filed  = 'stock.pro_code, stock.batch, SUM(stock.stock_qty * erp_purchase_in_detail.price_unit) AS total_amount, SUM(stock.stock_qty) AS stock_qty';
         $join   = 'INNER JOIN erp_purchase_in_detail ON erp_purchase_in_detail.stock_in_code=stock.batch AND erp_purchase_in_detail.pro_code=stock.pro_code';
-        $result = $model->field($filed)->join($join)->where($where)->group('stock.pro_code')->select();
-        $array  = array();
-        foreach ($result as $val) {
-            $array[$val['pro_code']] = $val;
-        }
-        unset($result);
-        return $array;
+        $result = $model->join($join)->where($where)->group('stock.pro_code')->getField($filed);
+
+        return $result;
     }
 }

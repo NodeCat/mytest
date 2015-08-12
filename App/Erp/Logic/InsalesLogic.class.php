@@ -14,14 +14,14 @@ class InsalesLogic{
     /**
      * 根据分类获获取sku
      * getSkuInfoByCategory
-     *  
+     *
      * @param Array $categoryIds 分类id
      * @author liuguangping@dachuwang.com
      * @return Array $returnRes;
-     * 
+     *
      */
     public function getSkuInfoByCategory($categoryIds = array()) {
-        
+
         $returnRes = array();
         $pmsLogic = A('Pms','Logic');
         $page_size   = C('PAGE_SIZE');
@@ -34,8 +34,8 @@ class InsalesLogic{
                     $skurs = getSubByKey($list, 'sku_number');
                     $returnRes = $skurs;
                     $total = $result['total'];
-                    $totalPage = ceil($total/$page_size); 
-                    
+                    $totalPage = ceil($total/$page_size);
+
                     if(intval($totalPage)>=2){
                         for($i=2; $i<=$totalPage; $i++){
                             $result = $pmsLogic->get_SKU_by_category_id($categoryIds, $i, $page_size);
@@ -52,44 +52,48 @@ class InsalesLogic{
             }
         }
         return array_unique($returnRes);
-        
+
     }
 
     /**
      * 根据条件获取要求的sku
      * getSkuInfoByWhId
-     *  
+     *
      * @param String $wh_id 仓库id
      * @param Array $pro_codeArr sku 码数组
      * @author liuguangping@dachuwang.com
      * @return Array $returnRes;
-     * 
+     *
      */
     public function getSkuInfoByWhId($pro_codeArr = array(),$wh_id,$sku_number=''){
 
         if($wh_id){
-            $where['wh_id'] = $wh_id;
+            $where['stock.wh_id'] = $wh_id;
         }
         $page_size = C('PAGE_SIZE');
-        $where['status'] = 'qualified';
+        $where['stock.status'] = 'qualified';
         $returnRes = array();
         $total = count($pro_codeArr);
         $totalPage = ceil($total/$page_size);
         if(intval($total)>0){
             $m = M('stock');
+            $join = array(
+                'left join warehouse ON warehouse.id=stock.wh_id'
+            );
+            $filed = 'stock.stock_qty,stock.wh_id,stock.pro_code,warehouse.name as wh_name';
             for($j=1; $j<=$totalPage;$j++){
                 $result = array();
                 //加入sku_number检索条件
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 if($sku_number && in_array($sku_number, $pro_code)){
-                    $where['pro_code'] = $sku_number;
-                    $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
+                    $where['stock.pro_code'] = $sku_number;
+                    $result = $m->field($filed)->join($join)->where($where)->select();
                 }
                 if(!$sku_number){
-                    $where['pro_code'] = array('in',$pro_code);
-                    $result = $m->field('stock_qty,wh_id,pro_code')->where($where)->select();
+                    $where['stock.pro_code'] = array('in',$pro_code);
+                    $result = $m->field($filed)->join($join)->where($where)->select();
                 }
-                
+
                 if($result){
                     //$pro_codes = getSubByKey($result, 'pro_code');
                     $returnRes = array_merge($returnRes,$result);
@@ -106,6 +110,7 @@ class InsalesLogic{
                 }else{
                     $set[$value['wh_id'].$value['pro_code']]['pro_qty'] = $value['stock_qty'];
                     $set[$value['wh_id'].$value['pro_code']]['wh_id'] = $value['wh_id'];
+                    $set[$value['wh_id'].$value['pro_code']]['wh_name'] = $value['wh_name'];
                     $set[$value['wh_id'].$value['pro_code']]['pro_code'] = $value['pro_code'];
                 }
             }
@@ -120,15 +125,19 @@ class InsalesLogic{
     public function getSkuInfoByWhIdUp($wh_id,$pro_code='',$offset='',$limit=''){
         $m               = M('stock');
         $where           = array();
-        $where['status'] = 'qualified';
+        $where['stock.status'] = 'qualified';
         if($wh_id){
-            $where['wh_id'] = $wh_id;
+            $where['stock.wh_id'] = $wh_id;
         }
         if($pro_code){
-            $where['pro_code'] = $pro_code;
+            $where['stock.pro_code'] = $pro_code;
         }
         $result = array();
-        $m->field('wh_id,pro_code,sum(stock_qty) as pro_qty')->where($where)->group('wh_id,pro_code');
+        $join   = array(
+            'left join warehouse ON warehouse.id=stock.wh_id',
+        );
+        $filed  = 'stock.wh_id,stock.pro_code,sum(stock.stock_qty) as pro_qty,warehouse.name as wh_name';
+        $m->field($filed)->join($join)->where($where)->group('stock.wh_id,stock.pro_code');
         if($limit){
             $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
             $count = count($m->select());
@@ -138,7 +147,7 @@ class InsalesLogic{
         }else{
             $result = $m->select();
         }
-        
+
         return $result;
     }
 }

@@ -64,9 +64,21 @@ class InsalesController extends CommonController {
 
             $count          = count($array);
             $data           = array_splice($array, $offset, $page_size);
-
         }
 
+        $sku            = array();
+        foreach ($data as $value) {
+            $sku[] = $value['pro_code'];
+        }
+        $where['pro_code'] = array('in', implode(',', array_unique($sku)));
+        $model = M('stock_bill_in_detail');
+        $sku_info  = $model->where($where)->group('pro_code')->getField('pro_code, pro_name, pro_attrs');
+        foreach ($data as $key => $val) {
+            $data[$key]['pro_name'] = $sku_info[$val['pro_code']]['pro_name'];
+            $data[$key]['pro_attrs'] = $sku_info[$val['pro_code']]['pro_attrs'];
+        }
+
+        unset($sku_info);
         $maps           = array();
         $maps['cat_1']  = $param['top'];
         $maps['cat_2']  = $param['second'];

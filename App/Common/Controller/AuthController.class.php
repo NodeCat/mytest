@@ -19,7 +19,7 @@ class AuthController extends Controller {
         if(!check_maintain()){
             destory_session();
             layout(FALSE);
-            $this->display('index:closed');
+            $this->display('Index:closed');
             exit();
         }
 
@@ -27,8 +27,9 @@ class AuthController extends Controller {
 
         if(session('user.uid') == 1){
             C('SHOW_PAGE_TRACE',TRUE);
-            return true;
+            //return true;
         }
+
         /*
         //检查节点权限
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
@@ -50,17 +51,14 @@ class AuthController extends Controller {
         */
         //检查节点权限
         $rule  = MODULE_NAME.'/'.CONTROLLER_NAME.'/'.ACTION_NAME;
-        if ( !$this->checkRule($rule)){
+        if ( !$this->check_rule($rule)){
             $this->error('未授权访问！');
         }
     }
 
     protected function check_rule($cur_rule){
+        
         $cur_user = session('user');
-        if($cur_user['uid'] == 1){
-            //return true;
-        }
-
         $user_roles = session('user.role');
         
         if(empty($user_roles)){
@@ -85,18 +83,28 @@ class AuthController extends Controller {
             }
         }
 
-        //根据id 查询auth_authority
+        //根据URL 查询auth_authority
         $res = array();
-        $map['id'] = array('in',$rules_arr);
-        $url_arr = M('auth_authority')->where($map)->field('url')->select();
-        foreach($url_arr as $url){
-            $res[] = $url['url'];
-        }
-
-        if(in_array($cur_rule,$res)){
+        $map['url'] = array('eq',$cur_rule);
+        $url_arr = M('auth_authority')->where($map)->field('id,log,title')->find();
+        
+        if(in_array($url_arr['id'], $rules_arr)){
+            if($url_arr['log'] == 1) {
+                $M = D(CONTROLLER_NAME);
+                $model = $M->tableName;
+                if(empty($model)) {
+                    $model = strtolower(CONTROLLER_NAME);
+                }
+                $pk = $M->getPk();
+                $id = I($pk);
+                logs($id,$url_arr['title'],$model);
+            }
             return true;
         }
 
+        if($cur_user['uid'] == 1){
+            return true;
+        }
         return false;
     }
 
