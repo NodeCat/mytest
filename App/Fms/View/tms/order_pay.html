@@ -174,7 +174,7 @@
       </div>
     </div>
   </form>
-  <if condition="$data.status_cn eq '已完成'">
+  <if condition="($data.status_cn eq '已完成') AND ($data.pay_for_price gt 0)">
     <div class="panel-footer ">
     <form class="form-inline" action="{:U('Order/pay')}" method="POST">
       <input type="hidden" name="order_id" value="{$data.refer_code}" />

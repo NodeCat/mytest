@@ -117,7 +117,7 @@ class OrderController extends \Common\Controller\AuthController {
                 case '已完成':
                     if($bill_out['pay_status'] == 1 || $bill_out['pay_type'] == 2){
                         //应收总计
-                        $bill_out['pay_for_price'] = 0;
+                        //$bill_out['pay_for_price'] = 0;
                         //司机实收金额
                         $bill_out['deal_price'] = 0;
                         //结算金额 ＝ 0
