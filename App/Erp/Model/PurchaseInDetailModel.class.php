@@ -34,8 +34,9 @@ class PurchaseInDetailModel extends Model {
             'order'=>'erp_purchase_in_detail.id DESC',
             'join'=>array("inner join stock_purchase on stock_purchase.code=erp_purchase_in_detail.purchase_code ",
                 "inner join partner on stock_purchase.partner_id=partner.id ",
+                "left join stock_bill_in_detail on stock_bill_in_detail.refer_code=erp_purchase_in_detail.stock_in_code AND stock_bill_in_detail.pro_code=erp_purchase_in_detail.pro_code",
             ),
-            'field' => 'erp_purchase_in_detail.*,erp_purchase_in_detail.id as code,partner.name as partner_name',
+            'field' => 'erp_purchase_in_detail.*,erp_purchase_in_detail.id as code,partner.name as partner_name, stock_bill_in_detail.pro_name',
         ),
 
         'latest'=>array(

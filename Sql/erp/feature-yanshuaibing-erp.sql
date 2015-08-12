@@ -1,0 +1,2 @@
+INSERT INTO `auth_authority` ( `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `log`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES
+('printpage', '4', 'Wms', 'Erp', 'PurchaseInDetail', 'printpage', 'Erp/PurchaseInDetail/printpage', '', '', 'printpage', 0, 1, 319, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);
