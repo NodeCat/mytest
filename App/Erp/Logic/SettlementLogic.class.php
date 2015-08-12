@@ -188,7 +188,7 @@ class SettlementLogic
     }
 
     /**
-     * 获取结算单单据明细
+     * 获取退货单单据明细
      * @param $code   结算单code
      * @return array
      */
