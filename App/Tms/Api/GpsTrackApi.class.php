@@ -23,10 +23,10 @@ class GpsTrackApi extends CommApi {
             $type = 0;
         }
         $data['id'] = substr($data['id'],1);
-        if ($type == 1) {//提任务
+        if ($type == 1) {//单个任务轨迹
             $task = M('tms_dispatch_task')->field('id,code,distance')->find($data['id']);
             $key = $task['code'];// 任务号
-        } else {//提货
+        } else {//提货或提任务总里程
             $sign_mg = M('tms_user')
             ->alias('A')
             ->join('tms_sign_list B ON A.id = B.userid')
@@ -58,12 +58,12 @@ class GpsTrackApi extends CommApi {
         }
         $distance = sprintf('%.3f',$distance/1000);
         // 写入路程和时间
-        if ($type == 1) {//提任务
+        if ($type == 1) {//单个任务轨迹
             $time = A('Tms/List','Logic')->timediff($data['points'][0]['time'],$value['time']);
             $time = json_encode($time);
             $res = M('tms_dispatch_task')->save(array('id' => $task['id'],'distance' => $distance,'take_time' => $time));
 
-        } else {// 提货
+        } else {//总里程轨迹
             $res = M('tms_sign_list')->save(array('id' => $sign_mg['id'],'distance' => $distance,'delivery_end_time' => $value['time']));// 把路程和时间写入签到表
         }
 

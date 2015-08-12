@@ -516,6 +516,7 @@ class IndexController extends Controller {
                 $data['dist_id'] = $dist['id'];
                 $data['dist_code'] = $dist['dist_number'];
                 $data['mobile'] = session('user.mobile');
+                //$data['user_id'] = session('user.id');
                 $data['order_count'] = $dist['order_count'];
                 $data['sku_count'] = $dist['sku_count'];
                 $data['line_count'] = $dist['line_count'];
