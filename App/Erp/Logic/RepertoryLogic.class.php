@@ -20,7 +20,7 @@ class RepertoryLogic
         $where['snap_time'] = $time;
         $where['pro_code']  = $pro_codes;
         $Model      = D('Repertory');
-        $start_cost = $Model->field("pro_code, SUM(`stock_qty`) as stock_qty, SUM(price_unit) as price_unit")->where($where)->group('pro_code')->select();
+        $start_cost = $Model->field("pro_code, SUM(`stock_qty`) as stock_qty, count(pro_code) as nums, SUM(price_unit) as price_unit")->where($where)->group('pro_code')->select();
         $list       = array();
         foreach ($start_cost as $val) {
             $list[$val['pro_code']] = $val;
@@ -339,8 +339,7 @@ class RepertoryLogic
         foreach ($data as $key => $val) {
             //初期成本
             $data[$key]['first_nums']           = $this->numbers_format_2($startList[$val['pro_code']]['stock_qty']);           //期初数量
-
-            $data[$key]['first_amount']         = $this->numbers_format_2($startList[$val['pro_code']]['price_unit']);          //期初成本(含税)
+            $data[$key]['first_amount']         = $this->numbers_format_2($startList[$val['pro_code']]['price_unit']/$startList[$val['pro_code']]['nums']);          //期初成本(含税)
             $data[$key]['first_amounts']        = $this->numbers_format_2($data[$key]['first_amount'] / $price_rate);           //期初成本(不含税)
 
             //采购入库
@@ -398,7 +397,7 @@ class RepertoryLogic
 
             //期末成本
             $data[$key]['last_nums']            = $this->numbers_format_2($endList[$val['pro_code']]['stock_qty']);         //期末数量
-            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);        //期末成本(含税)
+            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']/$endList[$val['pro_code']]['nums']);        //期末成本(含税)
             $data[$key]['last_amounts']         = $this->numbers_format_2($data[$key]['last_amount'] / $price_rate);        //期末成本(不含税)
         }
     }
