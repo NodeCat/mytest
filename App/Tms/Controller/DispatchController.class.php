@@ -123,13 +123,13 @@ class DispatchController extends \Common\Controller\AuthController{
 
         $this->display('tms/home');
     }
-    protected $car = array(
-        'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
-        'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
-        'warehouse'=>array(7=>'北京白盆窑仓库',8=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
-    );
+
 	public function index() {
-        $D=D("TmsSignList");
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+        $D = D("TmsSignList");
         $sign_date = I('post.sign_date', '' , 'trim');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
@@ -147,7 +147,7 @@ class DispatchController extends \Common\Controller\AuthController{
             if ($car_from) {
                 $map1['car_from'] = $car_from;
             }
-            $this->warehouse = $warehouse;
+            $this->ware = $warehouse;
             $this->car_from  = $car_from;
             $M = M('TmsUser');
             //按仓库把用户id取出来
@@ -174,7 +174,9 @@ class DispatchController extends \Common\Controller\AuthController{
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
-            $value['warehouse'] = $this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
+            $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            $value['car_type']  = $this->carType[$value['car_type']];
+            $value['car_from']  = $this->carFrom[$value['car_from']];
             $map['mobile']      = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
@@ -210,12 +212,6 @@ class DispatchController extends \Common\Controller\AuthController{
             if ($res) {
                 $value['report_error'] = '1';
             }
-        }
-        if (defined('VERSION')) {
-            $this->car['warehouse'] = array(8 =>'北京北仓',7 =>'北京白盆窑仓库');
-        } else {
-            unset($this->car['warehouse'][8]);
-            unset($this->car['warehouse'][7]);
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
@@ -260,6 +256,10 @@ class DispatchController extends \Common\Controller\AuthController{
 
      //导出司机信息
     public function export() {
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel(); 
@@ -316,7 +316,9 @@ class DispatchController extends \Common\Controller\AuthController{
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
-            $value['warehouse']=$this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
+            $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            $value['car_type']  = $this->carType[$value['car_type']];
+            $value['car_from']  = $this->carFrom[$value['car_from']];            
             $map['mobile'] = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
             $map['status'] = '1';
