@@ -246,7 +246,7 @@ class TransferLogic
     }
 
     /**
-     * 根据出库单id修改采购退货单状态
+     * 根据出库单id修改erp 调拨出库单货单状态
      * upPurchaseOutStatus
      *  
      * @param Int $out_id 出库单id
@@ -305,7 +305,7 @@ class TransferLogic
 
     }
 
-        //修改调拨单@transfer_code 调拨单 ，出库单id
+    //修改调拨单@transfer_code 调拨单 ，出库单id
     public function updateTransfer($transfer_code, $out_id)
     {
         $data = array();

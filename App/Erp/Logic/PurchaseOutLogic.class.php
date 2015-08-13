@@ -260,31 +260,6 @@ class PurchaseOutLogic{
                 }else{
                     continue;
                 }
-            }elseif($type[$key] == 'STO'){
-                //调拨出库
-                //修改调拨单
-                $transfer_code = $bill_out_result['refer_code'];//调拨单
-                //wms和erp的出库单和wms出库单详细的详细关联单号
-                $bill_out_code = $bill_out_result['code'];
-                //检查是否是调拨单
-                $erp_map = array();
-                $erp_map['trf_code'] = $transfer_code;
-                if (!M('erp_transfer')->where($erp_map)->find()) {
-                    continue;
-                }
-                if($this->updateTransfer($transfer_code, $out_id)){
-                    //修改erp 出库单
-                    if ($this->erpUpdateOut($bill_out_code, $out_id)) {
-                        //添加erp出库单详细
-                        $this->insertErpContainer($out_id);
-                        $return = true;
-                    } else {
-                        continue;
-                    }
-                } else {
-                    continue;
-                }
-
             }else{
                 continue;
             }
