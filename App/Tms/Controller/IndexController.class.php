@@ -439,7 +439,7 @@ class IndexController extends Controller {
             $this->display('tms:delivery');
             exit;
         } elseif (IS_POST && !empty($id)) {
-            if (stripos($id,'DT')===0) {
+            if (stripos($id,'D')===0) {
                 $this->dist_id = strtoupper($id);
                 $this->taskDelivery();
                 exit;
@@ -450,11 +450,13 @@ class IndexController extends Controller {
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
             $map['created_time'] = array('between',$start_date.','.$end_date);
+            $map['type'] = '0';
             $M = M('tms_delivery');
             $dist = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
             unset($map['dist_id']);
+            unset($map['type']);
             $map['mobile'] = session('user.mobile');
-            $dist_all = $M->field('id,mobile,dist_id,order_count,type')->where($map)->select();//取出当前司机所有配送单信息
+            $dist_all = $M->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
             unset($map);
             if (!empty($dist)) {//若该配送单已被认领
                 if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
@@ -560,15 +562,9 @@ class IndexController extends Controller {
                                 $status = '4';// 已结款完成
                             }
                         }
-                    } else {
-                        $task = M('tms_dispatch_task')->field('id')->where(array('id' =>$va['dist_id'],'status' => array('neq','5')))->find();
-                        if ($task) {
-                            $status = '3';
-                            break;
-                        } else {
-                            $status = '4';
-                        }
-
+                    } elseif ($va['type'] == '1') {
+                        $status = '4';
+                        break;
                     }
                 }
 
@@ -866,7 +862,7 @@ class IndexController extends Controller {
         $dist = M('tms_delivery')->field('id,mobile,dist_id,user_id')->where($map)->find();// 取出当前提货单信息
         unset($map['dist_code']);
         $map['mobile'] = session('user.mobile');
-        $dist_all = M('tms_delivery')->field('id,mobile,dist_id,order_count,type')->where($map)->select();//取出当前司机所有配送单信息
+        $dist_all = M('tms_delivery')->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
         unset($map);
         if (!empty($dist)) {//若该配送单已被认领
             if ($dist['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
@@ -904,7 +900,7 @@ class IndexController extends Controller {
             $data['dist_id']      = $task['id'];
             $data['dist_code']    = $task['code'];
             $data['mobile']       = session('user.mobile');
-            //$data['user_id']      = session('user.id');
+            $data['user_id']      = session('user.id');
             $data['total_price']  = $task['task_fee'];
             $data['created_time'] = get_time();
             $data['updated_time'] = get_time();
@@ -915,21 +911,9 @@ class IndexController extends Controller {
             if ($res) {
                 foreach ($dist_all as $va) {
                     if($va['type']=='0') {
-                        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-                        $map['dist_id'] = $va['dist_id'];
-                        $map['itemsPerPage'] = $va['order_count'];
-                        $ords = A('Common/Order','Logic')->order($map);
-                        unset($map);
-                        foreach ($ords as $v) {
-                            if($v['status_cn'] != "已完成") {
-                                $status = '3';//只要有一个订单不是已完成，
-                                break 2;
-                            }
-                            else {
-                                $status = '4';// 已结款完成
-                            }
-                        }
-                    } else {
+                        $status = '4';
+                        break;
+                    } elseif ($va['type']=='1') {
                         $task = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
                         if ($task) {
                             $status = '3';
