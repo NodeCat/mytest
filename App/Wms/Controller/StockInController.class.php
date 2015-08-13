@@ -550,7 +550,7 @@ class StockInController extends CommonController {
     	//根据id 查询对应入库单
     	$map['stock_bill_in.id'] = array('in',$id);
     	$bill_in = M('stock_bill_in')
-    	->join('partner on partner.id = stock_bill_in.partner_id' )
+    	->join('left join partner on partner.id = stock_bill_in.partner_id' )
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
