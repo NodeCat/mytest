@@ -379,5 +379,5 @@ class ProcessController extends CommonController {
         }
         $this->msgReturn(true, '已完成', '', U('Process/confirm/process_id/' . $process['id']));
     }
-    
+
 }

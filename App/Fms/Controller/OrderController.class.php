@@ -31,22 +31,9 @@ class OrderController extends \Common\Controller\AuthController {
             $sign_data['detail'] = M('tms_sign_in_detail')->where($map)->select();
             //获得订单状态
             $bill_out['status_cn'] = $list_logic->get_status($sign_data['status']);
-
-            switch ($sign_data['pay_status']) {
-                case -1:
-                    $s = '货到付款';
-                    break;
-                case 0:
-                    $s = '货到付款';
-                    break;
-                case 1:
-                    $s = '已付款';
-                    break;
-                default:
-                    # code...
-                    break;
-            };
-            $bill_out['pay_status'] = $s;
+            $bill_out['pay_status'] = $sign_data['pay_status'];
+            $bill_out['pay_type']   = $sign_data['pay_type'];
+            
             //保存出库单详情的数组
             $value_detail = array();
             //遍历出库单详情，并拼装数据
@@ -101,8 +88,8 @@ class OrderController extends \Common\Controller\AuthController {
             if($bill_out['actual_price'] > 0) {
                 //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费
                 $bill_out['pay_for_price'] = $bill_out['actual_price'] - $bill_out['minus_amount'] - $bill_out['pay_reduce'] + $bill_out['deliver_fee'];
-                if($bill_out['pay_status'] != '已付款'){
-                    $old_value = $bill_out['pay_for_price'];
+                //支付状态不等于已支付，支付方式不等于账期支付
+                if (!($bill_out['pay_status'] == 1 || $bill_out['pay_type'] == 2)) {
                     //抹零处理
                     $bill_out['pay_for_price'] = $Dist_Logic->wipeZero($bill_out['pay_for_price']);
                     //抹零总计
@@ -115,30 +102,45 @@ class OrderController extends \Common\Controller\AuthController {
                 $bill_out['pay_for_price'] = 0 ;
             }
             
-            if($bill_out['pay_status']=='已付款'){
-                //应收总计
-                $bill_out['pay_for_price'] = 0;
-                //司机实收金额
-                $bill_out['deal_price'] = 0;
-                //结算金额 ＋＝ 0
-                $bill_out['pay_for_price_total'] += 0;
-            }
-            elseif($bill_out['status_cn']== '已拒收') {
-                //应收总计
-                $bill_out['pay_for_price'] = 0;
-                //司机实收金额
-                $bill_out['deal_price'] = 0;
-                $bill_out['actual_price'] = 0;
-                //结算金额 ＋＝ 0
-                $bill_out['pay_for_price_total'] += 0;
-            }
-            elseif($bill_out['status_cn'] == '已完成') {
-                //结算金额 ＋＝ 应收总计
-                $bill_out['pay_for_price_total'] = $bill_out['deal_price'];
-            }
-            elseif($bill_out['status_cn'] == '已签收') {
-                //结算金额 ＋＝ 应收总计
-                $bill_out['pay_for_price_total'] = $bill_out['pay_for_price'];
+            switch ($bill_out['status_cn']) {
+                case '已拒收':
+                    //应收总计
+                    $bill_out['pay_for_price'] = 0;
+                    //司机实收金额
+                    $bill_out['deal_price'] = 0;
+                    $bill_out['actual_price'] = 0;
+                    //结算金额 ＝ 0
+                    $bill_out['pay_for_price_total'] = 0;
+                    break;
+
+                case '已签收':
+                case '已完成':
+                    if($bill_out['pay_status'] == 1 || $bill_out['pay_type'] == 2){
+                        //应收总计
+                        //$bill_out['pay_for_price'] = 0;
+                        //司机实收金额
+                        $bill_out['deal_price'] = 0;
+                        //结算金额 ＝ 0
+                        $bill_out['pay_for_price_total'] = 0;
+                    } else {
+                        if ($bill_out['status_cn'] == '已签收') {
+                            //结算金额
+                            $bill_out['pay_for_price_total'] = $bill_out['pay_for_price'];
+                        } else {
+                            //结算金额
+                            $bill_out['pay_for_price_total'] = $bill_out['deal_price'];
+                        }
+                    }
+                    break;
+                
+                default:
+                    //应收总计
+                    $bill_out['pay_for_price'] = 0;
+                    //司机实收金额
+                    $bill_out['deal_price'] = 0;
+                    //结算金额 ＝ 0
+                    $bill_out['pay_for_price_total'] = 0;
+                    break;
             }
             //抹零总计
             $bill_out['wipe_zero_sum'] = $wipe_zero_sum;
@@ -214,9 +216,6 @@ class OrderController extends \Common\Controller\AuthController {
         $bill_id  = I('post.bill_id',0);
         $wipezero = I('post.wipezero',0);
         $deposit  = I('post.deposit',0);
-        $wipe_zero_sum = I('post.wipe_zero_sum',0);
-        $deposit_sum   = I('post.deposit_sum',0);
-        $deal_price    = I('post.deal_price',0);
         $sign_msg      = I('post.sign_msg',0);
 
         if ($wipezero == 0 && $deposit == 0){
@@ -234,9 +233,15 @@ class OrderController extends \Common\Controller\AuthController {
             $map['bill_out_id'] = $bill_id;
             $map['is_deleted']  = 0;
             $dist_detail = M('stock_wave_distribution_detail')->where($map)->find();
+            if (empty($dist_detail)) {
+                $this->error('未找到该订单。');exit;
+            }
             if ($dist_detail['status'] != 4) {
                 $this->error('此订单不是已完成状态，不能修改订单实收金额。');exit;
             }
+            $deal_price = $dist_detail['real_sum'];
+            $wipe_zero_sum      = $dist_detail['wipe_zero'];
+            $deposit_sum        = $dist_detail['deposit'];
             $data['real_sum']   = $deal_price - $wipezero - $deposit;
             $data['sign_msg']   = $sign_msg;
             $data['wipe_zero']   = $wipe_zero_sum + $wipezero;

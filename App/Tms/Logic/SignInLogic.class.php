@@ -110,7 +110,7 @@ class SignInLogic
         $mobiles = array_unique($mobiles);
         //司机信息
         $driver_mobile = session('user.mobile');
-        $driver_name   = mb_substr(session('user.username'), 0, 1);
+        $driver_name   = mb_substr(session('user.username'), 0, 1, 'UTF-8');
         //组合短信内容
         $content = "亲爱的老板，您在大厨网订购的产品已从库房发出，正朝您赶来，请耐心等待。";
         $content .= "负责此次配送的为{$driver_name}师傅（电话{$driver_mobile}），如需帮助请致电：4008199491。";
@@ -129,7 +129,7 @@ class SignInLogic
         }
         //加入消息队列并缓存该job_id
         $res = $cA->sendPushMsg($map);
-        S(md5($id), $res['job_id'], 1200);
+        S(md5($id), $res['job_id'][0], 1200);
         return $res;
     }
 
@@ -152,17 +152,11 @@ class SignInLogic
        $parent = $cA->getParentAccountByCoustomerId($umap);
        if (is_array($parent)) {
             //要发送的母账户手机号
-            if ($parent['data']['account_type'] == 1) {
+            if ($parent['data']['account_type'] == 1 && $parent['data']['id'] != $data['user_id']) {
                 $mobile = $parent['data']['mobile'];
             }
-            if ($parent['data']['account_type'] == 2) {
+            if ($parent['data']['account_type'] == 2 && $parent['data']['parent_mobile']) {
                 $mobile = $parent['data']['parent_mobile'];
-            }
-            if (empty($mobile)) {
-                return array(
-                   'status' => 0,
-                   'msg'    => '母账户手机号不存在'
-                );
             }
             //组合信息内容
             $content = "亲爱的老板，分店“{$data['shop_name']}”的产品已成功送达，完成签收，请您放心，";

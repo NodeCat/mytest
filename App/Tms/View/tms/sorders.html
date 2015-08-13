@@ -85,9 +85,7 @@
         <switch name="vo['status_cn']">
           <case value="已签收" break="0">
           </case>
-          <case value="已完成" break="0">
-          </case>
-          <case value="已回款" break="1">
+          <case value="已完成" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
             data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
             aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
@@ -112,13 +110,17 @@
         -->
         <i class="glyphicon glyphicon-yen">
         </i>
-        {$vo.final_price} 元 &nbsp;&nbsp;{$vo.pay_status} &nbsp;
+        {$vo.final_price} 元 &nbsp;&nbsp;
+        <if condition="$vo.pay_type eq 2">
+          账期支付
+          <else/>
+        {$vo.pay_status}
+        </if>
+        &nbsp;
         <switch name="vo['status_cn']">
           <case value="已签收" break="0">
           </case>
-          <case value="已完成" break="0">
-          </case>
-          <case value="已回款" break="1">
+          <case value="已完成" break="1">
             <label class="label label-success">
               {$vo.status_cn}
             </label>
@@ -205,19 +207,37 @@
                 <switch name="vo['status_cn']">
                   <case value="已签收" break="0">
                   </case>
-                  <case value="已完成" break="0">
-                  </case>
-                  <case value="已回款" break="1">
+                  <case value="已完成" break="1">
+                    <if condition="$vo.pay_status eq '已付款'">
+                      <span class="form-control p_deal">
+                        该订单已网上付款
+                      </span>
+                    <elseif condition="$vo.pay_type eq 2" />
+                      <span class="form-control p_deal">
+                        该订单是账期支付
+                      </span>
+                    <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.real_sum}" readonly>
+                    </if>
                   </case>
                   <case value="已退货" break="1">
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="0" readonly>
                   </case>
                   <default />
-                  <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                  value="{$vo.real_sum}" readonly>
+                    <if condition="$vo.pay_status eq '已付款'">
+                      <span class="form-control p_deal">
+                        该订单已网上付款
+                      </span>
+                    <elseif condition="$vo.pay_type eq 2" />
+                      <span class="form-control p_deal">
+                        该订单是账期支付
+                      </span>
+                    <else/>
+                    <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.real_sum}" readonly>
+                    </if>
                 </switch>
               </div>
             </div>
@@ -236,9 +256,7 @@
             <switch name="vo['status_cn']">
               <case value="已签收" break="0">
               </case>
-              <case value="已完成" break="0">
-              </case>
-              <case value="已回款" break="1">
+              <case value="已完成" break="1">
                 <!-- 打印小票 -->
                 <div class="panel-footer" id="p_{$vo.refer_code}">
                     <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">

@@ -648,12 +648,6 @@ class IndexController extends Controller {
                 $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
             }
         }
-        //获得配送单号
-        unset($map);
-        $map['id'] = $dist_id;
-        $map['is_deleted'] = 0;
-        $dist_code = M('stock_wave_distribution')->field('dist_code')->where($map)->find();
-        $dist_code = $dist_code['dist_code'];
         
         //若查出的出库单信息非空
         if(!empty($stock_bill_out)){
@@ -704,13 +698,13 @@ class IndexController extends Controller {
                                     $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
                                 }
                                 //获得最久远的批次
-                                $batch = $A->get_long_batch($dist_code,$val['pro_code']);
+                                $batch = $A->get_long_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
                             case '3':
                                 //若已经拒收
                                 $real_sign_qty = 0;
                                 //获得最近的批次
-                                $batch = $A->get_lasted_batch($dist_code,$val['pro_code']);
+                                $batch = $A->get_lasted_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
                             case '4':
                                 //若是已经完成
@@ -740,7 +734,7 @@ class IndexController extends Controller {
                         $v['updated_time'] = get_time();
                         $v['created_user'] = 2;   //uid默认为2
                         $v['updated_user'] = 2;   //uid默认为2
-                        $v['batch'] = $batch;
+                        $v['batch'] = isset($batch) ? $batch : '';
                         $bill['detail'][] = $v;
                         
                         $container['refer_code'] = $bill['code'];   //关联拒收入库单号
