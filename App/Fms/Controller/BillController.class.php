@@ -97,7 +97,7 @@ class BillController extends \Wms\Controller\CommonController
     			'control_type' => 'datetime',     
     			'value' => '',   
     		  ),
-            'keywords' =>    array (    
+            'keyword' =>    array (    
                 'title' => '关键字搜索',     
                 'query_type' => 'eq',     
                 'control_type' => 'text',     

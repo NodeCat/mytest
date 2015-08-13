@@ -550,7 +550,7 @@ class StockInController extends CommonController {
     	//根据id 查询对应入库单
     	$map['stock_bill_in.id'] = array('in',$id);
     	$bill_in = M('stock_bill_in')
-    	->join('partner on partner.id = stock_bill_in.partner_id' )
+    	->join('left join partner on partner.id = stock_bill_in.partner_id' )
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
@@ -784,50 +784,80 @@ class StockInController extends CommonController {
         unset($map);
 
         if(empty($rev_location_info['id'])){
-        	$this->msgReturn(0,'请添加库位WORK-01');
+            	$this->msgReturn(0,'请添加库位WORK-01');
         }
 
         //查询到货单信息
         $map['id'] = array('in',$ids);
         $stock_bill_in_infos = M('stock_bill_in')->where($map)->select();
         foreach($stock_bill_in_infos as $stock_bill_in_info){
-        	if($stock_bill_in_info['status'] == 33){
-        		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
-        	}
+            	if($stock_bill_in_info['status'] == 33){
+            		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
+            	}
         }
         unset($map);
-
-        //根据到货单查询相关SKU信息
-        $map['stock_bill_in_detail.pid'] = array('in',$ids);
-        $stock_bill_in_detail = M('stock_bill_in_detail')
-        ->join('join stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
-        ->field('stock_bill_in_detail.*,stock_bill_in.code')
-        ->where($map)
-        ->select();
-        unset($map);
-
-        $wh_id = session('user.wh_id');
-        $location_id = $rev_location_info['id'];
-
-        foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
-        	//先模拟收货 更新prepare_qty的值为expected_qty
-        	$map['id'] = $stock_bill_in_detail_info['id'];
-        	$data['prepare_qty'] = $stock_bill_in_detail_info['expected_qty'];
-        	M('stock_bill_in_detail')->where($map)->data($data)->save();
-        	unset($map);
-        	unset($data);
-
-        	$refer_code = $stock_bill_in_detail_info['code'];
-        	$batch = $stock_bill_in_detail_info['code'];
-        	$pro_code = $stock_bill_in_detail_info['pro_code'];
-        	$pro_qty = $stock_bill_in_detail_info['expected_qty'];
-        	$pro_uom = $stock_bill_in_detail_info['pro_uom'];
-        	$status = 'qualified';
-        	$product_date = date('Y-m-d');
-        	//直接上架
-        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
+        unset($stock_bill_in_info);
+        foreach ($stock_bill_in_infos as $stock_bill_in_info) {
+            //根据到货单查询相关SKU信息
+            $map['stock_bill_in_detail.pid'] = $stock_bill_in_info['id'];
+            $stock_bill_in_detail = M('stock_bill_in_detail')
+            ->join('join stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
+            ->field('stock_bill_in_detail.*,stock_bill_in.code')
+            ->where($map)
+            ->select();
+            unset($map);
+            foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
+                //先模拟收货 更新prepare_qty的值为expected_qty
+                $map['id'] = $stock_bill_in_detail_info['id'];
+                $data['prepare_qty'] = $stock_bill_in_detail_info['expected_qty'];
+                M('stock_bill_in_detail')->where($map)->data($data)->save();
+                unset($map);
+                unset($data);
+                $refer_code = $stock_bill_in_detail_info['code'];
+                $batch = $stock_bill_in_detail_info['code'];
+                $pro_code = $stock_bill_in_detail_info['pro_code'];
+                $pro_qty = $stock_bill_in_detail_info['expected_qty'];
+                $pro_uom = $stock_bill_in_detail_info['pro_uom'];
+                $status = 'qualified';
+                $product_date = date('Y-m-d');
+                $wh_id = session('user.wh_id');
+                $location_id = $rev_location_info['id'];
+                //直接上架
+                A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
+                //如果时采购到货单 则创建采购入库单（ERP）
+                if($stock_bill_in_info['type'] == 1){
+                    //写入采购入库单 erp_in_detail
+                    //根据stock_bill_in id 查询相关数据
+                    $map['stock_bill_in_detail.pid'] = $stock_bill_in_info['id'];
+                    $map['stock_bill_in_detail.pro_code'] = $stock_bill_in_detail_info['pro_code'];
+                    $bill_in_detail_info_from_purchase = M('stock_bill_in_detail')
+                    ->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
+                    ->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+                    ->where($map)
+                    ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
+                    ->find();
+                    unset($map);
+                    $data['price_unit'] = $bill_in_detail_info_from_purchase['price_unit'];
+                    $data['pro_code'] = $stock_bill_in_detail_info['pro_code'];
+                    $data['pro_qty'] = $stock_bill_in_detail_info['expected_qty'];
+                    $data['stock_in_code'] = $bill_in_detail_info_from_purchase['code'];
+                    $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
+                    $data['pro_status'] = $status;
+                    $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
+                    if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
+                        $data['status'] = 'paid';
+                    }else{
+                        $data['status'] = 'nopaid';
+                    }
+                    $purchase_in_detail = D('PurchaseInDetail');
+                    $data = $purchase_in_detail->create($data);
+                    $purchase_in_detail->data($data)->add();
+                    unset($data);
+                }
+            }
         }
-
+        unset($map);
+        
         //更新到货单状态为已上架
         $map['wh_id'] = session('user.wh_id');
         $map['id'] = array('in',$ids);

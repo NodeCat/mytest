@@ -1,0 +1,216 @@
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+
+    <h3 class="panel-title"></h3>
+        <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
+  <button type="submit" data-title="保存" id="save_settlement" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" ><i class="glyphicon glyphicon-pencil"></i> 保存</button>
+  <a href="{:U('index')}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
+  </div>
+      {~$data['status']= "0";}
+      <include file="status-bar" />
+  <div class="clearfix"></div>
+  </div>
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>结算单 新建</h3></div>
+		<div class="col-lg-6"></div>
+  </div>
+  	<hr/>
+  	
+<div class="row" id="top-pro">
+    <div class="form-group col-lg-4">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">供应商</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+            <input type="hidden" value="" class="form-control partnerid" placeholder="" name="partner_id" autocomplete="off" />
+            <input type="text" placeholder="" class="partner typeahead form-control input-sm" name="partner" autocomplete="off" >
+        </div>
+    </div>
+
+    <div class="form-group col-lg-4">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">单据类型</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+            <select class="form-control code_type">
+                <option>全部</option>
+                <foreach name="code_type" item="item">
+                    <option value="{$key}">{$item}</option>
+                </foreach>
+            </select>
+        </div>
+    </div>
+    <div class="form-group col-lg-4">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">仓库</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+            <select class="form-control wh_id">
+                <option value="0">全部</option>
+                <foreach name="wareHouseList" item="vo" >
+                <option value="{$key}">{$vo}</option>
+                </foreach>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="form-group col-lg-4">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">发票号</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+            <input type="text" value="" data-target="name" class="form-control" name="bill_number" />
+        </div>
+    </div>
+    <div class="form-group col-lg-4">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4">发票金额</label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+            <input type="text" value="" data-target="name" class="form-control" name="bill_amount" />
+        </div>
+    </div>
+    <div class="form-group col-lg-4">
+        <label class="control-label col-lg-2 col-sm-2 col-xs-2"></label>
+        <input type="submit" class="btn btn-primary active queryList" value="查询" onclick="return checkForm()" />
+    </div>
+</div>
+
+
+<block name ="list">
+    <div class="table-content" id="table-content">
+        <include file="add_list"/>
+    </div>
+</block>
+
+
+<script type="text/javascript">
+
+function typehead() {
+    $('#top-pro .partner').typeahead({
+        display: 'name',
+        val: 'id',
+        items: 10,
+        ajax: {
+            url: "{:U('Settlement/match_partner')}",
+            triggerLength: 1,
+            method: 'post',
+            preDispatch: function (data) {
+                return {'q': data};
+            },
+            preProcess: function (data) {
+                var n = $.parseJSON(data);
+                return n;
+            }
+        },
+        itemSelected: function (item, val, text) {
+            $(this).val(text);
+            $('.partnerid').val(val);
+        }
+    });
+}
+
+function checkForm(){
+    var partner = $('input[name=partner]').val();
+    var partner_id = $('input[name=partner_id]').val();
+
+    if(partner == '' || partner_id == ''){
+        alert('请填写待结算的供应商名称');
+        return false;
+    }
+
+    var wh_id = $('.wh_id').val();
+    var code_type = $('.code_type').val();
+
+    var url = '/Settlement/getOrderList';
+    $.ajax({
+        url : url,
+        type : 'post',
+        cache : false,
+        dataType : 'json',
+        data : 'partner='+partner+'&partner_id='+partner_id+'&wh_id='+wh_id+'&code_type='+code_type,
+        success : function(data){
+            var html  = '';
+            var href  = '';
+            var i     = 1;
+            var total_amount = 0;
+
+            for(var item in data){
+                html += '<tr>';
+                html += '<td><input type="checkbox" name="choose" />'+i+'<input type="hidden" name="status" value="'+data[item].state+'" /><input type="hidden" name="payment_type"  value="'+data[item].invoice_method_code+'" /><input type="hidden" name="id" value="'+data[item].id+'" /><input type="hidden" name="paid_amount" value="'+data[item].paid_amount+'" /></td>';
+                html += '<td>'+data[item].code+'</td>';
+                html += '<td>'+data[item].partner_name+'</td>';
+                html += '<td>'+data[item].warehouse_name+'</td>';
+                html += '<td>';
+                if(data[item].state == 'norefund'){
+                    html += '冲红单</td><td>未收款';
+                    href  = 'href="/PurchaseRefund/view/id/'+data[item].id;
+                }else if(data[item].state == 'wait'){
+                    html += '退货单</td><td>待收款';
+                    href  = 'href="/PurchaseOut/view/id/'+data[item].id;
+                }else if(data[item].invoice_method_code == 0){
+                    html += '采购单</td><td>预付款';
+                    href  = 'href="/Purchase/view/id/'+data[item].id;
+                }else{
+                    html += '入库单</td><td>货到付款';
+                    href  = 'href="/PurchaseInDetail/index/erp_purchase_in_detail.purchase_code/'+data[item].code;
+                }
+                html += '</td><td>';
+                if (data[item].state == 'wait'){
+                    html += '-';
+                }
+                var amount = data[item].paid_amount;
+                html +=  amount.substr(0,amount.indexOf(".")+3);
+                html += '</td><td>'+data[item].user_nickname+'</td>';
+                html += '<td>';
+                html += '<a data-placement="bottom" data-trigger="hover" data-toggle="tooltip" rel="tooltip" data-title="查看" class="btn btn-xs btn-view" '+href+'.htm" target="_blank"><i class="glyphicon glyphicon-zoom-in"></i> </a>';
+                html += '</td>';
+                html += '</tr>';
+                i++;
+            }
+            $('#list').html(html);
+        }
+    });
+}
+
+$(function(){
+    typehead();
+    $("#save_settlement").click(function(){
+        var postData =    new Array();
+        var paid_amount = 0;
+
+        //获取选中的数据ID
+        $('input:checkbox[name=choose]:checked').each(function(i){
+            var id     = $(this).nextAll("input[name=id]").val();
+            var status = $(this).nextAll("input[name=status]").val();
+            var payment_type = $(this).nextAll("input[name=payment_type]").val();
+            var amount = parseInt($(this).nextAll("input[name=paid_amount]").val() * 100);
+            postData[i] = id+'_'+status+'_'+payment_type;
+            if(status == 'norefund' || status == 'wait'){
+                paid_amount -= amount;
+            }else{
+                paid_amount += amount;
+            }
+        });
+
+        paid_amount /= 100;
+
+        if(postData.length <= 0){
+            alert('请选择要结算的订单！');
+            return false;
+        }
+        var partner_id  = $('input[name=partner_id]').val();    //供货商ID
+        var bill_number = $('input[name=bill_number]').val();   //发票号
+        var bill_amount = $('input[name=bill_amount]').val();   //发票金额
+        var url = '/Settlement/add';
+        $.ajax({
+            url : url,
+            type : 'post',
+            cache : 'false',
+            dataType : 'json',
+            data : {'data': postData, 'partner_id':partner_id, 'paid_amount': paid_amount, 'bill_number' : bill_number, 'bill_amount' : bill_amount},
+            success : function(data){
+                if(data.code == -1){
+                    alert(data.message);
+                    return false;
+                }else{
+                    alert('保存数据成功');
+                    window.location.href='/Settlement/index';
+                }
+            }
+        })
+    });
+});
+</script>

@@ -15,4 +15,12 @@ class WarehouseLogic
         }
         return $result;
     }
+
+    public function lists()
+    {
+        $M = M('warehouse');
+        $map['is_deleted'] = 0 ;
+        $res = $M->where($map)->getField('id,name');
+        return $res;
+    }
 }

@@ -156,6 +156,7 @@ class PickController extends CommonController {
           foreach($pickArr as $key => $value){
               //查询查单号
               $map['bill_out_id'] = array('in',$value['bill_out_ids']);
+              $map['stock_wave_distribution.is_deleted'] = 0;
               $dist_info = M('stock_wave_distribution_detail')
               ->field('dist_code')
               ->join('stock_wave_distribution on stock_wave_distribution.id = stock_wave_distribution_detail.pid')

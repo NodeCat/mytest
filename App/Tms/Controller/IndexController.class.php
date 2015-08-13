@@ -2,12 +2,6 @@
 namespace Tms\Controller;
 use Think\Controller;
 class IndexController extends Controller {
-    protected $car=array(
-        'car_type' =>array(0=>'请选择你的车型','平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
-        'car_from' =>array(0=>'请选择派车平台','速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
-        'warehouse'=>array(0=>'请选择签到仓库',7=>'北京白盆窑仓库',8=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
-    );
-
     protected function _initialize() {
         layout('siji');
 
@@ -45,7 +39,7 @@ class IndexController extends Controller {
             else {
                 $this->title = '请您签到';
                 $this->display('Index:login');    
-            }   
+            }
         }
         if(IS_POST) {
             if(session('?user')) {
@@ -65,6 +59,7 @@ class IndexController extends Controller {
                 $data=$M1->field('id,username')->where($user)->order('created_time DESC')->find();          
                 if($data['id']){ // 如果以前签到过
                     $user['username'] = $data['username'];// 把用户名写入session
+                    $user['id'] = $data['id'];      //把司机id写入session，键名是id，不是uid，需要区别业务人员
                     $date = date('Y-m-d H:i:s',NOW_TIME);
                     $userid['userid']=$data['id'];
                     $userid['updated_time']=$date;
@@ -98,7 +93,12 @@ class IndexController extends Controller {
                 }else{
                     $this->user=$user;
                     $this->title='信息登记';
-                    $this->assign('car',$this->car);
+
+                    $cat = A('Common/Category','Logic');
+                    $this->carType = $cat->lists('car_type');
+                    $this->carFrom = $cat->lists('platform');
+                    $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+
                     $this->display('tms:register');
                 }
                     
@@ -178,14 +178,13 @@ class IndexController extends Controller {
             unset($M);
             $M = M('TmsUser');
             unset($map);
-            $map['mobile']=session('user.mobile');
-            $id=$M->field('id')->where($map)->order('updated_time')->find();
-            $data['id']=$id['id'];
+            $data['id']=session('user.id');
             $savedata = $M->create($data);
             if($M->save($savedata)){
-
                 $user['username'] = $data['username'];
-                $user['mobile']   = $data['mobile'];
+
+                $user['mobile']   =$data['mobile'];
+                $user['id']   =session('user.id');
                 session('user',$user);
                 $this->msg='修改成功';
                 $this->person();
@@ -205,8 +204,11 @@ class IndexController extends Controller {
         $map['mobile']=session('user.mobile');
         $data= $M->where($map)->order('updated_time')->find();
         $this->title='个人信息';
-        $this->assign('car',$this->car);
-        $data['warehouse']=$this->car['warehouse'][$data['warehouse']];
+        
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $this->data=$data;
         $this->display('tms:person');
     }
@@ -220,10 +222,14 @@ class IndexController extends Controller {
                  exit;
             }
             else{
-            $this->title = '请填写完整的签到信息';
-            $this->assign('car',$this->car);
-            $this->display('tms:register'); 
-            exit();
+                $this->title = '请填写完整的签到信息';
+
+                $cat = A('Common/Category','Logic');
+                $this->carType = $cat->lists('car_type');
+                $this->carFrom = $cat->lists('platform');
+                $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+
+                $this->display('tms:register'); 
             }   
         }
         if(IS_POST){
@@ -269,10 +275,12 @@ class IndexController extends Controller {
             unset($M);
             $M = M('TmsUser');
             $data = $M->create($data);
-            if($M->add($data)){
+            $res = $M->add($data);
+            if($res){
                 unset($user);
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
+                $user['id']     = $res;
                 session('user',$user);
                 $userid = $M->field('id')->where($user)->find();
                 $data['userid'] = $userid['id'];
@@ -517,7 +525,8 @@ class IndexController extends Controller {
             if (empty($this->error)) {
                 $data['dist_id'] = $dist['id'];
                 $data['dist_code'] = $dist['dist_number'];
-                $data['mobile'] = session('user.mobile');
+                $data['mobile']    = session('user.mobile');
+                $data['user_id'] = session('user.id');
                 $data['order_count'] = $dist['order_count'];
                 $data['sku_count'] = $dist['sku_count'];
                 $data['line_count'] = $dist['line_count'];
@@ -663,12 +672,6 @@ class IndexController extends Controller {
                 $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
             }
         }
-        //获得配送单号
-        unset($map);
-        $map['id'] = $dist_id;
-        $map['is_deleted'] = 0;
-        $dist_code = M('stock_wave_distribution')->field('dist_code')->where($map)->find();
-        $dist_code = $dist_code['dist_code'];
         
         //若查出的出库单信息非空
         if(!empty($stock_bill_out)){
@@ -719,13 +722,13 @@ class IndexController extends Controller {
                                     $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
                                 }
                                 //获得最久远的批次
-                                $batch = $A->get_long_batch($dist_code,$val['pro_code']);
+                                $batch = $A->get_long_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
                             case '3':
                                 //若已经拒收
                                 $real_sign_qty = 0;
                                 //获得最近的批次
-                                $batch = $A->get_lasted_batch($dist_code,$val['pro_code']);
+                                $batch = $A->get_lasted_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
                             case '4':
                                 //若是已经完成
@@ -755,7 +758,7 @@ class IndexController extends Controller {
                         $v['updated_time'] = get_time();
                         $v['created_user'] = 2;   //uid默认为2
                         $v['updated_user'] = 2;   //uid默认为2
-                        $v['batch'] = $batch;
+                        $v['batch'] = isset($batch) ? $batch : '';
                         $bill['detail'][] = $v;
                         
                         $container['refer_code'] = $bill['code'];   //关联拒收入库单号

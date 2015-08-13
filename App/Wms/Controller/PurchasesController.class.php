@@ -129,7 +129,6 @@ class PurchasesController extends CommonController {
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
         $param['second'] = ($cat_2 == '全部')?'':$cat_2;
         $param['second_child'] = ($cat_3 == '全部')?'':$cat_3;
-
         $insalesLogic = A('Insales','Logic');
         $purchasesLogic = A('Purchases','Logic');
         if(!$param['top'] && !$param['second'] && !$param['second_child']){

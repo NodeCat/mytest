@@ -24,15 +24,112 @@ class DispatchController extends \Common\Controller\AuthController{
          
     );
     public function home () {
-        $this->display('Index/index');
+        $data['stockout']['title'] = '出库单实时统计';
+        $data['stockout']['data'] = M()->table('stock_wave_distribution_detail dd ')
+        ->field('wh.name,dd.status,date(deliver_date) deliver_date,deliver_time,count(*) qty')
+        ->join('stock_wave_distribution d on dd.pid = d.id and d.is_deleted = 0 and dd.is_deleted = 0')
+        ->join('warehouse wh on d.wh_id = wh.id')
+        ->where('d.deliver_date = date(now())')
+        ->group('d.wh_id,dd.status,deliver_date,deliver_time')
+        ->order('d.wh_id,d.deliver_time,d.status')
+        ->select();
+
+        $data['distribution']['title'] = '配送单实时统计';
+        $data['distribution']['data'] = M()->table('stock_wave_distribution d')
+        ->field('wh.name,d.status,date(deliver_date) deliver_date,d.deliver_time,count(*) qty')
+        ->join('warehouse wh on d.wh_id = wh.id')
+        ->where('deliver_date = date(now()) and d.is_deleted = 0')
+        ->group('wh_id,status,deliver_time')
+        ->order('d.wh_id,d.deliver_time,d.status')
+        ->select();
+
+        $data['summary']['title'] = '今日运费占比［粗略预估统计］';
+        $data['summary']['data'] = M()->table('stock_wave_distribution d')
+        ->field('
+            wh_id,wh.name,date(deliver_date) deliver_date,
+            SUM(total_price) total_price,
+            COUNT(*) dist_qty,
+            SUM(order_count) order_qty,
+            ROUND(SUM(total_price) / COUNT(*), 2) dist_price_average,
+            ROUND(SUM(total_price) / SUM(order_count), 2) decim_price_average,
+            ROUND(300 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
+            ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
+        ')
+        ->join('warehouse wh on d.wh_id = wh.id')
+        ->where('deliver_date = date(now()) and d.is_deleted = 0')
+        ->group('wh_id')
+        ->select(); 
+
+        $status['stockout'] = array(
+                '0' => '已分拨',
+                '1' => '已装车',
+                '2' => '已签收',
+                '3' => '已拒收',
+                '4' => '已完成',
+                '5' => '已发运',
+        );
+
+        $status['distribution'] = array(
+                '0' => '未知',
+                '1' => '未发运',
+                '2' => '已发运',
+                '3' => '已配送',
+                '4' => '已结算',
+        );
+
+        $deliver_time = array(
+            '1' =>'上午',
+            '2' =>'下午'
+        );
+
+        foreach ($data['stockout']['data'] as &$value) {
+            $value['status_cn'] = $status['stockout'][$value['status']];
+            $value['deliver_time'] = $deliver_time[$value['deliver_time']];         
+        }
+        foreach ($data['distribution']['data'] as &$value) {
+            $value['status_cn'] = $status['distribution'][$value['status']];
+            $value['deliver_time'] = $deliver_time[$value['deliver_time']];         
+        }
+
+        $data['stockout']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'deliver_time' => '配送时间',
+            'status_cn' => '状态',
+            'qty' => '数量',
+        );
+
+        $data['distribution']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'deliver_time' => '配送时间',
+            'status_cn' => '状态',
+            'qty' => '数量',
+        );
+
+        $data['summary']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'dist_qty' => '配送单数量',
+            'order_qty' => '出库单数量',
+            'dist_order_average' => '平均每个车单包含出库单数',
+            'dist_price_percent' => '预计运费比'
+            
+        );
+
+
+        $this->data = $data;
+
+
+        $this->display('tms/home');
     }
-    protected $car = array(
-        'car_type' =>array('平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
-        'car_from' =>array('速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
-        'warehouse'=>array(7=>'北京白盆窑仓库',8=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
-    );
+
 	public function index() {
-        $D=D("TmsSignList");
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+        $D = D("TmsSignList");
         $sign_date = I('post.sign_date', '' , 'trim');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
@@ -50,7 +147,7 @@ class DispatchController extends \Common\Controller\AuthController{
             if ($car_from) {
                 $map1['car_from'] = $car_from;
             }
-            $this->warehouse = $warehouse;
+            $this->ware = $warehouse;
             $this->car_from  = $car_from;
             $M = M('TmsUser');
             //按仓库把用户id取出来
@@ -77,7 +174,9 @@ class DispatchController extends \Common\Controller\AuthController{
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
-            $value['warehouse'] = $this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
+            $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            $value['car_type']  = $this->carType[$value['car_type']];
+            $value['car_from']  = $this->carFrom[$value['car_from']];
             $map['mobile']      = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
@@ -116,12 +215,6 @@ class DispatchController extends \Common\Controller\AuthController{
             if ($res) {
                 $value['report_error'] = '1';
             }
-        }
-        if (defined('VERSION')) {
-            $this->car['warehouse'] = array(8 =>'北京北仓',7 =>'北京白盆窑仓库');
-        } else {
-            unset($this->car['warehouse'][8]);
-            unset($this->car['warehouse'][7]);
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
@@ -167,6 +260,10 @@ class DispatchController extends \Common\Controller\AuthController{
 
      //导出司机信息
     public function export() {
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel(); 
@@ -223,7 +320,9 @@ class DispatchController extends \Common\Controller\AuthController{
         unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
-            $value['warehouse']=$this->car['warehouse'][$value['warehouse']];//把仓库id变成名字            
+            $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            $value['car_type']  = $this->carType[$value['car_type']];
+            $value['car_from']  = $this->carFrom[$value['car_from']];            
             $map['mobile'] = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
             $map['status'] = '1';

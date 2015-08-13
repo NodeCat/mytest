@@ -103,9 +103,9 @@ class WavePickingLogic{
                         $line_count_out = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id']))->select();
                         $line_count_out_sum = count($line_count_out);
                         M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_sum);
-                        //删除出库单 并踢出车单
+                        //关闭出库单 并踢出车单
                         M('stock_wave_distribution_detail')->where(array('pid' => $distribution_id, 'bill_out_id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
-                        M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
+                        M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('status' => 18, 'wave_id' => 0));
                         
                         //更新车单信息
                         D('Distribution', 'Logic')->updDistInfoByIds(array($distribution_id));
@@ -129,6 +129,7 @@ class WavePickingLogic{
                         $rejectOrderArr[] = $bill_out_info['id'];
                         $data['status'] = 1;
                         //$data['refused_type'] = 2;
+                        $data['wave_id'] = 0;
                         $map['id'] = $bill_out_info['id'];
                         M('stock_bill_out')->where($map)->save($data);
                         unset($map);
@@ -142,6 +143,20 @@ class WavePickingLogic{
                         unset($data);
                         //把订单 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
                         A('Distribution', 'Logic')->getReduceSkuCodesAndUpdate(array($bill_out_info['id']));
+                        //更新波次总单数
+                        /*
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('order_count');
+                        //更新波次总行数
+                        $line_count_reduce = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id']))->select();
+                        $line_count_out_reduce_sum = count($line_count_reduce);
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_reduce_sum);
+                        //更新总件数
+                        $order_max_qty_sum = 0;
+                        foreach ($line_count_reduce as $detail_order_qty) {
+                            $order_max_qty_sum += $detail_order_qty['order_qty'];
+                        }
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('total_count', $order_max_qty_sum);
+                        */
                         if ($continue_num < $dist_group_long) {
                             continue;
                         } else {

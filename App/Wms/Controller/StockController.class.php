@@ -278,6 +278,11 @@ class StockController extends CommonController {
                 $mes = '移动库存量只能精确到两位小数点';
                 $this->msgReturn(0,$mes);
             }
+
+            if(bccomp(I('stock_qty'), I('origin_stock_qty'),2) == 1){
+            	$mes = '移动量不能大于原库存量';
+                $this->msgReturn(0,$mes);
+            }
     
 			$src_location_id = I('src_location_id');
 			//查询对应的location_id

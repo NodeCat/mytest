@@ -1,0 +1,161 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+    <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
+  <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul hidden"><i class="glyphicon glyphicon-edit"></i> 修改</a>
+  <a href="{:U('audit',array($pk => $data[$pk]))}" data-title="审核" rel="tooltip" data-placement="bottom" class="btn btn-sm hidden"><i class="glyphicon glyphicon-ok"></i> 审核</a>
+  </div>
+      <include file="status-bar" />
+      <div class="clearfix"></div>
+    </h3>
+  </div>
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-6"><h3>到货单 {$data.code}</h3></div>
+		<div class="col-lg-6">
+<div class="btn-group pull-right" role="group" aria-label="...">
+		  <a href="#" class="list-group-item">
+		  	<div class="media-left">
+		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+		        	<span class="glyphicon glyphicon-plane" aria-hidden="true"></span>
+		        </div>
+		    </div>
+		    <div class="media-body">
+			  	<h4 class="list-group-item-heading">{$data.qtyForPrepare}</h4>
+			    <p class="list-group-item-text">待上架</p>
+			</div>
+		  </a>
+
+		  <a href="#" class="list-group-item">
+		  	<div class="media-left">
+		        <div style="width: 48px; height: 48px;font-size: 32px;margin:auto;padding:6px 8px">
+		        	<span class="glyphicon glyphicon-white glyphicon-glass" aria-hidden="true"></span>
+		        </div>
+		    </div>
+		    <div class="media-body">
+			  	<h4 class="list-group-item-heading">{$data.qtyForIn}</h4>
+			    <p class="list-group-item-text">已上架</p>
+			</div>
+		  </a>
+</div>
+
+
+
+</div>
+
+<!--
+				<ul class="nav nav-pills" role="tablist">
+  <li role="presentation" class="active"><a href="#">发货中 <span class="badge">42</span></a></li>
+  <li role="presentation"><a href="#">待付款</a></li>
+  <li role="presentation"><a href="#">已入库 <span class="badge">3</span></a></li>
+</ul>
+-->
+		</div>
+
+  	<!--
+  	<div class="btn-group" role="group" aria-label="...">
+  <button type="button" class="btn btn-default btn-lg">
+  	<span class="glyphicon glyphicon-road" aria-hidden="true"></span>
+  	待发货 <span class="badge">7</span></button>
+  <button type="button" class="btn btn-default btn-lg">
+  	<span class="glyphicon glyphicon-usd" aria-hidden="true">
+  	</span>待付款 <span class="badge">3</span>
+  </button>
+</div>
+-->
+
+  	<hr/>
+  	
+
+<div class="row">
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="company_id">所属系统</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+        <label class="control-label label-field">{$data.company_name}</label>
+    </div>
+</div>
+
+<div class="form-group col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="wh_id">目的仓库</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.warehouse_name}</label>
+    </div>
+</div>
+<div class="form-group col-lg-3 hidden">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="expecting_date">送货日期</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.expecting_date}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">入库总数</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.cat_total} 种 / {$data.qty_total} 件</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">入库类型</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.type}</label>
+    </div>
+</div>
+<!-- 
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">供货商</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.partner_name}</label>
+    </div>
+</div>
+-->
+</div>
+
+<div class="row" style="margin-bottom: 15px;">
+<div class="form-group  col-lg-3">
+
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">创建时间</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.sp_created_time}</label>
+    </div>
+</div>
+
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">创建人</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.sp_created_user_name}</label>
+    </div>
+</div>
+
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">联系电话</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.sp_created_user_mobile}</label>
+    </div>
+</div>
+<div class="form-group  col-lg-3">
+    <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">采购单号</label>
+    <div class="col-lg-8 col-sm-8 col-xs-8">
+    <label class="control-label label-field">{$data.refer_code}</label>
+    </div>
+</div>
+</div>
+
+<include file="prolist-view" />
+</div>
+</div>
+
+<div>
+  <div class="tab-content">
+    <textarea name="remark" class="form-control" rows="5" placeholder="备注" disabled>{$data.remark}</textarea>
+  </div>
+</div>
+</form>
+
+<style type="text/css">
+.form-view .form-group .control-label:last-child{
+  font-weight: normal;;
+}
+.form-view .form-group{
+  margin-bottom: 0px;
+}
+</style>
