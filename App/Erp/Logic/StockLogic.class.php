@@ -542,7 +542,7 @@ class StockLogic{
             'pro_code' => $pro_code,
             'type' => 'putaway',
             'refer_code' => $refer_code,
-            'direction' => 'IN',
+            'direction' => 'ADD',
             'move_qty' => $pro_qty,
             'old_qty' => $log_old_qty,
             'new_qty' => $log_new_qty,
@@ -696,7 +696,7 @@ class StockLogic{
                     'location_id' => $param['dest_location_id'],
                     'pro_code' => $param['pro_code'],
                     'type' => 'move',
-                    'direction' => 'IN',
+                    'direction' => 'ADD',
                     'move_qty' => $param['variable_qty'],
                     'old_qty' => 0,
                     'new_qty' => $param['variable_qty'],
@@ -767,7 +767,7 @@ class StockLogic{
                         'location_id' => $param['dest_location_id'],
                         'pro_code' => $param['pro_code'],
                         'type' => 'move',
-                        'direction' => 'IN',
+                        'direction' => 'ADD',
                         'move_qty' => $param['variable_qty'],
                         'old_qty' => $dest_stock_info['stock_qty'],
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
@@ -883,7 +883,7 @@ class StockLogic{
                     'location_id' => $param['dest_location_id'],
                     'pro_code' => $param['pro_code'],
                     'type' => 'move',
-                    'direction' => 'IN',
+                    'direction' => 'ADD',
                     'move_qty' => $param['variable_qty'],
                     'old_qty' => 0,
                     'new_qty' => $param['variable_qty'],
@@ -960,7 +960,7 @@ class StockLogic{
                         'location_id' => $param['dest_location_id'],
                         'pro_code' => $param['pro_code'],
                         'type' => 'move',
-                        'direction' => 'IN',
+                        'direction' => 'ADD',
                         'move_qty' => $param['variable_qty'],
                         'old_qty' => $dest_stock_info['stock_qty'],
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
@@ -1162,7 +1162,7 @@ class StockLogic{
             'pro_code' => $params['pro_code'],
             'type' => 'move',
             'refer_code' => $params['refer_code'],
-            'direction' => 'IN',
+            'direction' => 'ADD',
             'move_qty' => $params['stock_qty'],
             'old_qty' => 0,
             'new_qty' => $params['stock_qty'],
@@ -1349,7 +1349,7 @@ class StockLogic{
             $stock_move_data = $stock_move->create($stock_move_data);
             $stock_move->data($stock_move_data)->add();
             
-            $stock_move_data['direction'] = 'IN';
+            $stock_move_data['direction'] = 'ADD';
             $stock_move_data['status'] = $params['new_status'];
             $stock_move->data($stock_move_data)->add();
 
