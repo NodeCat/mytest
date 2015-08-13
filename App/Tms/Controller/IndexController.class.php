@@ -1115,7 +1115,9 @@ class IndexController extends Controller {
         $geo = array('lng' => $point['lng'],'lat' => $point['lat']);
         $geo = json_encode($geo);
         $time = date('Y-m-d H:i:s',NOW_TIME);
-        $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'updated_time' => $time));
+        if ($point['lng'] != '' && $point['lat'] != '') {
+            $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'updated_time' => $time));
+        }
         if ($res) {
             $return = array(
                 'status' => 1,
