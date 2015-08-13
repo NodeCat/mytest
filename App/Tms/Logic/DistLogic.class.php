@@ -119,6 +119,8 @@ class DistLogic {
         $map['id'] = $uid;
         $M = M('tms_user');
         $res = $M->field('id,username,mobile,car_type,car_from')->where($map)->find();
+        $res['car_type'] = $this->getCateNameById($res['car_type']);
+        $res['car_from'] = $this->getCateNameById($res['car_from']);
         return $res;
     }
 

@@ -100,9 +100,9 @@
             <td>{$vo.expect_fee}</td>
             <td>{$vo.da_user.nickname}</td>               
             <td>{$vo.la_user.nickname}</td>
-            <td>{$vo.platform_name}</td>
-            <td>{$vo.car_type_name}</td>
-            <td>{$vo.driver.name}</td>
+            <td>{$vo.driver.car_from}</td>
+            <td>{$vo.driver.car_type}</td>
+            <td>{$vo.driver.username}</td>
             <td>{$vo.driver.mobile}</td>    
             <td <eq name="vo['status']" value="5">class="delivery-fee" data-id="{$vo.id}" data-fee="{$vo.delivery_fee}"</eq> >{$vo.delivery_fee}</td>    
             <td>{$vo.distance}</td>
