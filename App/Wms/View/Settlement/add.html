@@ -3,7 +3,7 @@
 
     <h3 class="panel-title"></h3>
         <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
-  <button type="submit" data-title="保存" id="save" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" ><i class="glyphicon glyphicon-pencil"></i> 保存</button>
+  <button type="submit" data-title="保存" id="save_settlement" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" ><i class="glyphicon glyphicon-pencil"></i> 保存</button>
   <a href="{:U('index')}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
   </div>
       {~$data['status']= "0";}
@@ -166,7 +166,7 @@ function checkForm(){
 
 $(function(){
     typehead();
-    $("#save").click(function(){
+    $("#save_settlement").click(function(){
         var postData =    new Array();
         var paid_amount = 0;
 
@@ -175,7 +175,7 @@ $(function(){
             var id     = $(this).nextAll("input[name=id]").val();
             var status = $(this).nextAll("input[name=status]").val();
             var payment_type = $(this).nextAll("input[name=payment_type]").val();
-            var amount = parseInt($(this).nextAll("input[name=paid_amount]").val());
+            var amount = parseInt($(this).nextAll("input[name=paid_amount]").val() * 100);
             postData[i] = id+'_'+status+'_'+payment_type;
             if(status == 'norefund' || status == 'wait'){
                 paid_amount -= amount;
@@ -183,6 +183,8 @@ $(function(){
                 paid_amount += amount;
             }
         });
+
+        paid_amount /= 100;
 
         if(postData.length <= 0){
             alert('请选择要结算的订单！');

@@ -37,6 +37,7 @@ class StockOutLogic{
         $data['delivery_time'] = $params['delivery_time'];
         $data['delivery_ampm'] = $params['delivery_ampm'];
         $data['customer_realname'] = $params['customer_realname'];
+        $data['customer_id'] = $params['customer_id'];
         $data['delivery_address'] = $params['delivery_address'];
         $data['op_date'] = $params['op_date'];
         $data['order_type'] = $params['order_type'];
@@ -59,6 +60,7 @@ class StockOutLogic{
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['pro_code'];
             $detail['order_qty'] = $val['order_qty'];
+            $detail['former_qty'] = $val['order_qty'];
             $detail['price'] = $val['price'];
             //如果是加工出库单 采购出库单，则默认的实际发货量为0，其余类型出库单默认发货量等于订单量
             if(in_array($stock_out_type , array('MNO','SO')) ) {

@@ -1,9 +1,6 @@
 
 <div class="table-responsive" >
     <form id="f" name="f" action="" method="post" class="form-inline">
-    <div class="input-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
-        <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10 clearfix">
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
                 <span class="input-group-addon form-control" style="line-height:1.4;">选择仓库</span>
                 <select autocomplete="off" value="" type="text" style="" class="form-control form-group input-pda"  id="warehouse" name="warehouse" placeholder="仓库">
                     <option value="0">请选择仓库</option>
@@ -11,8 +8,6 @@
                     <option value="{$key}" <eq name="warehouse" value="$key">selected="true"</eq> >{$storge}</option>
                     </volist>
                 </select>
-            </div>
-            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
                 <span class="input-group-addon form-control" style="line-height:1.4;">选择平台</span>
                 <select autocomplete="off" class="form-control input-pda"  id="platform" name="car_from">
                     <option value="0">请选择平台</option> 
@@ -20,21 +15,19 @@
                     <option value="{$plat}" <eq name="car_from" value="$plat">selected="true"</eq> >{$plat}</option>
                     </volist>
                 </select>
-            </div>
-            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+
+            <div class="form-group">
                 <span class="input-group-addon form-control" style="line-height:1.4;">选择日期</span>
                 <input type="txt" rel="datepicker" name="sign_date" value="{$start_date}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd">
             </div>
-            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-                <button class='btn btn-primary' onclick="select()" >查询</button>
-                <button class="btn btn-primary" onclick="exp()" >导出表格</botton>
-            </div>
-        </div>
-        <div class=" col-lg-2 col-md-2 col-sm-2 col-xs-2">
-            <a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>
-        </div>
-    </div>
-
+                <button class='btn btn-primary' onclick="select()" >查询</button> 
+            
+            <notempty name="auth['export']">
+                <button class="btn btn-primary" onclick="exp()" >导出表格</button> 
+            </notempty>
+            <notempty name="auth['saveFee']">
+                <button class="btn btn-success" onclick="editFee(this)" >编辑当天运费</button>
+            </notempty>
   </form>      
     <table class="table table-bordered" style="text-align:center">
         <!--<thead align="center">-->
@@ -87,7 +80,7 @@
             <td>{$k.distance}</br>
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
-            <td class="delivery-fee" data-id="{$k.id}">{$k.fee}</td>    
+            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
             <td></td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
@@ -108,11 +101,12 @@ function select(){
 }
 //编辑运费
 var tds;
-var btn = '<a class="btn btn-success pull-right" onclick="editFee(this)" >编辑当天运费</a>';
+var btn = '<button class="btn btn-success" onclick="editFee(this)" >编辑当天运费</button>';
+
 function editFee(obj) {
-    var save   = '<a class="btn btn-primary btn-sm pull-right" onclick="saveFee(this)" >保存</a>',
+    var save   = '<a class="btn btn-primary btn-sm pull-right btn-option" onclick="saveFee(this)" >保存</a>',
         sp     = '<span class="pull-right">&nbsp;&nbsp;&nbsp;&nbsp;</span>'
-        cancle = '<a class="btn btn-default btn-sm pull-right" onclick="cancleEdit(this)" > 取消</a>';
+        cancle = '<a class="btn btn-default btn-sm pull-right btn-option" onclick="cancleEdit(this)" > 取消</a>';
         $(obj).after(cancle+sp+save);
         $(obj).remove();
     tds = $('.delivery-fee');
@@ -141,18 +135,18 @@ function saveFee(obj) {
         }else{
             alert(res.msg);
         }
-        $(obj).siblings().remove();
+        $(obj).siblings('.btn-option').remove();
         $(obj).after(btn);
         $(obj).remove();
     })
 }
 function cancleEdit(obj) {
     tds.each(function(){
-        var fee = parseInt($(this).find('input').val());
+        var fee = parseInt($(this).data('fee'));
             fee = fee ? fee : 0;
         $(this).text(fee);
     })
-    $(obj).siblings().remove();
+    $(obj).siblings('.btn-option').remove();
     $(obj).after(btn);
     $(obj).remove();
 }

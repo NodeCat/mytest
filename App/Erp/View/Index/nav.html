@@ -1,0 +1,65 @@
+<nav class="navbar navbar-default navbar-fixed-top navbar-inverse hidden-print" role="navigation">
+  <div class="container-fluid">
+  <div class="navbar-header">
+    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+      <span class="sr-only"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+     <a class="navbar-brand" href="index">企业资源规划系统</a>
+  </div>
+  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+    <ul class="nav navbar-nav">
+      <notempty name="Think.session.user.uid">
+          <include file="Menu:top"/>
+      </notempty>
+    </ul>
+
+    <ul class="nav navbar-nav navbar-right">
+      <li class="hidden"><a href="{:U('Config/clear_runtime')}">清空缓存</a></li>
+      <notempty name="Think.session.user.username">
+      <php>
+$A=A('Warehouse');
+$items=$A->get_list('Warehouse','id,name');
+$_wh = $items[session('user.wh_id')];
+unset($items[session('user.wh_id')]);
+</php>
+<empty name="items">
+<li><a>{$_wh}</a></li>
+<else/>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{$_wh} <span class="caret"></span></a>
+  <ul class="dropdown-menu" role="menu">
+  <foreach name="items" item="wh">
+    <li><a href="{:U('Login/wh','id='.$key)}">{$wh}</a></li>
+  </foreach>
+  </ul>
+</li>
+</empty>
+
+      <li>
+        <a href="#"> <i class="glyphicon glyphicon-comment"></i> 消息</a>
+      </li>
+      <li class="dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <i class="glyphicon glyphicon-user"></i> {:session('user.username')}<b class="caret"></b></a>
+        <ul class="dropdown-menu">
+          <!--<li><a href="{:U('User/profile')}">个人信息</a></li>-->
+          <li><a href="{:U('Login/changepwd')}">修改密码</a></li>
+          <li class="divider"></li>
+          <li><a href="{:U('Login/logout')}">退出</a></li>
+        </ul>
+      </li>
+      <else/>
+      
+      <li><a id="home_link" accesskey="h" href="{:U('Login/index')}"> 登陆</a></li>
+      
+      <if condition="C('USER_ALLOW_REGISTER')==1">
+        <li><a href="{:U('Login/signup')}">注册</a></li>
+      </if>
+    
+      </notempty>
+    </ul>
+  </div>
+</div>
+</nav>

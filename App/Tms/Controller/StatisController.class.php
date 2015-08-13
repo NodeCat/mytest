@@ -9,7 +9,7 @@
 namespace Tms\Controller;
 use Think\Controller;
 
-class StatisController extends Controller
+class StatisController extends \Common\Controller\AuthController
 {
 	private $charts = array(
 		'总平台数据'                   => 'pingtaishuju.saiku',
@@ -21,8 +21,6 @@ class StatisController extends Controller
 		'上海每日订单数'                => 'shanghaimeiridanshu.saiku',
 	);
 	private $saiku_tms = 'http://saiku.dachuwang.com/api.html?#query/open/tms/';
-
-	protected function _initialize() {}
 
 	/**
 	 * [index 统计结果]

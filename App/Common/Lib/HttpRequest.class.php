@@ -202,6 +202,7 @@ class HttpRequest {
             $rtn = false;
         }
         $this->set_response($content, curl_getinfo($this->ch));
+
         HttpRequestPool::reset_curl_state($this->get_host_id(), $this->get_curl_id());
         $this->reset_ch();
         
@@ -414,7 +415,8 @@ class HttpRequest {
         // -v
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true);
         // default
-        curl_setopt($this->ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+        curl_setopt($this->ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+        //curl_setopt($this->ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         // not use
         curl_setopt($this->ch, CURLOPT_USERAGENT, "Weibo.com Swift framework HttpRequest class");
         

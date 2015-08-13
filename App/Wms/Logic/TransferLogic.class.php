@@ -116,6 +116,7 @@ class TransferLogic
                     $stock_bill_out['refer_code'] = $transfer_re['trf_code'];
                     $stock_bill_out['notes'] = $transfer_re['remark'];
                     $stock_bill_out['status'] = 1;
+                    $stock_bill_out['op_date'] = get_time();
                     $stock_bill_out['created_time'] = get_time();
                     $stock_bill_out['created_user'] = UID;
                     $stock_bill_out['updated_user'] = UID;
@@ -132,14 +133,13 @@ class TransferLogic
                             $stock_bill_out_detail[$key]['price'] = '0';
                             $stock_bill_out_detail[$key]['status'] = 1;
                             $stock_bill_out_detail[$key]['order_qty'] = $value['plan_transfer_qty'];
+                            $stock_bill_out_detail[$key]['former_qty'] = $value['plan_transfer_qty'];
                             $stock_bill_out_detail[$key]['created_time'] = get_time();
                             $stock_bill_out_detail[$key]['measure_unit'] = $value['pro_uom'];
                             $stock_bill_out_detail[$key]['created_user'] = UID;
                             $stock_bill_out_detail[$key]['updated_time'] = get_time();
                             $stock_bill_out_detail[$key]['updated_user'] = UID;
-
                         }
-
                         if ($stock_bill_out_detail_m->addAll($stock_bill_out_detail)) {
                             return true;
                         }else{

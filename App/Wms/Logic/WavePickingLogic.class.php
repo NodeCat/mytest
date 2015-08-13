@@ -20,7 +20,8 @@ class WavePickingLogic{
         $pickTaskOrderSum = 0;
         //因库存不足被打回的订单id
         $rejectOrderArr   = array(); 
-        
+        //SKU数量为0的订单
+        $sumZero = array();
         foreach($wave_ids as $wave_id){
             //根据波次id查询 出库单id
             $map['pid'] = $wave_id;
@@ -57,13 +58,17 @@ class WavePickingLogic{
                 //这个车单下是否有订单创建了分拣任务
                 $orderSumTask = 0;
                 //遍历出库单id
+                $continue_num = 0; //已经循环次数
+                $dist_group_long = count($dist_group); //循环数组长度
                 foreach($dist_group as $bill_out_id){
+                    $continue_num++;
                     //根据bill_out_id 查询出库单信息
                     $map['id'] = $bill_out_id['bill_out_id'];
                     $bill_out_info = M('stock_bill_out')->where($map)->find();
                     unset($map);
                     
-                    $is_enough = true;
+                    $is_continue_qty = false;
+                    $is_continue_stock = false;
 
                     //用于多种类型出库单库存判断扩展 加入采购正品退货liuguangping
                     $distribution_logic = A('Distribution','Logic');
@@ -77,16 +82,54 @@ class WavePickingLogic{
                         }
                         
                     }
-
+                    //根据bill_out_id 查询出库单详情
+                    $map['pid'] = $bill_out_info['id'];
+                    $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
+                    //优先判断出库单详情中SKU数量是否全部大于0
+                    $sku_pro_qty = 0; //出库SKU总数
+                    foreach ($bill_out_detail_infos as $bill_out_detail_info_pro_qty) {
+                        $sku_pro_qty += $bill_out_detail_info_pro_qty['order_qty'];
+                    }
+                    if ($sku_pro_qty <= 0) {
+                        $sumZero[] = $bill_out_info['id'];
+                        //此出库单下SKU出库数量全部为0
+                        //获取车单ID
+                        $distribution_id = M('stock_wave_distribution')->where(array('dist_code' => $key))->getField('id');
+                        //将出库单从波次中踢出
+                        M('stock_wave_detail')->where(array('id' => $bill_out_id['id']))->save(array('is_deleted' => 1));
+                        //更新波次总单数
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('order_count');
+                        //更新波次总行数
+                        $line_count_out = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id']))->select();
+                        $line_count_out_sum = count($line_count_out);
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_sum);
+                        //关闭出库单 并踢出车单
+                        M('stock_wave_distribution_detail')->where(array('pid' => $distribution_id, 'bill_out_id' => $bill_out_id['bill_out_id']))->save(array('is_deleted' => 1));
+                        M('stock_bill_out')->where(array('id' => $bill_out_id['bill_out_id']))->save(array('status' => 18, 'wave_id' => 0));
+                        
+                        //更新车单信息
+                        D('Distribution', 'Logic')->updDistInfoByIds(array($distribution_id));
+                        //总数量-1
+                        $this->order_max = $this->order_max - 1;
+                        if ($continue_num < $dist_group_long) {
+                            continue;
+                        } else {
+                            $is_continue_qty = true;
+                        }
+                    }
                     //查看出库单中所有sku是否满足数量需求
-                    $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
+                    if ($is_continue_qty == false) {
+                        $is_enough = A('Stock','Logic')->checkStockIsEnoughByOrderId($bill_out_info['id'],null,$batch_codeS);
+                    } else {
+                        $is_enough['status'] = 1;
+                    }
                     //如果不够 处理下一个订单
                     if($is_enough['status'] == 0){
                         //记录出库单ID
                         $rejectOrderArr[] = $bill_out_info['id'];
-                        
                         $data['status'] = 1;
                         //$data['refused_type'] = 2;
+                        $data['wave_id'] = 0;
                         $map['id'] = $bill_out_info['id'];
                         M('stock_bill_out')->where($map)->save($data);
                         unset($map);
@@ -100,70 +143,92 @@ class WavePickingLogic{
                         unset($data);
                         //把订单 拒绝标识改为2 缺货 缺货详情记录到到货单的备注中
                         A('Distribution', 'Logic')->getReduceSkuCodesAndUpdate(array($bill_out_info['id']));
-                        continue;
+                        //更新波次总单数
+                        /*
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('order_count');
+                        //更新波次总行数
+                        $line_count_reduce = M('stock_bill_out_detail')->where(array('pid' => $bill_out_info['id']))->select();
+                        $line_count_out_reduce_sum = count($line_count_reduce);
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('line_count', $line_count_out_reduce_sum);
+                        //更新总件数
+                        $order_max_qty_sum = 0;
+                        foreach ($line_count_reduce as $detail_order_qty) {
+                            $order_max_qty_sum += $detail_order_qty['order_qty'];
+                        }
+                        M('stock_wave')->where(array('id' => $wave_id))->setDec('total_count', $order_max_qty_sum);
+                        */
+                        if ($continue_num < $dist_group_long) {
+                            continue;
+                        } else {
+                            $is_continue_stock = true;
+                        }
                     }
 
                     //按照line_id 创建数组 OR 根据配送单号创建数组
-                    if (empty($code_mark)) {
-                        $code_mark = $bill_out_info['lind_id'];
-                    } 
-                    if (!isset($result_arr[$code_mark])) {
-                        $result_arr[$code_mark] = array();
-                    }
-                    //根据bill_out_id 查询出库单详情
-                    $map['pid'] = $bill_out_info['id'];
-                    $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
-                    unset($map);
-                    //遍历出库单详情
-                    foreach($bill_out_detail_infos as $bill_out_detail_info){
-                        //记录SKU种类数量
-                        $result_arr[$code_mark]['pro_type_sum'][$bill_out_detail_info['pro_code']] = true;
-                        //记录SKU总数
-                        $result_arr[$code_mark]['pro_qty_sum'] += $bill_out_detail_info['order_qty'];
-                        
-                        //检查应当从哪个库位出库 并锁定库存量 assign_qty
-                        //用于多种类型出库单库存判断扩展 加入采购正品退货liuguangping
-                        $param = array();
-                        $param = array(
-                            'wh_id'=>session('user.wh_id'),
-                            'pro_code'=>$bill_out_detail_info['pro_code'],
-                            'pro_qty'=>$bill_out_detail_info['order_qty'],
-                            'not_in_location_ids'=>$not_in_location_ids,
-                            'batch_code'=>$batch_codeS
-                            );
-                        
-                        $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave($param);
-                        
-                        foreach($assign_stock_infos['data']['stock_info'] as $assign_stock_info){
-                            //pro_code
-                            $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['pro_code'] = $bill_out_detail_info['pro_code'];
-                            //数量
-                            $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['pro_qty'] += $assign_stock_info['qty'];
-                            //批次
-                            $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['batch'] = $assign_stock_info['batch'];
-                            //src_location_id
-                            $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['src_location_id'] = $assign_stock_info['location_id'];
+                    if ($is_continue_qty != true && $is_continue_stock != true) {
+                        if (empty($code_mark)) {
+                            $code_mark = $bill_out_info['lind_id'];
+                        } 
+                        if (!isset($result_arr[$code_mark])) {
+                            $result_arr[$code_mark] = array();
                         }
                     }
-                    //增加订单数量
-                    //$order_sum++;
-                    $result_arr[$code_mark]['order_sum']++;
-                    //记录订单id到bill_out_id
-                    $result_arr[$code_mark]['bill_out_ids'] .= $bill_out_info['id'].',';
-                    //纪录订单线路
-                    $result_arr[$code_mark]['line_id'] = $bill_out_info['line_id'];
-                    
-                    //把订单状态置为待拣货
-                    $data['status'] = 4;
-                    $map['id'] = $bill_out_info['id'];
-                    M('stock_bill_out')->where($map)->save($data);
                     unset($map);
-                    unset($data);
-                    //处理分拣单 每个分拣单最多处理$order_max个订单
-                    $this->exec_order($result_arr,$wave_id);
-                    //订单量自增
-                    $orderSumTask++;
-                    $pickTaskOrderSum++;
+                    //遍历出库单详情
+                    if ($is_continue_stock != true && $is_continue_qty != true) {
+                        foreach($bill_out_detail_infos as $bill_out_detail_info){
+                            //记录SKU种类数量
+                            $result_arr[$code_mark]['pro_type_sum'][$bill_out_detail_info['pro_code']] = true;
+                            //记录SKU总数
+                            $result_arr[$code_mark]['pro_qty_sum'] += $bill_out_detail_info['order_qty'];
+                            
+                            //检查应当从哪个库位出库 并锁定库存量 assign_qty
+                            //用于多种类型出库单库存判断扩展 加入采购正品退货liuguangping
+                            $param = array();
+                            $param = array(
+                                'wh_id'=>session('user.wh_id'),
+                                'pro_code'=>$bill_out_detail_info['pro_code'],
+                                'pro_qty'=>$bill_out_detail_info['order_qty'],
+                                'not_in_location_ids'=>$not_in_location_ids,
+                                'batch_code'=>$batch_codeS
+                                );
+                            
+                            $assign_stock_infos = A('Stock','Logic')->assignStockByFIFOWave($param);
+                            
+                            foreach($assign_stock_infos['data']['stock_info'] as $assign_stock_info){
+                                //pro_code
+                                $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['pro_code'] = $bill_out_detail_info['pro_code'];
+                                //数量
+                                $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['pro_qty'] += $assign_stock_info['qty'];
+                                //批次
+                                $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['batch'] = $assign_stock_info['batch'];
+                                //src_location_id
+                                $result_arr[$code_mark]['detail'][$bill_out_detail_info['pro_code'].'_'.$assign_stock_info['location_id'].'_'.$assign_stock_info['batch']]['src_location_id'] = $assign_stock_info['location_id'];
+                            }
+                        }
+                        //增加订单数量
+                        //$order_sum++;
+                        $result_arr[$code_mark]['order_sum']++;
+                        //记录订单id到bill_out_id
+                        $result_arr[$code_mark]['bill_out_ids'] .= $bill_out_info['id'].',';
+                        //纪录订单线路
+                        $result_arr[$code_mark]['line_id'] = $bill_out_info['line_id'];
+                        
+                        //把订单状态置为待拣货
+                        $data['status'] = 4;
+                        $map['id'] = $bill_out_info['id'];
+                        M('stock_bill_out')->where($map)->save($data);
+                        unset($map);
+                        unset($data);
+                        //处理分拣单 每个分拣单最多处理$order_max个订单
+                        $this->exec_order($result_arr,$wave_id);
+                        //订单量自增
+                        $orderSumTask++;
+                        $pickTaskOrderSum++;
+                    } elseif (!empty($result_arr)) {
+                        //处理分拣单 每个分拣单最多处理$order_max个订单
+                        $this->exec_order($result_arr,$wave_id);
+                    }
                 }
                 if ($orderSumTask > 0) {
                     //分拣任务量自增
@@ -173,13 +238,12 @@ class WavePickingLogic{
             //查询当前仓库的发货区的location_id
             $map['wh_id'] = session('user.wh_id');
             $map['code'] = 'PACK';
-            $pack_info = M('Location')->where($map)->field('id')->find();
+            $pack_info = M('location')->where($map)->field('id')->find();
             unset($map);
             $map['pid'] = $pack_info['id'];
             $pack_location_info = M('Location')->where($map)->field('id')->find();
             $dest_location_id = $pack_location_info['id'];
             unset($map);
-            
             //处理剩余的线路数据
             if (!empty($result_arr)) {
                 foreach($result_arr as $line => $result){
@@ -224,7 +288,8 @@ class WavePickingLogic{
         $hintInfo = array(
         	   'tasksum'  => $pickTaskSum,
            'ordersum' => $pickTaskOrderSum,
-           'orderids' => $rejectOrderArr
+           'orderids' => $rejectOrderArr,
+           'sumZero'  => $sumZero,
         );
         return array('status'=>1, 'alert' => $hintInfo);
     }

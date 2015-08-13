@@ -1,0 +1,91 @@
+<div role="tabpanel">
+  <!-- Nav tabs -->
+  <volist name="data['detail']" id="value" key="k">
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">加工任务{$k}</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tab-content" style="margin-button:25px">
+    <div role="tabpanel" class="tab-pane active" id="home">
+      <table id="table-pro" class="data-table table table-bordere table-striped table-cond table-hover" style="">
+      <thead>
+        <th></th><th>货号</th><th>名称</th><th>规格</th><th>计划加工量</th><th>实际加工量</th><th>计量单位</th>
+      </thead>
+      <tbody>
+      <tr class="tr-tpl">
+      <td style="width:10%;background: #fff;">
+      	父SKU
+      </td>
+      <td style="width:10%;background: #fff;">
+        {$value.p_pro_code}
+      </td>
+      <td  style="width:25%;background: #fff;">
+        {$value.p_pro_name}
+      </td>
+      <td  style="width:25%;background: #fff;">
+      	{$value.p_pro_attrs}
+      </td>
+      <td style="width:10%;background: #fff;">
+      	{$value.plan_qty}
+      </td>
+      <td style="width:10%;background: #fff;">
+      	{$value.real_qty}
+      </td>
+      <td style="width:10%;background: #fff;">
+        {$value.p_uom_name}
+      </td>
+      </tr>
+       <volist name="value['detail']" id="val" key="kk">
+      	  <tr class="tr-tpl">
+	      <td class="c_sku_index" index="{$kk}" style="width:10%;background: #fff;" rowspan="{:count($value['detail'])}">
+	      	子SKU
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	        {$val.c_pro_code}
+	      </td>
+	      <td  style="width:25%;background: #fff;">
+	        {$val.c_pro_name}
+	      </td>
+	      <td  style="width:25%;background: #fff;">
+	      	{$val.c_pro_attrs}
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	      	{$val.plan_qty}
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	      	{$val.real_qty}
+	      </td>
+	      <td style="width:10%;background: #fff;">
+	        {$val.c_uom_name}
+	      </td>
+	      </tr>
+	    </volist>
+	  </tbody>
+      </table>
+    </div>
+  </div>
+  </volist>
+</br>
+
+</div>
+</div>
+</div>
+<script>
+	$(function() {
+		var td =  $('.c_sku_index');
+		console.log(td);
+		  td.each(function(i) {
+			  if ($(this).attr('index') > 1) {
+				  $(this).remove();
+			  }
+		  }) 
+	}) 
+</script>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>

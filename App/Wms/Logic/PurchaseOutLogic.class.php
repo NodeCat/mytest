@@ -167,6 +167,7 @@ class PurchaseOutLogic{
                     $insertAll[$key]['pro_attrs'] = $value['pro_attrs'];
                     $insertAll[$key]['price'] = $value['price_unit'];
                     $insertAll[$key]['order_qty'] = $value['plan_return_qty'];
+                    $insertAll[$key]['former_qty'] = $value['plan_return_qty'];
                     $insertAll[$key]['status'] = 1;
                     $insertAll[$key]['created_user'] = UID;
                     $insertAll[$key]['created_time'] = get_time();
@@ -216,10 +217,14 @@ class PurchaseOutLogic{
             if ($type[$key] == 'RTSG') {
                 $purchaseCode = $bill_out_result['refer_code'];
                 if($purchaseCode){
+                    $purchase_out = M('stock_purchase_out');
                     $where['rtsg_code'] = $purchaseCode;
+                    if (!$purchase_out->where($where)->find()) {
+                        continue;
+                    }
                     $purSave['status'] = 'refunded';
                     $purSave['updated_time'] = get_time();
-                    $purchase_out = M('stock_purchase_out');
+                    
                     if($purchase_out->where($where)->save($purSave)){
                         $where = array();
                         $where['rtsg_code'] = $purchaseCode;
@@ -261,6 +266,12 @@ class PurchaseOutLogic{
                 $transfer_code = $bill_out_result['refer_code'];//调拨单
                 //wms和erp的出库单和wms出库单详细的详细关联单号
                 $bill_out_code = $bill_out_result['code'];
+                //检查是否是调拨单
+                $erp_map = array();
+                $erp_map['trf_code'] = $transfer_code;
+                if (!M('erp_transfer')->where($erp_map)->find()) {
+                    continue;
+                }
                 if($this->updateTransfer($transfer_code, $out_id)){
                     //修改erp 出库单
                     if ($this->erpUpdateOut($bill_out_code, $out_id)) {
@@ -387,12 +398,12 @@ class PurchaseOutLogic{
     public function insertErpContainer($out_id){
         $stock_bill_out_container = M('stock_bill_out_container');
         $erp_bill_out_container = M('erp_transfer_out_container');
-        $map['wdd.bill_out_id'] = $out_id;
-        $map['wdd.status'] = 5;//已发运
-        $map['wdd.is_deleted'] = 0;
-        $stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_wave_distribution as wd on c.refer_code = wd.dist_code 
-            left join stock_wave_distribution_detail as wdd on wd.id = wdd.pid 
-            left join stock_bill_out as o on wdd.bill_out_id = o.id ')->where($map)->select();
+        $map['o.id'] = $out_id;
+        $map['o.status'] = 2;//已出库
+        $map['o.type'] = 5;//调拨单
+        $map['o.is_deleted'] = 0;
+        $stock_container = $stock_bill_out_container->field('c.*,o.refer_code as code_refer')->join(' as c left join stock_bill_out as o on o.code = c.refer_code')->where($map)->select();
+
         if($stock_container){
             $data = array();
             $process_logic = A('Process', 'Logic');

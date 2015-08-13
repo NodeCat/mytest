@@ -1,6 +1,8 @@
 <?php
 namespace Tms\Controller;
+
 use Think\Controller;
+
 class DistController extends Controller {
 
 	//司机提货
@@ -71,9 +73,13 @@ class DistController extends Controller {
                 $this->error = '提货失败，未找到该单据';
             }
 
-            if ($dist['status'] == '2') {
-                //已发运的单据不能被认领
-                //$this->error = '提货失败，该单据已发运';
+            if ($dist['status'] == '1') {
+                // 未发运的单据不能被认领
+                $this->error = '提货失败，未发运的配送单不能提货';
+            }
+            if ($dist['status'] == '3' || $dist['status'] == '4') {
+                //已配送或已结算的配送单不能认领
+                $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
@@ -86,6 +92,7 @@ class DistController extends Controller {
                 $data['dist_id']      = $dist['id'];
                 $data['dist_code']    = $dist['dist_code'];
                 $data['mobile']       = session('user.mobile');
+                $data['user_id']       = session('user.id');
                 $data['order_count']  = $dist['order_count'];
                 $data['sku_count']    = $dist['sku_count'];
                 $data['line_count']   = $dist['line_count'];
@@ -143,6 +150,8 @@ class DistController extends Controller {
 
                 $map['status']  = '8';//已装车
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+                $map['driver_name'] = session('user.username');
+                $map['driver_mobile'] = session('user.mobile');
                 foreach ($orders as $val) {
                     $order_ids[] = $val['refer_code'];
                     $map['suborder_id'] = $val['refer_code'];
@@ -198,8 +207,8 @@ class DistController extends Controller {
             $userid  = M('tms_user')->field('id')->where($map)->find();
             $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
         } else {
-                $msg = $this->error;
-                $res = array('status' =>'0', 'message' =>$msg);
+            $msg = $this->error;
+            $res = array('status' =>'0', 'message' =>$msg);
         }
         $this->ajaxReturn($res);     
     }
@@ -235,6 +244,7 @@ class DistController extends Controller {
                     //获取支付状态的中文
                     $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
                     $val['pay_status'] = $s;
+                    $val['pay_type']   = $val['order_info']['pay_type'];
                     $val['order_info']['pay_status'] = $s;
                     //从订单获取字段到出库单
                     $val['shop_name']       = $val['order_info']['shop_name'];
@@ -248,10 +258,10 @@ class DistController extends Controller {
                     $val['deliver_fee']     = $val['order_info']['deliver_fee'];
                     $val['final_price']     = $val['order_info']['final_price'];
                     $val['receivable_sum']  = $val['order_info']['final_price'];
-                    if ($val['pay_status'] != '已付款') {
-                        $val['real_sum']   = $A->wipeZero($val['order_info']['final_price']);
+                    if ($val['pay_status'] == '已付款' || $val['pay_type'] == 2) {
+                        $val['real_sum']   = $val['order_info']['final_price'];
                     } else {
-                       $val['real_sum']    = $val['order_info']['final_price'];
+                       $val['real_sum']    = $A->wipeZero($val['order_info']['final_price']);
                     }
                     $val['sign_msg']        = $val['order_info']['sign_msg'];
                     $val['user_id']         = $val['order_info']['user_id'];
@@ -382,8 +392,10 @@ class DistController extends Controller {
         $A = A('Tms/Dist','Logic');
         $receivable_sum -= $orderInfo['info']['minus_amount'];
         $receivable_sum += $orderInfo['info']['deliver_fee'];
-        if ($orderInfo['info']['pay_status'] != 1) {
+        //付款状态为已付款和账期支付的不进行抹零处理
+        if ($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2) {
             $deal_price = $A->wipeZero($receivable_sum);
+            $wipe_zero  = round($receivable_sum - $deal_price,2);
         } else {
             $deal_price = $receivable_sum;
         }
@@ -396,6 +408,8 @@ class DistController extends Controller {
             'pay_reduce'     => $orderInfo['info']['pay_reduce'],
             'deliver_fee'    => $orderInfo['info']['deliver_fee'],
             'pay_status'     => $orderInfo['info']['pay_status'],
+            'pay_type'       => $orderInfo['info']['pay_type'],
+            'wipe_zero'      => isset($wipe_zero) ? $wipe_zero : 0,
             'sign_msg'       => $sign_msg,
             'status'         => 2,//签收
             'sign_time'      => get_time(),
@@ -490,6 +504,8 @@ class DistController extends Controller {
                 'sign_msg'       => I('post.sign_msg', '' ,'trim'),
                 'reject_reason'  => $reasons,
                 'status'         => 3,//拒收
+                'pay_status'     => $orderInfo['info']['pay_status'],
+                'pay_type'       => $orderInfo['info']['pay_type'],
                 'sign_time'      => get_time(),
                 'sign_driver'    => session('user.mobile'),
             );
@@ -605,11 +621,14 @@ class DistController extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            if ($sign_data['pay_status'] != 1) {
+                            //付款状态不是已付款和帐期支付的才计算回款数
+                            if ($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2) {
+                                $sum_deal_price += 0;
+                            } else {
                                 $sum_deal_price += $sign_qty * $sign_in_detail['price_unit'];  //回款
                             }
                         }
-                        if ($sign_data['pay_status'] != 1) {
+                        if (!($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2)) {
                             $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);
                         }  
                         break;
@@ -635,13 +654,16 @@ class DistController extends Controller {
                  
             }  
         }
-            
+
         $list['dist_id'] = $res['dist_id'];
         $list['sum_deal_price']  = $sum_deal_price;//回款数
         $list['sign_orders'] = $sign_orders;//已签收
         $list['unsign_orders'] = $unsign_orders;//未签收
         $list['sign_finished']  = $sign_finished;  // 已完成
         $list['delivering'] = $all_orders - $sign_orders - $unsign_orders - $sign_finished;//派送中
+        $L = A('Fms/List','Logic');
+        $status = $L->can_pay($res['dist_id']);
+        $this->status = $status;
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';

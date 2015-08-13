@@ -31,11 +31,11 @@ class SkuInfoLogic
         if (empty($skuCodeArr)) {
             return $return;
         }
+        
         //查询SKU采购信息
         $map['stock_purchase_detail.pro_code']   = array('in', $skuCodeArr);
         $map['stock_purchase_detail.is_deleted'] = 0;
-        $map['stock_purchase.expecting_date']    = array('egt', date('Y-m-d H:i:s', $stime));
-        $map['stock_purchase.expecting_date']    = array('elt', date('Y-m-d H:i:s', $etime));
+        $map['stock_purchase.created_time']    = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
         if ($warehouseId > 0) {
             $map['stock_purchase.wh_id'] = $warehouseId;
         }
@@ -47,8 +47,7 @@ class SkuInfoLogic
         //查询加工信息
         $map['erp_process_in_detail.pro_code']   = array('in', $skuCodeArr);
         $map['erp_process_in_detail.is_deleted'] = 0;
-        $map['erp_process_in.created_time']      = array('egt', date('Y-m-d H:i:s', $stime));
-        $map['erp_process_in.created_time']      = array('elt', date('Y-m-d H:i:s', $etime));
+        $map['erp_process_in.created_time']      = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
         if ($warehouseId > 0) {
             $map['erp_process_in.wh_id'] = $warehouseId;
         }
@@ -82,7 +81,6 @@ class SkuInfoLogic
                 $return[$index] = bcdiv($total_price, $total_num, 2);
             }
         }
-        
         return $return;
     }
     
@@ -109,8 +107,8 @@ class SkuInfoLogic
             $map['stock_bill_out.wh_id'] = $warehouseId;
         }
         $map['stock_bill_out.type']  = 1; //销售类型
-        $map['stock_bill_out.op_date'] = array('egt', date('Y-m-d H:i:s', $stime));
-        $map['stock_bill_out.op_date'] = array('elt', date('Y-m-d H:i:s', $etime));
+        $map['stock_bill_out.op_date'] = array('between', array(date('Y-m-d H:i:s', $stime), date('Y-m-d H:i:s', $etime)));
+        $map['stock_bill_out.status'] = 2; //已出库
         $stockOutDetail = M('stock_bill_out_detail')
                               ->field('pro_code,SUM(delivery_qty) as qty')
                               ->join('stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid')
@@ -179,7 +177,6 @@ class SkuInfoLogic
                 $return[] = $value['pro_code'];
             }
         }
-        
         return $return;
     }
 }

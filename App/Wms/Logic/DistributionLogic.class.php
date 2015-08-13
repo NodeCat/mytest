@@ -121,11 +121,12 @@ class DistributionLogic {
                 return $return;
             }
             foreach ($order_info['list'] as $key => $val) {
-                //增加客服id 创建配送单使用
+                //增加客服id 创建配送单使用 客服名称
                 foreach ($result as $k => $v) {
                     if ($v['refer_code'] == $val['id']) {
                         $result[$k]['map_pos'] = json_decode($val['geo'], true);
                         $result[$k]['user_id'] = $val['user_id'];
+                        $result[$k]['shop_name'] = $val['shop_name'];
                         break;
                     }
                 }
@@ -161,7 +162,8 @@ class DistributionLogic {
             $return[$key]['id'] = $value['id'];
             $return[$key]['out_id'] = $value['id']; //出库单id
             $return[$key]['code'] = $value['code']; //出库单号
-            $return[$key]['user_id'] = $value['user_id']; //客服名称
+            $return[$key]['user_id'] = $value['user_id']; //客服ID
+            $return[$key]['shop_name'] = $value['shop_name']; //店铺名称
             $return[$key]['order_id'] = $value['refer_code'];//订单id
             $return[$key]['line'] = $this->format_line($value['line_id']); //线路名称
             $return[$key]['address'] = $value['delivery_address']; //地址
@@ -711,15 +713,11 @@ class DistributionLogic {
         $map['status'] = 1; //状态 1带生产
         $map['dis_mark'] = 0; //配送标示 0未分拨
         $map['wh_id'] = session('user.wh_id');
-        //$map['line_id'] = array('gt', 0); //线路ID > 0
         if(!empty($params['type'])){
             $map['order_type'] = $params['type'];
         }
-        if(!empty($params['line'])){
-            $map['line_id'] = $params['line'];
-        }
         if(!empty($params['date'])){
-            $map['create_time'] = array(array('like',$params['date'].'%'));
+            $map['delivery_date'] = array(array('like',$params['date'].'%'));
         }
         if(!empty($params['time'])){
             switch($params['time']){

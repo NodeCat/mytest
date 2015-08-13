@@ -12,7 +12,7 @@ class StockOutController extends CommonController {
             '3'=>'波次中',
             '4'=>'待拣货',
             '5'=>'待复核',
-            //'6'=>'己复核'  
+            '18'=>'已关闭'  
             ),
        'process_type'=>array(
             '1'=>'正常单',
@@ -209,9 +209,8 @@ class StockOutController extends CommonController {
                 '3'=>array('value'=>'3','title'=>'波次中','class'=>'success'),
                 '4'=>array('value'=>'4','title'=>'待拣货','class'=>'info'),
                 '5'=>array('value'=>'5','title'=>'待复核','class'=>'danger'),
-                //'6'=>array('value'=>'6','title'=>'己复核','class'=>'warning'),
-                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary')
-                
+                '2'=>array('value'=>'2','title'=>'已出库','class'=>'primary'),
+                '18'=>array('value'=>'18', 'title'=>'已关闭', 'class'=>'default'),
             )
         );
         $stock_out = M('stock_bill_out');
@@ -242,6 +241,9 @@ class StockOutController extends CommonController {
                 $val['delivery_date'] = '无';
             }else {
                 $val['delivery_date'] = date('Y-m-d',strtotime($val['delivery_date'])) .'<br>'. $val['delivery_time'];
+            }
+            if($val['op_date'] == "0000-00-00 00:00:00" || $val['op_date'] == "1970-01-01 00:00:00") {
+                $val['op_date'] = '无';
             }
             $map['stock_bill_out.id'] = $val['id'];
             $map['stock_wave_distribution_detail.is_deleted'] = 0;
@@ -311,7 +313,10 @@ class StockOutController extends CommonController {
             $column['pro_name'] = $post['pro_name'][$i];
             $column['pro_attrs'] = $post['pro_attrs'][$i];
             $column['order_qty'] = $post['order_qty'][$i];
-            $column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
+            if (ACTION_NAME != 'edit') {
+                $column['former_qty'] = $post['order_qty'][$i];
+            }
+            //$column['delivery_qty'] = isset($post['delivery_qty'][$i])? $post['delivery_qty'][$i] : $post['order_qty'][$i];
             $data = $stock_bill_detail->create($column);
             if(! empty($post['id'][$i])) {
                 $map['id'] = $post['id'][$i];
@@ -348,11 +353,6 @@ class StockOutController extends CommonController {
         $map['id'] = $data['wh_id'];
         $data['wh_name'] = $warehouse->where($map)->getField('name');
         
-        if($data['op_date'] == "0000-00-00 00:00:00") {
-            //$data['delivery_time'] = '无';
-        }else {
-            $data['delivery_time'] = date('Y-m-d', strtotime($data['op_date'])) . $this->filter['op_time'][$data['op_time']];
-        }
         $filter = array('status' => array('1'=>'待生产','2'=>'已出库'),
                        'type' => array('1'=>'普通订单','2'=>'采购退货','3'=>'库内样品出库'),
                        'process_type' => array('1'=>'正常单','2'=>'取消单'),
@@ -372,6 +372,7 @@ class StockOutController extends CommonController {
         foreach($ids_arr as $id) {
            $map['id'] = $id;
            $stock_status = $stock_out->where($map)->getField('status');
+           unset($map);
            if($stock_status == 2) {
                 $return['status'] = 0;
                 $return['msg'] = '已出库的出库单不能再次出库，请重新选择';
@@ -387,24 +388,26 @@ class StockOutController extends CommonController {
             //查找出库单信息
             $map['id'] = $id;
             $stock_info = $stock_out->field('wh_id,code,total_qty,status')->where($map)->find();
-            
+            unset($map);
+
             //根据出库单号 返回对应的库存区域标识
             $location_area_name = A('Location','Logic')->getAreaByBillCode($stock_info['code']);
+
             //根据标识 整理出应该从哪些库位出库的库位id
             if(!empty($location_area_name)){
                 $in_location_ids = A('Location','Logic')->getLocationIdByAreaName(array($location_area_name));
             }
 
             //查找出库单明细
-            unset($map);
             $map['pid'] = $id;
-            $detail_info = $stock_detail->where($map)->field('pro_code,delivery_qty')->select();
-            
+            $detail_info = $stock_detail->where($map)->field('id,pro_code,delivery_qty,order_qty')->select();
+            unset($map);
+
             $data['wh_id'] = $stock_info['wh_id'];
             $data['refer_code'] = $stock_info['code'];
             foreach($detail_info as $val) {
                 $data['pro_code'] = $val['pro_code'];
-                $data['pro_qty'] = $val['delivery_qty'];
+                $data['pro_qty'] = $val['order_qty'];
                 //如果出库量是0 放弃处理 处理下一条
                 if(intval($data['pro_qty']) === 0){
                     continue;
@@ -424,18 +427,24 @@ class StockOutController extends CommonController {
                 //销库存
                 foreach($detail_info as $val) {
                     //如果出库量是0 放弃处理 处理下一条
-                    if(intval($val['delivery_qty']) === 0){
+                    if(bccomp($val['order_qty'], 0, 2) == 0){
                         continue;
                     }
 
                     $data['pro_code'] = $val['pro_code'];
-                    $data['pro_qty'] = $val['delivery_qty'];
+                    $data['pro_qty'] = $val['order_qty'];
                     $data['refer_code'] = $stock_info['code'];
                     $data['wh_id'] = $stock_info['wh_id'];
                     if(!empty($in_location_ids)){
                         $data['location_ids'] = $in_location_ids;
                     }
                     $res = A('Stock', 'Logic')->outStockBySkuFIFO($data);
+                    //更新出库单明细
+                    $map['id'] = $val['id'];
+                    $upd_data['delivery_qty'] = $val['order_qty'];
+                    M('stock_bill_out_detail')->where($map)->save($upd_data);
+                    unset($map);
+                    unset($upd_data);
                     //存储此货品出库的相关内容
                     /*$stock_container = D('stock_bill_out_container');
                     $container['refer_code'] = $stock_info['code'];
@@ -457,9 +466,10 @@ class StockOutController extends CommonController {
                 $list['status'] = 2;
                 $list['refused_type'] = 1;
             }
-            unset($map);
+            
             $map['id'] = $id;
             $stock_out->where($map)->save($list);
+            unset($map);
         }
         
         if($state == 'failed') {
@@ -521,6 +531,30 @@ class StockOutController extends CommonController {
             }
         }
     
+    }
+    /**
+     * 开启出库单 zhangchaoge
+     */
+    public function open() {
+        $id = I('get.id');
+        
+        if (empty($id)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        //查询出库单
+        $stockInfo = M('stock_bill_out')->where(array('id' => $id))->find();
+        if (empty($stockInfo)) {
+            $this->msgReturn(false, '不存在的出库单');
+        }
+        if ($stockInfo['status'] != 18) {
+            $this->msgReturn(false, '没有关闭的出库单');
+        }
+        $update['status'] = 1;
+        $affected = M('stock_bill_out')->where(array('id' => $id))->save($update);
+        if (!$affected) {
+            $this->msgReturn(false, '开启失败');
+        }
+        $this->msgReturn(true, '已开启');
     }
     public function hasCreate(){
 

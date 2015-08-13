@@ -38,7 +38,7 @@ class PurchasesLogic{
             $where['b.delivery_ampm'] = $delivery_ampm; 
         }
         $page_size = C('PAGE_SIZE');
-        $where['b.status'] = 1;//待生产
+        $where['b.status'] = array('in','1,3');//待生产or波次中
         $where['b.type'] = 1;//销售订单
         $returnRes = array();
         $total = count($pro_codeArr);
@@ -49,12 +49,11 @@ class PurchasesLogic{
                 
                 $pro_code = array_splice($pro_codeArr, 0, $page_size);
                 $where['d.pro_code'] = array('in',$pro_code);
-                $where['r.is_deleted'] = 0;
-                //$query = ""
+                //$where['r.is_deleted'] = 0;
                 $subQuery = $m->table('stock_bill_out_detail as d')
                             ->join('left join stock_bill_out as b on b.id=d.pid
                                     left join stock as s on d.pro_code=s.pro_code 
-                                    join erp_process_sku_relation as r on d.pro_code = r.p_pro_code ')
+                                    left join erp_process_sku_relation as r on d.pro_code = r.p_pro_code and r.is_deleted=0')
                             ->field("r.ratio,b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
                             ->where($where)
                             ->group('b.wh_id,d.pro_code,r.c_pro_code')
@@ -69,7 +68,6 @@ class PurchasesLogic{
 
             }
         }
-        //dump($returnRes);die;
         return $returnRes;
 
     }
@@ -78,7 +76,7 @@ class PurchasesLogic{
     public function getSkuInfoByWhIdUp($wh_id,$delivery_date='', $delivery_ampm='', $offset='',$limit=''){
         $m               = M();
         $where           = array();
-        $where['b.status'] = 1;//待生产
+        $where['b.status'] = array('in','1,3');//待生产or波次中
         $where['b.type'] = 1;//销售订单
       
         if($wh_id){
@@ -93,11 +91,11 @@ class PurchasesLogic{
             $where['b.delivery_ampm'] = $delivery_ampm; 
         }
         $result = array();
-        $where['r.is_deleted'] = 0;
+        //$where['r.is_deleted'] = 0;
         $subQuery = $m->table('stock_bill_out_detail as d')
         ->join('left join stock_bill_out as b on b.id=d.pid
                 left join stock as s on d.pro_code=s.pro_code 
-                join erp_process_sku_relation as r on d.pro_code = r.p_pro_code ')
+                left join erp_process_sku_relation as r on d.pro_code = r.p_pro_code and r.is_deleted=0')
         ->field("r.ratio,b.delivery_ampm,b.delivery_date,b.wh_id,d.pro_code,r.c_pro_code,CASE WHEN s.status is null THEN 'undefined' ELSE s.status END as types")
         ->where($where)
         ->group('b.wh_id,d.pro_code,r.c_pro_code')->buildSql();
@@ -110,7 +108,6 @@ class PurchasesLogic{
             $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
             $count = count($m->select());
             $res = $m2->limit($offset,$limit)->select();
-            //echo $m2->getLastSql();die;
 
             $result['count'] = $count;
             $result['res']   = $res;

@@ -775,6 +775,7 @@ class ProcessLogic {
         $param['notes'] = $data['remark'];
         $param['dis_mark'] = 0;
         $param['status'] = 1; //状态 待生产
+        $param['op_date'] = get_time();
         $param['company_id'] = $data['company_id'];
         $param['created_time'] = get_time();
         $param['created_user'] = session('user.uid');
@@ -796,6 +797,7 @@ class ProcessLogic {
             $detail['pro_attrs'] = $value['pro_attrs'];
             $detail['price'] = 0;
             $detail['order_qty'] = formatMoney($value['plan_qty'], 2);
+            $detail['former_qty'] = formatMoney($value['plan_qty'], 2);
             $detail['status'] = 1; //待生产
             $detail['delivery_qty'] = formatMoney('0', 2);
             $detail['created_time'] = get_time();

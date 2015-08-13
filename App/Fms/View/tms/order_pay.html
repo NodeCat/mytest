@@ -1,4 +1,4 @@
-
+<br/>
 <div class="row-fluid">
 <form class="form-horizontal form-pda form-scan" action="{:U('Order/index')}" method="POST">
   <div class="row-fluid">
@@ -44,7 +44,7 @@
   </div>
   </div>
 
-
+<notempty name="data">
 <div class="row-fluid" id="orders">
 <table class="data-table table table-bordered table-striped table-condensed " style="">
 <thead>
@@ -70,7 +70,16 @@
 <tr>
   <td>{$data.refer_code}</td>
   <td>{$data.status_cn}</td>
-  <td>{$data.pay_status}</td>
+  <td>
+   <if condition="$data.pay_type eq 2">账期支付
+    <else/>
+      <switch name="data.pay_status">
+        <case value="-1" break="0"></case>
+        <case value="0">货到付款</case>
+        <case value="1">已付款</case>
+      </switch>
+    </if>
+  </td>
   <td>{$data.pay_for_price}</td>
   <!--
   <td class=" col-md-3">
@@ -165,23 +174,23 @@
       </div>
     </div>
   </form>
-  <if condition="($data.status_cn eq '已完成') AND ($data.pay_status neq '已付款')">
+  <if condition="($data.status_cn eq '已完成') AND ($data.pay_for_price gt 0)">
+    <div class="panel-footer ">
     <form class="form-inline" action="{:U('Order/pay')}" method="POST">
       <input type="hidden" name="order_id" value="{$data.refer_code}" />
       <input type="hidden" name="bill_id" value="{$data.id}" />
-      <input type="hidden" name="deposit_sum" value="{$data.deposit_sum}" />
-      <input type="hidden" name="deal_price" value="{$data.deal_price}" />
-      <input type="hidden" name="wipe_zero_sum" value="{$data.wipe_zero_sum}" />
       
-      <div class="panel-footer ">
           <div class="form-group">
-          <label class="" for="msg">备注</label>
+          <label class="" for="msg"> 备注</label>
           <input class="form-control" type="text" id="msg" name="sign_msg" value="{$data.sign_msg}" placeholder="签收或退货备注">
           </div>
+          <if condition="($data.pay_type eq 2) OR ($data.pay_status eq 1)">
+          <else />
           <div class="form-group">
             <label class="" for="wipezero"> 抹零</label>
             <input class="form-control"  type="text" id="wipezero" name="wipezero" value="" placeholder="抹零">
           </div>
+          </if>
           <div class="form-group">
             <label class="" for="deposit"> 押金</label>
             <input class="form-control" type="text" id="deposit" name="deposit" value="" placeholder="押金">
@@ -190,6 +199,7 @@
             <button type="submit" class="btn-sign btn btn-md btn-success btn-block"> 修 改 </button>
           </div>
     </form>
+    </div>
     <else />
       <div class="panel-footer">
         <div class="input-group col-lg-12">
@@ -204,6 +214,7 @@
 </tbody>
 </table>
 </div>
+</notempty>
 <div class="panel-heading" style="text-align:center">订单动态信息</div>
 <div class="row-fluid" >
 <table class="data-table table table-bordered table-striped table-condensed " style="">

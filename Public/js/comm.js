@@ -136,10 +136,16 @@ $(function () {
 		return false;
 	});
 	$('.selected').each(function (){
-		$(this).val($(this).data('value'));
+		var val = $(this).data('value');
+		if(typeof val !== typeof undefined && val !== false) {
+			$(this).val(val);
+		}
 	});
 	$('select').each(function (){
-		$(this).val($(this).attr('value'));
+		var val = $(this).attr('value');
+		if(typeof val !== typeof undefined && val !== false) {
+			$(this).val(val);
+		}
 	});
 
 	$('.a-ajax').on('click',function(){

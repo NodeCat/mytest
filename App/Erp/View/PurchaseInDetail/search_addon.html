@@ -1,0 +1,67 @@
+	<div class="form-group  col-lg-5">
+		<div class="col-lg-10 col-lg-offset-1">
+		<notempty name="auth['pay']">
+		<a href="#" data-target="#modal" role="button" data-title="确认付款" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="pay">确认付款</a>
+		</notempty>
+
+		<notempty name="auth['export']">
+		<a href="#" data-target="#modal" role="button" data-title="导出" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="export">导出</a>
+		</notempty>
+            <a href="javascript:void(0);" data-target="#modal" role="button" data-title="打印" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-default btn-tool" data-id="" data-original-title="" title="" id="print-page">打印</a>
+		</div>
+
+	</div>
+
+<script type="text/javascript">
+$(function(){
+	//确认付款
+	$('#pay').on('click',function(){
+		//获得盘点单id
+		var ids = getChecked();
+		$.ajax({
+			url:'/PurchaseInDetail/pay',
+			type:'post',
+			cache : false,
+			dataType:'json',
+			data:'ids='+ids,
+			success: function(json){
+				if(json.status=='1'){
+					alert('操作成功');
+					refresh_list();
+				}
+				if(json.status=='0'){
+					alert(json.msg);
+				}
+			}
+		});
+		return true;
+	});
+
+	//导出
+	$('#export').on('click',function(){
+		//获取查询条件
+		var _condition = [];
+		$("input[name^='query']").each(function(i, o){
+			_condition[i] = $(o).val();
+		});
+
+		var _purchase_code = _condition[1];
+		var _stock_in_code = _condition[2];
+		var _pro_code = _condition[3];
+		var _status = $("select[name^='query']").val();
+		var _partner = _condition[0];
+		var _id = _condition[4];
+		var _created_time_start = _condition[5];
+		var _created_time_end = _condition[6];
+
+		window.location.href="/PurchaseInDetail/export?"+'purchase_code='+_purchase_code+'&stock_in_code='+_stock_in_code+'&pro_code='+_pro_code+'&status='+_status+'&partner='+_partner+'&id='+_id+'&created_time_start='+_created_time_start+'&created_time_end='+_created_time_end; 
+
+	});
+
+    $('#print-page').on('click',function(){
+        var ids = getChecked();
+        var url = "/PurchaseInDetail/printpage?id="+ids;
+        window.open(url);
+    });
+})
+</script>

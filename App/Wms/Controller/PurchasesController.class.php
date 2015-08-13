@@ -86,6 +86,8 @@ class PurchasesController extends CommonController {
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
+            //父采购量
+            $data[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
             //子Sku在库量
             $c_qty = getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']);
             //子sku总可用量 = 父在在库量 x 生产比例 + 子Sku在库量;
@@ -127,7 +129,6 @@ class PurchasesController extends CommonController {
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
         $param['second'] = ($cat_2 == '全部')?'':$cat_2;
         $param['second_child'] = ($cat_3 == '全部')?'':$cat_3;
-
         $insalesLogic = A('Insales','Logic');
         $purchasesLogic = A('Purchases','Logic');
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
@@ -160,6 +161,8 @@ class PurchasesController extends CommonController {
             $down_qty = getDownOrderNum($value['pro_code'],$delivery_date,$delivery_ampm,$value['wh_id']);
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
+            //父采购量
+            $pro_codeArr[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //子Sku在库量
@@ -188,13 +191,14 @@ class PurchasesController extends CommonController {
         $sheet->setCellValue('D1', '仓库');
         $sheet->setCellValue('E1', '父SKU在库存量');
         $sheet->setCellValue('F1', '父SKU下单量');
-        //$sheet->setCellValue('G1', '父SKU采购量');
-        $sheet->setCellValue('G1', '子SKU货号');
-        $sheet->setCellValue('H1', '子SKU名称');
-        $sheet->setCellValue('I1', '子SKU在库存量');
-        $sheet->setCellValue('J1', '子SKU总可用量');
-        $sheet->setCellValue('K1', '子SKU总需求量');
-        $sheet->setCellValue('L1', '子SKU采购量');
+        $sheet->setCellValue('G1', '父SKU采购量');
+        $sheet->setCellValue('H1', '比例关系');
+        $sheet->setCellValue('I1', '子SKU货号');
+        $sheet->setCellValue('J1', '子SKU名称');
+        $sheet->setCellValue('K1', '子SKU在库存量');
+        $sheet->setCellValue('L1', '子SKU总可用量');
+        $sheet->setCellValue('M1', '子SKU总需求量');
+        $sheet->setCellValue('N1', '子SKU采购量');
         $i = 1;
         foreach ($pro_codeArr as $value){
             $i++;
@@ -204,14 +208,15 @@ class PurchasesController extends CommonController {
             $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
             $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
             $sheet->setCellValue('F'.$i, formatMoney(getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id'])));
-            //$sheet->setCellValue('G'.$i, $value['purchase_num']);
-            $sheet->setCellValue('G'.$i, $value['c_pro_code']);
-            $sheet->setCellValue('H'.$i, getPronameByCode('name', $value['c_pro_code']));
-            $sheet->setCellValue('I'.$i, formatMoney(getStockQtyByWpcode($value['c_pro_code'], $value['wh_id'])));
-            $sheet->setCellValue('J'.$i, $value['available_qty']);
-            $sheet->setCellValue('K'.$i, $value['requirement_qty']);
+            $sheet->setCellValue('G'.$i, $value['purchase_num']);
+            $sheet->setCellValue('H'.$i, $value['ratio']);
+            $sheet->setCellValue('I'.$i, $value['c_pro_code']);
+            $sheet->setCellValue('J'.$i, getPronameByCode('name', $value['c_pro_code']));
+            $sheet->setCellValue('K'.$i, formatMoney(getStockQtyByWpcode($value['c_pro_code'], $value['wh_id'])));
+            $sheet->setCellValue('L'.$i, $value['available_qty']);
+            $sheet->setCellValue('M'.$i, $value['requirement_qty']);
             //$sheet->setCellValue('L'.$i, getProcessByCode($value['pro_code'], $value['wh_id'],$value['delivery_date'], $value['delivery_ampm'], $value['c_pro_code']));
-            $sheet->setCellValue('L'.$i, $value['c_purchase_qty']);
+            $sheet->setCellValue('N'.$i, $value['c_purchase_qty']);
         }
         date_default_timezone_set("Asia/Shanghai");
         header("Content-Type: application/force-download");

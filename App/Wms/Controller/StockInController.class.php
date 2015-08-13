@@ -617,6 +617,12 @@ class StockInController extends CommonController {
             $this->msgReturn(0, '请选择入库类型');
             return;
         }
+
+        if(count($pros) > 150){
+        	$this->msgReturn(0, '一次提交的产品不能超过150个');
+            return;
+        }
+
         $stock_type = M('stock_bill_in_type');
         $type_name = $stock_type->field('type')->where(array('id' => $type))->find();
         $numbs = M('numbs');
@@ -730,7 +736,7 @@ class StockInController extends CommonController {
             //$purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
         }
 
-        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes,150);
 
         //拼接模板
         foreach($pro_codes as $key => $pro_code){
@@ -772,45 +778,93 @@ class StockInController extends CommonController {
         }
 
         //查询收货区库位
-        $map['code'] = '001-001';
+        $map['code'] = 'WORK-01';
         $map['wh_id'] = session('user.wh_id');
         $rev_location_info = M('location')->where($map)->find();
         unset($map);
 
         if(empty($rev_location_info['id'])){
-        	$this->msgReturn(0,'请添加库位001-001');
+            	$this->msgReturn(0,'请添加库位WORK-01');
         }
 
-        //根据到货单查询相关SKU信息
-        $map['stock_bill_in_detail.pid'] = array('in',$ids);
-        $stock_bill_in_detail = M('stock_bill_in_detail')
-        ->join('join stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
-        ->field('stock_bill_in_detail.*,stock_bill_in.code')
-        ->where($map)
-        ->select();
+        //查询到货单信息
+        $map['id'] = array('in',$ids);
+        $stock_bill_in_infos = M('stock_bill_in')->where($map)->select();
+        foreach($stock_bill_in_infos as $stock_bill_in_info){
+            	if($stock_bill_in_info['status'] == 33){
+            		$this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
+            	}
+        }
         unset($map);
-
-        $wh_id = session('user.wh_id');
-        $location_id = $rev_location_info['id'];
-
-        foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
-        	//先模拟收货 更新prepare_qty的值为expected_qty
-        	$map['id'] = $stock_bill_in_detail_info['id'];
-        	$data['prepare_qty'] = $stock_bill_in_detail_info['expected_qty'];
-        	M('stock_bill_in_detail')->where($map)->data($data)->save();
-        	unset($map);
-        	unset($data);
-
-        	$refer_code = $stock_bill_in_detail_info['code'];
-        	$batch = $stock_bill_in_detail_info['code'];
-        	$pro_code = $stock_bill_in_detail_info['pro_code'];
-        	$pro_qty = $stock_bill_in_detail_info['expected_qty'];
-        	$pro_uom = $stock_bill_in_detail_info['pro_uom'];
-        	$status = 'qualified';
-        	$product_date = date('Y-m-d');
-        	//直接上架
-        	A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date);
+        unset($stock_bill_in_info);
+        foreach ($stock_bill_in_infos as $stock_bill_in_info) {
+            //根据到货单查询相关SKU信息
+            $map['stock_bill_in_detail.pid'] = $stock_bill_in_info['id'];
+            $stock_bill_in_detail = M('stock_bill_in_detail')
+            ->join('join stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
+            ->field('stock_bill_in_detail.*,stock_bill_in.code')
+            ->where($map)
+            ->select();
+            unset($map);
+            foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
+                //先模拟收货 更新prepare_qty的值为expected_qty
+                $map['id'] = $stock_bill_in_detail_info['id'];
+                $data['prepare_qty'] = $stock_bill_in_detail_info['expected_qty'];
+                M('stock_bill_in_detail')->where($map)->data($data)->save();
+                unset($map);
+                unset($data);
+                $refer_code = $stock_bill_in_detail_info['code'];
+                $batch = $stock_bill_in_detail_info['code'];
+                $pro_code = $stock_bill_in_detail_info['pro_code'];
+                $pro_qty = $stock_bill_in_detail_info['expected_qty'];
+                $pro_uom = $stock_bill_in_detail_info['pro_uom'];
+                $status = 'qualified';
+                $product_date = date('Y-m-d');
+                $wh_id = session('user.wh_id');
+                $location_id = $rev_location_info['id'];
+                //直接上架
+                A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
+                //如果时采购到货单 则创建采购入库单（ERP）
+                if($stock_bill_in_info['type'] == 1){
+                    //写入采购入库单 erp_in_detail
+                    //根据stock_bill_in id 查询相关数据
+                    $map['stock_bill_in_detail.pid'] = $stock_bill_in_info['id'];
+                    $map['stock_bill_in_detail.pro_code'] = $stock_bill_in_detail_info['pro_code'];
+                    $bill_in_detail_info_from_purchase = M('stock_bill_in_detail')
+                    ->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
+                    ->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
+                    ->where($map)
+                    ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
+                    ->find();
+                    unset($map);
+                    $data['price_unit'] = $bill_in_detail_info_from_purchase['price_unit'];
+                    $data['pro_code'] = $stock_bill_in_detail_info['pro_code'];
+                    $data['pro_qty'] = $stock_bill_in_detail_info['expected_qty'];
+                    $data['stock_in_code'] = $bill_in_detail_info_from_purchase['code'];
+                    $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
+                    $data['pro_status'] = $status;
+                    $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
+                    if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
+                        $data['status'] = 'paid';
+                    }else{
+                        $data['status'] = 'nopaid';
+                    }
+                    $purchase_in_detail = D('PurchaseInDetail');
+                    $data = $purchase_in_detail->create($data);
+                    $purchase_in_detail->data($data)->add();
+                    unset($data);
+                }
+            }
         }
+        unset($map);
+        
+        //更新到货单状态为已上架
+        $map['wh_id'] = session('user.wh_id');
+        $map['id'] = array('in',$ids);
+        $data['status'] = 33;
+        M('stock_bill_in')->where($map)->save($data);
+        unset($map);
+        unset($data);
 
         $this->msgReturn(1);
     }

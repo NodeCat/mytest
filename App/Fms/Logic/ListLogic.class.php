@@ -68,10 +68,13 @@ class ListLogic {
         } 
         return $s;   
     }
-    //查询是否有退货，并且已创建拒收入库单
+    /**
+     * [can_pay 查询配送单是否有退货，并且已创建拒收入库单]
+     * @param  [int]    $dist_id [配送单id]
+     * @return [int]            [若没有退货返回1;若有退货并且已经创建拒收入库单返回2,有退货没有创建拒收入库单返回3]
+     */
     public function can_pay($dist_id) {
         $flag = false;
-        $exist = false;
         $list_logic = A('Tms/List','Logic');
         //获得出库单列表
         unset($map); 
@@ -85,6 +88,7 @@ class ListLogic {
         if (!empty($bill_outs)) { 
             for ($n = 0; $n < count($bill_outs); $n++) { 
                 switch ($bill_outs[$n]['sign_status']) {
+                    case '4':
                     case '2':
                         $sign_orders++; //已签收订单数加1
                         foreach ($bill_outs[$n]['detail'] as $value) {
@@ -114,19 +118,29 @@ class ListLogic {
             //有拒收
             if ($flag) {
                 //是否已创建拒收入库单
-                $exist = $list_logic->view_return_goods_status($dist_id);
-                if ($exist) {
-                    return true;
+                $codes = array_column($bill_outs,'code');
+                unset($map);
+                $map['refer_code'] = array('in',$codes); 
+                $map['type']       = 7;//拒收入库单
+                $map['is_deleted'] = 0;
+                $back_in = M('stock_bill_in')->where($map)->select();
+                if (!empty($back_in)) {
+                    return 2;
+                } else {
+                    return 3;
                 }
             } else {
                 //没有拒收
-                return true;
+                return 1;
             }
         }
               
     }
-
-    //查询订单是否有退货，并且已创建拒收入库单
+    /**
+     * [can_replace     查询订单是否有退货，并且已创建拒收入库单]
+     * @param  [int]    $bill_out_id [出库单id]
+     * @return [int]            [若没有退货返回1;若有退货并且已经创建拒收入库单返回2,有退货没有创建拒收入库单返回3]
+     */
     public function can_replace($bill_out_id) {
         $flag = false;
         //获得出库单列表
@@ -170,13 +184,13 @@ class ListLogic {
                 $map['is_deleted'] = 0;
                 $back_in = M('stock_bill_in')->where($map)->select();
                 if(!empty($back_in)) {
-                    return true;
-                }else{      //如果没有查到相应的拒收入库单，直接返回FALSE
-                    return false;
+                    return 2;
+                }else{      //如果没有查到相应的拒收入库单，直接返回3
+                    return 3;
                 }
             } else {
                 //没有拒收
-                return false;
+                return 1;
             }
         }
               

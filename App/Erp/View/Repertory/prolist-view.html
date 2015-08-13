@@ -1,0 +1,64 @@
+<div role="tabpanel">
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active table-responsive" id="home">
+    	<table id="table-pro" class="data-table table  table-hover table-bordered">
+  		<tr>
+  			<th rowspan="2">日期</th><th colspan="6">入库</th><th colspan="4">出库</th>
+            <!--<th colspan="4">结余</th>-->
+  		</tr>
+            <tr>
+                <td>数量</td>
+                <td>采购成本</td>
+                <td>金额（含税）</td>
+                <td>金额（未含税）</td>
+                <td>批次</td>
+                <td>供应商</td>
+                <td>数量</td>
+                <td>加权平均成本</td>
+                <td>金额（含税）</td>
+                <td>出库单号</td>
+                <!--<td>数量</td>
+                <td>加权平均成本</td>
+                <td>金额（含税）</td>
+                <td>金额（未含税）</td>-->
+            </tr>
+  		<tbody>
+      <volist name="list" id="vo">
+        <tr>
+            <td>{$vo.created_time} </td>
+            <if condition="$vo.type eq 'in' ">
+                <td>{$vo.pro_qty|sprintf="%.2f",###}</td>
+                <td>{$vo.price_unit|sprintf="%.2f",###}</td>
+                <td>{$vo.total_amount|sprintf="%.2f",###}</td>
+                <td>{$vo.total_amounts|sprintf="%.2f",###}</td>
+                <td>{$vo.code}</td>
+                <td>{$vo.partner_name}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            <else/>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{$vo.pro_qty|sprintf="%.2f",###}</td>
+                <td>{$vo.total_amounts|sprintf="%.2f",###}</td>
+                <td>{$vo.total_amount|sprintf="%.2f",###}</td>
+                <td>{$vo.code}</td>
+            </if>
+            <!--<td>{$vo.last_num}</td>
+            <td>{$vo.equally_amount}</td>
+            <td>{$vo.last_amount}</td>
+            <td>{$vo.last_amounts}</td>-->
+        </tr>
+
+      </volist>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+</div>

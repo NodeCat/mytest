@@ -130,4 +130,56 @@ class SignInApi extends CommApi
         );
         $this->ajaxReturn($res);
     }
+    /**
+     * [get_sign_data 获取订单的签收信息]
+     * @param [int] [suborder_id 订单id]
+     */
+    public function get_sign_data()
+    {
+        $order_id = I('json.suborder_id');
+        if (empty($order_id) || intval($order_id) <= 0) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '需要提供子订单id',
+            );
+            $this->ajaxReturn($res);
+        }
+        $map['refer_code'] = $order_id;
+        $map['is_deleted'] = 0;
+        $bill_out = M('stock_bill_out')->where($map)->find();
+        if (empty($bill_out)) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '查不到该订单对应的出库单',
+            );
+            $this->ajaxReturn($res);
+        }
+        unset($map);
+        $map['bill_out_id'] = $bill_out['id'];
+        $map['is_deleted']  = 0;
+        $sign_data = M('stock_wave_distribution_detail')->where($map)->find();
+        if (empty($sign_data)) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '查不到该订单的签收信息',
+            );
+            $this->ajaxReturn($res);
+        }
+        $data = array(
+            'status'         => $sign_data['status'],
+            'sign_driver'    => $sign_data['sign_driver'],
+            'sign_time'      => $sign_data['sign_time'],
+            'sign_msg'       => $sign_data['sign_msg'],
+            'reject_reason'  => $sign_data['reject_reason'],
+            'receivable_sum' => $sign_data['receivable_sum'],
+            'real_sum'       => $sign_data['real_sum'],
+            'wipe_zero'      => $sign_data['wipe_zero'],
+            'deposit'        => $sign_data['deposit'],
+        );
+        $res = array(
+            'status' => 0,
+            'list'   => $data,
+        );
+        $this->ajaxReturn($res);
+    }
 }
