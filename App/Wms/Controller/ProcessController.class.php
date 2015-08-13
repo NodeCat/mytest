@@ -810,7 +810,7 @@ class ProcessController extends CommonController {
             $purchase_infos[$pro_info_arr[0]]['price_unit'] = $pro_info_arr[2];
         }
         
-        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes,count($pro_codes));
         
         //拼接模板
         foreach($pro_codes as $pro_code){
