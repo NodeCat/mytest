@@ -187,7 +187,7 @@ class DistLogic {
         $res = $M->where($map)->order('price asc')->find();
         if (!empty($res)) {
             $result['price']        = $res['price'];
-            $result['car_platform'] = $res['car_platform'];
+            $result['car_platform'] = $this->getCateNameById($res['car_platform']);
         }
         return $result;
     }

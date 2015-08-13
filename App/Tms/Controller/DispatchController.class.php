@@ -358,6 +358,31 @@ class DispatchController extends \Common\Controller\AuthController{
         $D = D('TmsSignList');
         foreach ($fees as $key => $value) {
             $s = $D->where(array('id' => $key))-> save(array('fee' => $value));
+            $map['id'] = $key;
+            $map['is_deleted'] = 0;
+            $sign_info = $D->relation('TmsUser')->where($map)->find();
+            unset($map);
+            if (empty($sign_info)) {
+                continue;
+            }
+            $map['mobile'] = $sign_info['mobile'];
+            $map['created_time'] = array('between',$sign_info['created_time'].','.$sign_info['delivery_time']);//只取得当次签到配送单的
+            $map['status'] = '1';
+            $map['type'] = 1;
+            $delivery_msg = M('tms_delivery')->where($map)->field('dist_id')->select();
+            if (empty($delivery_msg)) {
+                continue;
+            }
+            $task_ids = array();
+            foreach ($delivery_msg as $v) {
+                $task_ids[] = $v['dist_id'];
+            }
+            $cou = count($task_ids);
+            $task_fee = sprintf('%.2f', $value/$cou);
+            unset($map);
+            $map['id'] = array('in',$task_ids);
+            $map['is_deleted'] = 0;
+            M('tms_dispatch_task')->where($map)->save(array('delivery_fee' => $task_fee));
         }
         $re = array(
             'status' => 0,

@@ -6,7 +6,7 @@
 namespace Tms\Controller;
 use Think\Controller;
 
-class DispatchTaskController extends \Common\Controller\AuthController
+class DispatchtaskController extends \Common\Controller\AuthController
 {
     protected function _initialize()
     {   
@@ -83,7 +83,7 @@ class DispatchTaskController extends \Common\Controller\AuthController
         $this->task_status = $dA->getAllTaskStatus();
         $this->platforms = $dA->getCatesByType('platform');
         $this->list = $list;
-        $this->display('DispatchTask:dispatch-task');
+        $this->display('dispatch-task');
     }
 
     /**
@@ -196,7 +196,7 @@ class DispatchTaskController extends \Common\Controller\AuthController
             );
             $this->ajaxReturn($res);
         } else {
-            $this->display('DispatchTask:add-task');
+            $this->display('add-task');
         }
     }
     /**
@@ -311,7 +311,7 @@ class DispatchTaskController extends \Common\Controller\AuthController
         $this->distance = $task['distance'];
         $this->assign('address',$nodes);
         $this->assign('points',$location['points']);
-        $this->display('DispatchTask:task-detail');
+        $this->display('task-detail');
     }
 
     /**
