@@ -2,12 +2,6 @@
 namespace Tms\Controller;
 use Think\Controller;
 class IndexController extends Controller {
-    protected $car=array(
-        'car_type' =>array(0=>'请选择你的车型','平顶金杯','高顶金杯','冷藏金杯','全顺','依维柯','4.2M厢货','4.2M冷藏厢货','5.2M厢货','5.2M冷藏厢货','7.6M厢货','微面'),
-        'car_from' =>array(0=>'请选择派车平台','速派得','云鸟','58','一号货车','京威宏','浩辉平台','雷罡平台','加盟车平台','北京汇通源国际物流有限公司','自有车'),
-        'warehouse'=>array(0=>'请选择签到仓库',7=>'北京白盆窑仓库',8=>'北京北仓',9=>'天津仓库',10=>'上海仓库',5=>'成都仓库',11=>'武汉仓库',13=>'长沙仓库'),
-    );
-
     protected function _initialize() {
         layout('siji');
 
@@ -45,7 +39,7 @@ class IndexController extends Controller {
             else {
                 $this->title = '请您签到';
                 $this->display('Index:login');    
-            }   
+            }
         }
         if(IS_POST) {
             if(session('?user')) {
@@ -99,7 +93,12 @@ class IndexController extends Controller {
                 }else{
                     $this->user=$user;
                     $this->title='信息登记';
-                    $this->assign('car',$this->car);
+
+                    $cat = A('Common/Category','Logic');
+                    $this->carType = $cat->lists('car_type');
+                    $this->carFrom = $cat->lists('platform');
+                    $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+
                     $this->display('tms:register');
                 }
                     
@@ -201,8 +200,11 @@ class IndexController extends Controller {
         $map['mobile']=session('user.mobile');
         $data= $M->where($map)->order('updated_time')->find();
         $this->title='个人信息';
-        $this->assign('car',$this->car);
-        $data['warehouse']=$this->car['warehouse'][$data['warehouse']];
+        
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $this->data=$data;
         $this->display('tms:person');
     }
@@ -216,10 +218,14 @@ class IndexController extends Controller {
                  exit;
             }
             else{
-            $this->title = '请填写完整的签到信息';
-            $this->assign('car',$this->car);
-            $this->display('tms:register'); 
-            exit();
+                $this->title = '请填写完整的签到信息';
+
+                $cat = A('Common/Category','Logic');
+                $this->carType = $cat->lists('car_type');
+                $this->carFrom = $cat->lists('platform');
+                $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+
+                $this->display('tms:register'); 
             }   
         }
         if(IS_POST){
