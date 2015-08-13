@@ -28,9 +28,9 @@
   <br />
   <div class="input-group">
     <span class="input-group-addon">车型</span>
-    <select autocomplete="off"  class="form-control input-lg input-pda" id="car_type" name="car_type" placeholder="请输入车型">                                   
-        <volist name='car.car_type' id='cars'> 
-        <option>{$cars}</option>
+    <select autocomplete="off" value="{$data['car_type']}" class="form-control input-lg input-pda" id="car_type" name="car_type" placeholder="请输入车型">                                   
+        <volist name='carType' id='cars'> 
+        <option value="{$key}">{$cars}</option>
         </volist>
       </select>
 
@@ -38,9 +38,9 @@
   <br />
   <div class="input-group">
     <span class="input-group-addon">平台</span>
-    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台">
-      <volist name='car.car_from' id='cars'> 
-        <option >{$cars}</option>
+    <select autocomplete="off" value="{$data['car_from']}" type="text" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台">
+      <volist name='carFrom' id='cars'> 
+        <option value="{$key}">{$cars}</option>
       </volist>
     </select>
   </div>
@@ -49,8 +49,8 @@
 
   <div class="input-group">
     <span class="input-group-addon">签到仓库</span>
-    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库">
-      <volist name='car.warehouse' id='storge'> 
+    <select autocomplete="off" value="{$data['warehouse']}" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库">
+      <volist name='warehouse' id='storge'> 
         <option value="{$key}">{$storge}</option>
       </volist>
     </select>
@@ -89,6 +89,16 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
+
+$(function(){
+  $('select').each(function (){
+    var val = $(this).attr('value');
+    if(typeof val !== typeof undefined && val !== false) {
+      $(this).val(val);
+    }
+  });
+})
+
 //打印设置
 function settingPrinter() {
   if(typeof HostApp == "undefined") {
@@ -109,37 +119,6 @@ function getPrinterName() {
   $('#printer-name').val(printerName);
 }
 getPrinterName();
-
-  x=document.getElementById('f');
-  (function(){
-  // 车型
-      switch("{$data['car_type']}"){
-          <volist name='car.car_type' id='cars' key="k"> 
-              case "{$cars}": val="{$k}"-1;
-              break;
-          </volist>
-          default:val=0; 
-      }
-  x.car_type.options[val].selected=true;
-  // 平台
-  switch("{$data['car_from']}"){
-          <volist name='car.car_from' id='cars' key="k"> 
-              case "{$cars}": val="{$k}"-1;
-              break;
-          </volist>
-          default:val=0; 
-      }
-  x.car_from.options[val].selected=true; 
-  //仓库
-  switch("{$data['warehouse']}"){
-          <volist name='car.warehouse' id='storge' key="k"> 
-              case "{$storge}": val="{$k}"-1;
-              break;
-          </volist>
-          default:val=0; 
-      }
-  x.warehouse.options[val].selected=true;  
-})();
 
 </script>
 

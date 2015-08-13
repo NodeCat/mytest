@@ -22,15 +22,15 @@
 
   <div class="input-group">
     <span class="input-group-addon">车牌</span>
-    <input autocomplete="off" value="{$user.car_num}" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
+    <input autocomplete="off" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
 
   </div>
   <br />
   <div class="input-group">
     <span class="input-group-addon">车型</span>
-    <select autocomplete="off"  class="form-control input-lg input-pda" id="car_type" name="car_type" placeholder="请输入车型" onchange="check()" style="color:gray">                                   
-        <volist name='car.car_type' id='cars'> 
-        <option>{$cars}</option>
+    <select autocomplete="off"  class="form-control input-lg input-pda" value= "{$user.car_type}" id="car_type" name="car_type" placeholder="请输入车型" onchange="check()" style="color:gray">                                   
+        <volist name='carType' id='cars'> 
+        <option value="{$key}">{$cars}</option>
         </volist>
       </select>
 
@@ -38,9 +38,9 @@
   <br />
   <div class="input-group">
     <span class="input-group-addon">平台</span>
-    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台" onchange="check()" style="color:gray">
-      <volist name='car.car_from' id='cars'> 
-        <option>{$cars}</option>
+    <select autocomplete="off" type="text" value="{$user.car_form}" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台" onchange="check()" style="color:gray">
+      <volist name='carFrom' id='cars'> 
+        <option value="{$key}">{$cars}</option>
       </volist>
     </select>
   </div>
@@ -49,8 +49,8 @@
 
   <div class="input-group">
     <span class="input-group-addon">仓库</span>
-    <select autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库" onchange="check()" style="color:gray" >
-      <volist name='car.warehouse' id='storge'> 
+    <select autocomplete="off" value="{$user.warehouse}" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库" onchange="check()" style="color:gray" >
+      <volist name='warehouse' id='storge'> 
         <option  value="{$key}">{$storge}</option>
       </volist>
     </select>
@@ -88,54 +88,4 @@ margin-top: 10px;
   else if($("#car_num").val()=='') {
     car_num.focus();
   }
-  function check(){
-    x=document.getElementById('f');
-    if(x.warehouse.options[0].selected==true){
-      x.warehouse.style.color="gray";
-    }
-    else{
-      x.warehouse.style.color="black";
-    }
-
-    if(x.car_type.options[0].selected==true) {
-      x.car_type.style.color="gray";
-    }
-    else{
-      x.car_type.style.color="black";
-    }
-
-    if(x.car_from.options[0].selected==true) {
-      x.car_from.style.color="gray";
-    }
-    else{
-      x.car_from.style.color="black";
-    }
-  }
-  (function(){
-    x=document.getElementById('f');
-        switch("{$user.warehouse}"){
-            <volist name='car.warehouse' id='storge' key="k"> 
-                case "{$storge}": val="{$k}"-1;break;
-            </volist>
-            default:val=0; 
-        }
-    x.warehouse.options[val].selected=true;  
-
-    switch("{$user.car_type}"){
-            <volist name='car.car_type' id='car_type' key="k"> 
-                case "{$car_type}": val="{$k}"-1;break;
-            </volist>
-            default:val=0; 
-        }
-    x.car_type.options[val].selected=true;
-
-    switch("{$user.car_from}"){
-            <volist name='car.car_from' id='car_from' key="k"> 
-                case "{$car_from}": val="{$k}"-1;break;
-            </volist>
-            default:val=0; 
-        }
-    x.car_from.options[val].selected=true;
-
-})();
 </script>
