@@ -320,7 +320,6 @@ class RepertoryLogic
     {
         //初期时间，获取前一天的结余
         $_time_1 = date('Y-m-d', (strtotime($start_time)-86400));
-
         //获取初期数量
         $startList      = $this->getSnapList($_time_1, $pro_codes);
         //获取期末数量
@@ -340,6 +339,7 @@ class RepertoryLogic
         foreach ($data as $key => $val) {
             //初期成本
             $data[$key]['first_nums']           = $this->numbers_format_2($startList[$val['pro_code']]['stock_qty']);           //期初数量
+
             $data[$key]['first_amount']         = $this->numbers_format_2($startList[$val['pro_code']]['price_unit']);          //期初成本(含税)
             $data[$key]['first_amounts']        = $this->numbers_format_2($data[$key]['first_amount'] / $price_rate);           //期初成本(不含税)
 
@@ -406,7 +406,7 @@ class RepertoryLogic
     //格式化金额，截取2位小数
     private function numbers_format_2($number)
     {
-        if (intval($number) == 0) {
+        if ($number == 0) {
             return sprintf("%.2f",0);
         }
         $p= stripos($number, '.');
