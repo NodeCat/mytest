@@ -16,3 +16,40 @@ INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `a
 
 -- 调度运费改两位小数
 ALTER TABLE  `tms_sign_list` CHANGE  `fee`  `fee` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT '调度运费';
+
+--
+-- 表的结构 `tms_dispatch_task`
+--
+CREATE TABLE IF NOT EXISTS `tms_dispatch_task` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(64) NOT NULL DEFAULT '' COMMENT '任务码',
+  `task_name` varchar(128) NOT NULL DEFAULT '' COMMENT '任务名称',
+  `wh_id` int(8) unsigned NOT NULL DEFAULT '0' COMMENT '仓库ID',
+  `task_type` int(8) unsigned NOT NULL DEFAULT '0' COMMENT '任务类型',
+  `apply_user` varchar(64) NOT NULL DEFAULT '' COMMENT '申请人',
+  `apply_mobile` varchar(32) NOT NULL DEFAULT '' COMMENT '申请人电话',
+  `apply_department` varchar(64) NOT NULL DEFAULT '' COMMENT '用车部门',
+  `op_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '期望用车时间',
+  `expect_car_type` int(8) unsigned NOT NULL DEFAULT '0' COMMENT '期望车型',
+  `expect_fee` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '预计费用',
+  `department_approver` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '部门审批人',
+  `department_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '部门审批时间',
+  `logistics_approver` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '物流审批人',
+  `logistics_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '物流审批时间',
+  `platform` int(8) unsigned NOT NULL DEFAULT '0' COMMENT '用车平台',
+  `car_type` int(8) unsigned NOT NULL DEFAULT '0' COMMENT '实派车型',
+  `driver_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '司机ID',
+  `delivery_fee` decimal(18,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '实际运费',
+  `distance` decimal(18,2) unsigned NOT NULL DEFAULT '0.00' COMMENT '里程',
+  `reason` varchar(320) NOT NULL DEFAULT '' COMMENT '用车事由',
+  `remark` varchar(32) NOT NULL DEFAULT '' COMMENT '备注：长期，临时',
+  `take_time` varchar(64) NOT NULL DEFAULT '' COMMENT '任务用时',
+  `status` varchar(45) NOT NULL DEFAULT '1' COMMENT '状态：1待部门审批2待物流审批3待派车4配送中5已完成6未通过',
+  `delivery_time` varchar(45) NOT NULL DEFAULT '1' COMMENT '发货时间1上午2下午',
+  `created_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `updated_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '更新时间',
+  `created_user` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '创建用户',
+  `updated_user` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '更新用户',
+  `is_deleted` tinyint(2) unsigned NOT NULL DEFAULT '0' COMMENT '是否删除',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='派车任务表' AUTO_INCREMENT=1 ;
