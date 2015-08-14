@@ -94,7 +94,7 @@ class DistController extends Controller {
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                //$this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if (empty($this->error)) {
@@ -718,9 +718,9 @@ class DistController extends Controller {
         if (empty($task)) {
             $this->error = '领单失败，未找到该单据';
         } elseif ($task['status'] != '3' && $task['status'] != '4') {//该单据不是配送中或待派车就不能认领
-            //$this->error = '领单失败,该单不能被认领';
+            $this->error = '领单失败,该单不能被认领';
         } elseif ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-            //$this->error = '领单失败，该任务单已过期';
+            $this->error = '领单失败，该任务单已过期';
         }
         if (empty($this->error)) {
             $data['dist_id']      = $task['id'];
