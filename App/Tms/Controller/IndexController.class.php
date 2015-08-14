@@ -928,7 +928,7 @@ class IndexController extends Controller {
                     }
                 }
                 $user = M('tms_user')->field('id,car_type,car_from')->where(array('mobile' => $data['mobile']))->find();
-                M('tms_dispatch_task')->save(array('id' => $task['id'],'status' => '4','driver_id' => $user['id']));
+                M('tms_dispatch_task')->save(array('id' => $task['id'],'status' => '4','driver_id' => $user['id'],'car_type' => $user['car_type'],'platform' => $user['car_from']));
                 M('tms_task_node')->where(array('pid' => $task['id']))->save(array('status' =>'1'));
                 // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
                 if ($status=='4') {
@@ -1016,24 +1016,6 @@ class IndexController extends Controller {
         $this->display('tms:taskorders');
     }
 
-    /*public function taskStart()
-    {
-        $dist_id = I('post.id');
-        $res = M('tms_task_node')->where(array('pid' => $dist_id))->save(array('status' => '2'));
-        if ($res) {
-            $return = array(
-                'status' => 1,
-                'msg'    => '任务开始成功',
-            );
-        } else {
-            $return = array(
-                'status' => 0,
-                'msg'    => '任务开始失败,请重新开始',
-            );
-        }
-        $this->ajaxReturn($return);
-    }*/
-
     //任务签到
     public function taskSign()
     {
@@ -1118,7 +1100,9 @@ class IndexController extends Controller {
         $geo = array('lng' => $point['lng'],'lat' => $point['lat']);
         $geo = json_encode($geo);
         $time = date('Y-m-d H:i:s',NOW_TIME);
-        $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'updated_time' => $time));
+        if ($point['lng'] != '' && $point['lat'] != '') {
+            $res = M('tms_task_node')->save(array('id' => $point['id'],'geo_new' => $geo,'updated_time' => $time));
+        }
         if ($res) {
             $return = array(
                 'status' => 1,
