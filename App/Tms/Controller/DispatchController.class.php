@@ -469,6 +469,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['status'] = '1';
             $map['type'] = 1;
             $delivery_msg = M('tms_delivery')->where($map)->field('dist_id')->select();
+            unset($map);
             if (empty($delivery_msg)) {
                 continue;
             }
@@ -478,10 +479,10 @@ class DispatchController extends \Common\Controller\AuthController{
             }
             $cou = count($task_ids);
             $task_fee = sprintf('%.2f', $value/$cou);
-            unset($map);
             $map['id'] = array('in',$task_ids);
             $map['is_deleted'] = 0;
             M('tms_dispatch_task')->where($map)->save(array('delivery_fee' => $task_fee));
+            unset($map);
         }
         $re = array(
             'status' => 0,
