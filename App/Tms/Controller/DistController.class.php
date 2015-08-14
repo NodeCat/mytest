@@ -16,7 +16,18 @@ class DistController extends Controller {
             $start_date    = date('Y-m-d',NOW_TIME);
             $end_date      = date('Y-m-d',strtotime('+1 Days'));
             $map['created_time'] = array('between',$start_date.','.$end_date);
-            $this->data  = M('tms_delivery')->where($map)->select();
+            $delivery = M('tms_delivery')->where($map)->select();
+            foreach ($delivery as &$val) {
+                if ($val['type'] == '1') {
+                   $status = M('tms_dispatch_task')->field('status')->find($val['dist_id']);
+                   if ($status['status'] == '4'){
+                        $val['s'] = '派送中';
+                   } elseif ($status['status'] == '5') {
+                        $val['s'] = '已完成';
+                   }
+                }
+            }
+            $this->data  = $delivery;
             $this->title = '提货扫码';
             $this->display('tms:delivery');
             exit;
@@ -37,7 +48,9 @@ class DistController extends Controller {
             $delivery = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
             unset($map['dist_id']);
             unset($map['type']);
+            $sign = M('tms_sign_list')->field('delivery_time,created_time')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
             $map['mobile'] = session('user.mobile');
+            $map['created_time'] = array('between',$sign['created_time'].','.$sign['delivery_time']);
             $delivery_all = $M->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
             unset($map);
             if (!empty($delivery)) {//若该配送单已被认领
@@ -561,6 +574,7 @@ class DistController extends Controller {
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
+        $this->userid = session('user.id');
         $this->data = M('tms_delivery')->where($map)->select();
         $this->title = '今日订单总汇';
         $this->display('tms:report');
@@ -693,7 +707,9 @@ class DistController extends Controller {
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $dist = M('tms_delivery')->field('id,mobile,dist_id,user_id')->where($map)->find();// 取出当前提货单信息
         unset($map['dist_code']);
+        $sign = M('tms_sign_list')->field('delivery_time,created_time')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
         $map['mobile'] = session('user.mobile');
+        $map['created_time'] = array('between',$sign['created_time'].','.$sign['delivery_time']);
         $dist_all = M('tms_delivery')->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
         unset($map);
         if (!empty($dist)) {//若该配送单已被认领
@@ -724,9 +740,9 @@ class DistController extends Controller {
         if (empty($task)) {
             $this->error = '领单失败，未找到该单据';
         } elseif ($task['status'] != '3' && $task['status'] != '4') {//该单据不是配送中或待派车就不能认领
-            //$this->error = '领单失败,该单不能被认领';
+            $this->error = '领单失败,该单不能被认领';
         } elseif ($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-            //$this->error = '领单失败，该任务单已过期';
+            $this->error = '领单失败，该任务单已过期';
         }
         if (empty($this->error)) {
             $data['dist_id']      = $task['id'];
@@ -746,7 +762,7 @@ class DistController extends Controller {
                         $status = '4';
                         break;
                     } elseif ($va['type'] == '1') {
-                        $tasks = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
+                        $tasks = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5'),'id' => $va['dist_id']))->find();
                         if ($tasks) {//如果任务还没完成
                             $status = '3';
                             break;
