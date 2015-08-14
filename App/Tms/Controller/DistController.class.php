@@ -745,7 +745,7 @@ class DistController extends Controller {
                     }
                 }
                 $user = M('tms_user')->field('id,car_type,car_from')->where(array('mobile' => $data['mobile']))->find();
-                M('tms_dispatch_task')->save(array('id' => $task['id'],'status' => '4','driver_id' => $user['id']));
+                M('tms_dispatch_task')->save(array('id' => $task['id'],'status' => '4','driver_id' => $user['id'],'car_type' => $user['car_type'],'platform' => $user['car_from']));
                 M('tms_task_node')->where(array('pid' => $task['id']))->save(array('status' =>'1'));
                 // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
                 if ($status=='4') {
