@@ -75,17 +75,17 @@ class DistController extends Controller {
 
             if ($dist['status'] == '1') {
                 // 未发运的单据不能被认领
-                $this->error = '提货失败，未发运的配送单不能提货';
+                // $this->error = '提货失败，未发运的配送单不能提货';
             }
             if ($dist['status'] == '3' || $dist['status'] == '4') {
                 //已配送或已结算的配送单不能认领
-                $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
+                // $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                // $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if (empty($this->error)) {
@@ -429,22 +429,34 @@ class DistController extends Controller {
                 $cdata = array();
                 //组合一个签收详情数据
                 foreach ($bill_id_details as $detail_id => $detail) {
+                    $net_weight = empty($detail['order_detail']['net_weight']) ? 0 : $detail['order_detail']['net_weight'];
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
+                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
-                    $tmp['real_sign_wgt']      = isset($weight[$detail_id]) ? $weight[$detail_id] : 0;
+                    $tmp['real_sign_wgt']      = $tmp['real_sign_qty'] * $net_weight;
                     $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
+                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['single_price'];
                     $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
-                    $tmp['reject_sum']         = $tmp['reject_qty'] * $tmp['price_unit'];
+                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    if (isset($weight[$detail_id])) {
+                        $tmp['real_sign_wgt'] = $weight[$detail_id];
+                        $tmp['sign_sum']      = $tmp['real_sign_wgt'] * $tmp['price_unit'];
+                        $tmp['delivery_sum']  = $tmp['delivery_wgt'] * $tmp['price_unit'];
+                    }
+                    $tmp['reject_sum']         = $tmp['delivery_sum'] - $tmp['sign_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
+                dump($quantity);
+                dump($weight);
+                dump($cdata);
                 $bill_out_detail_ids = array_keys($bill_id_details);
                 $bdmap['bill_out_detail_id'] = array('in', $bill_out_detail_ids);
                 $sdM = M('tms_sign_in_detail');

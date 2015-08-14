@@ -6,4 +6,8 @@ ALTER TABLE  `tms_sign_in_detail` ADD  `reject_qty` INT( 10 ) UNSIGNED NOT NULL 
 
 ALTER TABLE  `tms_sign_in_detail` ADD  `sign_sum` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT '签收小计' AFTER  `reject_qty` ;
 
+ALTER TABLE  `tms_sign_in_detail` ADD  `reject_wgt` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '拒收重量' AFTER `reject_qty` ;
+
 ALTER TABLE  `tms_sign_in_detail` ADD  `reject_sum` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT '拒收小计' AFTER  `sign_sum` ;
+
+ALTER TABLE  `tms_sign_in_detail` ADD  `delivery_sum` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT '发货小计' AFTER  `reject_sum` ;
