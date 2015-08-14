@@ -16,7 +16,18 @@ class DistController extends Controller {
             $start_date    = date('Y-m-d',NOW_TIME);
             $end_date      = date('Y-m-d',strtotime('+1 Days'));
             $map['created_time'] = array('between',$start_date.','.$end_date);
-            $this->data  = M('tms_delivery')->where($map)->select();
+            $delivery = M('tms_delivery')->where($map)->select();
+            foreach ($delivery as &$val) {
+                if ($val['type'] == '1') {
+                   $status = M('tms_dispatch_task')->field('status')->find($val['dist_id']);
+                   if ($status['status'] == '4'){
+                        $val['s'] = '派送中';
+                   } elseif ($status['status'] == '5') {
+                        $val['s'] = '已完成';
+                   }
+                }
+            }
+            $this->data  = $delivery;
             $this->title = '提货扫码';
             $this->display('tms:delivery');
             exit;
