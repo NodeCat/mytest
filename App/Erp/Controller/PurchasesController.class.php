@@ -172,21 +172,29 @@ class PurchasesController extends CommonController {
         if(!$pro_codeArr){
             $this->msgReturn(false, '导出数据为空！');
         }
+        $p_sku  = array();
+        $c_sku  = array();
         foreach ($pro_codeArr as $key => $value) {
-            //$pro_codeArr[$key]['purchase_num'] = getPurchaseNum($value['pro_code'], $delivery_date, $delivery_ampm, $value['wh_id']);
+            $p_sku[] = $value['pro_code'];
+            if ($value['c_pro_code']) {
+                $c_sku[] = $value['c_pro_code'];
+            }
             //解决不选日期和时间段是应该是根据空汇总
             $pro_codeArr[$key]['delivery_date'] = $delivery_date;
             $pro_codeArr[$key]['delivery_ampm'] = $delivery_ampm;
             //父下单量
             $down_qty = getDownOrderNum($value['pro_code'],$delivery_date,$delivery_ampm,$value['wh_id']);
+            $pro_codeArr[$key]['down_qty'] =$down_qty;
             //父在在库量
             $p_qty = getStockQtyByWpcode($value['pro_code'], $value['wh_id']);
+            $pro_codeArr[$key]['p_qty']=$p_qty;
             //父采购量
             $pro_codeArr[$key]['purchase_num'] = f_sub($down_qty, $p_qty);
             //需要生产子的量 = 父在在库量 x 生产比例;
             $c_qty_count = f_mul($p_qty,$value['ratio']);
             //子Sku在库量
             $c_qty = getStockQtyByWpcode($value['c_pro_code'], $value['wh_id']);
+            $pro_codeArr[$key]['c_qty']=$c_qty;
             //子sku总可用量 = 父在在库量 x 生产比例 + 子Sku在库量;
             $available_qty = f_add($c_qty_count, $c_qty);
             $pro_codeArr[$key]['available_qty'] = $available_qty;
@@ -200,6 +208,17 @@ class PurchasesController extends CommonController {
             }*/
             
         }
+        $p_sku_info = getSkuInfoByCodeArray($p_sku);
+        //获取子SKU名称和规格
+        $c_sku_info = getSkuInfoByCodeArray($c_sku);
+
+        foreach ($pro_codeArr as &$d_data) {
+            $d_data['p_pro_name'] = $p_sku_info[$d_data['pro_code']]['name'];
+            $d_data['p_pro_attrs'] = $p_sku_info[$d_data['pro_code']]['pro_attrs_str'];
+            $d_data['c_pro_name'] = $c_sku_info[$d_data['c_pro_code']]['name'];
+            $d_data['c_pro_attrs'] = $c_sku_info[$d_data['c_pro_code']]['pro_attrs_str'];
+        }
+        
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel();
@@ -223,16 +242,16 @@ class PurchasesController extends CommonController {
         foreach ($pro_codeArr as $value){
             $i++;
             $sheet->setCellValue('A'.$i, $value['pro_code']);
-            $sheet->setCellValue('B'.$i, getPronameByCode('name',$value['pro_code']));
-            $sheet->setCellValue('C'.$i, getSkuInfoByCode('pro_attrs_str',$value['pro_code']));
-            $sheet->setCellValue('D'.$i, getTableFieldById('warehouse','name',$value['wh_id']));
-            $sheet->setCellValue('E'.$i, getStockQtyByWpcode($value['pro_code'], $value['wh_id']));
-            $sheet->setCellValue('F'.$i, formatMoney(getDownOrderNum($value['pro_code'],$value['delivery_date'], $value['delivery_ampm'], $value['wh_id'])));
+            $sheet->setCellValue('B'.$i, $value['p_pro_name']);
+            $sheet->setCellValue('C'.$i, $value['p_pro_attrs']);
+            $sheet->setCellValue('D'.$i, $value['wh_name']);
+            $sheet->setCellValue('E'.$i, $value['p_qty']);
+            $sheet->setCellValue('F'.$i, $value['down_qty']);
             $sheet->setCellValue('G'.$i, $value['purchase_num']);
             $sheet->setCellValue('H'.$i, $value['ratio']);
             $sheet->setCellValue('I'.$i, $value['c_pro_code']);
-            $sheet->setCellValue('J'.$i, getPronameByCode('name', $value['c_pro_code']));
-            $sheet->setCellValue('K'.$i, formatMoney(getStockQtyByWpcode($value['c_pro_code'], $value['wh_id'])));
+            $sheet->setCellValue('J'.$i, $value['c_pro_name']);
+            $sheet->setCellValue('K'.$i, $value['c_qty']);
             $sheet->setCellValue('L'.$i, $value['available_qty']);
             $sheet->setCellValue('M'.$i, $value['requirement_qty']);
             //$sheet->setCellValue('L'.$i, getProcessByCode($value['pro_code'], $value['wh_id'],$value['delivery_date'], $value['delivery_ampm'], $value['c_pro_code']));
