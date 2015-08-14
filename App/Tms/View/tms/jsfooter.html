@@ -328,11 +328,14 @@
               } else {
                 HostApp.toast(msg.msg);
                 if (msg.status == 1) { //任务签到成功的话收集信息
-                  HostApp.collectPoint(id);
                   if(key == fKey) {
                     start(pid);
+                    HostApp.collectPoint(id);
                   } else if(key == lKey) {
+                    HostApp.collectPoint(id);
                     last(pid);
+                  } else {
+                    HostApp.collectPoint(id);
                   }
                   location.reload();
                 }
