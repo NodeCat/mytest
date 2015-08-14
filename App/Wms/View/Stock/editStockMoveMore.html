@@ -322,12 +322,12 @@ $(function(){
     var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
     if (!reg.test(out_qty)){
       alert('移动量只能精确到小数点两位');
-      $(this).val(pro_qty);
+      //$(this).val(pro_qty);
     }
     var pro_qty = $(this).attr('data-value');
     if(out_qty>parseFloat(pro_qty)){
       alert('移动量不可大于可用量');
-      $(this).val(pro_qty);
+      //$(this).val(pro_qty);
     }
   });
 
