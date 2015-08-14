@@ -222,18 +222,45 @@ class StockController extends CommonController {
 	protected function before_edit(&$data){
 		if(IS_AJAX){
 			$is_stock_move = I('is_stock_move');
-			//替换edit显示数据
-			//根据warehouse.id 查询仓库name
-			$map['id'] = $data['wh_id'];
-			$warehouse_name = M('Warehouse')->where($map)->getField('name');
-			unset($map);
-			$data['wh_name'] = $warehouse_name;
+            if ($is_stock_move == 'move') {
+                $ids = I('id');
+                if (!$ids) {
+                    $this->msgReturn(0, '没有得到你的请求数据！');
+                }
+                $where_stock = array();
+                $where_stock['stock.id'] = array('in', $ids);
+                $where_stock['stock.is_deleted'] = 0;
+                $stock_m = M('stock');
+                $join = array(' inner join location on stock.location_id=location.id');
+                $result = $stock_m->field('stock.*,location.code as location_code')->join($join)->where($where_stock)->order('stock.updated_time DESC')->select();
+                foreach ($result as $key => $value) {
+                    $pro_name = M('stock_bill_in_detail')->where(array('pro_code'=>$value['pro_code']))->getField('pro_name');
+                    $result[$key]['pro_name'] = $pro_name;
+                    $result[$key]['avaliable_qty'] = bcsub($value['stock_qty'], $value['assign_qty'], 2);
+                }
+                if (!$result) {
+                    $this->msgReturn(0,'没有找到该记录，请检查表关联或者纪录状态');
+                }
+                $this->assign('data',$result);
+                $this->display('editStockMoveMore');
+                exit;
 
-			//根据location.id 查询库位code
-			$map['id'] = $data['location_id'];
-			$location_code = M('Location')->where($map)->getField('code');
-			unset($map);
-			$data['location_code'] = $location_code;
+            } else {
+                //替换edit显示数据
+                //根据warehouse.id 查询仓库name
+                $map['id'] = $data['wh_id'];
+                $warehouse_name = M('Warehouse')->where($map)->getField('name');
+                unset($map);
+                $data['wh_name'] = $warehouse_name;
+
+                //根据location.id 查询库位code
+                $map['id'] = $data['location_id'];
+                $location_code = M('Location')->where($map)->getField('code');
+                unset($map);
+                $data['location_code'] = $location_code;
+            }
+            
+
 		}
 		//view edit 展示
 		$data['status_name'] = en_to_cn($data['status']);
@@ -270,7 +297,28 @@ class StockController extends CommonController {
 		}
 
 		if(I('editStockMove')){
-            if (I('stock_qty')<=0) {
+
+            //判断参数是否合法性
+            $result = $this->judgeQualified();
+            if (!$result) {
+                $this->msgReturn(0,'移库失败。');
+            }
+            $errorArr = array();
+            foreach ($result as $key => $value) {
+                $mesg = $this->moveStockController($value);
+                if ($mesg) {
+                   array_push($errorArr, $mesg);
+                }
+            }
+
+            if ($errorArr) {
+                $errorString = implode(',', $errorArr);
+                $this->msgReturn(0,'移库失败。'.$errorString);
+            }
+
+            $this->msgReturn(1);
+
+            /*if (I('stock_qty')<=0) {
                 $mes = '移动库存量不能小于零的数';
                 $this->msgReturn(0,$mes);
             }
@@ -329,9 +377,124 @@ class StockController extends CommonController {
 			}
 		}
 
-		$this->msgReturn(1);
+		$this->msgReturn(1);*/
+        }
     }
 
+    //批次移动库存判断
+    public function judgeQualified(){
+        $params = array();
+        $result = array();
+        $params = I();
+        if (!$params) {
+            $mes = '请正常操作';
+            $this->msgReturn(0,$mes);
+        }
+        if (!$params['dest_location_id']) {
+            $this->msgReturn(0,'目标库位不能为空');
+        }
+        $dest_location_id = $params['dest_location_id'];
+        //查询对应的location_id
+        $map['code'] = $dest_location_id;
+        $map['wh_id'] = session('user.wh_id');
+        $dest_location_code = M('location')->where($map)->find();
+
+        if(empty($dest_location_code)){
+            $this->msgReturn(0,'目标库位不存在');
+        }
+
+        $dest_location_id = $dest_location_code['id'];
+        foreach ($params['stock_id'] as $key => $value) {
+            $stock_key_arr       = $params['stock_key'];
+            $stock_id_arr        = $params['stock_id'];
+            $stock_qty_arr       = $params['stock_qty'];
+            $origin_stock_qty_arr= $params['origin_stock_qty'];
+            $assign_qty_arr      = $params['assign_qty'];
+            $avaliable_qty_arr   = $params['avaliable_qty'];
+            $wh_id_arr           = $params['wh_id'];
+            $src_location_id_arr = $params['src_location_id'];
+            $pro_code_arr        = $params['pro_code'];
+            $batch_arr           = $params['batch'];
+            $status_arr          = $params['status'];
+            if (intval($stock_qty_arr[$key]*1000)<=0) {
+                $mes = '序列'.$stock_key_arr[$key].'移动库存量不能小于零的数';
+                $this->msgReturn(0,$mes);
+            }
+            if (strlen(formatMoney($stock_qty_arr[$key], 2, 1))>2) {
+                $mes = '序列'.$stock_key_arr[$key].'移动库存量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);
+            }
+
+            if (intval($assign_qty_arr[$key]*1000)!==0) {
+                $mes = '序列'.$stock_key_arr[$key].'分配量必须为0';
+                $this->msgReturn(0,$mes);
+            }
+            if(bccomp($stock_qty_arr[$key], $avaliable_qty_arr[$key],2) == 1){
+                $mes = '序列'.$stock_key_arr[$key].'移动量不可大于可用量';
+                $this->msgReturn(0,$mes);
+            }
+
+            if(bccomp($stock_qty_arr[$key], $origin_stock_qty_arr[$key],2) == 1){
+                $mes = '序列'.$stock_key_arr[$key].'移动量不能大于原库存量';
+                $this->msgReturn(0,$mes);
+            }
+    
+            $src_location_id = $src_location_id_arr[$key];
+            
+            if($src_location_id === $dest_location_id){
+                $this->msgReturn(0,'请修改库位信息');
+            }
+            $where = array();
+            $where['src_location_id'] = $src_location_id;
+            $where['dest_location_id'] = $dest_location_id;
+            $where['wh_id'] = $wh_id_arr[$key];
+            //$params['status'] = I('status');
+            $where['pro_code'] = $pro_code_arr[$key];
+            //判断目标库位是否可以 混货 混批次
+            $res = A('Stock','Logic')->checkLocationMixedProOrBatch($where);
+
+            if($res['status'] == 0){
+                $this->msgReturn(0,'序列'.$stock_key_arr[$key].'移库失败。'.$res['msg']);
+            }
+
+            $tmpArr                     = array();
+            $tmpArr['xid']              = $stock_key_arr[$key];
+            $tmpArr['variable_qty']     = $stock_qty_arr[$key];
+            $tmpArr['wh_id']            = $wh_id_arr[$key];
+            $tmpArr['src_location_id']  = $src_location_id;
+            $tmpArr['dest_location_id'] = $dest_location_id;
+            $tmpArr['pro_code']         = $pro_code_arr[$key];
+            $tmpArr['batch']            = $batch_arr[$key];
+            $tmpArr['status']           = $status_arr[$key];
+
+            array_push($result, $tmpArr);
+
+        }
+
+        return $result;
+    }
+
+    //移库操作
+    public function moveStockController($movearr = array()){
+        //库存移动
+        $mes = '';
+        $variable_qty = formatMoney($movearr['variable_qty'], 2);
+        $params['variable_qty'] = $variable_qty;
+        $params['wh_id'] = $movearr['wh_id'];
+        $params['src_location_id'] = $movearr['src_location_id'];
+        $params['dest_location_id'] = $movearr['dest_location_id'];
+        $params['pro_code'] = $movearr['pro_code'];
+        $params['batch'] = $movearr['batch'];
+        $params['status'] = $movearr['status'];
+        $res = A('Stock','Logic')->adjustStockByMove($params);
+
+        if($res['status'] == 0){
+            $mes = '序列'.$movearr['xid']. $res['msg'];
+            //$this->msgReturn(0,'移库失败。'.$res['msg']);
+        }
+
+        return $mes;
+    }
 
 	//调整状态按钮触发的方法
 	public function editStatus(){
