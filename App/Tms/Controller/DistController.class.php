@@ -431,11 +431,15 @@ class DistController extends Controller {
                 foreach ($bill_id_details as $detail_id => $detail) {
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
+                    $tmp['delivery_qty']       = $detail['delivery_qty'];
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
                     $tmp['real_sign_wgt']      = isset($weight[$detail_id]) ? $weight[$detail_id] : 0;
+                    $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['single_price'];
+                    $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
+                    $tmp['reject_sum']         = $tmp['reject_qty'] * $tmp['price_unit'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
                     $cdata[] = $tmp;
