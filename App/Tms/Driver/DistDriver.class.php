@@ -1,9 +1,9 @@
 <?php
-namespace Tms\Controller;
+namespace Tms\Driver;
 
 use Think\Controller;
 
-class DistController extends Controller {
+class DistDriver extends Controller {
 
 	//司机提货
     public function delivery() {

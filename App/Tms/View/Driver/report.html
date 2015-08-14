@@ -4,7 +4,7 @@
 <div class="list-group">
   <volist name="data" id="vo">
   <br/>
-  <a href="{:U('Index/orderList','id='.$vo['id'])}" class="list-group-item list-group-item-ino activ">
+  <a href="{:U('orderList','id='.$vo['id'])}" class="list-group-item list-group-item-ino activ">
   <span class="badge">共 {$vo.order_count} 订单</span>
   <h4 class="list-group-item-heading">{$vo.dist_code}<br/>{$vo.line_name}</h4>
   </a>

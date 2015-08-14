@@ -1,6 +1,4 @@
 <include file="Index:nav-cur" />
-<!-- 拒收选项 -->
-<include file="tms:reject-box" />
 <div class="col-xs-12">
     <div class="row-fluid">
         <div class="input-group">
@@ -45,7 +43,7 @@
         <div class="list-group-item list-group-item-inf">
           <h4 class="list-group-item-heading">
             <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
-              【{$vo.shop_name}】{$vo.delivery_address}
+              【{$vo.shop_name}】{$vo.deliver_addr}
               <i class="glyphicon glyphicon-map-marker">
               </i>
               <span>
@@ -64,7 +62,7 @@
           </a>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
-          {$vo.customer_realname} &nbsp;&nbsp;
+          {$vo.realname} &nbsp;&nbsp;
           <i class="glyphicon glyphicon-phone"></i>
           <a href="tel:{$vo.mobile}" class="user-mobile">
             {$vo.mobile} &nbsp;
@@ -73,6 +71,7 @@
           </a>
         </div>
       </eq>
+
       <notempty name="vo['remarks']">
         <div class="panel-footer">
           <i class="glyphicon glyphicon-comment">
@@ -85,23 +84,25 @@
         <switch name="vo['status_cn']">
           <case value="已签收" break="0">
           </case>
-          <case value="已完成" break="1">
+          <case value="已完成" break="0">
+          </case>
+          <case value="已回款" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-success"
-            data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
-            aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
+            data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <case value="已退货" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
-            data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
-            aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
+            data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="true"
+            aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
           </case>
           <default />
           <a onclick="check(this)" class="list-group-item  panel-footer collapsed"
-          data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}">
+          data-toggle="collapse" data-target="#info_{$vo.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.id}" data-oid="{$vo.id}">
         </switch>
         <!--{$vo.order_type_cn}-->
         <span class="order-id">
-          {$vo.refer_code}
+          {$vo.id}
         </span>
         &nbsp;
         <!-- <i class="glyphicon glyphicon-list-alt"></i> {:count($vo['detail'])} 行
@@ -110,17 +111,13 @@
         -->
         <i class="glyphicon glyphicon-yen">
         </i>
-        {$vo.final_price} 元 &nbsp;&nbsp;
-        <if condition="$vo.pay_type eq 2">
-          账期支付
-          <else/>
-        {$vo.pay_status}
-        </if>
-        &nbsp;
+        {$vo.final_price} 元 &nbsp;&nbsp;{$vo.pay_status} &nbsp;
         <switch name="vo['status_cn']">
           <case value="已签收" break="0">
           </case>
-          <case value="已完成" break="1">
+          <case value="已完成" break="0">
+          </case>
+          <case value="已回款" break="1">
             <label class="label label-success">
               {$vo.status_cn}
             </label>
@@ -134,38 +131,70 @@
         </switch>
         <span id="show" style="color:red;">点击展开</span>
         </a>
-        <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.refer_code}">
+        <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.id}">
           <form class="order">
-            <input type="hidden" name="id" value="{$vo.refer_code}" />
-            <input type="hidden" name="bid" value="{$vo.id}" />
-
+            <input type="hidden" name="id" value="{$vo.id}" />
             <ul class="list-group">
               <volist name="vo['detail']" id="v">
-                  <li class="list-group-item">
-                    {$v.pro_code} {$v.pro_name} {$vo.pro_attrs} <label class="label label-info">请在下面录入实际收货数量：</label>
-                  </li>
-                  <li class="list-group-item">
-                    <div class="input-group row">
-                    <input type="hidden" name="order_detail_id[{$v.id}]" value="{$v.order_detail_id}" />
-                    
-                      <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.single_price}" />
-                      
-                      <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
-                       
-                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
-                      <span class="input-group-addon">{$v.unit_id}</span>
-
-                	    <neq name="v['close_unit']" value="$v['unit_id']">
-                      <input type="number" name="weight[{$v.id}]" min="0" class="real form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
-                      <span class="input-group-addon">{$v.close_unit}</span>
-                  	  </neq>
-
-                      <!--
-                      <input type="number" name="price_sum[]" min="0" class="form-control p_sum" placeholder="{$v.sum_price}" value="{$v.sum_price}">
-                      -->
-                      <span class="input-group-addon">¥<span class="p_sum">{$v.sum_price}</span>元</span>
-                    </div>
-                  </li>
+                <li class="list-group-item">
+                  {$v.sku_number} {$v.name}
+                  <foreach name="v['spec']" item="spec">
+                    {$spec['name']}:{$spec['val']};
+                  </foreach>
+                  <br />
+                  <label class="label label-info">
+                    请在下面录入实际收货数量：
+                  </label>
+                </li>
+                <li class="list-group-item">
+                  <div class="input-group row">
+                    <input type="hidden" name="pro_id[]" value="{$v.id}" />
+                    <!-- <input type="hidden" name="price_unit[]" value="{$v.price}" />
+                    -->
+                    <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}"
+                    />
+                    <span class="input-group-addon">
+                      ¥{$v.single_price}元/{$v.close_unit}
+                    </span>
+                    <eq name="v['close_unit']" value="斤">
+                      <switch name="vo['status_cn']">
+                        <case value="已签收" break="0">
+                        </case>
+                        <case value="已完成" break="0">
+                        </case>
+                        <case value="已回款" break="1">
+                          <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
+                          placeholder="{$v.quantity}" value="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                        </case>
+                        <case value="已退货" break="0">
+                        </case>
+                        <case value="已发运" break="0">
+                        </case>
+                        <case value="已出库" break="0">
+                        </case>
+                        <case value="已装车" break="0">
+                        </case>
+                        <case value="待收货" break="0">
+                          <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
+                          placeholder="输入数量" value="" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')">
+                        </case>
+                      </switch>
+                      <else/>
+                      <input type="number" name="quantity[]" min="0" class="real form-control p_qty"
+                      placeholder="{$v.quantity}" data-val="{$v.quantity}" value="{$v.quantity}" onkeyup="checkValue(this)">
+                    </eq>
+                    <span class="input-group-addon">
+                      {$v.close_unit}
+                    </span>
+                    <span class="input-group-addon">
+                      ¥
+                      <span class="p_sum">
+                        {$v.sum_price}
+                      </span>
+                      元
+                    </span>
+                  </div>
+                </li>
               </volist>
             </ul>
             <div class="panel-footer summary">
@@ -177,7 +206,9 @@
                   </span>
                   元
                 </span>
-               
+                <!-- <input type="hidden" class="form-control" placeholder="{$vo.total_price}"
+                value="{$vo.total_price}" readonly>
+                -->
                 <span class="input-group-addon">
                   优惠 ¥
                   <span class="p_minus">
@@ -200,44 +231,51 @@
                   </span>
                   元
                 </span>
-                <input type="hidden" name="final_price" class="form-control p_final" paystatus="{$vo.pay_status}" placeholder="{$vo.receivable_sum}" value="{$vo.receivable_sum}" readonly>
+                <input type="hidden" name="final_price" class="form-control p_final" paystatus="{$vo.pay_status}" placeholder="{$vo.receivable_sum}"
+                value="{$vo.receivable_sum}" readonly>
                 <span class="input-group-addon">
                   实收
                 </span>
                 <switch name="vo['status_cn']">
                   <case value="已签收" break="0">
                   </case>
-                  <case value="已完成" break="1">
+                  <case value="已完成" break="0">
+                  </case>
+                  <case value="已回款" break="1">
                     <if condition="$vo.pay_status eq '已付款'">
                       <span class="form-control p_deal">
                         该订单已网上付款
                       </span>
-                    <elseif condition="$vo.pay_type eq 2" />
-                      <span class="form-control p_deal">
-                        该订单是账期支付
-                      </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.deal_price}" readonly>
                     <else/>
-                    <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
-                    </if>
+                      <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.deal_price}" readonly>
+                   </if>
                   </case>
                   <case value="已退货" break="1">
-                    <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    <if condition="$vo.pay_status eq '已付款'">
+                      <span class="form-control p_deal">
+                        该订单已网上支付
+                      </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
                     value="0" readonly>
+                    <else/>
+                      <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="0" readonly>
+                    </if>
                   </case>
                   <default />
                     <if condition="$vo.pay_status eq '已付款'">
                       <span class="form-control p_deal">
-                        该订单已网上付款
+                        该订单已网上支付
                       </span>
-                    <elseif condition="$vo.pay_type eq 2" />
-                      <span class="form-control p_deal">
-                        该订单是账期支付
-                      </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                  value="{$vo.deal_price}" readonly>
                     <else/>
-                    <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
-                    </if>
+                      <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
+                  value="{$vo.deal_price}" readonly>
+                   </if>
                 </switch>
               </div>
             </div>
@@ -256,12 +294,14 @@
             <switch name="vo['status_cn']">
               <case value="已签收" break="0">
               </case>
-              <case value="已完成" break="1">
+              <case value="已完成" break="0">
+              </case>
+              <case value="已回款" break="1">
                 <!-- 打印小票 -->
-                <div class="panel-footer" id="p_{$vo.refer_code}">
+                <div class="panel-footer" id="p_{$vo.id}">
                     <div class="input-group row col-xs-2 col-sm-2 col-md-2 col-lg-2 col-md-offset-5 col-lg-offset-5 col-sm-offset-5 col-xs-offset-5">
                         <div>
-                            <a class="btn btn-primary btn-block js-btn-print" data-id="{$vo.refer_code}" data-bid="{$vo.id}" data-str='{$vo.printStr}'>打印小票</a>
+                            <a class="btn btn-primary btn-block js-btn-print" data-id="{$vo.id}" data-bid="0" data-str='{$vo.printStr}'>打印小票</a>
                         </div>
                     </div>
                 </div>
@@ -277,7 +317,7 @@
               <case value="待收货" break="0">
                 <div class="panel-footer">
                   <div class="col-xs-6">
-                    <a class="btn-reject btn btn-danger btn-block" data-ver="<defined name="VERSION">1</defined>">
+                    <a class="btn-reject btn btn-danger btn-block">
                       拒收
                     </a>
                   </div>
@@ -307,7 +347,7 @@
   </div>
   <style type="text/css">
     hr{ margin-top: 10px; margin-bottom: 10px; } form.order ul.list-group{
-    margin-bottom: 0px;}
+    margin-bottom: 0px; }
   </style>
-<include file="tms:jsfooter" />
 
+<include file="jsfooter" />

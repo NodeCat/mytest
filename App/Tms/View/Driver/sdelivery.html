@@ -2,7 +2,7 @@
 <br/>
 
 <div class="col-xs-12">
-<form class="form-horizontal form-pda form-scan" action="" method="">
+<form class="form-horizontal form-pda form-scan" action="{:U('delivery')}" method="POST">
   <input type="hidden" name="t" value="login" />
   <div class="row-fluid">
   <div class="col-xs-12">
@@ -11,7 +11,7 @@
       <span class="input-group-addon">
       <i class="glyphicon glyphicon-pencil"></i>
     	</span>
-      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" placeholder="请输入提货码">
+      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入提货码">
     </div>
   </div>
  </div>
@@ -21,16 +21,17 @@
  <br/>
 <div class="form-group">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
-    <button id="sub"type="button"  class="btn btn-primary btn-lg btn-block">提货</button>
-    <br/>
-    <div id="notice" style="color:red;font-size:110%;">温馨提示：提货后请勿关闭软件，否则会影响到运费结算</div>
-</div>
+    <button type="submit" class="btn btn-primary btn-lg btn-block">提货</button>
   </div>
+</div>
+<br>
+
 </form>
 </div>
 
 <br/>
 <div class="col-xs-12">
+
 <div class="list-group">
   <if condition="count($data) neq 0 ">
     <a class="list-group-item disabled">已提货配送单(点击可查看详情)</a>
@@ -59,36 +60,3 @@ margin-top: 10px;
   	}
 
 </style>
-
-<script type="text/javascript">
-$('#sub').on('click',function(){
-        var code = $('#code').val();
-        var addr = "{:U('Index/delivery')}";
-        $.ajax({
-          url:addr,
-          type:'post',
-          cache :false,
-          dataType:'json',
-          async:true,
-          data:{"code":code},
-          success: function(msg){
-            if(msg.status=='0'){
-              alert(msg.message);
-              if(typeof HostApp != "undefined"){ 
-                HostApp.toast(msg.message);
-              }
-            }else if(msg.status=='1'){
-              alert(msg.message);
-              if(typeof HostApp != "undefined"){
-                HostApp.toast(msg.message);
-                HostApp.startLocate(msg.code);
-                HostApp.toast('计程开始,请不要退出');
-              }
-              
-            }
-            location.reload();
-          },
-        });
-    });
-
-</script>
