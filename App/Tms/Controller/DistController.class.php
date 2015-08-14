@@ -557,6 +557,7 @@ class DistController extends Controller {
 
         $map['mobile'] = session('user.mobile');
         $map['status'] = '1';
+        $map['type']   = '0';
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
@@ -745,8 +746,8 @@ class DistController extends Controller {
                         $status = '4';
                         break;
                     } elseif ($va['type'] == '1') {
-                        $task = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
-                        if ($task) {//如果任务还没完成
+                        $tasks = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
+                        if ($tasks) {//如果任务还没完成
                             $status = '3';
                             break;
                         } else {

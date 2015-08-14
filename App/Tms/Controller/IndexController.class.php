@@ -917,8 +917,8 @@ class IndexController extends Controller {
                         $status = '4';
                         break;
                     } elseif ($va['type']=='1') {
-                        $task = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
-                        if ($task) {
+                        $tasks = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
+                        if ($tasks) {
                             $status = '3';
                             break;
                         } else {
