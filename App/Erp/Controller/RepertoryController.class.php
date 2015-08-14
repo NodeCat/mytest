@@ -499,7 +499,7 @@ class RepertoryController extends CommonController
     //格式化金额，截取2位小数
     private function numbers_format_2($number)
     {
-        if (intval($number) == 0) {
+        if ($number == 0) {
             return sprintf("%.2f",0);
         }
         $p= stripos($number, '.');
