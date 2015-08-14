@@ -318,66 +318,6 @@ class StockController extends CommonController {
 
             $this->msgReturn(1);
 
-            /*if (I('stock_qty')<=0) {
-                $mes = '移动库存量不能小于零的数';
-                $this->msgReturn(0,$mes);
-            }
-            if (strlen(formatMoney(I('stock_qty'), 2, 1))>2) {
-                $mes = '移动库存量只能精确到两位小数点';
-                $this->msgReturn(0,$mes);
-            }
-
-            if(bccomp(I('stock_qty'), I('origin_stock_qty'),2) == 1){
-            	$mes = '移动量不能大于原库存量';
-                $this->msgReturn(0,$mes);
-            }
-    
-			$src_location_id = I('src_location_id');
-			//查询对应的location_id
-			$map['code'] = I('dest_location_code');
-			$map['wh_id'] = session('user.wh_id');
-			$dest_location_code = M('location')->where($map)->find();
-
-			if(empty($dest_location_code)){
-				$this->msgReturn(0,'目标库位不存在');
-			}
-
-			$dest_location_id = $dest_location_code['id'];
-			if($src_location_id === $dest_location_id){
-				$this->msgReturn(0,'请修改库位信息');
-			}
-
-			$params['src_location_id'] = $src_location_id;
-			$params['dest_location_id'] = $dest_location_id;
-			$params['wh_id'] = I('wh_id');
-			//$params['status'] = I('status');
-			$params['pro_code'] = I('pro_code');
-			//判断目标库位是否可以 混货 混批次
-			$res = A('Stock','Logic')->checkLocationMixedProOrBatch($params);
-
-			if($res['status'] == 0){
-				$this->msgReturn(0,'移库失败。'.$res['msg']);
-			}
-			unset($params);
-			unset($res);
-
-			//库存移动
-			$variable_qty = formatMoney(I('stock_qty'), 2);
-			$params['variable_qty'] = $variable_qty;
-			$params['wh_id'] = I('wh_id');
-			$params['src_location_id'] = I('src_location_id');
-			$params['dest_location_id'] = $dest_location_id;
-			$params['pro_code'] = I('pro_code');
-			$params['batch'] = I('batch');
-			$params['status'] = I('status');
-			$res = A('Stock','Logic')->adjustStockByMove($params);
-
-			if($res['status'] == 0){
-				$this->msgReturn(0,'移库失败。'.$res['msg']);
-			}
-		}
-
-		$this->msgReturn(1);*/
         }
     }
 
