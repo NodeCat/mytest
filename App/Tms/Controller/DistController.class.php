@@ -699,7 +699,7 @@ class DistController extends Controller {
     //任务提货
     private function taskDelivery()
     {   
-        $id             = $this->dist_id;
+        $id = $this->dist_id;
         $map['dist_code'] = $id;
         $map['status']  = '1';
         $start_date     = date('Y-m-d',NOW_TIME);
