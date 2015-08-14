@@ -427,11 +427,16 @@ class DistributionLogic {
             $data['status'] = 1; //状态 未发运
             $data['is_printed'] = 0; //未打印
             $data['line_count'] = 0; //总种类
+            $data['customer_count'] = 0; //总客户数
             $data['line_id'] = ''; //路线
             $data['sku_count'] = 0; //sku总数量
             $data['total_price'] = 0;  //总价格
             $i = 0;
+            $customer_count = array();
             foreach ($stock_out as $val) {
+                if ($val['customer_id'] > 0) {
+                    $customer_count[$val['customer_id']] = null;
+                }
                 $data['line_count'] += count($val['detail']); //总种类
                 $data['line_id'] .= $val['line_id'] . ','; //路线
                 $data['total_price'] += $val['total_amount']; //总价格
@@ -447,6 +452,7 @@ class DistributionLogic {
                 $i ++;
             }
             $data['line_id'] = rtrim($data['line_id'], ',');
+            $data['customer_count'] = count($customer_count);
             if ($dis->create($data)) {
                 //写入操作
                 $pid = $dis->add();
