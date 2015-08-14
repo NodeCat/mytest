@@ -42,6 +42,25 @@ class SettlementLogic
     }
 
     /**
+     * 获取采购单单据明细
+     * @param $code   结算单code
+     * @return array
+     */
+    public function getPurchaseListDetail($code)
+    {
+        $M      = M('erp_settlement_detail');
+        $where['erp_settlement_detail.code']       = $code;
+        $where['erp_settlement_detail.order_type'] = 2;
+        $field = 'erp_settlement_detail.*, erp_purchase_in_detail.pro_qty, erp_purchase_in_detail.price_unit, erp_purchase_in_detail.pro_code, erp_purchase_in_detail.price_subtotal,  stock_bill_in_detail.pro_name';
+        $join  = array(
+            'INNER JOIN erp_purchase_in_detail ON erp_purchase_in_detail.id=erp_settlement_detail.stock_id',
+            'INNER JOIN stock_bill_in_detail ON stock_bill_in_detail.refer_code=erp_purchase_in_detail.stock_in_code AND stock_bill_in_detail.pro_code=erp_purchase_in_detail.pro_code'
+        );
+        $result = $M->field($field)->join($join)->where($where)->select();
+        return $result;
+    }
+
+    /**
      * 获取入库单（货到付款 且 已生效 状态，且 入库单是未付款状态）
      * @param $map
      * @return mixed
@@ -73,6 +92,28 @@ class SettlementLogic
         return $purchaseDetailResult;
     }
 
+    /**
+     * 获取入库单单据详情
+     * @param $code  结算单code
+     * @return array
+     */
+    public function getStockInListDetail($code)
+    {
+        $M      = M('erp_settlement_detail');
+        $field = 'erp_settlement_detail.*,stock_purchase.id as pid,erp_purchase_refund.id as refund_id,stock_purchase_out.id as stockout_id, stock_purchase_detail.pro_code, stock_purchase_detail.pro_name, stock_purchase_detail.pro_qty, stock_purchase_detail.price_unit, stock_purchase_detail.price_subtotal';
+        $where['erp_settlement_detail.code']  = $code;
+        $where['erp_settlement_detail.order_type'] = 1;
+        $join  = array(
+            'left join stock_purchase on erp_settlement_detail.order_code=stock_purchase.code',
+            'left join erp_purchase_refund on erp_purchase_refund.code=erp_settlement_detail.order_code',
+            'left join stock_purchase_out on stock_purchase_out.rtsg_code=erp_settlement_detail.order_code',
+            'left join stock_purchase_detail ON stock_purchase_detail.pid=stock_purchase.id'
+        );
+        $result = $M->field($field)->join($join)->where($where)->select();
+
+        return $result;
+    }
+
     /**获取冲红单数据
      * @param $map
      * @return mixed
@@ -97,6 +138,25 @@ class SettlementLogic
         $refundResult = $model->field($field)->join($join)->where($where)->group('erp_purchase_refund.id')->select();
 
         return $refundResult;
+    }
+
+    /**
+     * 获取冲红单单据明细
+     * @param $code   结算单code
+     * @return mixed
+     */
+    public function getRefundListDetail($code)
+    {
+        $M      = M('erp_settlement_detail');
+        $where['erp_settlement_detail.code']       = $code;
+        $where['erp_settlement_detail.order_type'] = 3;
+        $field = 'erp_settlement_detail.*, erp_purchase_refund_detail.pro_code, erp_purchase_refund_detail.pro_name, (erp_purchase_refund_detail.expected_qty-erp_purchase_refund_detail.receipt_qty) as pro_qty, erp_purchase_refund_detail.price_unit, ((erp_purchase_refund_detail.expected_qty-erp_purchase_refund_detail.receipt_qty)*erp_purchase_refund_detail.price_unit) as price_subtotal';
+        $join  = array(
+            'INNER JOIN erp_purchase_refund ON erp_purchase_refund.code=erp_settlement_detail.order_code',
+            'INNER JOIN erp_purchase_refund_detail ON erp_purchase_refund_detail.pid=erp_purchase_refund.id'
+        );
+        $result  = $M->field($field)->join($join)->where($where)->select();
+        return $result;
     }
 
     /**
@@ -125,6 +185,25 @@ class SettlementLogic
         $refundResult = $model->field($field)->join($join)->where($where)->group('stock_purchase_out.id')->select();
 
         return $refundResult;
+    }
+
+    /**
+     * 获取退货单单据明细
+     * @param $code   结算单code
+     * @return array
+     */
+    public function getPurchaseOutListDetail($code)
+    {
+        $M      = M('erp_settlement_detail');
+        $where['erp_settlement_detail.code']       = $code;
+        $where['erp_settlement_detail.order_type'] = 4;
+        $field = 'erp_settlement_detail.*, stock_purchase_out_detail.pro_code, stock_purchase_out_detail.pro_name, stock_purchase_out_detail.price_unit, stock_purchase_out_detail.real_return_qty as pro_qty, SUM(stock_purchase_out_detail.real_return_qty*stock_purchase_out_detail.price_unit) as price_subtotal';
+        $join  = array(
+            'INNER JOIN stock_purchase_out ON stock_purchase_out.rtsg_code=erp_settlement_detail.order_code',
+            'INNER JOIN stock_purchase_out_detail ON stock_purchase_out_detail.pid=stock_purchase_out.id'
+        );
+        $result  = $M->field($field)->join($join)->where($where)->group('stock_purchase_out_detail.id')->select();
+        return $result;
     }
 
     /**

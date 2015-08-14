@@ -171,17 +171,13 @@ class SettlementController extends CommonController
 
     protected function before_edit($data)
     {
-        $M      = M('erp_settlement_detail');
-        $join   = array(
-            ' left join stock_purchase on erp_settlement_detail.order_code=stock_purchase.code',
-            ' left join erp_purchase_refund on erp_purchase_refund.code=erp_settlement_detail.order_code',
-            ' left join stock_purchase_out on stock_purchase_out.rtsg_code=erp_settlement_detail.order_code'
-        );
+        $logic   = D('Settlement','Logic');
+        $result1 = $logic->getStockInListDetail($data['code']);     //入库单明细
+        $result2 = $logic->getPurchaseListDetail($data['code']);    //采购单明细
+        $result3 = $logic->getRefundListDetail($data['code']);      //冲红单明细
+        $result4 = $logic->getPurchaseOutListDetail($data['code']); //退款单明细
 
-        $field  =  'erp_settlement_detail.*, stock_purchase.id as pid, erp_purchase_refund.id as refund_id, stock_purchase_out.id as stockout_id';
-        $where  = "erp_settlement_detail.code='{$data['code']}'";
-        $pros   = $M->field($field)->join($join)->where($where)->select();
-
+        $pros = array_merge($result1, $result2, $result3, $result4);
         $this->pros = $pros;
     }
 
