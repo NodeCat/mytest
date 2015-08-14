@@ -94,7 +94,7 @@ class DistController extends Controller {
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                //$this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if (empty($this->error)) {
@@ -740,7 +740,7 @@ class DistController extends Controller {
                         $status = '4';
                         break;
                     } elseif ($va['type'] == '1') {
-                        $tasks = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5')))->find($va['dist_id']);
+                        $tasks = M('tms_dispatch_task')->field('id')->where(array('status' => array('neq','5'),'id' => $va['dist_id']))->find();
                         if ($tasks) {//如果任务还没完成
                             $status = '3';
                             break;
