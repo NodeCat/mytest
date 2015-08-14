@@ -37,7 +37,9 @@ class DistController extends Controller {
             $delivery = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
             unset($map['dist_id']);
             unset($map['type']);
+            $sign = M('tms_sign_list')->field('delivery_time,created_time')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
             $map['mobile'] = session('user.mobile');
+            $map['created_time'] = array('between',$sign['created_time'].','.$sign['delivery_time']);
             $delivery_all = $M->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
             unset($map);
             if (!empty($delivery)) {//若该配送单已被认领
@@ -553,6 +555,7 @@ class DistController extends Controller {
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
+        $this->userid = session('user.id');
         $this->data = M('tms_delivery')->where($map)->select();
         $this->title = '今日订单总汇';
         $this->display('tms:report');
@@ -682,7 +685,9 @@ class DistController extends Controller {
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $dist = M('tms_delivery')->field('id,mobile,dist_id,user_id')->where($map)->find();// 取出当前提货单信息
         unset($map['dist_code']);
+        $sign = M('tms_sign_list')->field('delivery_time,created_time')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
         $map['mobile'] = session('user.mobile');
+        $map['created_time'] = array('between',$sign['created_time'].','.$sign['delivery_time']);
         $dist_all = M('tms_delivery')->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
         unset($map);
         if (!empty($dist)) {//若该配送单已被认领
