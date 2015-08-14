@@ -320,6 +320,49 @@ class DistributionLogic {
         $return = true;
         return $return;
     }
+
+    /**
+     * 根据出库单ID判断PACK区库存是否充足,在内存中模拟计算分配量
+     * @param int $id 出库单ID
+     */
+    public function check_pack_qty($id = 0,&$sku_qty=array()) {
+        $return = false;
+        
+        if (empty($id)) {
+            return $return;
+        }
+        $detail = $this->get_out_detail(array($id));
+        $location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
+        foreach ($detail as $value) {
+            $wh_id = session('user.wh_id');
+            $pro_code =  $value['pro_code'];
+            if(!array_key_exists($pro_code, $sku_qty)){
+                $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
+                        array('wh_id'=>session('user.wh_id'),
+                            'pro_code'=>$v['pro_code'],
+                            'location_code'=>'PACK',
+                            'stock_status'=>'qualified')
+                    );
+                //累加库存量集合
+                $total_stock_qty=0;
+                foreach($stock_infos as $stock_info){
+                    $total_stock_qty += ($stock_info['stock_qty'] - $stock_info['assign_qty']);
+                }
+                $sku_qty[$pro_code] = $total_stock_qty
+            }
+            $info = array();
+            $info['wh_id'] = session('user.wh_id');
+            $info['pro_code'] = $value['pro_code'];
+            $info['pro_qty'] = $value['order_qty'];
+            $info['location_ids'] = $location_ids;
+            $result = A('Stock', 'Logic')->outStockBySkuFIFOCheck($info);
+            if ($result['status'] <= 0) {
+                return $return;
+            }
+        }
+        $return = true;
+        return $return;
+    }
         
     /**
      * 根据线路id获取线路名称
