@@ -90,8 +90,9 @@ class DistDriver extends Controller {
             $wA = A('Wms/Distribution','Logic');
             $dist = $wA->distInfo($id);
             $yestoday = date('Y-m-d',strtotime('-1 Days'));
+            if(!empty($this->error)) {
 
-            if (empty($dist)) {
+            } elseif (empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
             } elseif ($dist['status'] == '1') {
                 // 未发运的单据不能被认领
@@ -100,7 +101,7 @@ class DistDriver extends Controller {
                 //已配送或已结算的配送单不能认领
                 $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             } elseif (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date)) {
-                    //$this->error = '提货失败，该配送单已过期';
+                    $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if (empty($this->error)) {
