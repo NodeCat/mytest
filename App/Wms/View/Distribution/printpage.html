@@ -47,7 +47,7 @@
             <td width="5%">重量</td>
           </tr>
         </thead>
-        <volist name="attrs['orders']" id="order">{:dump($order)}
+        <volist name="attrs['orders']" id="order">
           <volist name="order['detail']" id="detail" key="k">	
           	<tr class="order_list_td">
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
