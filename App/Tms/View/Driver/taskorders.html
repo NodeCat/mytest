@@ -1,0 +1,113 @@
+<include file="Index:nav-cur" />
+<div class="col-xs-12">
+    <div class="row-fluid">
+        <div class="input-group">
+          <span class="input-group-addon">{$dist['dist_id']}</span>
+          <span class="input-group-addon">{$dist['dist_code']}</span>
+          <input type="text" class="form-control input-lg" placeholder="订单数" value="{$taskCount} 任务" readonly>
+        </div>
+    </div>
+  <form class="form-horizontal form-pda form-scan" action="__SELF__" method="POST">
+    <input type="hidden" name="t" value="login" />
+    <div class="row-fluid">
+      <div class="col-xs-12">
+        <div class="form-group">
+          <div class="input-group">
+            <span class="input-group-addon">
+              <i class="glyphicon glyphicon-search">
+              </i> 筛选
+            </span>
+            <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda"
+            id="code" name="code" placeholder="请输入任务id">
+            <span class="input-group-btn">
+              <button class="btn btn-lg btn-default" id="btn-clear" type="button">
+                <i class="glyphicon glyphicon-remove">
+                </i>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="clearfix">
+      </div>
+    </div>
+    <br/>
+  </form>
+</div>
+
+<div class="col-xs-12" id="orders">
+
+  <!-- <if condition="$signed eq 1">
+  <botton id="start-task" class='btn btn-default btn-md btn-block disabled' data-distid="{$dist['dist_id']}" >任务已开始</botton>
+  <elseif condition="$signed eq 2"/>
+  <else />
+    <botton id="start-task" class='btn btn-success btn-md btn-block' data-distid="{$dist['dist_id']}" >开始任务</botton>
+  </if> -->
+  <br />
+  <volist name="data" id="vo">
+    <div class="panel panel-default">
+        <div class="list-group-item list-group-item-inf">
+          <h4 class="list-group-item-heading">
+            <small class="order-id">
+              {$vo.id}
+            </small>
+            <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
+              【{$vo.name}】
+              <i class="glyphicon glyphicon-map-marker">
+              </i>
+              <span>
+                <small>
+                  导航
+                </small>
+              </span>
+            </a>
+            <span class="badge">{$vo.status}</span>
+          </h4>
+          <!-- <a class="report" data-userid="{$vo.user_id}">
+          <i style="color:red"class="glyphicon glyphicon-remove-circle">
+          </i>
+            <span >
+              地址报错
+            </span>
+          </a> -->
+          <if condition="$vo.status eq '派遣中'">
+            <botton style="float:right;" class="btn btn-primary task-sign" data-queue="{$vo.queue}" data-id="{$vo.id}" data-key="{$key}" data-distid="{$dist['dist_id']}" data-pid="{$vo.pid}">签到</botton>
+          <else/>
+            <botton style="float:right;" data-key="{$key}" class='btn btn-default task-sign disabled'>已签到</botton>
+          </if>
+          <hr/>
+          <i class="glyphicon glyphicon-user"></i>
+          {$vo.customer} &nbsp;&nbsp;
+          <i class="glyphicon glyphicon-phone"></i>
+          <a href="tel:{$vo.mobile}" class="user-mobile">
+            <empty name="vo['mobile']">
+             无 &nbsp;
+            <else />
+             {$vo.mobile} &nbsp;
+            <i class="glyphicon glyphicon-earphone"></i>
+            <small>拨号</small>
+          </empty>
+          </a>
+        </div>
+      </div>
+      <notempty name="vo['remarks']">
+        <div class="panel-footer">
+          <i class="glyphicon glyphicon-comment">
+          </i>
+          {$vo.remarks}
+        </div>
+      </notempty>
+    </volist>
+<!--     <if condition="$over eq 1">
+      <botton id="sign-finished" class='btn btn-default btn-md btn-block disabled' data-distid="{$dist['dist_id']}" >任务已结束</botton>
+    <else />
+      <botton id="sign-finished" class='btn btn-primary btn-md btn-block' data-distid="{$dist['dist_id']}" >任务结束</botton>
+    </if> -->
+    <br/>
+</div>  
+  <style type="text/css">
+    hr{ margin-top: 10px; margin-bottom: 10px; } form.order ul.list-group{
+    margin-bottom: 0px; }
+  </style>
+
+<include file="jsfooter" />

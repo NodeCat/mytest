@@ -64,14 +64,11 @@ class DispatchController extends \Common\Controller\AuthController{
                 $map['userid'] = NULL;
             }
         }
-        $map['is_deleted'] = '0';
+        $map['is_deleted'] = 0;
         //把对应仓库的用户签到信息取出来
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
-        unset($M);
         $M = M('tms_delivery');
-        unset($value);
-        unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
             $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
@@ -88,11 +85,13 @@ class DispatchController extends \Common\Controller\AuthController{
             $value['delivering']    = 0;// 配送中  
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
-                $delivery = $A->deliveryCount($val['dist_id']);
-                $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                $value['delivering']    += $delivery['delivery_count']['delivering'];        
+                if ($val['type'] == '0') {
+                    $delivery = $A->deliveryCount($val['dist_id']);
+                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
+                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
+                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
+                    $value['delivering']    += $delivery['delivery_count']['delivering'];
+                }            
                 if (empty($val['line_name'])) {// 配送路线为空就跳过
                     continue;
                 }
@@ -173,7 +172,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
-        $D=D("TmsSignList");
+        $D = D("TmsSignList");
         $sign_date = I('post.sign_date', '' , 'trim');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
@@ -207,7 +206,7 @@ class DispatchController extends \Common\Controller\AuthController{
             }
         }
         //把对应仓库的用户签到信息取出来
-        $map['is_deleted'] = '0';
+        $map['is_deleted'] = 0;
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($M);
         $M = M('tms_delivery');
@@ -231,11 +230,13 @@ class DispatchController extends \Common\Controller\AuthController{
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
                  // dump($val);exit;
-                $delivery = $A->deliveryCount($val['dist_id']);
-                $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                $value['delivering']    += $delivery['delivery_count']['delivering'];        
+                if ($val['type'] == '0') {
+                    $delivery = $A->deliveryCount($val['dist_id']);
+                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
+                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
+                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
+                    $value['delivering']    += $delivery['delivery_count']['delivering'];
+                }            
                 if(empty($val['line_name'])){// 配送路线为空就跳过
 
                     continue;

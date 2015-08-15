@@ -58,7 +58,7 @@ class IndexDriver extends Controller {
                 $user['mobile'] = $code;
                 $M1=M('TmsUser');
                 $data=$M1->field('id,username')->where($user)->order('created_time DESC')->find();          
-                if($data['id']){ // 如果以前签到过
+                if ($data['id']) { // 如果以前签到过
                     $user['username'] = $data['username'];// 把用户名写入session
                     $user['id'] = $data['id'];      //把司机id写入session，键名是id，不是uid，需要区别业务人员
                     $date = date('Y-m-d H:i:s',NOW_TIME);
@@ -75,13 +75,13 @@ class IndexDriver extends Controller {
                     $M = M('TmsSignList');
                     $id = $M->field('id')->order('created_time DESC')->where($map)->find();
                     //如果今天已经签到过了那就改成最新的签到时间
-                    if($id['id']){
+                    if ($id['id']) {
                         $userid['id']=$id['id'];
                         unset($userid['created_time']);
                         $M->save($userid);
                         session('user',$user);
                         $this->redirect('delivery');
-                    }else{
+                    } else {
                         if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
                             $userid['period'] = '上午';
                         } else {
@@ -91,15 +91,13 @@ class IndexDriver extends Controller {
                         session('user',$user);
                         $this->redirect('delivery');
                     }
-                }else{
+                } else {
                     $this->user=$user;
                     $this->title='信息登记';
-
                     $cat = A('Common/Category','Logic');
                     $this->carType = $cat->lists('car_type');
                     $this->carFrom = $cat->lists('platform');
                     $this->warehouse = A('Wms/Warehouse','Logic')->lists();
-
                     $this->display('Driver/register');
                 }
                     
@@ -162,13 +160,9 @@ class IndexDriver extends Controller {
 
     // 个人信息
     public function person(){
-        unset($M);
-        $M = M('TmsUser');
-        unset($map);
         $map['mobile']=session('user.mobile');
-        $data= $M->where($map)->order('updated_time')->find();
+        $data= M('TmsUser')->where($map)->order('updated_time')->find();
         $this->title='个人信息';
-        
         $cat = A('Common/Category','Logic');
         $this->carType = $cat->lists('car_type');
         $this->carFrom = $cat->lists('platform');
@@ -236,11 +230,10 @@ class IndexDriver extends Controller {
             $data = I('post.');
             $data['created_time'] = $date;
             $data['updated_time'] = $date;
-            unset($M);
             $M = M('TmsUser');
             $data = $M->create($data);
             $res = $M->add($data);
-            if($res){
+            if ($res) {
                 unset($user);
                 $user['username'] = $data['username'];
                 $user['mobile']   =$data['mobile'];
@@ -248,9 +241,8 @@ class IndexDriver extends Controller {
                 session('user',$user);
                 $userid = $M->field('id')->where($user)->find();
                 $data['userid'] = $userid['id'];
-                unset($M);
-                $M=M('TmsSignList');
-                if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                $M = M('TmsSignList');
+                if (strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
                     $data['period'] = '上午';
                 } else {
                     $data['period'] = '下午';
@@ -258,7 +250,7 @@ class IndexDriver extends Controller {
                 $M->data($data)->add();
                 $this->redirect('delivery');
 
-            }else{
+            } else {
 
                 session(null);
                 session('[destroy]');
@@ -415,8 +407,6 @@ class IndexDriver extends Controller {
         $this->success("交货申请已收到");
     }
 
-
-
     // 地图模式
     public function navigation() {
         //如果不是ajax请求
@@ -430,7 +420,7 @@ class IndexDriver extends Controller {
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $map['status'] = '1';
-        unset($M);
+        $map['type'] = '0';
         $M = M('tms_delivery');
         $data = $M ->where($map)->select();
         unset($map);
