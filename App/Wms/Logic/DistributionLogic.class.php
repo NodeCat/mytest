@@ -1278,6 +1278,35 @@ class DistributionLogic {
     }
 
     /**
+     * [getAllWarehouse 获取所有仓库信息]
+     * @return [type] [description]
+     */
+    public function getAllWarehouse()
+    {
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $res = $M->where($map)->select();
+        return $res;
+    }
+
+    /**
+     * [getWarehouseById 根据仓库ID获取仓库名称]
+     * @param  [type] $wh_id [description]
+     * @return [type]        [description]
+     */
+    public function getWarehouseById($id)
+    {
+        if (empty($id)) {
+            return '';
+        }
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $res = $M->field('name')->where($map)->find();
+        return $res['name'];
+    }
+    
+    /*
     * 根据配送id，查询当前详情，更新配送单主表数据
     * @param $ids = array()
     * @return true/false

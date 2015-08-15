@@ -1,0 +1,480 @@
+
+<div class="table-responsive" >
+  <style type="text/css">
+    body{
+      margin:0;
+      height:100%;
+      width:100%;
+      position:absolute;
+    }
+    #mapContainer{
+      position: absolute;
+      top:0;
+      left: 0;
+      right:0;
+      bottom:0;
+      position: 9999999;
+    }
+    
+    #tip{
+      height: 30px;
+      background-color: #fff;
+      padding-left: 10px;
+      padding-right: 10px;
+      position:absolute;
+      font-size: 12px;
+      right: 10px;
+      bottom: 30px;
+      border-radius: 3px;
+      line-height: 30px;
+      border:1px solid #ccc;
+    }
+    .normal-node{
+      position:relative;
+      margin-right:10px;
+      margin-top:5px;
+    }
+
+  </style>
+  <form action="__SELF__" method="POST" class="form-inline" id="task-form">      
+    <table class="table table-bordered" data-num="0">
+          <tr class="text-center">
+            <td colspan="4">
+              <div class="task-head row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <h2 class="text-center col-lg-4 col-md-4 col-md-offset-4 col-lg-offset-4">新建派车任务</h2>
+                <a class='btn btn-success col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="copyTask(this)">复制</a>
+                <a class='btn btn-primary col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick="subForm()" >提交</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">任务名称(10字以内)
+                    <span class="text-danger">*</span>&nbsp;
+                  </label>
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                  <input type="text" name="task_name[]" class="form-control require" style="width:100%;" placeholder="输入任务名称">
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">任务类型
+                  <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control require"  id="task_type" name="task_type[]" data-val="">
+                  <option value="">选择状态</option>
+                  <volist name='task_types' id='vo'>
+                  <option value="{$vo.id}">{$vo.name}</option>
+                  </volist>
+                </select>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">仓库
+                  <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control require"  id="warehouse" name="wh_id[]" data-val="">
+                  <option value="">选择仓库</option>
+                  <volist name='warehouses' id='vo'>
+                  <option value="{$vo.id}">{$vo.name}</option>
+                  </volist>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">用车部门
+                  <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control require"  id="apply_department" name="apply_department[]" data-val="">
+                  <option value="">选择用车部门</option>
+                  <option value="物流部">物流部</option>
+                  <option value="仓储部">仓储部</option>
+                  <option value="技术部">技术部</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">用车申请人
+                  <span class="text-danger">*</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <input type="txt" name="apply_user[]" class="form-control require" placeholder="用车申请人" maxlength="4">
+              </div>
+            </td> 
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">申请人联系方式
+                  <span class="text-danger">*</span>&nbsp;
+                </label>
+                <input type="txt" name="apply_mobile[]" class="form-control require" placeholder="申请人联系方式" maxlength="18">
+              </div>
+            </td> 
+          </tr>
+          <tr>
+            <td>
+              <div class="form-group" style="position:relative;">
+                <label for="" class="control-label">期望用车时间
+                  <span class="text-danger">*</span>&nbsp;
+                </label>
+                <input type="txt" rel="datepicker" name="op_time[]" value="" class="form-control input-md form_datetime require" placeholder="选择日期">
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">期望车型
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control"  id="expect_car_type" name="expect_car_type[]" data-val="">
+                  <option value="">选择车型</option>
+                  <volist name='car_types' id='vo'>
+                  <option value="{$vo.id}">{$vo.name}</option>
+                  </volist>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">备注(长期/临时)
+                    &nbsp;&nbsp;&nbsp;
+                </label>
+                <select autocomplete="off" class="form-control"  id="remark" name="remark[]" data-val="">
+                  <option value="0">选择备注</option>
+                  <option value="长期">长期</option>
+                  <option value="临时">临时</option>
+                </select>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">预计运费(元)
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <input type="txt" name="expect_fee[]" class="form-control" placeholder="自动计算" readonly>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3">
+              <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                  <label style="line-height:2.2" for="" class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-2">用车事由</label>
+                <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                  <input type="text" name="reason[]" class="form-control" style="width:100%;" placeholder="用车事由">
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <label for="" class="control-label">预期平台
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </label>
+                <input type="txt" class="form-control expect_platform" placeholder="自动生成" readonly>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="4" id="sel-node">
+              <div class="form-group">
+                <label for="" class="control-label">选择记录点:</label>
+                <div class="form-group start-node normal-node open">
+                  <input type="txt" class="form-control require" placeholder="选择起始任务点" data-shop_name="出发">
+                  <ul class="dropdown-menu hidden" style="margin-top:-1px;">
+                  </ul>
+                </div>&nbsp;&nbsp;
+                <div class="form-group normal-node open" style="">
+                  <input type="txt" class="form-control require" placeholder="选择记录点">
+                  <a class="btn btn-xs btn-danger" onclick="removeNode(this)" style="position:absolute;top:-5px;right:-5px;"><span class="glyphicon glyphicon-remove" ></span></a>
+                    <ul class="dropdown-menu hidden" style="margin-top:-1px;">
+                    </ul>
+                </div>
+                <div class="form-group end-node normal-node open">
+                <input type="txt" class="form-control require" placeholder="选择结束任务点" data-shop_name="完成">
+                <ul class="dropdown-menu hidden" style="margin-top:-1px;">
+                </ul>
+                </div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="javascript:void(0);" class="btn btn-primary" onclick="addNode(this)">+任务点</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="4">
+              注：①申请最长期限为一个月，超出时限需重新申请；②申请用车3天（含）以上为长期申请
+            </td>
+          </tr>
+      </table>
+      <div id="task-node" class="hidden">
+        <div class="form-group normal-node open">
+            <input type="txt" class="form-control" placeholder="选择记录点">
+            <a class="btn btn-xs btn-danger" onclick="removeNode(this)" style="position:absolute;top:-5px;right:-5px;"><span class="glyphicon glyphicon-remove" ></span></a>
+            <ul class="dropdown-menu hidden" style="margin-top:-1px;">
+            </ul>
+          </div>
+      </div>
+    </form>
+    <div class="hidden" id="mapContainer"></div>
+    </div>
+    <style>
+      .form-inline .form-control{
+        width: 172px;
+      }
+    </style>
+<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=67f642a47ca5d2d0b4c4a272baeda00f"></script>
+<script type="text/javascript">
+    var num = 0;
+    $('select').change(function(){
+      var val = $(this).val();
+      $(this).attr('data-val',val);
+    })
+    //表单验证提交
+    function subForm(){
+      var require = $(".require"),
+          flag = 1;
+
+      require.each(function(){
+        var va = $(this).val();
+        if(!va){
+          flag = 0;
+          alert('请将必选项填写完整');
+          $(this).focus();
+          return false;
+        }
+      })
+      if(flag === 0){
+        return false;
+      }
+      var form = $("#task-form").serializeArray();
+      $(".normal-node").each(function(){
+        var input = $(this).find('input');
+        var tnum = input.parents('table').data('num');
+        var shop_name = input.data('shop_name'),
+            name = input.data('name')?input.data('name'):'',
+            mobile = input.data('mobile')?input.data('mobile'):'',
+            lat = input.data('lat')?input.data('lat'):'',
+            lng = input.data('lng')?input.data('lng'):'';
+        if(shop_name){
+          var node_info = shop_name+','+name+','+mobile+','+lat+','+lng;
+          shop_nameObj = {name:"node["+tnum+"][]",value:node_info};
+          form.push(shop_nameObj);
+        }
+      })
+      addr = "{:U('addTask')}";
+      $.ajax({
+        url:addr,
+        type:'post',
+        data:form,
+        dataType:'json',
+        cache:false,
+        success:function(res){
+          if(res.status == 0){
+            location.href = "{:U('index')}";
+          }else{
+            alert(res.msg);
+          }
+        }
+      })
+    }
+    //复制任务
+    function copyTask(obj){
+      num ++;
+      var cancleBtn = "<a class='btn btn-danger col-lg-1 col-md-1 col-lg-offset-1 col-md-offset-1' onclick='delTask(this)'>移除</a>";
+      var task = $(obj).parents('table').clone();
+      task.find('.task-head a').remove();
+      task.find('.task-head').append(cancleBtn);
+      task.attr('data-num',num);
+      task.find('select').each(function(){
+        var val = $(this).data('val');
+        $(this).find("option[value="+val+"]").attr('selected',true);
+      })
+      $('#task-form').append(task);
+
+    }
+    //移除任务
+    function delTask(obj){
+      num --;
+      $(obj).parents('table').remove();
+    }
+    //添加任务点
+    function addNode(obj){
+      var node = $('#task-node').html();
+      $(obj).siblings('.end-node').before(node);
+    }
+    //移除任务点
+    function removeNode(obj){
+      var input = $(obj).siblings('input');
+      if(input.data('lat') && input.data('lng')){
+        var nodes = input.parents('table').find('.normal-node input');
+        var latlng = [];
+        nodes.each(function(){
+          var lat = $(this).data('lat'),
+              lng = $(this).data('lng');
+          if(lat && lng){
+            tmp = {lat:lat,lng:lng};
+            latlng.push(tmp);
+          }
+        })
+        if(latlng.length > 1){
+          dealNode(input,latlng,1);
+        }else{
+          obj.parents('table').find("input[name='expect_fee[]']").val('');
+        }
+      }else{
+        $(obj).parent('.normal-node').remove();
+      }
+    }
+    $("select[name='expect_car_type[]']").on('change',function(){
+      var nodes = $(this).parents('table').find('.normal-node input');
+      var latlng = [];
+      nodes.each(function(){
+        var lat = $(this).data('lat'),
+            lng = $(this).data('lng');
+        if(lat && lng){
+          tmp = {lat:lat,lng:lng};
+          latlng.push(tmp);
+        }
+      })
+      if(latlng.length > 1){
+        dealNode($(this),latlng,2);
+      }else{
+        $(this).parents('table').find("input[name='expect_fee[]']").val('');
+      }
+    })
+    //任务节点输入处理
+    $('#task-form').on('input','.normal-node input',function(){
+      var _this = $(this);
+      var param = {keyword:_this.val()};
+      $.ajax({
+        url:"{:U('getCustomerList')}",
+        type:'get',
+        dataType:'json',
+        data:param,
+        success:function(res){  
+          var info = '';
+          for(var c in res){
+            info += '<li data-shop_name="'+res[c].shop_name+'" data-name="'+res[c].name+'" data-mobile="'+res[c].mobile+'" data-lat="'+res[c].lat+'" data-lng="'+res[c].lng+'"><a href="javascript:void(0);">'+res[c].shop_name+'，<span class="text-info">'+res[c].name+' ('+res[c].mobile+') </span></a></li>';
+          }
+          if(info == ''){
+            info = '<li class="disabled"><a href="javascript:void(0);">没有相关记录</a></li>'
+          }
+          _this.siblings('ul').html(info).removeClass('hidden').focusin();
+
+        }
+      })
+      //选择节点单击
+      _this.siblings('ul').on('click','li',function(){
+        var li = $(this);
+        var elat = li.data('lat'),
+            elng = li.data('lng'),
+            input = li.parent().siblings('input');
+        input.removeAttr('data-lng').removeAttr('data-lat');
+        var nodes = li.parents('table').find('.normal-node input');
+        var latlng = [{lat:elat,lng:elng}];
+        nodes.each(function(){
+          var lat = $(this).data('lat'),
+              lng = $(this).data('lng');
+          if(lat && lng){
+            tmp = {lat:lat,lng:lng};
+            latlng.push(tmp);
+          }
+        })
+        if(latlng.length > 1){
+          dealNode(li,latlng,0);
+        }else{
+          //不触发运费计算
+          choice(li);
+        }
+        return false;
+      })
+      //任务节点列表消失
+      $(window).on('click',function(e){
+        var t = $(e.target);
+        var pa = t.parents('.normal-node');
+        if(pa.length == 0){
+          var ul = $('ul.dropdown-menu');
+          ul.each(function(){
+            if(! $(this).hasClass('hidden')){
+              $(this).addClass('hidden');
+            }
+          })
+        }
+      })
+    })
+  //单击选择节点后，页面效果
+  function choice(obj){
+    var shop_name = obj.data('shop_name'),
+            name = obj.data('name'),
+            mobile = obj.data('mobile'),
+            lat = obj.data('lat'),
+            lng = obj.data('lng');
+        obj.parent().siblings('input').attr('data-shop_name',shop_name).attr('data-name',name).attr('data-mobile',mobile).attr('data-lat',lat).attr('data-lng',lng).attr('data-action','node').val(shop_name);
+        obj.parent().addClass('hidden');
+  }
+  function calFee(obj,distance,del){
+    var expect_car_type = obj.parents('table').find("select[name='expect_car_type[]']");
+    var type_id = expect_car_type.val();
+    if(!type_id){
+      alert('请先选择期望车型来预估运费');
+      expect_car_type.focus();
+      if(del == 0){
+        obj.parent().siblings('input').removeAttr('data-shop_name').removeAttr('data-name').removeAttr('data-mobile').removeAttr('data-lat').removeAttr('data-lng').removeAttr('data-action').val('');
+      }
+    }else{
+      var params = {
+        type_id:type_id,
+        distance:distance
+      }
+      $.ajax({
+        url:"{:U('getExpectFee')}",
+        type:'post',
+        dataType:'json',
+        data:params,
+        success:function(res){
+          if(res.status == 0){
+            expect_fee = parseInt(res.data['price']);
+            obj.parents('table').find("input[name='expect_fee[]']").val(expect_fee);
+            obj.parents('table').find('.expect_platform').val(res.data['car_platform']);
+            if(del == 1){
+              obj.parent('.normal-node').remove();
+            }
+          }else{
+            alert(res.msg);
+            obj.parents('table').find("input[name='expect_fee[]']").val('');
+            obj.parents('table').find('.expect_platform').val('');
+          }
+        }
+      })
+    }
+  }
+  //单击选择节点后，页面效果+运费计算
+  function dealNode(obj,latlng,del){
+    var map,route,marker;
+    //基本地图加载
+    map = new AMap.Map("mapContainer", {
+      resizeEnable: false
+    });
+    //绘制初始路径
+    var path = [];
+    for(var i=0;i<latlng.length;i++){
+      path.push(new AMap.LngLat(latlng[i].lng,latlng[i].lat));
+    }
+    console.log(path);
+    map.plugin("AMap.DragRoute",function(){
+      route = new AMap.DragRoute(map, path, AMap.DrivingPolicy.LEAST_TIME); //构造拖拽导航类
+      AMap.event.addListener(route, "complete", routeCallBack);
+      route.search();
+    });
+    function routeCallBack(data){
+      if(del == 0){
+        choice(obj);
+      }
+      distance =  data.data.routes[0].distance;
+      distance = parseInt(distance/1000);
+      calFee(obj,distance,del);
+    }
+  }
+</script>
+
