@@ -333,7 +333,6 @@ class DistributionLogic {
             return $is_enough;
         }
         $detail = $this->get_out_detail(array($id));
-        $location_ids = A('Location','Logic')->getLocationIdByAreaName(['PACK']);
         foreach ($detail as $value) {
             $wh_id = session('user.wh_id');
             $pro_code =  $value['pro_code'];

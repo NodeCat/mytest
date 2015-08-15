@@ -1078,6 +1078,9 @@ class StockLogic{
             $map['stock.pro_code'] = array('in',$pro_codes);
         }
         //根据库位编号 查询对应的location_id
+        /*
+        * @TODO: 下面的逻辑是有问题的。强制要求库位名称有特征。而不是传入了一个区域。
+        */
         if($location_code){
             $location_map['code'] = array('LIKE','%'.$location_code.'%');
             $location_ids = M('Location')->where($location_map)->getField('id',true);
