@@ -519,7 +519,7 @@ class DistributionController extends CommonController {
         $make_ids = array(); //带生产的出库单ID
         $pass_ids = array();  //分拣出库单ID
         $reduce_ids = array(); //库存不足的出库单ID
-        $g_sku_qty =array();
+        $g_sku_qty =array(); //辅助记录PACK区库存
         foreach ($bill_out_status as $key => $val) {
             if ($val['status'] == 3) { //状态3 波此中 
                 $wavein_ids[] = $val['id'];

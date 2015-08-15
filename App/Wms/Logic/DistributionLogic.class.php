@@ -326,7 +326,7 @@ class DistributionLogic {
      * @param int $id 出库单ID
      * @param array $sku_qty 一个辅助的数组，用来记录这一批库存检查过程中每个sku的库存量；
      */
-    public function check_pack_qty($id = 0,&$sku_qty=array()) {
+    public function check_pack_qty($id = 0,&$sku_qty) {
         $is_enough = true;
         
         if (empty($id)) {
