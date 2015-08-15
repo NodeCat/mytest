@@ -613,6 +613,8 @@ class StockLogic{
             $src_stock_list[$key]['stock_qty'] = formatMoney($value['stock_qty'], 2);
             $src_stock_list[$key]['assign_qty'] = formatMoney($value['assign_qty'], 2);
             $src_stock_list[$key]['prepare_qty'] = formatMoney($value['prepare_qty'], 2);
+            //生产日期 liuguangping
+            $src_stock_list[$key]['product_date'] = $value['product_date'];
         }
 
         //按照现进先出原则 减去最早的批次量
@@ -680,6 +682,7 @@ class StockLogic{
             $add_info['location_id'] = $param['dest_location_id'];
             $add_info['pro_code'] = $param['pro_code'];
             $add_info['batch'] = $src_stock['batch'];
+            $add_info['product_date'] = $src_stock['product_date'];
             $add_info['status'] = $dest_location_info['status'];
             $add_info['stock_qty'] = $param['variable_qty'];
             $add_info['assign_qty'] = 0;
@@ -754,6 +757,8 @@ class StockLogic{
                         //新增目标库存记录
                         $stock_add_data = $map;
                         $stock_add_data['stock_qty'] = $param['variable_qty'];
+                        //liuguangping 加入成产日期
+                        $stock_add_data['product_date'] = $src_stock['product_date'];
                         $stock = D('Stock');
                         $stock_add_data = $stock->create($stock_add_data);
                         $stock->data($stock_add_data)->add();
