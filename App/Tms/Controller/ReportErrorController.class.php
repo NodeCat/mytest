@@ -17,7 +17,7 @@ class ReportErrorController extends Controller{
 	);
 	public function index(){
 		$this->title = "导出位置报错信息";
-		$this->display('export');
+		$this->display('ReportError/export');
 	}
 	public function export(){
 		$this->title = "导出位置报错信息";
