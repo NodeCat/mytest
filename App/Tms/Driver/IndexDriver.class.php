@@ -4,7 +4,7 @@ use Think\Controller;
 class IndexDriver extends Controller {
     protected function _initialize() {
         layout('siji');
-
+        C('SITE_TITLE' , '司机配送系统 2.0');
         if (session('?user') && !session('?user.mobile')) {
             $this->redirect('Dispatch/index');exit();
         }
