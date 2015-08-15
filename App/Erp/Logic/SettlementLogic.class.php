@@ -49,7 +49,7 @@ class SettlementLogic
     public function getStockInListDetail($code)
     {
         $M      = M('erp_settlement_detail');
-        $field = 'erp_settlement_detail.*,stock_purchase.id as pid,erp_purchase_refund.id as refund_id, stock_purchase_detail.pro_code, stock_purchase_detail.pro_name, stock_purchase_detail.pro_qty, stock_purchase_detail.price_unit, stock_purchase_detail.price_subtotal';
+        $field = 'erp_settlement_detail.*,stock_purchase.id as pid,erp_purchase_refund.id as refund_id, stock_purchase_detail.pro_code, stock_purchase_detail.pro_name, stock_purchase_detail.pro_qty, stock_purchase_detail.price_unit, stock_purchase_detail.price_subtotal, stock_purchase_detail.created_time as stock_in_time';
         $where['erp_settlement_detail.code']  = $code;
         $where['erp_settlement_detail.order_type'] = 1;
         $join  = array(
