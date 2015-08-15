@@ -532,7 +532,7 @@ class DistributionController extends CommonController {
             } elseif ($val['status'] == 5) {
                 //分拣完成
                 //判断分拣完成的库存够不够  防止发生损毁
-                $result_detail = $D->check_pack_qty($val['id']);
+                $result_detail = $D->check_pack_qty($val['id'],$g_sku_qty);
                 if ($result_detail) {
                     //库存充足
                     $pass_ids[] = $val['id'];
