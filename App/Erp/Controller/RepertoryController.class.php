@@ -129,7 +129,7 @@ class RepertoryController extends CommonController
             $_params     = I('get.');
             $_time       = explode(',', $_params['snap_time']);
             $start_time  = $_time[0];
-            $end_time    = $_time[1];
+            $end_time    = date("Y-m-d",strtotime($_time[1])-86400);
 
             if (empty($id) || empty($start_time) || empty($end_time)) {
                 $this->msgReturn(0,'param_error');

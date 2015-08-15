@@ -113,18 +113,15 @@ class PurchasesController extends CommonController {
         }
         $model = M('stock_bill_in_detail');
         //获取父SKU名称和规格
-        $where['pro_code'] = array('in', implode(',', $p_sku));
-        $filed = 'pro_code, pro_name, pro_attrs';
-        $p_list = $model->where($where)->group('pro_code')->getField($filed);
+        $p_sku_info = getSkuInfoByCodeArray($p_sku);
         //获取子SKU名称和规格
-        $where['pro_code'] = array('in', implode(',', $c_sku));
-        $c_list = $model->where($where)->group('pro_code')->getField($filed);
+        $c_sku_info = getSkuInfoByCodeArray($c_sku);
 
         foreach ($data as &$d_data) {
-            $d_data['p_pro_name'] = $p_list[$d_data['pro_code']]['pro_name'];
-            $d_data['p_pro_attrs'] = $p_list[$d_data['pro_code']]['pro_attrs'];
-            $d_data['c_pro_name'] = $c_list[$d_data['c_pro_code']]['pro_name'];
-            $d_data['c_pro_attrs'] = $c_list[$d_data['c_pro_code']]['pro_attrs'];
+            $d_data['p_pro_name'] = $p_sku_info[$d_data['pro_code']]['name'];
+            $d_data['p_pro_attrs'] = $p_sku_info[$d_data['pro_code']]['pro_attrs_str'];
+            $d_data['c_pro_name'] = $c_sku_info[$d_data['c_pro_code']]['name'];
+            $d_data['c_pro_attrs'] = $c_sku_info[$d_data['c_pro_code']]['pro_attrs_str'];
         }
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';

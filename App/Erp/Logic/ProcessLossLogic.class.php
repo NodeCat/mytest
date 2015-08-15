@@ -9,11 +9,18 @@ namespace Erp\Logic;
 class ProcessLossLogic
 {
 
+    /**
+     * 返回库存损耗明细
+     * @param $code            SKU
+     * @param $start_time      开始时间
+     * @param $end_time        结束时间
+     * @return array
+     */
     public function getStockLoss($code, $start_time, $end_time)
     {
         $model = M('stock');
         $where['stock.is_deleted']  = 0;
-        $where['stock.location_id'] ='96';
+        $where['stock.location_id'] ='96';      //加工损耗区标记
         $where['stock.pro_code']    = array('in', $code);
         if (!empty($start_time) && !empty($end_time)) {
             $where['DATE_FORMAT(stock.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");

@@ -36,6 +36,7 @@ class SettlementController extends CommonController
         'code'              => '结算单号',
         'partner_name'      => '供应商',
         'created_time'      =>'创建时间',
+        'stock_in_time'     => '入库时间',
         'created_user'      => '创建人',
         'settlement_time'   => '结算时间',
         'settlement_user'   => '结算人',
@@ -172,8 +173,8 @@ class SettlementController extends CommonController
     protected function before_edit($data)
     {
         $logic   = D('Settlement','Logic');
-        $result1 = $logic->getStockInListDetail($data['code']);     //入库单明细
-        $result2 = $logic->getPurchaseListDetail($data['code']);    //采购单明细
+        $result1 = $logic->getStockInListDetail($data['code']);     //采购单明细
+        $result2 = $logic->getPurchaseListDetail($data['code']);    //入库单明细
         $result3 = $logic->getRefundListDetail($data['code']);      //冲红单明细
         $result4 = $logic->getPurchaseOutListDetail($data['code']); //退款单明细
 

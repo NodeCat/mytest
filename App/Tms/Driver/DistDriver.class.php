@@ -1,9 +1,9 @@
 <?php
-namespace Tms\Controller;
+namespace Tms\Driver;
 
 use Think\Controller;
 
-class DistController extends Controller {
+class DistDriver extends Controller {
 
 	//司机提货
     public function delivery() {
@@ -18,7 +18,7 @@ class DistController extends Controller {
             $map['created_time'] = array('between',$start_date.','.$end_date);
             $this->data  = M('tms_delivery')->where($map)->select();
             $this->title = '提货扫码';
-            $this->display('tms:delivery');
+            $this->display('Driver/delivery');
             exit;
         } elseif (IS_POST && !empty($id)) {
             $map['dist_id'] = $id;
@@ -35,7 +35,7 @@ class DistController extends Controller {
             unset($map);
             if (!empty($delivery)) {//若该配送单已被认领
                 if($delivery['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
-                    $this->error = '提货失败，该单据您已提货';
+                    $this->msgReturn('0', '提货失败，该单据您已提货');
                 }
                 else {
                     //如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
@@ -70,22 +70,22 @@ class DistController extends Controller {
             $wA = A('Wms/Distribution','Logic');
             $dist = $wA->distInfo($id);
             if (empty($dist)) {
-                $this->error = '提货失败，未找到该单据';
+                $this->msgReturn('0', '提货失败，未找到该单据');
             }
 
             if ($dist['status'] == '1') {
                 // 未发运的单据不能被认领
-                $this->error = '提货失败，未发运的配送单不能提货';
+                $this->msgReturn('0', '提货失败，未发运的配送单不能提货');
             }
             if ($dist['status'] == '3' || $dist['status'] == '4') {
                 //已配送或已结算的配送单不能认领
-                $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
+                $this->msgReturn('0', '提货失败，完成配送或结算的配送单不能再次提货');
             }
             $ctime = strtotime($dist['created_time']);
             $start_date1 = date('Y-m-d',strtotime('-1 Days'));
             $end_date1 = date('Y-m-d',strtotime('+1 Days'));
             if($ctime < strtotime($start_date1) || $ctime > strtotime($end_date1)) {
-                $this->error = '提货失败，该配送单已过期';
+                $this->msgReturn('0', '提货失败，该配送单已过期');
             }
             //添加提货数据
             if (empty($this->error)) {
@@ -195,20 +195,19 @@ class DistController extends Controller {
                     unset($map);
                 }
                 else {
-                    $this->error = "提货失败";
+                    $this->msgReturn('0', "提货失败");
                 }
             }
         }else{
-
-          $this->error = '提货失败,提货码不能为空';
+          $this->msgReturn('0', '提货失败,提货码不能为空');
         }
         if (empty($this->error)) {
             $map['mobile'] = session('user.mobile');
             $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id']);
+            $res = array('status' =>'1', 'msg' => '提货成功','code'=>$userid['id']);
         } else {
             $msg = $this->error;
-            $res = array('status' =>'0', 'message' =>$msg);
+            $res = array('status' =>'0', 'msg' =>$msg);
         }
         $this->ajaxReturn($res);     
     }
@@ -228,7 +227,7 @@ class DistController extends Controller {
             }
             if(!empty($this->error)) {
                 $this->title = "客户签收";
-                $this->display('tms:sorders');
+                $this->display('Driver/sorders');
                 exit();
             }
             $this->dist = $res;
@@ -317,7 +316,7 @@ class DistController extends Controller {
         $this->title = "客户签收";
         //电子签名保存接口
         $this->signature_url = C('TMS_API_PATH') . '/SignIn/signature';
-        $this->display('tms:sorders');
+        $this->display('Driver/sorders');
     }
 
     //司机签收
@@ -551,7 +550,7 @@ class DistController extends Controller {
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $this->data = M('tms_delivery')->where($map)->select();
         $this->title = '今日订单总汇';
-        $this->display('tms:report');
+        $this->display('Driver/report');
     }
 
     // 车单纬度统计
@@ -571,7 +570,7 @@ class DistController extends Controller {
         }
         if(!empty($this->error)) {
             $this->title = "客户签收";
-            $this->display('tms:orders');
+            $this->display('Driver/orders');
             exit();
         }
 
@@ -667,7 +666,23 @@ class DistController extends Controller {
         $this->list = $list;
         $this->back_lists = $arrays;
         $this->title =$res['dist_code'].'车单详情';
-        $this->display('tms:orderlist');
+        $this->display('Driver/orderlist');
     }
+
+    //统一的返回方法
+    protected function msgReturn($res, $msg='', $data = '', $url=''){
+        $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
+        if(IS_AJAX){
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
+        }
+        else if($res){ 
+                $this->success($msg,$url);
+            }
+            else{
+                $this->error($msg,$url);
+            }
+        exit();
+    }
+
 
 }
