@@ -421,7 +421,7 @@ class PurchaseController extends CommonController {
                 }
                 //已经收获
                 else {
-                    $this->msgReturn(0,'操作失败，采购单对应的到货单已收货。');
+                    $this->msgReturn(0,'操作失败，采购单对应的到货单已收货或已上架。');
                     //$A->finishByPurchase($id);
                 }
                 $this->msgReturn($res);
