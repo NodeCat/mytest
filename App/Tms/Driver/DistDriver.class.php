@@ -573,6 +573,7 @@ class DistDriver extends Controller {
         $start_date = date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
+        $this->userid = session('user.id');
         $this->data = M('tms_delivery')->where($map)->select();
         $this->title = '今日订单总汇';
         $this->display('Driver/report');
@@ -915,6 +916,7 @@ class DistDriver extends Controller {
         $this->ajaxReturn($return);
     }
 
+
     //任务结束
     public function signFinished()
     {
@@ -973,6 +975,4 @@ class DistDriver extends Controller {
         }
         $this->ajaxReturn($return);
     }
-
-
 }

@@ -7,7 +7,6 @@ class ListLogic{
     public function storge(){
         $storge=M('Warehouse');
         $storge=$storge->field('name')->select();
-
         return $storge;
     }
 
@@ -21,7 +20,6 @@ class ListLogic{
         $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
         $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->find();
-        
         return $batch['batch'];
     }
 
@@ -35,7 +33,6 @@ class ListLogic{
         $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
         $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->find();
-        
         return $batch['batch'];
     }
 
@@ -139,7 +136,6 @@ class ListLogic{
         //$map['type']   = '0';
         $data = M('tms_delivery')->where($map)->select();
         unset($map);
-        $A = A('Common/Order','Logic');
         $geo_array = array();
         $customer  = array();
         foreach ($data as $key => $value) {
@@ -151,13 +147,14 @@ class ListLogic{
                 $bills  = $A->billOut($map);
                 $orders = $bills['orders'];
                 foreach ($orders as $keys => $values) {
-                        $values = $values['order_info'];
+                    $values = $values['order_info'];
                     $values['geo'] = json_decode($values['geo'],TRUE);
                     $customer[$values['user_id']] = 1;//统计商家数量
                     //如果地址为空的话跳过
                     if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
                         continue;
                     }
+
                     $geo = $values['geo'];
                     $geo['order_id'] = $value['id'];
                     $geo['user_id']  = $values['user_id'];
