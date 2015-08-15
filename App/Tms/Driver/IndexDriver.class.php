@@ -274,7 +274,7 @@ class IndexDriver extends Controller {
      * @para：$dist_id,配送单id
      * $return: null
     */
-    public function deliver_goods(){
+    public function deliverGoods(){
         //配送单id
         $dist_id = I('get.dist_id/d',0);
         $fms_list = A('Fms/List','Logic');
@@ -481,7 +481,7 @@ class IndexDriver extends Controller {
     }
 
     //根据客户id和报错类型type保存报错信息
-    public function report_error(){
+    public function reportError(){
         $id = I('post.id');
         $type = I('post.type');
         if(empty($id) || empty($type)){
