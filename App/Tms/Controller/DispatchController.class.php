@@ -115,7 +115,7 @@ class DispatchController extends \Common\Controller\AuthController{
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
-        $this->display('tms:driverlist'); 
+        $this->display('Dispatch:driverlist'); 
     }
 
     // 司机轨迹页面的的输出
@@ -152,7 +152,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->customer_count = $customerAddress['customer_count'];
         $this->assign('address',$customerAddress['geo_arrays']);
         $this->assign('points',$location['points']);
-        $this->display('tms:line');
+        $this->display('Dispatch:line');
     }
 
      //导出司机信息
