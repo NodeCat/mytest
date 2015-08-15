@@ -99,6 +99,4 @@ class IndexController extends \Common\Controller\AuthController{
         $this->data = $data;
         $this->display('Dispatch/home');
     }
-
-
 }

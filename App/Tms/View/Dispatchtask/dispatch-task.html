@@ -1,0 +1,250 @@
+
+<div class="table-responsive" >
+    <h2 class="text-center">派车任务管理</h2>
+    <hr>
+    <form action="{:U('index')}" method="post" class="form-inline">
+    <div class="form-group row col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="text-center col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <notempty name="auth['addTask']">
+            <div class="col-lg-11 col-md-11 col-sm-11 col-xs-11">
+                <a class='btn btn-info pull-right' href="{:U('addTask')}" target="_blank">新建任务</a>
+            </div>
+            </notempty>
+            <notempty name="auth['saveFee']">
+            <div>
+                <a class='btn btn-success pull-right' onclick="editFee(this)">编辑运费</a>
+            </div>
+            </notempty>
+        </div>
+        <br />
+        <br />
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            
+            <select autocomplete="off" class="form-control"  id="wh_id" name="wh_id">
+                <option value="">选择仓库</option>
+                <volist name='warehouses' id='v'>
+                <option value="{$v.id}" <eq name="wh_id" value="$v['id']">selected="true"</eq> >{$v.name}</option>
+                </volist>
+            </select>&nbsp;
+            <input type="txt" rel="datepicker" name="created_time" value="{$created_time}" class="form-control input-md form_date" data-date-format="yyyy-mm-dd" placeholder="选择创建日期">&nbsp;
+            <select autocomplete="off" class="form-control"  id="task_type" name="task_type">
+                <option value="">选择任务类型</option>
+                <volist name='task_types' id='v'>
+                <option value="{$v.id}" <eq name="task_type" value="$v['id']">selected="true"</eq> >{$v.name}</option>
+                </volist>
+            </select>&nbsp;
+            <select autocomplete="off" class="form-control"  id="car_type" name="car_type">
+                <option value="">选择车型</option>
+                <volist name='car_types' id='v'>
+                <option value="{$v.id}" <eq name="car_type" value="$v['id']">selected="true"</eq> >{$v.name}</option>
+                </volist>
+            </select>&nbsp;
+            <select autocomplete="off" class="form-control"  id="platform" name="platform">
+                <option value="">选择平台</option>
+                <volist name='platforms' id='v'>
+                <option value="{$v.id}" <eq name="platform" value="$v['id']">selected="true"</eq> >{$v.name}</option>
+                </volist>
+            </select>&nbsp;
+            <select autocomplete="off" class="form-control"  id="status" name="status">
+                <option value="">选择状态</option>
+                <volist name='task_status' id='v'>
+                <option value="{$key}" <eq name="status" value="$key">selected="true"</eq> >{$v}</option>
+                </volist>
+            </select>&nbsp;
+            <input type="txt" name="apply_info" class="form-control" placeholder="申请人或申请人手机号" value="{$apply_info}">&nbsp;
+            <button class='btn btn-primary'>查询</button>
+        </div> 
+    </div>
+  </form>
+    <br />      
+    <br />
+    <br />
+    <br />
+    <table class="table table-bordered" style="text-align:center">
+        <!--<thead align="center">-->
+          <tr style="text-align:center;">
+            <th>序号</th>
+            <th>任务码</th>
+            <th>仓库</th>
+            <th>任务类型</th>
+            <th>申请时间</th>
+            <th>用车申请人</th>
+            <th>用车部门</th>
+            <th>期望用车时间</th>
+            <th>期望车型</th>
+            <th>预计费用(元)</th>
+            <th>部门审批人</th>
+            <th>物流审批人</th>
+            <th>平台</th>
+            <th>车型</th>
+            <th>司机姓名</th>
+            <th>司机手机号</th>
+            <th>运费(元)</th>
+            <th>里程(km)</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        <!--</thead>-->
+        <tbody>
+          <volist name='list' id="vo">
+          <tr>
+            <th scope="row">{$vo.id}</th>
+            <td>{$vo.code}</td>
+            <td>{$vo.warehouse_name}</td>
+            <td>{$vo.task_type_name}</td>
+            <td>{$vo.created_time}</td>
+            <td>{$vo.apply_user}</td>
+            <td>{$vo.apply_department}</td>
+            <td>{$vo.op_time}</td>
+            <td>{$vo.expect_car_type_name}</td>
+            <td>{$vo.expect_fee}</td>
+            <td>{$vo.da_user.nickname}</td>               
+            <td>{$vo.la_user.nickname}</td>
+            <td>{$vo.driver.car_from}</td>
+            <td>{$vo.driver.car_type}</td>
+            <td>{$vo.driver.username}</td>
+            <td>{$vo.driver.mobile}</td>    
+            <td <eq name="vo['status']" value="5">class="delivery-fee" data-id="{$vo.id}" data-fee="{$vo.delivery_fee}"</eq> >{$vo.delivery_fee}</td>    
+            <td>{$vo.distance}</td>
+            <td>{$vo.status_cn}</td>
+            <td>
+                <eq name="vo['daudit_show']" value="true">
+                <a data-id="{$vo.id}" data-step="1" data-desc="部门审批" data-toggle="modal" data-target="#AuditModal" onclick="changeData(this);">部门审批</a>
+                </eq>
+                <eq name="vo['laudit_show']" value="true">
+                <a data-id="{$vo.id}" data-step="2" data-desc="物流审批" data-toggle="modal" data-target="#AuditModal" onclick="changeData(this);">物流审批</a>
+                </eq>
+                <notempty name="auth['taskDetail']">
+                <a href="{:U('taskDetail',array('id'=>$vo['id']))}" target="_blank">查看</a>
+                </notempty>
+                <notempty name="auth['taskDel']">
+                <a href="{:U('taskDel',array('id'=>$vo['id']))}" onclick="return confirm('确定要删除么');">删除</a>
+                </notempty>
+            </td>
+          </tr>
+        </volist>
+        </tbody>
+      </table>
+    </div>
+    <!-- 审批模态框 -->
+    <div class="modal fade" id="AuditModal" tabindex="-1" role="dialog" aria-labelledby="AuditModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title text-center" id="AuditModalLabel"></h4>
+          </div>
+          <!-- <div class="modal-body">
+            
+          </div> -->
+          <div class="modal-footer">
+            <div class="approve-data hidden" data-step="0" data-id="0"></div>
+            <button type="button" class="btn btn-default js-refuse" data-dismiss="modal">不通过</button>
+            <button type="button" class="btn btn-primary pull-left js-pass">通过</button>
+          </div>
+        </div>
+      </div>
+    </div>
+<script type="text/javascript">
+    //编辑运费
+    var tds;
+    var btn = '<a class="btn btn-success pull-right" onclick="editFee(this)" >编辑运费</a>';
+    function editFee(obj) {
+        var save   = '<a class="btn btn-primary btn-sm pull-right" onclick="saveFee(this)" >保存</a>',
+            sp     = '<span class="pull-right">&nbsp;&nbsp;&nbsp;&nbsp;</span>'
+            cancle = '<a class="btn btn-default btn-sm pull-right" onclick="cancleEdit(this)" > 取消</a>';
+            $(obj).after(cancle+sp+save);
+            $(obj).remove();
+        tds = $('.delivery-fee');
+        tds.each(function(){
+            var fee = $.trim($(this).text());
+            var input  = "<input class='input-sm' min='0' style='width:80px;' type='number' value='"+fee+"'>";
+            $(this).html(input);
+        })
+    }
+
+    function saveFee(obj) {
+        var arr = {};
+        $('.delivery-fee').each(function(){
+            var fee = parseInt($(this).find('input').val()),
+                fee = fee ? fee : 0;
+                sid = parseInt($(this).data('id'));
+            if(sid) {
+                arr[sid] = fee;
+            }
+        })
+        $.post("{:U('saveFee')}",{fees:arr},function(res){
+            if(res.status == 0) {
+                for (x in arr) {
+                    $('td[data-id='+x+']').text(arr[x]);
+                };
+            }else{
+                alert(res.msg);
+            }
+            $(obj).siblings().remove();
+            $(obj).after(btn);
+            $(obj).remove();
+        })
+    }
+    function cancleEdit(obj) {
+        tds.each(function(){
+            var fee = parseInt($(this).data('fee'));
+                fee = fee ? fee : 0;
+            $(this).text(fee);
+        })
+        $(obj).siblings().remove();
+        $(obj).after(btn);
+        $(obj).remove();
+    }
+    var step = 1;
+    function changeData(obj){
+        var tstep = $(obj).data('step'),
+            desc = $(obj).data('desc'),
+            id = $(obj).data('id');
+        var modal = $('#AuditModal');
+        modal.find('.modal-title').text(desc);
+        modal.find('.approve-data').attr('data-id',id);
+        step = tstep;
+    }
+    $('#AuditModal').on('show.bs.modal', function (event) {
+      var dataObj = $(this).find('.approve-data');
+      var id = dataObj.data('id');
+      var addr = (step == 1) ? "{:U('departAudit')}" : "{:U('logisAudit')}";
+      dataObj.attr('data-step','').attr('data-id','')
+      $('.js-pass').on('click',function(e){
+        e.preventDefault();
+        var params = {
+            id:id,
+            approve:1
+        };
+        audit(params, addr);
+      })
+      $('.js-refuse').on('click',function(e){
+        e.preventDefault();
+        var params = {
+            id:id,
+            approve:0
+        };
+        audit(params, addr);
+      })
+    })
+    function audit(obj,addr){
+        $.ajax({
+            url :addr,
+            type:'post',
+            cache:false,
+            dataType:'json',
+            data:obj,
+            success:function(res){
+                alert(res.msg);
+                if(res.status == 0){
+                    location.reload();
+                }
+            }
+        })
+        $('#AuditModal').modal('hide');
+        $('.js-pass').off('click');
+        $('.js-refuse').off('click');
+    }
+</script>
+
