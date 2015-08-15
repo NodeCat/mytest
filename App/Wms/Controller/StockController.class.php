@@ -337,17 +337,17 @@ class StockController extends CommonController {
         if (!$params['dest_location_id']) {
             $this->msgReturn(0,'目标库位不能为空');
         }
-        $dest_location_id = $params['dest_location_id'];
+        $dest_location = $params['dest_location_id'];
         //查询对应的location_id
-        $map['code'] = $dest_location_id;
+        $map['code'] = $dest_location;
         $map['wh_id'] = session('user.wh_id');
-        $dest_location_code = M('location')->where($map)->find();
+        $ret = M('location')->where($map)->find();
 
-        if(empty($dest_location_code)){
+        if(empty($ret)){
             $this->msgReturn(0,'目标库位不存在');
         }
 
-        $dest_location_id = $dest_location_code['id'];
+        $dest_location_id = $ret['id'];
         foreach ($params['stock_id'] as $key => $value) {
             $stock_key_arr       = $params['stock_key'];
             $stock_id_arr        = $params['stock_id'];
