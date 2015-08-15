@@ -232,12 +232,16 @@ class StockController extends CommonController {
                 $where_stock['stock.is_deleted'] = 0;
                 $stock_m = M('stock');
                 $join = array(' inner join location on stock.location_id=location.id');
-                $result = $stock_m->field('stock.*,location.code as location_code')->join($join)->where($where_stock)->order('stock.updated_time DESC')->select();
-                foreach ($result as $key => $value) {
-                    $pro_name = M('stock_bill_in_detail')->where(array('pro_code'=>$value['pro_code']))->getField('pro_name');
-                    $result[$key]['pro_name'] = $pro_name;
-                    $result[$key]['avaliable_qty'] = bcsub($value['stock_qty'], $value['assign_qty'], 2);
+                $result = $stock_m->field('stock.*,location.code as location_code,stock_qty-assign_qty as avaliable_qty')->join($join)->where($where_stock)->order('stock.updated_time DESC')->select();
+                $pro_code_arr = array_unique(array_column($result,'pro_code'));
+                $map = array();
+                $map['pro_code'] = array('in',$pro_code_arr);
+                $field = 'pro_code,pro_name';
+                $pro_name_array = M('stock_bill_in_detail')->group('pro_code')->where($map)->getField($field);
+                foreach ($result as &$data_val) {
+                    $data_val['pro_name'] = $pro_name_array[$data_val['pro_code']];
                 }
+   
                 if (!$result) {
                     $this->msgReturn(0,'没有找到该记录，请检查表关联或者纪录状态');
                 }
@@ -417,20 +421,19 @@ class StockController extends CommonController {
     //移库操作
     public function moveStockController($movearr = array()){
         //库存移动
-        $mes = '';
-        $variable_qty = formatMoney($movearr['variable_qty'], 2);
-        $params['variable_qty'] = $variable_qty;
-        $params['wh_id'] = $movearr['wh_id'];
-        $params['src_location_id'] = $movearr['src_location_id'];
+        $mes                        = '';
+        $variable_qty               = formatMoney($movearr['variable_qty'], 2);
+        $params['variable_qty']     = $variable_qty;
+        $params['wh_id']            = $movearr['wh_id'];
+        $params['src_location_id']  = $movearr['src_location_id'];
         $params['dest_location_id'] = $movearr['dest_location_id'];
-        $params['pro_code'] = $movearr['pro_code'];
-        $params['batch'] = $movearr['batch'];
-        $params['status'] = $movearr['status'];
+        $params['pro_code']         = $movearr['pro_code'];
+        $params['batch']            = $movearr['batch'];
+        $params['status']           = $movearr['status'];
         $res = A('Stock','Logic')->adjustStockByMove($params);
 
         if($res['status'] == 0){
             $mes = '序列'.$movearr['xid']. $res['msg'];
-            //$this->msgReturn(0,'移库失败。'.$res['msg']);
         }
 
         return $mes;
