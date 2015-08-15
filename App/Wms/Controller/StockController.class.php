@@ -348,18 +348,19 @@ class StockController extends CommonController {
         }
 
         $dest_location_id = $ret['id'];
+        $stock_key_arr       = $params['stock_key'];
+        $stock_id_arr        = $params['stock_id'];
+        $stock_qty_arr       = $params['stock_qty'];
+        $origin_stock_qty_arr= $params['origin_stock_qty'];
+        $assign_qty_arr      = $params['assign_qty'];
+        $avaliable_qty_arr   = $params['avaliable_qty'];
+        $wh_id_arr           = $params['wh_id'];
+        $src_location_id_arr = $params['src_location_id'];
+        $pro_code_arr        = $params['pro_code'];
+        $batch_arr           = $params['batch'];
+        $status_arr          = $params['status'];
         foreach ($params['stock_id'] as $key => $value) {
-            $stock_key_arr       = $params['stock_key'];
-            $stock_id_arr        = $params['stock_id'];
-            $stock_qty_arr       = $params['stock_qty'];
-            $origin_stock_qty_arr= $params['origin_stock_qty'];
-            $assign_qty_arr      = $params['assign_qty'];
-            $avaliable_qty_arr   = $params['avaliable_qty'];
-            $wh_id_arr           = $params['wh_id'];
-            $src_location_id_arr = $params['src_location_id'];
-            $pro_code_arr        = $params['pro_code'];
-            $batch_arr           = $params['batch'];
-            $status_arr          = $params['status'];
+
             if (intval($stock_qty_arr[$key]*1000)<=0) {
                 $mes = '序列'.$stock_key_arr[$key].'移动库存量不能小于零的数';
                 $this->msgReturn(0,$mes);
