@@ -564,7 +564,7 @@ class StockOutController extends CommonController {
             }
             $idArr = array();
             foreach ($result as $value) {
-                $idArr[] = $value['id'];
+                $idArr[] = $value['bill_out_id'];
             }
             unset($map['stock_bill_out.distribution_code']);
             $map['stock_bill_out.id'] = array('in', $idArr);
