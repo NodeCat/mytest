@@ -205,11 +205,10 @@ $(function(){
             var _this = this;
 
             $(document).on('click','[data-rel = delOne]',function(){
-
-                var allVal = $(this).attr('data-value');
-
+                var allVal = [];
+                var oneTr = $(this).attr('data-value');
+                allVal.push(oneTr);
                 var len = allVal.length;
-
                 _this.delConstroller(len,allVal);
 
 

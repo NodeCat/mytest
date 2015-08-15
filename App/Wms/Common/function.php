@@ -404,7 +404,7 @@ function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
     if ($is_end_str !== null) {
         if ($pos === FALSE) {
             // 末尾没有小数点
-            return 1;
+            return '';
         }
         return $enstr;
     }
