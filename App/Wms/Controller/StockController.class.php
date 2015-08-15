@@ -309,7 +309,7 @@ class StockController extends CommonController {
             }
             $errorArr = array();
             foreach ($result as $key => $value) {
-                $mesg = $this->moveStockController($value);
+                $mesg = $this->moveOneStock($value);
                 if ($mesg) {
                    array_push($errorArr, $mesg);
                 }
@@ -371,7 +371,7 @@ class StockController extends CommonController {
             }
 
             if (intval($assign_qty_arr[$key]*1000)!==0) {
-                $mes = '序列'.$stock_key_arr[$key].'分配量必须为0';
+                $mes = '序列'.$stock_key_arr[$key].'分配量非0，无法移动';
                 $this->msgReturn(0,$mes);
             }
             if(bccomp($stock_qty_arr[$key], $avaliable_qty_arr[$key],2) == 1){
@@ -387,19 +387,20 @@ class StockController extends CommonController {
             $src_location_id = $src_location_id_arr[$key];
             
             if($src_location_id === $dest_location_id){
-                $this->msgReturn(0,'请修改库位信息');
+                $this->msgReturn(0,'序列'.$stock_key_arr[$key].'原库位和目标库位相同，请修改库位信息');
             }
             $where = array();
             $where['src_location_id'] = $src_location_id;
             $where['dest_location_id'] = $dest_location_id;
             $where['wh_id'] = $wh_id_arr[$key];
+            $where['batch'] = $batch_arr[$key];
             //$params['status'] = I('status');
             $where['pro_code'] = $pro_code_arr[$key];
             //判断目标库位是否可以 混货 混批次
             $res = A('Stock','Logic')->checkLocationMixedProOrBatch($where);
 
             if($res['status'] == 0){
-                $this->msgReturn(0,'序列'.$stock_key_arr[$key].'移库失败。'.$res['msg']);
+                $this->msgReturn(0,'序列'.$stock_key_arr[$key].'移库失败。目标库位不能混货混批次'.$res['msg']);
             }
 
             $tmpArr                     = array();
@@ -420,7 +421,7 @@ class StockController extends CommonController {
     }
 
     //移库操作
-    public function moveStockController($movearr = array()){
+    public function moveOneStock($movearr = array()){
         //库存移动
         $mes                        = '';
         $variable_qty               = formatMoney($movearr['variable_qty'], 2);
@@ -434,7 +435,7 @@ class StockController extends CommonController {
         $res = A('Stock','Logic')->adjustStockByMove($params);
 
         if($res['status'] == 0){
-            $mes = '序列'.$movearr['xid']. $res['msg'];
+            $mes = '序列'.$movearr['xid'].$res['msg'];
         }
 
         return $mes;
