@@ -324,12 +324,13 @@ class DistributionLogic {
     /**
      * 根据出库单ID判断PACK区库存是否充足,在内存中模拟计算分配量
      * @param int $id 出库单ID
+     * @param array $sku_qty 一个辅助的数组，用来记录这一批库存检查过程中每个sku的库存量；
      */
     public function check_pack_qty($id = 0,&$sku_qty=array()) {
-        $return = false;
+        $is_enough = true;
         
         if (empty($id)) {
-            return $return;
+            return $is_enough;
         }
         $detail = $this->get_out_detail(array($id));
         $location_ids = A('Location','Logic')->getLocationIdByAreaName($area_name);
@@ -348,20 +349,21 @@ class DistributionLogic {
                 foreach($stock_infos as $stock_info){
                     $total_stock_qty += ($stock_info['stock_qty'] - $stock_info['assign_qty']);
                 }
-                $sku_qty[$pro_code] = $total_stock_qty
+                $sku_qty[$pro_code] = $total_stock_qty;
             }
-            $info = array();
-            $info['wh_id'] = session('user.wh_id');
-            $info['pro_code'] = $value['pro_code'];
-            $info['pro_qty'] = $value['order_qty'];
-            $info['location_ids'] = $location_ids;
-            $result = A('Stock', 'Logic')->outStockBySkuFIFOCheck($info);
-            if ($result['status'] <= 0) {
-                return $return;
+            $available_qty = $sku_qty[$pro_code];
+            if(bccomp($available_qty, 0, 2)  == 0){
+                $is_enough = false;
+            }
+            elseif (bccomp($available_qty, $value['order_qty'],2)  == -1) {
+                $is_enough = false;
+                $sku_qty[$pro_code] = 0;
+            }
+            else {
+                $sku_qty[$pro_code] = bcsub($sku_qty[$pro_code],$value['order_qty']);
             }
         }
-        $return = true;
-        return $return;
+        return $is_enough;
     }
         
     /**
