@@ -33,10 +33,12 @@ class ProcessRatioModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'join' => array('inner join company on company.id=erp_process_sku_relation.company_id'),
+            'join' => array('inner join company on company.id=erp_process_sku_relation.company_id 
+                             inner join user u1 on u1.id=erp_process_sku_relation.created_user
+                             inner join user u2 on u2.id=erp_process_sku_relation.created_user'),
             'where'=>array('erp_process_sku_relation.is_deleted'=>'0'),
             'order'=>'erp_process_sku_relation.id',
-            'field' => 'erp_process_sku_relation.*,company.name',
+            'field' => 'erp_process_sku_relation.*,company.name,u1.nickname as created_user,u2.nickname as updated_user',
         ),
         'latest'=>array(
             'where'=>array('erp_process_sku_relation.is_deleted'=>'0'),

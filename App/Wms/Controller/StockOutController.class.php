@@ -40,7 +40,8 @@ class StockOutController extends CommonController {
         'total_qty' => '总件数',
         'line_id' => '线路片区',
         'status' => '出库单状态',
-        'company_id'=>'所属系统',
+        'shop_name'=>'店铺名称',
+        'user_phone'=>'客户电话',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_date' => '送货时间',
@@ -65,12 +66,41 @@ class StockOutController extends CommonController {
             'control_type' => 'text',     
             'value' => 'wave_id',   
         ),
+        'stock_bill_out.pro_code' =>    array (
+                'title' => '货品号',
+                'query_type' => 'eq',
+                'control_type' => 'text',
+                'value' => '',
+        ),
         'stock_bill_out.type' =>    array (     
             'title' => '出库单类型',     
             'query_type' => 'eq',     
             'control_type' => 'getField',     
             'value' => 'stock_bill_out_type.id,name'
                             
+        ),
+        'stock_bill_out.status' =>    array (
+                'title' => '出库单状态',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => array(
+                        '1'=>'待生产',
+                        '3'=>'波次中',
+                        '4'=>'待拣货',
+                        '5'=>'待复核',
+                        '2'=>'已出库'
+                ),
+        ),
+        'stock_bill_out.order_type' =>    array (
+                'title' => '订单类型',
+                'query_type' => 'eq',
+                'control_type' => 'select',
+                'value' => array(
+                        '1' => '普通订单',
+                        '3' => '水果爆款订单',
+                        '4' => '水果订单',
+                        '5' => '蔬菜订单',
+                ),
         ),
         'stock_bill_out.refused_type' =>    array (     
             'title' => '拒绝标识',     
@@ -80,26 +110,14 @@ class StockOutController extends CommonController {
                 '1'=>'空',
                 '2'=>'缺货'
             ),   
-    	),
-        'stock_bill_out.order_type' =>    array (     
-            'title' => '订单类型',     
-            'query_type' => 'eq',     
-            'control_type' => 'select',     
-            'value' => array(
-                '1' => '普通订单',
-                '3' => '水果爆款订单',
-                '4' => '水果订单', 
-                '5' => '蔬菜订单',   
-            ),   
-        ), 
-    	
-    	'stock_bill_out.line_id' => array (     
-    		'title' => '路线片区',     
-    		'query_type' => 'eq',     
-    		'control_type' => 'select',     
-    		'value' => '' 
+    	    ),
+    	    'stock_bill_out.line_id' => array (     
+        		'title' => '路线片区',     
+        		'query_type' => 'eq',     
+        		'control_type' => 'select',     
+        		'value' => '' 
     		),
-    	'stock_bill_out.process_type' => array (     
+    	/*'stock_bill_out.process_type' => array (     
     		'title' => '处理类型',     
     		'query_type' => 'eq',     
     		'control_type' => 'select',     
@@ -107,7 +125,7 @@ class StockOutController extends CommonController {
                         '1'=>'正常单',
                         '2'=>'取消单'
                         ),   
-        ),
+        ),*/
         /*'stock_bill_out.customer_realname' => array (     
             'title' => '客户名称',     
             'query_type' => 'like',     
@@ -126,18 +144,7 @@ class StockOutController extends CommonController {
             'control_type' => 'datetime',     
             'value' => 'delivery_date',   
         ),
-        'stock_bill_out.status' =>    array (    
-            'title' => '出库单状态',     
-            'query_type' => 'eq',     
-            'control_type' => 'select',     
-            'value' => array(
-                        '1'=>'待生产',
-                        '3'=>'波次中',
-                        '4'=>'待拣货',
-                        '5'=>'待复核',
-                        '2'=>'已出库'
-                        ),   
-        ),
+        
         'stock_bill_out.delivery_ampm' =>    array (    
             'title' => '送货时间',     
             'query_type' => 'eq',     
@@ -147,18 +154,13 @@ class StockOutController extends CommonController {
                         'pm'=>'下午'
                         ),  
         ), 
-        'stock_bill_out.created_time' =>    array (    
+        /*'stock_bill_out.created_time' =>    array (    
             'title' => '下单时间',     
             'query_type' => 'between',     
             'control_type' => 'datetime',     
             'value' => '',   
-        ), 
-        'stock_bill_out.pro_code' =>    array (     
-            'title' => '货品号',     
-            'query_type' => 'eq',     
-            'control_type' => 'text',     
-            'value' => '',   
-        ),
+        ), */
+        
     );
     public function __construct(){
         parent::__construct();
@@ -232,6 +234,8 @@ class StockOutController extends CommonController {
     }
    
     protected function after_lists(&$data) {
+        
+        $orderIds = array();
         foreach($data as &$val) {
             if(!isset($val['total_qty'])){
                 $total = A('StockOut','Logic')->sumStockBillOut($val['id']);
@@ -256,6 +260,35 @@ class StockOutController extends CommonController {
                 $val['packing_code'] = '无';
             } else {
                 $val['packing_code'] = $dist['dist_code'];
+            }
+            if ($val['wave_id'] == 0) {
+                $val['wave_id'] = '无';
+            }
+            if ($val['line_id'] == 0) {
+                $val['line_id'] = '无';
+            }
+            //订单ID
+            if ($val['type'] == 1) {
+                $orderIds[] = $val['refer_code'];
+            } else {
+                $val['shop_name'] = '无';
+                $val['user_phone'] = '无';
+            }
+        }
+        //获取订单信息
+        if (!empty($orderIds)) {
+            $orderInfo = A('Common/Order', 'Logic')->getOrderInfoByOrderIdArr($orderIds);
+            if (!$orderInfo['status']) {
+                return;
+            }
+            $orderInfo = $orderInfo['list'];
+            foreach ($data as &$value) {
+                foreach ($orderInfo as $order) {
+                    if ($value['refer_code'] == $order['id']) {
+                        $value['shop_name'] = $order['shop_name'];
+                        $value['user_phone'] = $order['sale']['mobile'];
+                    }
+                }
             }
         }
     }

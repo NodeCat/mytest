@@ -30,6 +30,8 @@ class ProcessController extends CommonController {
         'wh_id' => '仓库',
         'task' => '总任务数',
         'over_task' => '完成任务数',
+        'created_user' => '创建人',
+        'created_time' => '创建时间',
         'status' => '状态',
         'remark' => '备注',
     );
@@ -283,6 +285,9 @@ class ProcessController extends CommonController {
     protected function before_edit(&$data){
         //加工单详情数据处理
         D('Process', 'Logic')->get_process_all_sku_detail($data);
+        //获取出库单和入库单号
+        $data['outCode'] = M('stock_bill_out')->where(array('refer_code' => $data['code']))->getField('code');
+        $data['inCode'] = M('stock_bill_in')->where(array('refer_code' => $data['code']))->getField('code');
     }
     
     protected function after_save($pid){

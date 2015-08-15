@@ -35,9 +35,10 @@ class StockOutModel extends Model {
                 "join"=>array(//"inner join stock_bill_out_detail sbod on stock_bill_out.id=sbod.pid",
                               "inner join stock_bill_out_type sbot on stock_bill_out.type = sbot.id",
                               "inner join warehouse on warehouse.id = stock_bill_out.wh_id",
-                              "inner join user on stock_bill_out.created_user=user.id ",
+                              "inner join user a on stock_bill_out.created_user=a.id ",
+                              "inner join user b on stock_bill_out.updated_user=b.id"
                 ),
-                "field"=>"stock_bill_out.*,stock_bill_out.status as state,sbot.name as type_name,user.nickname as created_name "
+                "field"=>"stock_bill_out.*,stock_bill_out.status as state,sbot.name as type_name,a.nickname as created_name,b.nickname as updated_name "
                 ),
             'latest'=>array(
                 'where'=>array('stock_bill_out.is_deleted'=>'0'),

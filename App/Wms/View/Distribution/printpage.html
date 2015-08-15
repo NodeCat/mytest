@@ -47,12 +47,12 @@
             <td width="5%">重量</td>
           </tr>
         </thead>
-        <volist name="attrs['orders']" id="order">
+        <volist name="attrs['orders']" id="order">{:dump($order)}
           <volist name="order['detail']" id="detail" key="k">	
           	<tr class="order_list_td">
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.id}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.code}</td>
-	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.line_name}</td>
+	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.line}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.shop_name}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.deliver_addr}</td>
 	            <td index="{$k}" rowspan="{:count($order['detail'])}">{$order.mobile}</td>
