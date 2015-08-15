@@ -9,6 +9,13 @@ namespace Erp\Logic;
 class ProcessLossLogic
 {
 
+    /**
+     * 返回库存损耗明细
+     * @param $code            SKU
+     * @param $start_time      开始时间
+     * @param $end_time        结束时间
+     * @return array
+     */
     public function getStockLoss($code, $start_time, $end_time)
     {
         $model = M('stock');
