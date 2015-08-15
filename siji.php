@@ -24,6 +24,8 @@ if($_SERVER['SERVER_ENV'] == 'production') {
 define('RUNTIME_PATH','../Runtime/');
 
 define('BIND_MODULE','Tms');
+define('DEFAULT_C_LAYER','Driver');
+
 define('VERSION','2.0');
 define('APP_NAME','ERP');
 

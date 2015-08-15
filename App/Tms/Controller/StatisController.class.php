@@ -35,7 +35,7 @@ class StatisController extends \Common\Controller\AuthController
 			$this->data = $this->charts;
 		}
 		$this->login = $login;
-		$this->display('tms:saiku');
+		$this->display('saiku');
 	}
 
 	/**
@@ -43,6 +43,6 @@ class StatisController extends \Common\Controller\AuthController
 	 * @return [type] [description]
 	 */
 	public function login() {
-		$this->display('tms:saiku-login');
+		$this->display('saiku-login');
 	}
 }

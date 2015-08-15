@@ -63,7 +63,7 @@ margin-top: 10px;
 <script type="text/javascript">
 $('#sub').on('click',function(){
         var code = $('#code').val();
-        var addr = "{:U('Index/delivery')}";
+        var addr = "{:U('delivery')}";
         $.ajax({
           url:addr,
           type:'post',
@@ -71,17 +71,17 @@ $('#sub').on('click',function(){
           dataType:'json',
           async:true,
           data:{"code":code},
-          success: function(msg){
-            if(msg.status=='0'){
-              alert(msg.message);
+          success: function(res){
+            if(res.status=='0'){
+              alert(res.msg);
               if(typeof HostApp != "undefined"){ 
-                HostApp.toast(msg.message);
+                HostApp.toast(res.msg);
               }
-            }else if(msg.status=='1'){
-              alert(msg.message);
+            }else if(res.status=='1'){
+              alert(res.msg);
               if(typeof HostApp != "undefined"){
-                HostApp.toast(msg.message);
-                HostApp.startLocate(msg.code);
+                HostApp.toast(res.message);
+                HostApp.startLocate(res.code);
                 HostApp.toast('计程开始,请不要退出');
               }
               
