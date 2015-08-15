@@ -59,7 +59,7 @@ class ProcessLossController extends CommonController
 
     /**
      * 列表字段处理
-     * @param unknown $data
+     * @param $data 加工区所有的sku数据
      */
     public function after_lists(&$data) {
         $pro_code = array();

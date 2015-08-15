@@ -20,7 +20,7 @@ class ProcessLossLogic
     {
         $model = M('stock');
         $where['stock.is_deleted']  = 0;
-        $where['stock.location_id'] ='96';
+        $where['stock.location_id'] ='96';      //加工损耗区标记
         $where['stock.pro_code']    = array('in', $code);
         if (!empty($start_time) && !empty($end_time)) {
             $where['DATE_FORMAT(stock.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
