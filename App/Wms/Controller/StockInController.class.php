@@ -814,7 +814,17 @@ class StockInController extends CommonController {
                 unset($map);
                 unset($data);
                 $refer_code = $stock_bill_in_detail_info['code'];
-                $batch = $stock_bill_in_detail_info['code'];
+                //liugunagping
+                //扣库存操作
+                //有批次走分批次走，没有则按照原来的走
+				$batch = $stock_bill_in_detail_info['batch'];
+				if($batch){
+					$batch = $batch;
+					$batch_bak = $batch;
+				}else{
+					$batch = $refer_code;
+					$batch_bak = '';
+				}
                 $pro_code = $stock_bill_in_detail_info['pro_code'];
                 $pro_qty = $stock_bill_in_detail_info['expected_qty'];
                 $pro_uom = $stock_bill_in_detail_info['pro_uom'];
@@ -823,7 +833,7 @@ class StockInController extends CommonController {
                 $wh_id = session('user.wh_id');
                 $location_id = $rev_location_info['id'];
                 //直接上架
-                A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid']);
+                A('Stock','Logic')->adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$stock_bill_in_detail_info['pid'],$batch_bak);
                 //如果时采购到货单 则创建采购入库单（ERP）
                 if($stock_bill_in_info['type'] == 1){
                     //写入采购入库单 erp_in_detail
@@ -853,6 +863,17 @@ class StockInController extends CommonController {
                     $data = $purchase_in_detail->create($data);
                     $purchase_in_detail->data($data)->add();
                     unset($data);
+                } elseif ($stock_bill_in_info['type'] == 4){
+	               	//加入调拨类型liuguangping
+					//收货=》erp_到货量调拨入库单详细待入库量和实际收货量 erp状态 待上架状态@因需求变更这步取消
+					//@refer_code 入库单code $pro_code 产品编码 $batch 批次 $pro_qty 出库量
+					A('TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch, $pro_qty);
+					//A('TransferIn','Logic')->updateTransferInStatus($refer_code);
+                	//上架=》待入库量减去 已上架量增加
+					//$is_up = up 上架量 waiting 待上架
+					A('TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch,$pro_qty,$status,'up');
+					A('TransferIn','Logic')->updateTransferInStatus($refer_code,'up');
+
                 }
             }
         }
