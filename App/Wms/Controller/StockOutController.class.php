@@ -66,6 +66,12 @@ class StockOutController extends CommonController {
             'control_type' => 'text',     
             'value' => 'wave_id',   
         ),
+        'stock_bill_out.distribution_code' =>    array (
+                'title' => '车单号',
+                'query_type' => 'eq',
+                'control_type' => 'text',
+                'value' => '',
+        ),
         'stock_bill_out.pro_code' =>    array (
                 'title' => '货品号',
                 'query_type' => 'eq',
@@ -547,6 +553,21 @@ class StockOutController extends CommonController {
             $map['stock_bill_out.id'][1] = $str;
             unset($condition);
             unset($map['stock_bill_out.pro_code']);
+        }
+        if (array_key_exists('stock_bill_out.distribution_code', $map)) {
+            $where['dist_code'] = $map['stock_bill_out.distribution_code'][1];
+            $id = M('stock_wave_distribution')->where($where)->getField('id');
+            $result = M('stock_wave_distribution_detail')->where(array('pid' => $id, 'is_deleted' => 0))->select();
+        
+            if (empty($result)) {
+                return;
+            }
+            $idArr = array();
+            foreach ($result as $value) {
+                $idArr[] = $value['id'];
+            }
+            unset($map['stock_bill_out.distribution_code']);
+            $map['stock_bill_out.id'] = array('in', $idArr);
         }
     }
     protected function before_delete($ids) {
