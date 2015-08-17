@@ -185,13 +185,12 @@
                   </span>
                   元
                 </span>
-                <span class="input-group-addon">
-                  运费 ¥
+                <span class="input-group-addon hidden">
                   <span class="p_drive">
                     {$vo.deliver_fee}
                   </span>
-                   元
                 </span>
+                <input type="text" class="form-control" placeholder="" value="运费 ¥{$vo.deliver_fee} 元" readonly>
               </div>
               <div class="input-group row">
                 <span class="input-group-addon">
@@ -206,7 +205,7 @@
                     </span>
                   </case>
                   <default />
-                    <input type="number" name="deposit" min="0" class="form-control p_deposit" placeholder="" value="{$vo.deposit}" data-val="{$vo.receivable_sum}" onkeyup="checkDeposit(this)">
+                    <input type="number" name="deposit" min="0" class="form-control p_deposit" placeholder="" value="{$vo.deposit}" onkeyup="checkDeposit(this)">
                 </switch>
                 <span class="input-group-addon"> 元</span>
               </div>
