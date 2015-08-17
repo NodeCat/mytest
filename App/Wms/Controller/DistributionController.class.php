@@ -345,6 +345,15 @@ class DistributionController extends CommonController {
         $data['sku_count'] = $dis['sku_count']; //sku总数
         $data['total_price'] = $dis['total_price']; //总价格
         $data['line_count'] = $dis['line_count']; //总行数
+        $data['delivery_count'] = 0; //发货总件数
+        $data['delivery_price'] = 0; //发货总金额
+        foreach ($result as $value) {
+            foreach ($value['detail'] as $val) {
+                $data['delivery_count'] += $val['delivery_qty'];
+                $data['delivery_price'] += bcmul($val['delivery_qty'], $val['price'], 2);
+            }
+        }
+        $data['delivery_price'] = formatMoney($data['delivery_price']);
         $this->assign('data', $data);
         $this->assign('orderList', $result);
         $this->display();
@@ -415,9 +424,11 @@ class DistributionController extends CommonController {
                 if (!isset($merge[$v['pro_code']])) {
                     $merge[$v['pro_code']] = $v;
                 } else {
-                    $merge[$v['pro_code']]['order_qty'] += $v['order_qty'];
+                    $merge[$v['pro_code']]['former_qty'] += $v['former_qty'];
                     $merge[$v['pro_code']]['delivery_qty'] += $v['delivery_qty'];
                 }
+                $items['delivery_qty'] += $v['delivery_qty']; //总发货量
+                $items['delivery_amount'] += $v['delivery_qty'] * $v['price']; //总发货金额
                 unset($merge[$key]);
             }
             $items['sku_list'] = $merge;
