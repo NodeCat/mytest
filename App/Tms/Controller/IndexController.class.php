@@ -36,7 +36,7 @@ class IndexController extends \Common\Controller\AuthController{
                         SUM(order_count) order_qty,
                         ROUND(SUM(total_price) / COUNT(*), 2) dist_price_average,
                         ROUND(SUM(total_price) / SUM(order_count), 2) decim_price_average,
-                        ROUND(320 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
+                        ROUND(300 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
                         ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
                     FROM
                         stock_wave_distribution d
