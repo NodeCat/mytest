@@ -32,4 +32,17 @@ class ProcessLossLogic
 
         return $result;
     }
+
+    /**
+     * 根据code查询location所在库位的ID
+     * @param $code     要查询的code标识
+     * @return array
+     */
+    public function getLocationList($code)
+    {
+        $map['code'] = array('in', $code);
+        $model = M('location');
+        $location_ids = $model->where($map)->getField('id', true);
+        return $location_ids;
+    }
 }
