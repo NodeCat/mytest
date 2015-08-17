@@ -415,6 +415,15 @@ class DistDriver extends Controller {
         $A = A('Tms/Dist','Logic');
         $receivable_sum -= $orderInfo['info']['minus_amount'];
         $receivable_sum += $orderInfo['info']['deliver_fee'];
+        //应收减去押金
+        $receivable_sum = $receivable_sum - $deposit;
+        if ($receivable_sum < 0) {
+            $res = array(
+                'status' => -1,
+                'msg'  => '输入的押金不能大于应收金额，请重新输入'
+            );
+            $this->ajaxReturn($res);
+        }
         //付款状态为已付款和账期支付的不进行抹零处理
         if ($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2) {
             $deal_price = $A->wipeZero($receivable_sum);
@@ -423,15 +432,6 @@ class DistDriver extends Controller {
             $deal_price = $receivable_sum;
         }
         $sign_msg = I('post.sign_msg', '' ,'trim');
-        //实收减去押金
-        $deal_price = $deal_price - $deposit;
-        if ($deal_price < 0) {
-            $res = array(
-                'status' => -1,
-                'msg'  => '输入的押金不能大于应收金额，请重新输入'
-            );
-            $this->ajaxReturn($res);
-        }
         //签收表主表数据
         $fdata = array(
             'receivable_sum' => $receivable_sum,
