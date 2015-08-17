@@ -1,0 +1,1 @@
+ALTER TABLE  `stock_wave_distribution` ADD  `customer_count` INT( 11 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '总客户数' AFTER  `sku_count` ;
