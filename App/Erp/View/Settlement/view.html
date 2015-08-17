@@ -11,6 +11,11 @@
                 <i class="glyphicon glyphicon-edit"></i> 修改
             </a>
         </if>
+        <if condition="($data.state eq '1')">
+            <a href="{:U('close',array($pk => $data[$pk]))}" data-title="作废单据" rel="tooltip" data-placement="bottom" class="btn btn-sm">
+                <i class="glyphicon glyphicon-ban-circle"></i> 作废
+            </a>
+        </if>
 
         <if condition="($data[state] eq '0')">{$toolbar_tr['pass']['domain']}
             <a href="{:U('pass',array($pk => $data[$pk]))}" data-title="审核通过" rel="tooltip" data-placement="bottom" class="btn btn-sm">
