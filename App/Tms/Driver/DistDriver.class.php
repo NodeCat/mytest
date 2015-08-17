@@ -90,19 +90,19 @@ class DistDriver extends Controller {
             $wA = A('Wms/Distribution','Logic');
             $dist = $wA->distInfo($id);
             $yestoday = date('Y-m-d',strtotime('-1 Days'));
-            if(!empty($this->error)) {
+            // if(!empty($this->error)) {
 
-            } elseif (empty($dist)) {
-                $this->error = '提货失败，未找到该单据';
-            } elseif ($dist['status'] == '1') {
-                // 未发运的单据不能被认领
-                $this->error = '提货失败，未发运的配送单不能提货';
-            } elseif ($dist['status'] == '3' || $dist['status'] == '4') {
-                //已配送或已结算的配送单不能认领
-                $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
-            } elseif (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date)) {
-                    $this->error = '提货失败，该配送单已过期';
-            }
+            // } elseif (empty($dist)) {
+            //     $this->error = '提货失败，未找到该单据';
+            // } elseif ($dist['status'] == '1') {
+            //     // 未发运的单据不能被认领
+            //     $this->error = '提货失败，未发运的配送单不能提货';
+            // } elseif ($dist['status'] == '3' || $dist['status'] == '4') {
+            //     //已配送或已结算的配送单不能认领
+            //     $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
+            // } elseif (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date)) {
+            //         $this->error = '提货失败，该配送单已过期';
+            // }
             //添加提货数据
             if (empty($this->error)) {
                 $data['dist_id']      = $dist['id'];
@@ -364,6 +364,7 @@ class DistDriver extends Controller {
         }
         $wA = A('Wms/Distribution', 'Logic');
         $map['bill_out_id'] = $bill_out_id;
+        $map['is_deleted'] = 0;
         $dist_details = $wA->getDistDetails($map);
         //该出库单对应配送单详情
         $dist_detail = $dist_details['list'][0];
@@ -421,19 +422,21 @@ class DistDriver extends Controller {
         $sign_msg = I('post.sign_msg', '' ,'trim');
         //签收表主表数据
         $fdata = array(
-            'receivable_sum' => $receivable_sum,
-            'real_sum'       => $deal_price,
-            'minus_amount'   => $orderInfo['info']['minus_amount'],
-            'pay_reduce'     => $orderInfo['info']['pay_reduce'],
-            'deliver_fee'    => $orderInfo['info']['deliver_fee'],
-            'pay_status'     => $orderInfo['info']['pay_status'],
-            'pay_type'       => $orderInfo['info']['pay_type'],
-            'wipe_zero'      => isset($wipe_zero) ? $wipe_zero : 0,
-            'sign_msg'       => $sign_msg,
-            'status'         => 2,//签收
-            'sign_time'      => get_time(),
-            'sign_driver'    => session('user.mobile'),
+            'receivable_sum'  => $receivable_sum,
+            'real_sum'        => $deal_price,
+            'minus_amount'    => $orderInfo['info']['minus_amount'],
+            'pay_reduce'      => $orderInfo['info']['pay_reduce'],
+            'deliver_fee'     => $orderInfo['info']['deliver_fee'],
+            'pay_status'      => $orderInfo['info']['pay_status'],
+            'pay_type'        => $orderInfo['info']['pay_type'],
+            'wipe_zero'       => isset($wipe_zero) ? $wipe_zero : 0,
+            'sign_msg'        => $sign_msg,
+            'status'          => 2,//签收
+            'delivery_ontime' => $A->isSignOntime($dist_id),
+            'sign_time'       => get_time(),
+            'sign_driver'     => session('user.mobile'),
         );
+        dump($fdata);die();
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg);
         if($re['status'] === 0) {
@@ -518,39 +521,43 @@ class DistDriver extends Controller {
             $reject_codes = I('post.reject_reason');
             $reasons = $sA->getReasonByCode($reject_codes);
             unset($map);
-            //签收表主表数据
-            $fdata = array(
-                'sign_msg'       => I('post.sign_msg', '' ,'trim'),
-                'reject_reason'  => $reasons,
-                'status'         => 3,//拒收
-                'pay_status'     => $orderInfo['info']['pay_status'],
-                'pay_type'       => $orderInfo['info']['pay_type'],
-                'sign_time'      => get_time(),
-                'sign_driver'    => session('user.mobile'),
-            );
+            //该出库单对应配送单详情
             $bill_out_id = I('post.bid/d');
             $wA = A('Wms/Distribution', 'Logic');
             $map['bill_out_id'] = $bill_out_id;
+            $map['is_deleted'] = 0;
             $dist_details = $wA->getDistDetails($map);
-            //该出库单对应配送单详情
+            unset($map);
             $dist_detail = $dist_details['list'][0];
+            $dist_id = $dist_detail['pid'];
+            //签收表主表数据
+            $fdata = array(
+                'sign_msg'        => I('post.sign_msg', '' ,'trim'),
+                'reject_reason'   => $reasons,
+                'status'          => 3,//拒收
+                'pay_status'      => $orderInfo['info']['pay_status'],
+                'pay_type'        => $orderInfo['info']['pay_type'],
+                'delivery_ontime' => A('Tms/Dist' ,'Logic')->isSignOntime($dist_id),
+                'sign_time'       => get_time(),
+                'sign_driver'     => session('user.mobile'),
+            );
+            dump($fdata);die();
+            $datas = array(
+                'id'   => $dist_detail['id'],
+                'data' => $fdata,
+            );
+            $s = $wA->saveSignDataToDistDetail($datas);
+            //发送短信
+            if ($reasons) {
+                $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
+            }
             //向配送单详情更新拒收信息
-            if($dist_detail) {
-                $datas = array(
-                    'id'   => $dist_detail['id'],
-                    'data' => $fdata,
-                );
-                $s = $wA->saveSignDataToDistDetail($datas);
-                //发送短信
-                if ($reasons) {
-                    $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
-                }
+            if($s) {
                 $res = array(
                     'status' => 0,
                     'msg'    => '更新成功'
                 );
-            }
-            else {
+            } else {
                 $res = array(
                     'status' => -1,
                     'msg'    => '出库单不存在'
