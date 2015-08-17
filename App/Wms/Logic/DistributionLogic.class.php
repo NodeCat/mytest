@@ -436,7 +436,7 @@ class DistributionLogic {
                 $data['line_id'] .= $val['line_id'] . ','; //路线
                 $data['total_price'] += $val['total_amount']; //总价格
                 foreach ($val['detail'] as $v) {
-                    $data['sku_count'] += $v['order_qty']; //sku总数量
+                    $data['sku_count'] += $v['former_qty']; //sku总数量
                 } 
                 if ($i < 1) {
                     //重复数据  取一次即可

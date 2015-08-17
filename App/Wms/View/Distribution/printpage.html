@@ -12,7 +12,8 @@
       <div class="col-xs-4">
         <p>配送线路单号:{$attrs.dist_code}</p>
         <p class="">线路（片区）:{$attrs.line_name}</p>
-        <p>客户数：{$attrs.user_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单数：{$attrs.orders_length} &nbsp;&nbsp;&nbsp;&nbsp; 总件数：{$attrs.sku_count} &nbsp;&nbsp;&nbsp;&nbsp; 总金额：{$attrs.price_amount|sprintf="%.2f",###}</p>
+        <p>客户数：{$attrs.user_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单数：{$attrs.orders_length} &nbsp;&nbsp;&nbsp;&nbsp; 订单总件数：{$attrs.sku_count} &nbsp;&nbsp;&nbsp;&nbsp; 订单总金额：{$attrs.price_amount|sprintf="%.2f",###}</p>
+        <p>发货总件数：{$attrs.delivery_qty} &nbsp;&nbsp;&nbsp;&nbsp; 发货总金额：{$attrs.delivery_amount|sprintf="%.2f",###}</p>
       </div>
       <div class="col-xs-4">
           <p> 配送线路单</p>
@@ -61,7 +62,7 @@
 	            <td>{$detail.pro_name}</td> 
 	            <td>{$detail.pro_attrs}</td>         		
 	            <td>{$detail.price}元/{$detail.close_unit}</td>
-	            <td>{$detail.order_qty}{$detail.unit_id}</td>
+	            <td>{$detail.former_qty}{$detail.unit_id}</td>
 	            <td>{$detail.delivery_qty}{$detail.unit_id}</td>
 	            <td>{$detail['price'] * $detail['delivery_qty']|sprintf="%.2f",###}</td>
 	            <td></td>
@@ -107,7 +108,7 @@
                 <td>{$detail.pro_code}</td>
                 <td>{$detail.pro_name}</td>
                 <!--<td><small ng-repeat="spec in detail.spec" ng-show="spec.val">{$spec.name}：{$spec.val}<br></small></td>-->
-                <td>{$detail.order_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
+                <td>{$detail.former_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
                 <td>{$detail.delivery_qty}<notempty name="detail['unit_id']">{$detail.unit_id}<else />{$detail.uom_name}</notempty></td>
                 <php>$delivery_sku_count_group += $detail['delivery_qty']</php>
               </tr>

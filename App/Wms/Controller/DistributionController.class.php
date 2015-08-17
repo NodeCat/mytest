@@ -415,9 +415,11 @@ class DistributionController extends CommonController {
                 if (!isset($merge[$v['pro_code']])) {
                     $merge[$v['pro_code']] = $v;
                 } else {
-                    $merge[$v['pro_code']]['order_qty'] += $v['order_qty'];
+                    $merge[$v['pro_code']]['former_qty'] += $v['former_qty'];
                     $merge[$v['pro_code']]['delivery_qty'] += $v['delivery_qty'];
                 }
+                $items['delivery_qty'] += $v['delivery_qty']; //总发货量
+                $items['delivery_amount'] += $v['delivery_qty'] * $v['price']; //总发货金额
                 unset($merge[$key]);
             }
             $items['sku_list'] = $merge;
