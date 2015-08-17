@@ -82,12 +82,12 @@ class OrderController extends \Common\Controller\AuthController {
             //司机实收金额
             $bill_out['deal_price']   = $sign_data['real_sum'];
             //押金
-            $bill_out['deposit_sum']  = $sign_data['deposit'];
+            $bill_out['deposit']  = $sign_data['deposit'];
             $bill_out['sign_msg']     = $sign_data['sign_msg'];  
             
             if($bill_out['actual_price'] > 0) {
                 //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费 - 押金
-                $bill_out['pay_for_price'] = $bill_out['actual_price'] - $bill_out['minus_amount'] - $bill_out['pay_reduce'] + $bill_out['deliver_fee'] - $bill_out['deposit_sum'];
+                $bill_out['pay_for_price'] = $bill_out['actual_price'] - $bill_out['minus_amount'] - $bill_out['pay_reduce'] + $bill_out['deliver_fee'] - $bill_out['deposit'];
                 //支付状态不等于已支付，支付方式不等于账期支付
                 if (!($bill_out['pay_status'] == 1 || $bill_out['pay_type'] == 2)) {
                     //抹零处理
@@ -144,7 +144,7 @@ class OrderController extends \Common\Controller\AuthController {
             }
             //抹零总计
             $bill_out['wipe_zero_sum'] = $wipe_zero_sum;
-            $logs = getlogs('dist_detail',$bill_out_id);
+            $logs = getlogs('dist_detail',$bill_out_id);dump($bill_out);
             $this->assign('data',$bill_out);
             $this->assign('logs',$logs);
         }
