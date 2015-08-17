@@ -26,6 +26,7 @@ class TransferOutController extends CommonController
     protected $columns = array (
         'id' => '',
         'code' => '出库单号',
+        'refer_code'=>'调拨单号',
         'wh_id_out' => '调出仓库',
         'wh_id_in' => '调入仓库',
         'cat_total' => 'SKU种数',
@@ -40,6 +41,12 @@ class TransferOutController extends CommonController
                 'query_type' => 'eq',
                 'control_type' => 'text',
                 'value' => 'code',
+        ),
+        'erp_transfer_out.refer_code' => array(
+                'title' => '调拨单号',
+                'query_type' => 'eq',
+                'control_type' => 'text',
+                'value' => 'refer_code',
         ),
         'erp_transfer_out.wh_id_out' => array(
                'title' => '调出仓库',
