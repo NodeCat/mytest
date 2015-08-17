@@ -260,6 +260,8 @@ class DistDriver extends Controller {
                 $orders = $bills['orders'];
                 $this->orderCount = $bills['orderCount'];
                 foreach ($orders as &$val) {
+                    //押金
+                    $val['deposit']    = $val['order_info']['deposit'] / 100;
                     //获取支付状态的中文
                     $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
                     $val['pay_status'] = $s;
@@ -346,6 +348,8 @@ class DistDriver extends Controller {
         $weight      = I('post.weight', 0);
         $flagQty = array_sum($quantity);
         $flagWgt = empty($weight) ? 0 : array_sum($weight);
+        //押金
+        $deposit = I('post.deposit',0);
         
         if (ceil($flagQty) == 0 && ceil($flagWgt) == 0) {
             $re = array(
@@ -419,6 +423,15 @@ class DistDriver extends Controller {
             $deal_price = $receivable_sum;
         }
         $sign_msg = I('post.sign_msg', '' ,'trim');
+        //实收减去押金
+        $deal_price = $deal_price - $deposit;
+        if ($deal_price < 0) {
+            $res = array(
+                'status' => -1,
+                'msg'  => '输入的押金不能大于应收金额，请重新输入'
+            );
+            $this->ajaxReturn($res);
+        }
         //签收表主表数据
         $fdata = array(
             'receivable_sum' => $receivable_sum,
@@ -429,6 +442,7 @@ class DistDriver extends Controller {
             'pay_status'     => $orderInfo['info']['pay_status'],
             'pay_type'       => $orderInfo['info']['pay_type'],
             'wipe_zero'      => isset($wipe_zero) ? $wipe_zero : 0,
+            'deposit'        => $deposit,
             'sign_msg'       => $sign_msg,
             'status'         => 2,//签收
             'sign_time'      => get_time(),
@@ -437,6 +451,12 @@ class DistDriver extends Controller {
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg);
         if($re['status'] === 0) {
+            unset($map);
+            $map['suborder_id'] = $refer_code;
+            $map['deposit']     = $deposit;
+            $map['neglect_payment'] = $wipe_zero;
+            //更新订单的抹零和押金
+            $res2 = $cA->setDeposit($map);
             //保存签收数据到配送单详情
             $datas = array(
                 'id'   => $dist_detail['id'],
@@ -467,6 +487,7 @@ class DistDriver extends Controller {
                 //添加签收详情数据
                 $sdM->addAll($cdata);
                 //更新配送单详情－>配送单状态
+                unset($map);
                 $map['dist_id'] = $dist_id;
                 $map['status']  = 2;
                 $s = $wA->set_dist_status($map);
@@ -510,6 +531,15 @@ class DistDriver extends Controller {
         $map['status'] = '7';
         $map['sign_msg'] = I('post.sign_msg');
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+        //押金
+        $deposit = I('post.deposit',0);
+        if ($deposit > 0) {
+            $res = array(
+                'status' => -1,
+                'msg'  => '整单拒收不能退押金！'
+            );
+            $this->ajaxReturn($res);
+        }
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
         $orderInfo = $cA->getOrderInfoByOrderId($map['suborder_id']);
@@ -642,16 +672,8 @@ class DistDriver extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            //付款状态不是已付款和帐期支付的才计算回款数
-                            if ($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2) {
-                                $sum_deal_price += 0;
-                            } else {
-                                $sum_deal_price += $sign_qty * $sign_in_detail['price_unit'];  //回款
-                            }
+                            $bill_out['actual_price'] += $sign_qty * $sign_in_detail['price_unit'];
                         }
-                        if (!($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2)) {
-                            $sum_deal_price =  $dist_logic->wipeZero($sum_deal_price);
-                        }  
                         break;
 
                     case '3':
@@ -672,7 +694,21 @@ class DistDriver extends Controller {
                         # code...
                         break;
                 }
-                 
+                if ($bill_out['actual_price'] > 0) {
+                    //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费 - 押金
+                    $bill_out['pay_for_price'] = $bill_out['actual_price'] - $sign_data['minus_amount'] - $sign_data['pay_reduce'] + $sign_data['deliver_fee'] - $sign_data['deposit'];
+                    //不是微信支付，并且不是账期支付的抹零
+                    if (!($sign_data['pay_status'] == 1 || $sign_data['pay_type'] == 2)) {
+                        $bill_out['pay_for_price'] =  $dist_logic->wipeZero($bill_out['pay_for_price']);
+                    } else {
+                        //付款状态是已付款和帐期支付的不计算回款数
+                        $bill_out['pay_for_price'] = 0;
+                    } 
+                } else {
+                    $bill_out['pay_for_price'] = 0;
+                }
+                //回款数
+                $sum_deal_price += $bill_out['pay_for_price']; 
             }  
         }
 

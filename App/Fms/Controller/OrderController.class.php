@@ -86,8 +86,8 @@ class OrderController extends \Common\Controller\AuthController {
             $bill_out['sign_msg']     = $sign_data['sign_msg'];  
             
             if($bill_out['actual_price'] > 0) {
-                //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费
-                $bill_out['pay_for_price'] = $bill_out['actual_price'] - $bill_out['minus_amount'] - $bill_out['pay_reduce'] + $bill_out['deliver_fee'];
+                //应收总计 ＝ 合计 － 优惠金额 － 支付减免 ＋ 运费 - 押金
+                $bill_out['pay_for_price'] = $bill_out['actual_price'] - $bill_out['minus_amount'] - $bill_out['pay_reduce'] + $bill_out['deliver_fee'] - $bill_out['deposit_sum'];
                 //支付状态不等于已支付，支付方式不等于账期支付
                 if (!($bill_out['pay_status'] == 1 || $bill_out['pay_type'] == 2)) {
                     //抹零处理
@@ -181,6 +181,9 @@ class OrderController extends \Common\Controller\AuthController {
         $data['real_sum']   = 0; //实收金额置0
         $data['deposit']    = 0;
         $data['wipe_zero']  = 0;
+        $data['minus_amount'] = 0;
+        $data['pay_reduce'] = 0;
+        $data['deliver_fee'] = 0;
         $data['sign_msg']   = '';
         $data['reject_reason'] = '';
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
@@ -203,7 +206,13 @@ class OrderController extends \Common\Controller\AuthController {
         $map['cur']['name'] = '财务'.session('user.username');
         $res2 = $A->set_status($map);
 
-        if ($res && $res1) {
+        unset($map);
+        $map['suborder_id'] = $order_id;
+        $map['deposit']     = 0;
+        $map['neglect_payment'] = 0;
+        //重置押金和抹零
+        $res3 = $A->setDeposit($map);
+        if ($res) {
             $this->success('重置成功！',U('Order/index',array('id' => $order_id)),2);
         } else {
             $this->error('重置失败！');

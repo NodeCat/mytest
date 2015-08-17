@@ -255,6 +255,9 @@ class PrintBillLogic {
         //运费
         $tmp[] = $this->formateLine('运费', '+' . $this->formatePrice($bill['deliver_fee']));
         $tmp[] = $this->getPrintCommand('print');
+        //退押金
+        $tmp[] = $this->formateLine('退押金', '－' . $this->formatePrice($bill['deposit']));
+        $tmp[] = $this->getPrintCommand('print');
         //下划线
         $tmp[] = $this->getPrintCommand('center');
         $tmp[] = $this->getUnderLine();

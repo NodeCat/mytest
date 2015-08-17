@@ -74,6 +74,60 @@
         $('.p_wgt').on('input',function(){
           inputChange($(this));
         });
+        $('.p_deposit').on('input',function(){
+          var final_price = 0;
+          var line_qty = 0;
+          var line_wgt = 0;
+          var line_wgt_obj;
+          var line_price = 0;
+          var obj = $(this);
+          //计算这张订单的应收金额，累加数量＊单价
+          obj.parents('.order').find('.p_qty').each(function(index,item){
+            line_price = $(item).parent().find('.p_price').val();
+            line_wgt_obj = $(item).siblings('.p_wgt');
+            line_qty = $(item).val();
+            if(line_wgt_obj.length > 0){
+              var line_wgt = line_wgt_obj.val(); 
+              line_qty = (line_wgt == 0) ? line_qty : line_wgt;
+            }
+            final_price = accAdd(final_price, accMul(line_price,line_qty));
+          });
+          //减去优惠金额
+          var minus = obj.parents('.order').find('.p_minus').text();
+          var sum = accSub(final_price, minus);
+
+          //加上运费
+          var delivery_fee = obj.parents('.order').find('.p_drive').text();
+          sum = accAdd(sum, delivery_fee);
+          
+          //减去押金
+          var deposit = obj.parents('.order').find('.p_deposit').val();
+          if(deposit) {
+            deposit     = parseInt(deposit);
+            sum  = accSub(sum,deposit);
+          }
+
+          obj.parents('.order').find('.p_final').text(sum);
+          obj.parents('.order').find('.p_final').val(sum);
+          //计算实收金额，累加所有的小计，并减去优惠金额
+          var deal_sum = 0;
+          obj.parents('.order').find('.p_sum').each(function(index,item){
+            deal_sum = accAdd(deal_sum, $.trim($(item).text()));
+          });
+          deal_sum = accSub(deal_sum, minus);
+          deal_sum = accAdd(deal_sum,delivery_fee);
+          //抹零处理
+          var paystatus = obj.parents('.order').find('input[name=final_price]').attr('paystatus');
+          if (paystatus != '已付款') {
+            deal_sum = wipeZero(deal_sum);
+          }
+          //减去押金
+          if(deposit) {
+            deal_sum  = accSub(deal_sum,deposit);
+          }
+
+          obj.parents('.order').find('.p_deal').val(deal_sum);
+        });
         function inputChange(obj){
           var qty = obj.val();
           var price_unit = obj.parent().find('.p_price').val();
@@ -101,7 +155,13 @@
           //加上运费
           var delivery_fee = obj.parents('.order').find('.p_drive').text();
           sum = accAdd(sum, delivery_fee);
-          
+          //减去押金
+          var deposit = obj.parents('.order').find('.p_deposit').val();
+          if(deposit) {
+            deposit     = parseInt(deposit);
+            sum  = accSub(sum,deposit);
+          }
+
           obj.parents('.order').find('.p_final').text(sum);
           obj.parents('.order').find('.p_final').val(sum);
           //计算实收金额，累加所有的小计，并减去优惠金额
@@ -116,6 +176,11 @@
           if (paystatus != '已付款') {
             deal_sum = wipeZero(deal_sum);
           }
+          //减去押金
+          if(deposit) {
+            deal_sum  = accSub(deal_sum,deposit);
+          }
+
       		obj.parents('.order').find('.p_deal').val(deal_sum);
       	}
 
@@ -232,7 +297,7 @@
                 }
                 location.reload();
               } else {
-                alert_error(msg.msg);
+                alert(msg.msg);
               }
               return false;
             }
@@ -278,7 +343,8 @@
     function checkValue(x) {
       var val1 = $(x).data('val');
       var val2 = $(x).val();
-      //val2 = val2.replace(/[^\d]/g,'');
+      val2 = val2.replace('/[^/d/.]/g','');
+      $(x).val(val2);
       if(val1 < val2){
         if (typeof HostApp == "undefined") {
           alert('输入数量不能大于下单数量，请重新输入');
@@ -290,6 +356,26 @@
         $(x).val(val2);
       }
     }
+
+    function checkDeposit(x) {
+      var val1 = $(x).parents('.order').find('input[name=final_price]').val();
+      val1 = parseInt(val1);
+      var val2 = $(x).val();
+      val2 = val2.replace('/[^/d/.]/g','');
+      $(x).val(val2);
+      val2 = parseInt(val2);
+      if(val1 < 0){
+        if (typeof HostApp == "undefined") {
+          alert('输入的押金不能大于应收金额，请重新输入');
+        } else {
+          HostApp.toast('输入的押金不能大于应收金额，请重新输入');
+        }
+        $(x).val(0);
+      } else {
+        $(x).val(val2);
+      }
+    }
+
     $('.report').on('click',
       function() {
         if (confirm('确定要报错吗')) {
