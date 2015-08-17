@@ -823,6 +823,7 @@ class StockInController extends CommonController {
                 }
                 else{
                     $has_source_batch=false;
+                    $batch = $refer_code;
                 }
                 $pro_code = $stock_bill_in_detail_info['pro_code'];
                 $pro_qty = $stock_bill_in_detail_info['expected_qty'];
