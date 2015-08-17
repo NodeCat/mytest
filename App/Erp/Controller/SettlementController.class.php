@@ -329,6 +329,24 @@ class SettlementController extends CommonController
 
                 $returnArray = array_merge($result, $result1, $result2, $result3);
             }
+
+            //如果取出的单据数据，已经在其它结算单中，并且结算单不为作废状态，单据就不再显示
+            $code = array();
+            foreach ($returnArray as $key => $val) {
+                $code[] = $val['code'];
+            }
+            $code_array = array_unique($code);
+            $where['erp_settlement_detail.order_code'] = array('in',  $code_array);
+            $model  = M('erp_settlement_detail');
+            $join   = array('INNER JOIN erp_settlement ON erp_settlement.code=erp_settlement_detail.code AND erp_settlement.status!=11');
+            $field  = 'erp_settlement_detail.order_code';
+            $array = $model->field($field)->join($join)->where($where)->group('erp_settlement_detail.order_code')->getField('erp_settlement_detail.order_code,erp_settlement_detail.id');
+            foreach ($returnArray as $keys => $value) {
+                if ( !empty($array[$value['code']]) ) {
+                    unset($returnArray[$keys]);         //剔除数组
+                }
+            }
+
             $this->ajaxReturn($returnArray);
         }
     }
