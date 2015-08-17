@@ -33,7 +33,7 @@ class ProcessController extends CommonController {
         'created_user' => '创建人',
         'created_time' => '创建时间',
         'status' => '状态',
-        'remark' => '备注',
+        //'remark' => '备注',
     );
     protected $query   = array (
         'erp_process.code' => array(

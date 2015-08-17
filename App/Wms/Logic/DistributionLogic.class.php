@@ -112,7 +112,6 @@ class DistributionLogic {
             foreach ($result as $value) {
                 $order_ids[] = $value['refer_code'];
             }
-            
             //获取订单详情
             $order = D('Common/Order', 'Logic');
             $order_info = $order->getOrderInfoByOrderIdArr($order_ids);
@@ -1163,7 +1162,9 @@ class DistributionLogic {
         if(!empty($params['dist_id']) && !empty($params['status'])) {
             $map['id'] = $params['dist_id'];
             switch($params['status']) {
-                case '2'://已签收对应配送单状态3:已配送
+                //已签收或拒收对应配送单状态3:已配送
+                case '2':
+                case '3':
                     $status = '3';
                     break;
                 case '4'://已完成对应配送单状态4:已结算
@@ -1196,16 +1197,20 @@ class DistributionLogic {
                     ->field('status')
                     ->where($map)
                     ->select();
-                //所有配送单详情均为该状态时，修改配送单主表状态
-                $flag = 1;
+                //所有配送单详情均为已签收或已拒收,dflag=1,否则dflag=0
+                $dflag = 1;
+                //所有配送单详情均为已完成,sflag=1,否则sflag=0
+                $sflag = 1;
                 foreach ($detail_status as $value) {
-                    if($value['status'] != $params['status']) {
-                        $flag = 0;
-                        break;
+                    if($value['status'] !== '2' && $value['status'] !== '3') {
+                        $dflag = 0;
+                    }
+                    if($value['status'] !== '4') {
+                        $sflag = 0;
                     }
                 }
                 //更新配送单状态
-                if($flag === 1) {
+                if($dflag === 1 || $sflag === 1) {
                     unset($map);
                     $map['id'] = $params['dist_id'];
                     $data = array('status' => $status);
