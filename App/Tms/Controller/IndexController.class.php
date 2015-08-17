@@ -24,7 +24,7 @@ class IndexController extends \Common\Controller\AuthController{
 
         $date_week = date('Y-m-d',strtotime('-1 week'));
 
-        $data['driver_fee']['title'] = '近7天司机情况';
+        $data['driver_fee']['title'] = '近7天数据统计';
         $data['driver_fee']['data'] = M()->query('
                     select a.*,b.name,b.driver_qty,b.notpaid_qty,b.fee,ROUND(b.fee / a.total_price * 100,2) fee_precent
                      from(
@@ -176,7 +176,7 @@ class IndexController extends \Common\Controller\AuthController{
             'order_qty' => '出库单数量',
             'dist_order_average' => '平均出库单数/每配送单',
             'dist_price_percent' => '预计运费比',
-            'fee_precent' => '运费占比'
+            'fee_precent' => '实际运费占比'
         );
 
         $this->data = $data;
