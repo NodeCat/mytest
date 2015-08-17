@@ -468,13 +468,26 @@ class DistDriver extends Controller {
                 $cdata = array();
                 //组合一个签收详情数据
                 foreach ($bill_id_details as $detail_id => $detail) {
+                    $net_weight = empty($detail['order_detail']['net_weight']) ? 0 : $detail['order_detail']['net_weight'];
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
+                    $tmp['delivery_qty']       = $detail['delivery_qty'];
+                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
-                    $tmp['real_sign_wgt']      = isset($weight[$detail_id]) ? $weight[$detail_id] : 0;
+                    $tmp['real_sign_wgt']      = $tmp['real_sign_qty'] * $net_weight;
+                    $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
+                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['single_price'];
+                    $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
+                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    if (isset($weight[$detail_id])) {
+                        $tmp['real_sign_wgt'] = $weight[$detail_id];
+                        $tmp['sign_sum']      = $tmp['real_sign_wgt'] * $tmp['price_unit'];
+                        $tmp['delivery_sum']  = $tmp['delivery_wgt'] * $tmp['price_unit'];
+                    }
+                    $tmp['reject_sum']         = $tmp['delivery_sum'] - $tmp['sign_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
                     $cdata[] = $tmp;
@@ -542,8 +555,8 @@ class DistDriver extends Controller {
         }
         $cA = A('Common/Order','Logic');
         $res = $cA->set_status($map);
-        $orderInfo = $cA->getOrderInfoByOrderId($map['suborder_id']);
         if($res['status'] === 0) {
+            $orderInfo = $cA->getOrderInfoByOrderId($map['suborder_id']);
             $sA = A('Tms/SignIn', 'Logic');
             $reject_codes = I('post.reject_reason');
             $reasons = $sA->getReasonByCode($reject_codes);
@@ -561,8 +574,8 @@ class DistDriver extends Controller {
             $bill_out_id = I('post.bid/d');
             $wA = A('Wms/Distribution', 'Logic');
             $map['bill_out_id'] = $bill_out_id;
-            $dist_details = $wA->getDistDetails($map);
             //该出库单对应配送单详情
+            $dist_details = $wA->getDistDetails($map);
             $dist_detail = $dist_details['list'][0];
             //向配送单详情更新拒收信息
             if($dist_detail) {
@@ -571,6 +584,54 @@ class DistDriver extends Controller {
                     'data' => $fdata,
                 );
                 $s = $wA->saveSignDataToDistDetail($datas);
+                if($dist_detail['status'] == 3 || $s) {
+                    //配送单ID
+                    $dist_id = $dist_detail['pid'];
+                    //出库单详情
+                    $bill_details = $wA->get_out_detail(array($bill_out_id));
+                    //出库单详情关联订单详情
+                    $bill_id_details = array();
+                    foreach ($bill_details as $val) {
+                        foreach ($orderInfo['info']['detail'] as $v) {
+                            if ($val['pro_code'] == $v['sku_number']) {
+                                $val['order_detail'] = $v;
+                            }
+                        }
+                        $bill_id_details[$val['id']] = $val;
+                    }
+                    $cdata = array();
+                    //组合一个拒收详情数据
+                    foreach ($bill_id_details as $detail_id => $detail) {
+                        $net_weight = empty($detail['order_detail']['net_weight']) ? 0 : $detail['order_detail']['net_weight'];
+                        $tmp['pid']                = $dist_detail['id'];
+                        $tmp['bill_out_detail_id'] = $detail_id;
+                        $tmp['delivery_qty']       = $detail['delivery_qty'];
+                        $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                        $tmp['reject_qty']         = $tmp['delivery_qty'];
+                        $tmp['reject_wgt']         = $tmp['delivery_wgt'];
+                        $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
+                        $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
+                        $tmp['price_unit']         = $detail['order_detail']['single_price'];
+                        $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                        $tmp['reject_sum']         = $tmp['delivery_sum'];
+                        $tmp['created_time']       = get_time();
+                        $tmp['updated_time']       = get_time();
+                        $cdata[] = $tmp;
+                        unset($tmp);
+                    }
+                    $bill_out_detail_ids = array_keys($bill_id_details);
+                    $bdmap['bill_out_detail_id'] = array('in', $bill_out_detail_ids);
+                    $sdM = M('tms_sign_in_detail');
+                    $sdM->where($bdmap)->save(array('is_deleted' => 1));
+                    //添加签收详情数据
+                    $sdM->addAll($cdata);
+                    //更新配送单详情－>配送单状态
+                    $map['dist_id'] = $dist_id;
+                    $map['status']  = '3';
+                    $s = $wA->set_dist_status($map);
+                    $status = $s['status'];
+                    $msg = ($status === -1) ? '更新成功,配送单状态更新失败' : '更新成功';
+                }
                 //发送短信
                 if ($reasons) {
                     $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
