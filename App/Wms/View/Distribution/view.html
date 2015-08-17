@@ -23,14 +23,20 @@
             <tr>
               <td class="text-center"><h5>总单数</h5></td>
               <td class="text-center"><h5>{$data.order_count}</h5></td>
-              <td class="text-center"><h5>总金额</h5></td>
+              <td class="text-center"><h5>订单总金额</h5></td>
               <td class="text-center"><h5>{$data.total_price|sprintf="%.2f",###}</h5></td>
             </tr>
             <tr>
-              <td class="text-center"><h5>总行数</h5></td>
+              <td class="text-center"><h5>订单总行数</h5></td>
               <td class="text-center"><h5>{$data.line_count}</h5></td>
-              <td class="text-center"><h5>总件数</h5></td>
+              <td class="text-center"><h5>订单总件数</h5></td>
               <td class="text-center"><h5>{$data.sku_count}</h5></td>
+            </tr>
+            <tr>
+              <td class="text-center"><h5>发货总件数</h5></td>
+              <td class="text-center"><h5>{$data.delivery_count}</h5></td>
+              <td class="text-center"><h5>发货总金额</h5></td>
+              <td class="text-center"><h5>{$data.delivery_price}</h5></td>
             </tr>
           </tbody>
         </table>

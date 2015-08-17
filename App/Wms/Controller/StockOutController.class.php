@@ -156,16 +156,16 @@ class StockOutController extends CommonController {
             'query_type' => 'eq',     
             'control_type' => 'select',     
             'value' => array(
-                        'am'=>'上午',
-                        'pm'=>'下午'
-                        ),  
+                'am'=>'上午',
+                'pm'=>'下午'
+            ),  
         ), 
-        /*'stock_bill_out.created_time' =>    array (    
-            'title' => '下单时间',     
-            'query_type' => 'between',     
-            'control_type' => 'datetime',     
+        'stock_bill_out.customer_phone' =>    array (    
+            'title' => '客户电话',     
+            'query_type' => 'eq',     
+            'control_type' => 'text',     
             'value' => '',   
-        ), */
+        ),
         
     );
     public function __construct(){
