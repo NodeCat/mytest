@@ -38,7 +38,7 @@ class DispatchController extends \Common\Controller\AuthController{
         //以仓库为单位的签到统计 
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        $warehouse = I('post.warehouse/d', 0);
+        $warehouse = session('user.wh_id');
         $car_from  = I('post.car_from', '' ,'trim');
         if ($warehouse || $car_from) {
             if ($warehouse) {
@@ -181,7 +181,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        $warehouse = I('post.warehouse/d', 0);
+        $warehouse = session('user.wh_id');
         $car_from  = I('post.car_from', '' ,'trim');
         if ($warehouse || $car_from) {
             if ($warehouse) {
