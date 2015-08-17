@@ -6,7 +6,7 @@ class IndexController extends \Common\Controller\AuthController{
         $data['stockout']['title'] = '出库单实时统计';
         $data['stockout']['data'] = M()->table('stock_wave_distribution_detail dd ')
         ->field('wh.name,dd.status,date(deliver_date) deliver_date,deliver_time,count(*) qty')
-        ->join('stock_wave_distribution d on dd.pid = d.id and d.is_deleted = 0 and dd.is_deleted = 0')
+        ->join('stock_wave_distribution d on dd.pid = d.id and d.is_deleted = 0 and dd.is_deleted = 0 and d.wh_id='.session('user.wh_id'))
         ->join('warehouse wh on d.wh_id = wh.id')
         ->where('d.deliver_date = date(now())')
         ->group('d.wh_id,dd.status,deliver_date,deliver_time')
@@ -17,7 +17,7 @@ class IndexController extends \Common\Controller\AuthController{
         $data['distribution']['data'] = M()->table('stock_wave_distribution d')
         ->field('wh.name,d.status,date(deliver_date) deliver_date,d.deliver_time,count(*) qty')
         ->join('warehouse wh on d.wh_id = wh.id')
-        ->where('deliver_date = date(now()) and d.is_deleted = 0')
+        ->where('deliver_date = date(now()) and d.is_deleted = 0 and d.wh_id='.session('user.wh_id'))
         ->group('wh_id,status,deliver_time')
         ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
@@ -34,10 +34,27 @@ class IndexController extends \Common\Controller\AuthController{
             ROUND(300 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
             ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
         ')
-        ->join('warehouse wh on d.wh_id = wh.id')
+        ->join('warehouse wh on d.wh_id = wh.id and d.wh_id='.session('user.wh_id'))
         ->where('deliver_date = date(now()) and d.is_deleted = 0')
         ->group('wh_id')
         ->select(); 
+        $date_week = date('Y-m-d',strtotime('-1 week'));
+        $data['yestoday_fee']['title'] = '近7天历史运费占比';
+        $data['yestoday_fee']['data'] = M()->query('select a.id,a.name,a.fee,b.total_price,ROUND(a.fee / b.total_price * 100,2) fee_precent,b.deliver_date from (
+                        select wh.id,wh.name,date(sl.created_time) sign_date,sum(sl.fee) fee from tms_sign_list sl
+                        inner join tms_user u on sl.userid = u.id
+                        inner join warehouse wh on u.warehouse = wh.id
+                        where date(sl.created_time) > "'.$date_week.'"
+                        group by u.warehouse,date(sl.created_time)
+                    ) a 
+                    inner join (
+                        select wh_id,date(deliver_date) deliver_date,sum(total_price) total_price from stock_wave_distribution
+                        where date(deliver_date) > "'.$date_week.'"
+                        group by wh_id,date(deliver_date)
+                    ) b
+                    on a.id = b.wh_id and a.sign_date = b.deliver_date  and b.wh_id='.session('user.wh_id').
+                    ' order by b.wh_id,b.deliver_date desc
+                ');
 
         $status['stockout'] = array(
                 '0' => '已分拨',
@@ -96,7 +113,14 @@ class IndexController extends \Common\Controller\AuthController{
             
         );
 
+        $data['yestoday_fee']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'fee_precent' => '运费占比',
+        );
+
         $this->data = $data;
         $this->display('Dispatch/home');
     }
+
 }
