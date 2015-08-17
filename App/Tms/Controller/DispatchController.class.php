@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class DispatchController extends \Common\Controller\AuthController{
+class DispatchController extends Controller{
 
 	protected $columns = array (   
         'username'     => '姓名',   
@@ -364,22 +364,18 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile'] = $sign_info['mobile'];
             $map['created_time'] = array('between',$sign_info['created_time'].','.$sign_info['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
-            $map['type'] = 1;
-            $delivery_msg = M('tms_delivery')->where($map)->field('dist_id')->select();
+            $delivery_msg = M('tms_delivery')->where($map)->field('dist_id,type')->select();
             unset($map);
             if (empty($delivery_msg)) {
                 continue;
             }
-            $task_ids = array();
-            foreach ($delivery_msg as $v) {
-                $task_ids[] = $v['dist_id'];
+            $type = $delivery_msg[0]['type'];
+            $ids = array_column($delivery_msg, 'dist_id');
+            if ($type == 1) {
+                A('Tms/Dispatch','Logic')->avgDeliveryFeeToTask($ids, $value);
+            } else {
+                A('Tms/Dispatch', 'Logic')->avgDeliveryFeeToOrder($ids, $value);
             }
-            $cou = count($task_ids);
-            $task_fee = sprintf('%.2f', $value/$cou);
-            $map['id'] = array('in',$task_ids);
-            $map['is_deleted'] = 0;
-            M('tms_dispatch_task')->where($map)->save(array('delivery_fee' => $task_fee));
-            unset($map);
         }
         $re = array(
             'status' => 0,
