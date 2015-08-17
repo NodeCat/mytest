@@ -112,7 +112,6 @@ class DistributionLogic {
             foreach ($result as $value) {
                 $order_ids[] = $value['refer_code'];
             }
-            
             //获取订单详情
             $order = D('Common/Order', 'Logic');
             $order_info = $order->getOrderInfoByOrderIdArr($order_ids);
