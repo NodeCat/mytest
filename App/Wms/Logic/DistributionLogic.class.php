@@ -1192,15 +1192,14 @@ class DistributionLogic {
                     ->field('status')
                     ->where($map)
                     ->select();
+                //所有配送单详情均为已签收或已拒收,dflag=1,否则dflag=0
                 $dflag = 1;
+                //所有配送单详情均为已完成,sflag=1,否则sflag=0
                 $sflag = 1;
                 foreach ($detail_status as $value) {
-                    //所有配送单详情均为已签收或已拒收
                     if($value['status'] !== '2' && $value['status'] !== '3') {
-                        echo $dflag;
                         $dflag = 0;
                     }
-                    //所有配送单详情均为已完成
                     if($value['status'] !== '4') {
                         $sflag = 0;
                     }
