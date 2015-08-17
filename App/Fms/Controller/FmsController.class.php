@@ -139,7 +139,7 @@ class FmsController extends \Common\Controller\AuthController{
                 }
             }
             if ($val['actual_price'] > 0) {
-                $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'] - $val['deposit'] / 100; 
+                $val['pay_for_price'] = $val['actual_price'] - $val['minus_amount'] - $val['pay_reduce'] + $val['deliver_fee'] - $val['deposit']; 
                 //支付状态不等于已支付，支付方式不等于账期支付,抹零
                 if (!($val['pay_status'] == 1 || $val['pay_type'] == 2)) {
                     $val['pay_for_price'] = $DistLogic->wipeZero($val['pay_for_price']);
