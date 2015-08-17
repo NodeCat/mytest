@@ -19,7 +19,24 @@
     <ul class="nav navbar-nav navbar-right">
       <li class="hidden"><a href="{:U('Config/clear_runtime')}">清空缓存</a></li>
       <notempty name="Think.session.user.username">
-
+<php>
+$A=A('Common/Warehouse','Logic');
+$items=$A->getListByRule();
+$_wh = $items[session('user.wh_id')];
+unset($items[session('user.wh_id')]);
+</php>
+<empty name="items">
+<li><a>{$_wh}</a></li>
+<else/>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{$_wh} <span class="caret"></span></a>
+  <ul class="dropdown-menu" role="menu">
+  <foreach name="items" item="wh">
+    <li><a href="{:U('Login/wh','id='.$key)}">{$wh}</a></li>
+  </foreach>
+  </ul>
+</li>
+</empty>
       <li>
         <a href="#"> <i class="glyphicon glyphicon-comment"></i> 消息</a>
       </li>
