@@ -73,7 +73,7 @@ class OrderApi extends CommApi{
             $params['company_id'] = $order_info['info']['site_src'];
             $params['order_type'] = $order_info['info']['order_type'];
             $params['op_date'] = str_replace('/', '-', $order_info['info']['created_time']);
-            $params['customer_phone'] = $order_info['sale']['mobile'];
+            $params['customer_phone'] = $order_info['mobile'];
 
             foreach($order_info['info']['detail'] as $order_detail){
                 $detail[] = array(

@@ -38,6 +38,7 @@ class StockOutLogic{
         $data['delivery_ampm'] = $params['delivery_ampm'];
         $data['customer_realname'] = $params['customer_realname'];
         $data['customer_id'] = $params['customer_id'];
+        $data['customer_phone'] = $params['customer_phone'];
         $data['delivery_address'] = $params['delivery_address'];
         $data['op_date'] = $params['op_date'];
         $data['order_type'] = $params['order_type'];

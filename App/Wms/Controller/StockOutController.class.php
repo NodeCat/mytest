@@ -40,7 +40,7 @@ class StockOutController extends CommonController {
         'total_qty' => '总件数',
         'line_id' => '线路片区',
         'shop_name'=>'店铺名称',
-        'user_phone'=>'客户电话',
+        'customer_phone'=>'客户电话',
         'status' => '出库单状态',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
@@ -292,7 +292,6 @@ class StockOutController extends CommonController {
                 foreach ($orderInfo as $order) {
                     if ($value['refer_code'] == $order['id']) {
                         $value['shop_name'] = $order['shop_name'];
-                        $value['user_phone'] = $order['sale']['mobile'];
                     }
                 }
             }
