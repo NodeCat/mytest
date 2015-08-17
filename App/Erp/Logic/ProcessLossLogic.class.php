@@ -14,13 +14,14 @@ class ProcessLossLogic
      * @param $code            SKU
      * @param $start_time      开始时间
      * @param $end_time        结束时间
+     * @param $location_ids  加工损耗区ID
      * @return array
      */
-    public function getStockLoss($code, $start_time, $end_time)
+    public function getStockLoss($code, $start_time, $end_time, $location_ids)
     {
         $model = M('stock');
         $where['stock.is_deleted']  = 0;
-        $where['stock.location_id'] ='96';      //加工损耗区标记
+        $where['stock.location_id'] = array('in', $location_ids);      //加工损耗区标记
         $where['stock.pro_code']    = array('in', $code);
         if (!empty($start_time) && !empty($end_time)) {
             $where['DATE_FORMAT(stock.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");

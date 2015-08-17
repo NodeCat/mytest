@@ -77,9 +77,13 @@ class ProcessLossController extends CommonController
             $end_time   = I('get.created_time_1');
         }
 
+        //获取所有加工损耗区ID
+        $model = M('location');
+        $location_ids = $model->where("code='XA-001'")->getField('id', true);
+
         $code   = implode(',', $pro_code);
         $logic  = D('ProcessLoss', 'Logic');
-        $result = $logic->getStockLoss($code, $start_time, $end_time);
+        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids);
         foreach ($data as $key => $val) {
             $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
             $loss_ratio                  = ($data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']));       //损耗率
@@ -143,9 +147,13 @@ class ProcessLossController extends CommonController
             $values['c_pro_num'] = sprintf('%.2f',$values['p_pro_num']*$values['ratio']);
         }
 
+        //获取所有加工损耗区ID
+        $model = M('location');
+        $location_ids = $model->where("code='XA-001'")->getField('id', true);
+
         $code   = implode(',', $pro_code);
         $logic  = D('ProcessLoss', 'Logic');
-        $result = $logic->getStockLoss($code, $start_time, $end_time);
+        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids);
 
         foreach ($data as $key => $val) {
             $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
