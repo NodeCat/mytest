@@ -144,7 +144,7 @@ class OrderController extends \Common\Controller\AuthController {
             }
             //抹零总计
             $bill_out['wipe_zero_sum'] = $wipe_zero_sum;
-            $logs = getlogs('dist_detail',$bill_out_id);dump($bill_out);
+            $logs = getlogs('dist_detail',$bill_out_id);
             $this->assign('data',$bill_out);
             $this->assign('logs',$logs);
         }
