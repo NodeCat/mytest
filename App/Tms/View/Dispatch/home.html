@@ -146,9 +146,9 @@
 </div>
 
 <div class="row">
-<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 <div class="panel panel-default">
-  	<div class="panel-heading">{$data['summary']['title']}</div>
+  	<div class="panel-heading">{$data['driver_fee']['title']}</div>
   	<div class="panel-body">
     	<div class="col-md-6 col-lg-6 col-sm-6 col-xs-12">
     	<div class="input-group ">
@@ -174,7 +174,7 @@
 		        </label>
 		        </eq>
 		      </th>
-		      <volist name="data['summary']['columns']" id="col" offset="isset($data['summary']['columns']['id'])?1:0">
+		      <volist name="data['driver_fee']['columns']" id="col" offset="isset($data['driver_fee']['columns']['id'])?1:0">
 		              <th id="{$key}">{$col}</th>
 		      </volist>
 		      <eq name="table.status" value="true">
@@ -187,14 +187,14 @@
 		  </thead>
 
 		  <tbody>
-		    <volist name="data['summary']['data']" id="vo" key="row" empty="">
+		    <volist name="data['driver_fee']['data']" id="vo" key="row" empty="">
 		    <tr>
-		      <volist name="data['summary']['columns']" id="col" offset="0" length='1'>
+		      <volist name="data['driver_fee']['columns']" id="col" offset="0" length='1'>
 		          <td><label class="checkbox"><eq name="table.checkbox" value="true"><input type="checkbox" id="{$vo[$pk]}" data-id="{$pk}" /></eq>{$row}</label></td>
 		          {~$values[$key]=$vo[$key]}
 		      </volist>
 
-		      <volist name="data['summary']['columns']" id="col" offset="isset($data['summary']['columns'][$pk])?1:0">
+		      <volist name="data['driver_fee']['columns']" id="col" offset="isset($data['driver_fee']['columns'][$pk])?1:0">
 		              <td>{$vo[$key]}</td>
 		              {~$values[$key]=$vo[$key]}
 		      </volist>
@@ -218,7 +218,7 @@
 	</div>
 </div>
 </div>
-<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+<div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 hidden">
 <div class="panel panel-default">
   	<div class="panel-heading">{$data['yestoday_fee']['title']}</div>
   	<div class="panel-body">

@@ -22,7 +22,56 @@ class IndexController extends \Common\Controller\AuthController{
         ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
 
-        $data['summary']['title'] = '今日运费占比［粗略预估统计］';
+        $date_week = date('Y-m-d',strtotime('-1 week'));
+
+        $data['driver_fee']['title'] = '近7天数据统计';
+        $data['driver_fee']['data'] = M()->query('
+                    select a.*,b.name,b.driver_qty,b.notpaid_qty,b.fee,ROUND(b.fee / a.total_price * 100,2) fee_precent
+                     from(
+                    SELECT 
+                        d.wh_id,
+                        DATE(deliver_date) deliver_date,
+                        SUM(total_price) total_price,
+                        COUNT(*) dist_qty,
+                        SUM(order_count) order_qty,
+                        ROUND(SUM(total_price) / COUNT(*), 2) dist_price_average,
+                        ROUND(SUM(total_price) / SUM(order_count), 2) decim_price_average,
+                        ROUND(320 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
+                        ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
+                    FROM
+                        stock_wave_distribution d
+                    WHERE
+                        d.is_deleted = 0 and  DATE(deliver_date) > "'.$date_week.'" and d.wh_id = '.session('user.wh_id').'
+                    GROUP BY wh_id , deliver_date
+                    order by deliver_date desc
+                    ) a 
+                    inner join (
+                    SELECT 
+                        wh.id wh_id,
+                        wh.name,
+                        COUNT(*) driver_qty,
+                        sum(sl.fee) fee,
+                        SUM(CASE sl.fee
+                            WHEN 0 THEN 1
+                            ELSE 0
+                        END) notpaid_qty,
+                        DATE(sl.created_time) deliver_date
+                    FROM
+                        tms_sign_list sl
+                            INNER JOIN
+                        tms_user u ON sl.userid = u.id
+                            INNER JOIN
+                        warehouse wh ON wh.id = u.warehouse
+                    WHERE
+                        sl.is_deleted = 0 and DATE(sl.created_time) > "'.$date_week.'" and wh.id = '.session('user.wh_id').'
+                    GROUP BY u.warehouse , deliver_date #, period
+                    ORDER BY u.warehouse , deliver_date DESC #, period
+                    ) b 
+                    on a.wh_id = b.wh_id and a.deliver_date = b.deliver_date
+                    '
+            );
+/*
+            $data['summary']['title'] = '今日运费占比［粗略预估统计］';
         $data['summary']['data'] = M()->table('stock_wave_distribution d')
         ->field('
             wh_id,wh.name,date(deliver_date) deliver_date,
@@ -38,7 +87,7 @@ class IndexController extends \Common\Controller\AuthController{
         ->where('deliver_date = date(now()) and d.is_deleted = 0')
         ->group('wh_id')
         ->select(); 
-        $date_week = date('Y-m-d',strtotime('-1 week'));
+
         $data['yestoday_fee']['title'] = '近7天历史运费占比';
         $data['yestoday_fee']['data'] = M()->query('select a.id,a.name,a.fee,b.total_price,ROUND(a.fee / b.total_price * 100,2) fee_precent,b.deliver_date from (
                         select wh.id,wh.name,date(sl.created_time) sign_date,sum(sl.fee) fee from tms_sign_list sl
@@ -55,7 +104,7 @@ class IndexController extends \Common\Controller\AuthController{
                     on a.id = b.wh_id and a.sign_date = b.deliver_date  and b.wh_id='.session('user.wh_id').
                     ' order by b.wh_id,b.deliver_date desc
                 ');
-
+*/
         $status['stockout'] = array(
                 '0' => '已分拨',
                 '1' => '已装车',
@@ -110,13 +159,24 @@ class IndexController extends \Common\Controller\AuthController{
             'order_qty' => '出库单数量',
             'dist_order_average' => '平均每个车单包含出库单数',
             'dist_price_percent' => '预计运费比'
-            
         );
 
         $data['yestoday_fee']['columns'] = array(
             'name' => '仓库',
             'deliver_date' => '配送日期',
             'fee_precent' => '运费占比',
+        );
+
+        $data['driver_fee']['columns'] = array(
+            'name' => '仓库',
+            'deliver_date' => '配送日期',
+            'driver_qty' => '签到司机数量',
+            'notpaid_qty' => '无运费司机数量',
+            'dist_qty' => '配送单数量',
+            'order_qty' => '出库单数量',
+            'dist_order_average' => '平均出库单数/每配送单',
+            'dist_price_percent' => '预计运费比',
+            'fee_precent' => '实际运费占比'
         );
 
         $this->data = $data;
