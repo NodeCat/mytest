@@ -152,11 +152,11 @@
                       
                       <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
                        
-                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}">
+                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" data-val="{$v.quantity}" onkeyup="checkValue(this)" >
                       <span class="input-group-addon">{$v.unit_id}</span>
 
                 	    <neq name="v['close_unit']" value="$v['unit_id']">
-                      <input type="number" name="weight[{$v.id}]" min="0" class="real form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}">
+                      <input type="number" name="weight[{$v.id}]" min="0" class="real form-control p_wgt" placeholder="{$v['weight']}" value="{$v['weight']}"  data-val="{$v['weight']}" onkeyup="checkValue(this)">
                       <span class="input-group-addon">{$v.close_unit}</span>
                   	  </neq>
 
@@ -185,12 +185,28 @@
                   </span>
                   元
                 </span>
-                <span class="input-group-addon hidden">
+                <span class="input-group-addon">
+                  运费 ¥
                   <span class="p_drive">
                     {$vo.deliver_fee}
                   </span>
+                   元
                 </span>
-                <input type="text" class="form-control" placeholder="" value="运费 ¥{$vo.deliver_fee} 元" readonly>
+                <span class="input-group-addon">
+                  退押金 ￥
+                </span>
+                <switch name="vo['status_cn']">
+                  <case value="已签收" break="0">
+                  </case>
+                  <case value="已完成" break="1">
+                    <span>
+                      <input type="number" name="deposit" min="0" class="form-control p_deposit" placeholder="" value="{$vo.deposit}" readonly>
+                    </span>
+                  </case>
+                  <default />
+                    <input type="number" name="deposit" min="0" class="form-control p_deposit" placeholder="" value="{$vo.deposit}" data-val="{$vo.receivable_sum}" onkeyup="checkDeposit(this)">
+                </switch>
+                <span class="input-group-addon"> 元</span>
               </div>
               <div class="input-group row">
                 <span class="input-group-addon">
@@ -212,10 +228,14 @@
                       <span class="form-control p_deal">
                         该订单已网上付款
                       </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.real_sum}" readonly>
                     <elseif condition="$vo.pay_type eq 2" />
                       <span class="form-control p_deal">
                         该订单是账期支付
                       </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.real_sum}" readonly>
                     <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.real_sum}" readonly>
@@ -230,10 +250,14 @@
                       <span class="form-control p_deal">
                         该订单已网上付款
                       </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.real_sum}" readonly>
                     <elseif condition="$vo.pay_type eq 2" />
                       <span class="form-control p_deal">
                         该订单是账期支付
                       </span>
+                      <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
+                    value="{$vo.real_sum}" readonly>
                     <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.real_sum}" readonly>
