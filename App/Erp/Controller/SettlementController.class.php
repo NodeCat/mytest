@@ -191,7 +191,7 @@ class SettlementController extends CommonController
             $partner_id   = I('post.partner_id/d');     //供应商ID
             $bill_number  = I('post.bill_number');      //发票号
             $bill_amount  = I('post.bill_amount');      //发票金额
-
+            
             if (empty($partner_id)) {
                 $this->ajaxReturn(array('code'=>'-1', 'message'=>'请选择供应商！'));
             }
@@ -499,17 +499,28 @@ class SettlementController extends CommonController
     {
         $id = I('get.id/d');
 
+
         //查询结算单对应的单据详细信息，用于更新对应单据状态使用
         $join = array(
             "inner join partner on erp_settlement.partner_id=partner.id ",
             "left join user on erp_settlement.settlement_user = user.id ",
         );
 
-        $settlement = M('erp_settlement')->field('erp_settlement.code as code,erp_settlement.settlement_time as settlement_time, user.nickname as settlement_user, partner.name as partner_name, erp_settlement.total_amount')->join($join)->where('erp_settlement.id=%d', $id)->find();
+        $model = M('erp_settlement');
+
+        $settlement = $model->field('erp_settlement.code as code,erp_settlement.settlement_time as settlement_time, user.nickname as settlement_user, partner.name as partner_name, erp_settlement.total_amount')->join($join)->where('erp_settlement.id=%d', $id)->find();
         $settlement['print_time'] = get_time();
         $this->assign('settlement', $settlement);
 
-        $list = M('erp_settlement_detail')->where("code='%s'", $settlement['code'])->select();
+        $code  = $model->where('id=%d', $id)->getField('code');
+
+        $logic   = D('Settlement','Logic');
+        $result1 = $logic->getStockInListDetail($code);     //采购单明细
+        $result2 = $logic->getPurchaseListDetail($code);    //入库单明细
+        $result3 = $logic->getRefundListDetail($code);      //冲红单明细
+        $result4 = $logic->getPurchaseOutListDetail($code); //退款单明细
+
+        $list = array_merge($result1, $result2, $result3, $result4);
 
         layout(false);
         $this->assign('list', $list);
