@@ -175,7 +175,7 @@ class StockOutController extends CommonController {
             $data = $stock_out_type->select();
             //手动新建出库单时剔除掉普通订单类型 加工出库单类型 报废出库单类型
             foreach($data as $key=>$val) {
-                if($val['type'] == 'SO' || $val['type'] == 'MNO' || $val['type'] == 'BL') {
+                if($val['type'] == 'SO' || $val['type'] == 'MNO' || $val['type'] == 'BL' || $val['type'] == 'STO') {
                     unset($data[$key]);
                 }
             }

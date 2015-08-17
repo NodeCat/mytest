@@ -7,7 +7,14 @@ class StockInController extends CommonController {
         if(IS_GET && ACTION_NAME == 'add'){
             $stock_type = M('stock_bill_in_type');
             $map['type'] = array('not in',array('ASN','MNI'));
-            $this->stock_in_type = $stock_type->where($map)->select();
+            $data = $stock_type->where($map)->select();
+            //暂时隐藏调拨入库 拒收入库
+            foreach ($data as $key => $value) {
+                if ($value['type'] == 'STI' || $value['type'] == 'REJO') {
+                    unset($data[$key]);
+                }
+            }
+            $this->stock_in_type = $data;
         }
     }
     protected $filter = array(
