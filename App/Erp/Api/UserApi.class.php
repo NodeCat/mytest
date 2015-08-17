@@ -68,6 +68,9 @@ class UserApi extends Controller{
         /* 获取用户数据 */
         $user = $this->model->where($map)->find();
         if(is_array($user) && $user['status']){
+            if($user['status'] != 'job'){
+                return -1;
+            }
             /* 验证用户密码 */
             if(auth_md5($password, AUTH_KEY) === $user['password']){
                 //$this->updateLogin($user['id']); //更新用户登录信息

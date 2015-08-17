@@ -67,49 +67,49 @@
       });
 
         $('.p_qty').on('input',function(){
-        	if($(this).siblings('.p_wgt').length == 0) {
-        		inputChange($(this));
-        	}
+          if($(this).siblings('.p_wgt').length == 0) {
+            inputChange($(this));
+          }
         });
         $('.p_wgt').on('input',function(){
-        	inputChange($(this));
+          inputChange($(this));
         });
-      	function inputChange(obj){
-      		var qty = obj.val();
-      		var price_unit = obj.parent().find('.p_price').val();
-      		obj.parent().find('.p_sum').text(accMul(qty , price_unit));//计算当前行的小计
-      		var final_price = 0;
-      		var line_qty = 0;
-      		var line_wgt = 0;
-      		var line_wgt_obj;
-      		var line_price = 0;
-      		//计算这张订单的应收金额，累加数量＊单价
-      		obj.parents('.order').find('.p_qty').each(function(index,item){
-      		  line_price = $(item).parent().find('.p_price').val();
-      		  line_wgt_obj = $(item).siblings('.p_wgt');
-      		  line_qty = $(item).val();
-      		  if(line_wgt_obj.length > 0){
-      		  	var line_wgt = line_wgt_obj.val(); 
-      		  	line_qty = (line_wgt == 0) ? line_qty : line_wgt;
-      		  }
-      		  final_price = accAdd(final_price, accMul(line_price,line_qty));
-      		});
-      		//减去优惠金额
-      		var minus = obj.parents('.order').find('.p_minus').text();
-      		var sum = accSub(final_price, minus);
+        function inputChange(obj){
+          var qty = obj.val();
+          var price_unit = obj.parent().find('.p_price').val();
+          obj.parent().find('.p_sum').text(accMul(qty , price_unit));//计算当前行的小计
+          var final_price = 0;
+          var line_qty = 0;
+          var line_wgt = 0;
+          var line_wgt_obj;
+          var line_price = 0;
+          //计算这张订单的应收金额，累加数量＊单价
+          obj.parents('.order').find('.p_qty').each(function(index,item){
+            line_price = $(item).parent().find('.p_price').val();
+            line_wgt_obj = $(item).siblings('.p_wgt');
+            line_qty = $(item).val();
+            if(line_wgt_obj.length > 0){
+              var line_wgt = line_wgt_obj.val(); 
+              line_qty = (line_wgt == 0) ? line_qty : line_wgt;
+            }
+            final_price = accAdd(final_price, accMul(line_price,line_qty));
+          });
+          //减去优惠金额
+          var minus = obj.parents('.order').find('.p_minus').text();
+          var sum = accSub(final_price, minus);
 
           //加上运费
           var delivery_fee = obj.parents('.order').find('.p_drive').text();
           sum = accAdd(sum, delivery_fee);
           
-      		obj.parents('.order').find('.p_final').text(sum);
-      		obj.parents('.order').find('.p_final').val(sum);
-      		//计算实收金额，累加所有的小计，并减去优惠金额
-      		var deal_sum = 0;
-      		obj.parents('.order').find('.p_sum').each(function(index,item){
-      		  deal_sum = accAdd(deal_sum, $.trim($(item).text()));
-      		});
-      		deal_sum = accSub(deal_sum, minus);
+          obj.parents('.order').find('.p_final').text(sum);
+          obj.parents('.order').find('.p_final').val(sum);
+          //计算实收金额，累加所有的小计，并减去优惠金额
+          var deal_sum = 0;
+          obj.parents('.order').find('.p_sum').each(function(index,item){
+            deal_sum = accAdd(deal_sum, $.trim($(item).text()));
+          });
+          deal_sum = accSub(deal_sum, minus);
           deal_sum = accAdd(deal_sum,delivery_fee);
           //抹零处理
           var paystatus = obj.parents('.order').find('input[name=final_price]').attr('paystatus');
@@ -294,9 +294,90 @@
       function() {
         if (confirm('确定要报错吗')) {
           var userid = $(this).data('userid');
-          var type    = '地址错误';
+          var type    = '定位错误';
           report = {'user_id':userid,'type':type};
           tmsReportError(report);
         }
     });
+
+    $('.task-sign').on('click',function() {
+          var id   = $(this).data('id');
+          var queue= $(this).data('queue');
+          var pid  = $(this).data('pid');
+          var key  = $(this).data('key');
+          var fKey = $('.task-sign:first').data('key');
+          var lKey = $('.task-sign:last').data('key');
+          var addr = "{:U('taskSign')}";
+          $.ajax({
+            url: addr,
+            type: 'post',
+            cache: false,
+            dataType: 'json',
+            data:{'id':id,'queue':queue,'pid':pid},
+            success: function(msg) {
+              if (typeof HostApp == "undefined") {
+                alert(msg.msg);
+                if(msg.status == 1) {
+                  if(key == fKey) {
+                    start(pid);
+                  } else if(key == lKey) {
+                    last(pid);
+                  }
+                  location.reload();
+                }
+              } else {
+                HostApp.toast(msg.msg);
+                if (msg.status == 1) { //任务签到成功的话收集信息
+                  if(key == fKey) {
+                    start(pid);
+                    HostApp.collectPoint(id);
+                  } else if(key == lKey) {
+                    HostApp.collectPoint(id);
+                    last(pid);
+                  } else {
+                    HostApp.collectPoint(id);
+                  }
+                  location.reload();
+                }
+              }
+            }  
+          });
+    });
+
+    function getPoint(str) {
+      $.post("{:U('getPoint')}",str,function(res) {
+        HostApp.toast(res.msg);
+      });
+    }
+
+    function last(id) {
+      var id = id;
+      var addr = "{:U('signFinished')}";
+      $.ajax({
+        url: addr,
+        type: 'post',
+        cache: false,
+        dataType: 'json',
+        data:{'id':id},
+        success: function(msg) {
+          if (typeof HostApp == "undefined") {
+            alert(msg.msg);
+          } else {
+            HostApp.toast(msg.msg);
+            if(msg.status == 1) {
+              HostApp.stopLocate('D'+id);
+            }
+          } 
+        }  
+      });
+    }
+
+  function start(id) {
+    var id = id;
+    if (typeof HostApp == "undefined") {
+    } else {
+      HostApp.toast('开始');
+      HostApp.startLocate('D'+id);
+    }
+  }
   </script>

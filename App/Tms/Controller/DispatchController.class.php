@@ -23,106 +23,6 @@ class DispatchController extends \Common\Controller\AuthController{
         'mark'         => '备注',
          
     );
-    public function home () {
-        $data['stockout']['title'] = '出库单实时统计';
-        $data['stockout']['data'] = M()->table('stock_wave_distribution_detail dd ')
-        ->field('wh.name,dd.status,date(deliver_date) deliver_date,deliver_time,count(*) qty')
-        ->join('stock_wave_distribution d on dd.pid = d.id and d.is_deleted = 0 and dd.is_deleted = 0')
-        ->join('warehouse wh on d.wh_id = wh.id')
-        ->where('d.deliver_date = date(now())')
-        ->group('d.wh_id,dd.status,deliver_date,deliver_time')
-        ->order('d.wh_id,d.deliver_time,d.status')
-        ->select();
-
-        $data['distribution']['title'] = '配送单实时统计';
-        $data['distribution']['data'] = M()->table('stock_wave_distribution d')
-        ->field('wh.name,d.status,date(deliver_date) deliver_date,d.deliver_time,count(*) qty')
-        ->join('warehouse wh on d.wh_id = wh.id')
-        ->where('deliver_date = date(now()) and d.is_deleted = 0')
-        ->group('wh_id,status,deliver_time')
-        ->order('d.wh_id,d.deliver_time,d.status')
-        ->select();
-
-        $data['summary']['title'] = '今日运费占比［粗略预估统计］';
-        $data['summary']['data'] = M()->table('stock_wave_distribution d')
-        ->field('
-            wh_id,wh.name,date(deliver_date) deliver_date,
-            SUM(total_price) total_price,
-            COUNT(*) dist_qty,
-            SUM(order_count) order_qty,
-            ROUND(SUM(total_price) / COUNT(*), 2) dist_price_average,
-            ROUND(SUM(total_price) / SUM(order_count), 2) decim_price_average,
-            ROUND(300 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
-            ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
-        ')
-        ->join('warehouse wh on d.wh_id = wh.id')
-        ->where('deliver_date = date(now()) and d.is_deleted = 0')
-        ->group('wh_id')
-        ->select(); 
-
-        $status['stockout'] = array(
-                '0' => '已分拨',
-                '1' => '已装车',
-                '2' => '已签收',
-                '3' => '已拒收',
-                '4' => '已完成',
-                '5' => '已发运',
-        );
-
-        $status['distribution'] = array(
-                '0' => '未知',
-                '1' => '未发运',
-                '2' => '已发运',
-                '3' => '已配送',
-                '4' => '已结算',
-        );
-
-        $deliver_time = array(
-            '1' =>'上午',
-            '2' =>'下午'
-        );
-
-        foreach ($data['stockout']['data'] as &$value) {
-            $value['status_cn'] = $status['stockout'][$value['status']];
-            $value['deliver_time'] = $deliver_time[$value['deliver_time']];         
-        }
-        foreach ($data['distribution']['data'] as &$value) {
-            $value['status_cn'] = $status['distribution'][$value['status']];
-            $value['deliver_time'] = $deliver_time[$value['deliver_time']];         
-        }
-
-        $data['stockout']['columns'] = array(
-            'name' => '仓库',
-            'deliver_date' => '配送日期',
-            'deliver_time' => '配送时间',
-            'status_cn' => '状态',
-            'qty' => '数量',
-        );
-
-        $data['distribution']['columns'] = array(
-            'name' => '仓库',
-            'deliver_date' => '配送日期',
-            'deliver_time' => '配送时间',
-            'status_cn' => '状态',
-            'qty' => '数量',
-        );
-
-        $data['summary']['columns'] = array(
-            'name' => '仓库',
-            'deliver_date' => '配送日期',
-            'dist_qty' => '配送单数量',
-            'order_qty' => '出库单数量',
-            'dist_order_average' => '平均每个车单包含出库单数',
-            'dist_price_percent' => '预计运费比'
-            
-        );
-
-
-        $this->data = $data;
-
-
-        $this->display('tms/home');
-    }
 
 	public function index() {
         $cat = A('Common/Category','Logic');
@@ -164,14 +64,11 @@ class DispatchController extends \Common\Controller\AuthController{
                 $map['userid'] = NULL;
             }
         }
-        $map['is_deleted'] = '0';
+        $map['is_deleted'] = 0;
         //把对应仓库的用户签到信息取出来
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
-        unset($M);
         $M = M('tms_delivery');
-        unset($value);
-        unset($val);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
             $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
@@ -180,19 +77,22 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile']      = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
+            //$map['type'] = '0';
             //获取司机配送单的线路和id信息
-            $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
+            $delivery_msg = $M->where($map)->field('line_name,dist_id,type')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
             $value['unsign_orders'] = 0;// 以退货
             $value['sign_finished'] = 0;// 已完成
             $value['delivering']    = 0;// 配送中  
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
-                $delivery = $A->deliveryCount($val['dist_id']);
-                $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                $value['delivering']    += $delivery['delivery_count']['delivering'];        
+                if ($val['type'] == '0') {
+                    $delivery = $A->deliveryCount($val['dist_id']);
+                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
+                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
+                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
+                    $value['delivering']    += $delivery['delivery_count']['delivering'];
+                }            
                 if (empty($val['line_name'])) {// 配送路线为空就跳过
                     continue;
                 }
@@ -215,7 +115,7 @@ class DispatchController extends \Common\Controller\AuthController{
         }
         $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
-        $this->display('tms:driverlist'); 
+        $this->display('driverlist'); 
     }
 
     // 司机轨迹页面的的输出
@@ -224,14 +124,15 @@ class DispatchController extends \Common\Controller\AuthController{
         $mobile = I('get.mobile');
         $sign_msg = M('tms_sign_list')->find($id);
         $map['status'] = '1';
+        //$map['type']   = '0';
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['mobile'] = $mobile ;
         $line = M('tms_delivery')->field('line_name')->where($map)->select();
         $i = 0;
         foreach ($line as $val) {
             if (empty($val['line_name'])) {// 配送路线为空就跳过
-                    continue;
-                }
+                continue;
+            }
             if ($i==0) {
                 $lines = $val['line_name'];// 把路线加在一起
                 $i++;
@@ -245,14 +146,14 @@ class DispatchController extends \Common\Controller\AuthController{
         $location = S(md5($key));
         $A = A('Tms/List','Logic');
         $customerAddress = $A->getCustomerAddress($mobile,$id);
+        // dump($customerAddress);exit;
         $this->time = $A->timediff($sign_msg['delivery_time'],$sign_msg['delivery_end_time']);
         $this->distance = $sign_msg['distance'];
         $this->customer_count = $customerAddress['customer_count'];
         $this->assign('address',$customerAddress['geo_arrays']);
         $this->assign('points',$location['points']);
-        $this->display('tms:line');
+        $this->display('line');
     }
-
 
      //导出司机信息
     public function export() {
@@ -273,7 +174,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
-        $D=D("TmsSignList");
+        $D = D("TmsSignList");
         $sign_date = I('post.sign_date', '' , 'trim');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
@@ -307,7 +208,7 @@ class DispatchController extends \Common\Controller\AuthController{
             }
         }
         //把对应仓库的用户签到信息取出来
-        $map['is_deleted'] = '0';
+        $map['is_deleted'] = 0;
         $sign_lists=$D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($M);
         $M = M('tms_delivery');
@@ -322,8 +223,9 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile'] = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
             $map['status'] = '1';
+            //$map['type']   = '0';
             //获取司机配送单的线路和id信息取出来
-            $delivery_msg = $M->where($map)->field('line_name,dist_id')->order('created_time DESC')->select();
+            $delivery_msg = $M->where($map)->field('line_name,dist_id,type')->order('created_time DESC')->select();
             $value['sign_orders']   = 0;// 已签收
             $value['unsign_orders'] = 0;// 以退货
             $value['sign_finished'] = 0;// 已完成
@@ -331,11 +233,13 @@ class DispatchController extends \Common\Controller\AuthController{
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
                  // dump($val);exit;
-                $delivery = $A->deliveryCount($val['dist_id']);
-                $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                $value['delivering']    += $delivery['delivery_count']['delivering'];        
+                if ($val['type'] == '0') {
+                    $delivery = $A->deliveryCount($val['dist_id']);
+                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
+                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
+                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
+                    $value['delivering']    += $delivery['delivery_count']['delivering'];
+                }            
                 if(empty($val['line_name'])){// 配送路线为空就跳过
 
                     continue;
@@ -450,6 +354,32 @@ class DispatchController extends \Common\Controller\AuthController{
         $D = D('TmsSignList');
         foreach ($fees as $key => $value) {
             $s = $D->where(array('id' => $key))-> save(array('fee' => $value));
+            $map['id'] = $key;
+            $map['is_deleted'] = 0;
+            $sign_info = $D->relation('TmsUser')->where($map)->find();
+            unset($map);
+            if (empty($sign_info)) {
+                continue;
+            }
+            $map['mobile'] = $sign_info['mobile'];
+            $map['created_time'] = array('between',$sign_info['created_time'].','.$sign_info['delivery_time']);//只取得当次签到配送单的
+            $map['status'] = '1';
+            $map['type'] = 1;
+            $delivery_msg = M('tms_delivery')->where($map)->field('dist_id')->select();
+            unset($map);
+            if (empty($delivery_msg)) {
+                continue;
+            }
+            $task_ids = array();
+            foreach ($delivery_msg as $v) {
+                $task_ids[] = $v['dist_id'];
+            }
+            $cou = count($task_ids);
+            $task_fee = sprintf('%.2f', $value/$cou);
+            $map['id'] = array('in',$task_ids);
+            $map['is_deleted'] = 0;
+            M('tms_dispatch_task')->where($map)->save(array('delivery_fee' => $task_fee));
+            unset($map);
         }
         $re = array(
             'status' => 0,

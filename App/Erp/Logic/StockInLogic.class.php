@@ -441,10 +441,10 @@ class StockInLogic{
 		if(!empty($pro_code)) {
 			$map['pro_code'] = $pro_code;
 		}
-		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,expected_qty,prepare_qty,receipt_qty');
+		$in = $M->group('refer_code,pro_code')->where($map)->getField('pro_code,refer_code,expected_qty,prepare_qty,receipt_qty,done_qty');
 		foreach($in as $k => $val){
 			//如果receipt_qty 已收量不为0 则认为是已经入库了
-			if($val['receipt_qty'] > 0){
+			if($val['receipt_qty'] > 0 || $val['done_qty'] > 0){
 				return true;
 			}
 		}

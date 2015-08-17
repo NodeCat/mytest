@@ -320,6 +320,50 @@ class DistributionLogic {
         $return = true;
         return $return;
     }
+
+    /**
+     * 根据出库单ID判断PACK区库存是否充足,在内存中模拟计算分配量
+     * @param int $id 出库单ID
+     * @param array $sku_qty 一个辅助的数组，用来记录这一批库存检查过程中每个sku的库存量；
+     */
+    public function check_pack_qty($id = 0,&$sku_qty) {
+        $is_enough = true;
+        
+        if (empty($id)) {
+            return $is_enough;
+        }
+        $detail = $this->get_out_detail(array($id));
+        foreach ($detail as $value) {
+            $wh_id = session('user.wh_id');
+            $pro_code =  $value['pro_code'];
+            if(!array_key_exists($pro_code, $sku_qty)){
+                $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
+                        array('wh_id'=>session('user.wh_id'),
+                            'pro_code'=>$pro_code,
+                            'location_code'=>'PACK',
+                            'stock_status'=>'qualified')
+                    );
+                //累加库存量集合
+                $total_stock_qty=0;
+                foreach($stock_infos as $stock_info){
+                    $total_stock_qty += ($stock_info['stock_qty'] - $stock_info['assign_qty']);
+                }
+                $sku_qty[$pro_code] = $total_stock_qty;
+            }
+            $available_qty = $sku_qty[$pro_code];
+            if(bccomp($available_qty, 0, 2)  == 0){
+                $is_enough = false;
+            }
+            elseif (bccomp($available_qty, $value['order_qty'],2)  == -1) {
+                $is_enough = false;
+                $sku_qty[$pro_code] = 0;
+            }
+            else {
+                $sku_qty[$pro_code] = bcsub($sku_qty[$pro_code],$value['order_qty']);
+            }
+        }
+        return $is_enough;
+    }
         
     /**
      * 根据线路id获取线路名称
@@ -1234,6 +1278,35 @@ class DistributionLogic {
     }
 
     /**
+     * [getAllWarehouse 获取所有仓库信息]
+     * @return [type] [description]
+     */
+    public function getAllWarehouse()
+    {
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $res = $M->where($map)->select();
+        return $res;
+    }
+
+    /**
+     * [getWarehouseById 根据仓库ID获取仓库名称]
+     * @param  [type] $wh_id [description]
+     * @return [type]        [description]
+     */
+    public function getWarehouseById($id)
+    {
+        if (empty($id)) {
+            return '';
+        }
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $res = $M->field('name')->where($map)->find();
+        return $res['name'];
+    }
+    
+    /*
     * 根据配送id，查询当前详情，更新配送单主表数据
     * @param $ids = array()
     * @return true/false

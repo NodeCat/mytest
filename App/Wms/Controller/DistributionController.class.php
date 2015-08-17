@@ -519,6 +519,7 @@ class DistributionController extends CommonController {
         $make_ids = array(); //带生产的出库单ID
         $pass_ids = array();  //分拣出库单ID
         $reduce_ids = array(); //库存不足的出库单ID
+        $g_sku_qty =array(); //辅助记录PACK区库存
         foreach ($bill_out_status as $key => $val) {
             if ($val['status'] == 3) { //状态3 波此中 
                 $wavein_ids[] = $val['id'];
@@ -531,7 +532,7 @@ class DistributionController extends CommonController {
             } elseif ($val['status'] == 5) {
                 //分拣完成
                 //判断分拣完成的库存够不够  防止发生损毁
-                $result_detail = $D->checkout_stock_eg($val['id']);
+                $result_detail = $D->check_pack_qty($val['id'],$g_sku_qty);
                 if ($result_detail) {
                     //库存充足
                     $pass_ids[] = $val['id'];
@@ -646,7 +647,7 @@ class DistributionController extends CommonController {
                     $total_stock_qty = 0;
                     //查询PACK区内所有该sku的库存量
                     $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
-                        array(
+                        array('wh_id'=>session('user.wh_id'),
                             'pro_code'=>$v['pro_code'],
                             'location_code'=>'PACK',
                             'stock_status'=>'qualified')
