@@ -243,16 +243,14 @@
             dataType: 'json',
             data: params,
             success: function(msg) {
-              if (msg.status == '0') {
-                if (typeof HostApp == "undefined") {
-                  alert(msg.msg);
-                } else {
-                  HostApp.toast(msg.msg);
-                }
-                location.reload();
-              } else {
+              if (typeof HostApp == "undefined") {
                 alert(msg.msg);
+              } else {
+                HostApp.toast(msg.msg);
               }
+              if (msg.status == '0') {
+                location.reload();
+              } 
               return false;
             }
           });
