@@ -189,7 +189,7 @@ class DistDriver extends Controller {
                     }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign['id'];
-                    $M->save($map);
+                    M('TmsSignList')->save($map);
                 }
                 else {
                     $this->error = "提货失败,请重新提货";
