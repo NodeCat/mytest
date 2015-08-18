@@ -1,7 +1,7 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class DispatchController extends Controller{
+class DispatchController extends \Common\Controller\AuthController{
 
 	protected $columns = array (   
         'username'     => '姓名',   
@@ -373,7 +373,6 @@ class DispatchController extends Controller{
             }
             $type = $delivery_msg[0]['type'];
             $ids = array_column($delivery_msg, 'dist_id');
-            dump($type);dump($ids);dump($value);
             if ($type == 1) {
                 //均摊运费到单个任务
                 A('Tms/Dispatch','Logic')->avgDeliveryFeeToTask($ids, $value);
