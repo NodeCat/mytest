@@ -243,14 +243,8 @@ class DistLogic {
     {
         //准点标准
         $standard = array(
-            'am' => array(
-               's' => array('h' => 8, 'i' => 0),
-               'e' => array('h' => 10, 'i' => 30),
-            ),
-            'pm' => array(
-               's' => array('h' => 14, 'i' => 0),
-               'e' => array('h' => 16, 'i' => 30),
-            ),
+            'am' => array('h' => 10, 'i' => 30),
+            'pm' => array('h' => 16, 'i' => 30),
         );
         //配送时段是上午还是下午
         $dist = A('Wms/Distribution','Logic')->distInfo($dist_id);
@@ -260,9 +254,8 @@ class DistLogic {
             $key = 'pm';
         }
         //判断当前时间是否在准点时间段内
-        $stime = mktime($standard[$key]['s']['h'],$standard[$key]['s']['i'],0,date('m'),date('d'),date('Y'));
-        $etime = mktime($standard[$key]['e']['h'],$standard[$key]['e']['i'],0,date('m'),date('d'),date('Y'));
-        if ($stime <= time() && time() <= $etime) {
+        $etime = mktime($standard[$key]['h'],$standard[$key]['i'],0,date('m'),date('d'),date('Y'));
+        if (time() <= $etime) {
             return 1;
         }
         return 0;
