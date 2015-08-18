@@ -11,7 +11,6 @@ class DistDriver extends Controller {
         if (IS_GET) {
             //只显示当天的记录
             $map['mobile'] = session('user.mobile');
-            $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
             $map['status'] = '1';
             $start_date    = date('Y-m-d',NOW_TIME);
             $end_date      = date('Y-m-d',strtotime('+1 Days'));
