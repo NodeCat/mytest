@@ -32,7 +32,7 @@ class IndexDriver extends Controller {
     
     //登录
     public function login() {
-        if(IS_GET) {
+        if (IS_GET) {
             if(session('?user')) {
                 $this->redirect('delivery');
                 exit;
@@ -42,63 +42,49 @@ class IndexDriver extends Controller {
                 $this->display('Index:login');    
             }
         }
-        if(IS_POST) {
+        if (IS_POST) {
             if(session('?user')) {
                 $this->redirect('delivery');
                 exit;
             }
-            $code = I('post.code',0);
-            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$code)){
+            $mobile = I('post.code',0);
+            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile)){
                 $this->error = "您输入的手机号码格式不正确！";
                 $this->display('Index:login');
                 exit;
 
             }
             else {
-                $user['mobile'] = $code;
-                $M1=M('TmsUser');
-                $data=$M1->field('id,username')->where($user)->order('created_time DESC')->find();          
-                if ($data['id']) { // 如果以前签到过
-                    $user['username'] = $data['username'];// 把用户名写入session
-                    $user['id'] = $data['id'];      //把司机id写入session，键名是id，不是uid，需要区别业务人员
-                    $date = date('Y-m-d H:i:s',NOW_TIME);
-                    $userid['userid']=$data['id'];
-                    $userid['updated_time']=$date;
-                    $userid['created_time']=$date;
+                $user = M('TmsUser')->field('id,username,mobile')->where(array('mobile' => $mobile))->order('created_time DESC')->find();          
+                if ($user) { // 如果以前签到过
                     $start_date = date('Y-m-d',NOW_TIME);
                     $end_date = date('Y-m-d',strtotime('+1 Days'));
-                    unset($map);
                     $map['created_time'] = array('between',$start_date.','.$end_date);
-                    $map['userid']=$data['id'];
+                    $map['userid'] = $user['id'];
                     $map['is_deleted'] = '0';
-                    unset($M);
                     $M = M('TmsSignList');
-                    $id = $M->field('id')->order('created_time DESC')->where($map)->find();
+                    $sign = $M->field('id')->order('created_time DESC')->where($map)->find();
                     //如果今天已经签到过了那就改成最新的签到时间
-                    if ($id['id']) {
-                        $userid['id']=$id['id'];
-                        unset($userid['created_time']);
-                        $M->save($userid);
-                        session('user',$user);
+                    if ($sign) {
+                        $M->save(array('id' => $sign['id'],'updated_time' => get_time()));
+                        session('user',$user); //把用户id、姓名、手机号写入session
                         $this->redirect('delivery');
                     } else {
                         if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                            $userid['period'] = '上午';
+                            $data['period'] = '上午';
                         } else {
-                            $userid['period'] = '下午';
+                            $data['period'] = '下午';
                         }
-                        $M->add($userid);//否则就签到
+                        $data['userid'] = $user['id'];
+                        $data['created_time'] = get_time();
+                        $data['updated_time'] = get_time();
+                        $M->add($data);//否则就签到
                         session('user',$user);
                         $this->redirect('delivery');
                     }
                 } else {
-                    $this->user=$user;
-                    $this->title='信息登记';
-                    $cat = A('Common/Category','Logic');
-                    $this->carType = $cat->lists('car_type');
-                    $this->carFrom = $cat->lists('platform');
-                    $this->warehouse = A('Wms/Warehouse','Logic')->lists();
-                    $this->display('Driver/register');
+                    $this->mobile = $mobile;
+                    $this->register();
                 }
                     
             }
@@ -114,44 +100,35 @@ class IndexDriver extends Controller {
 
     // 修改个人信息
     public function update(){
-
-        if(IS_GET){
-            //仓库列表
-            $this->assign('warehouse',$storge);
-            $this->assign('car',$this->car);
+        if (IS_GET) {
             $this->person();
             exit();  
         }
-        if(IS_POST){
+        if (IS_POST) {
             $code     = I('post.mobile','');
             $name     = I('post.username');
             $num      = I('post.car_num');
             $car_type = I('post.car_type');
             $car_from = I('post.car_from');
             $storge   = I('post.warehouse');
-
-            if(empty($code) || empty($name) || empty($num) || $car_type=='请选择你的车型' || $car_from=='请选择派车平台' || empty($storge)) {
+            if(empty($code) || empty($name) || empty($num)) {
                 $this->error ='请正确的填写修改信息';
                 $this->person();
                 exit();
             }
-            $date = date('Y-m-d H:i:s',NOW_TIME);
             $data = I('post.');
-            $data['updated_time'] = $date;
-            unset($M);
-            $M = M('TmsUser');
-            unset($map);
-            $data['id']=session('user.id');
-            $savedata = $M->create($data);
-            if($M->save($savedata)){
+            $data['updated_time'] = get_time();
+            $data['id'] = session('user.id');
+            $res = M('TmsUser')->save($data);
+            if ($res) {
                 $user['username'] = $data['username'];
-                $user['mobile']   =$data['mobile'];
-                $user['id']   =session('user.id');
+                $user['mobile']   = $data['mobile'];
+                $user['id']       = session('user.id');
                 session('user',$user);
                 $this->msg='修改成功';
                 $this->person();
 
-            }else{
+            } else {
                 $this->error='修改失败!';
                 $this->person();
             }
@@ -160,102 +137,91 @@ class IndexDriver extends Controller {
 
     // 个人信息
     public function person(){
-        $map['mobile']=session('user.mobile');
-        $data= M('TmsUser')->where($map)->order('updated_time')->find();
-        $this->title='个人信息';
+        $map['mobile'] = session('user.mobile');
+        $data = M('TmsUser')->where($map)->order('updated_time')->find();
+        $this->title ='个人信息';
         $cat = A('Common/Category','Logic');
         $this->carType = $cat->lists('car_type');
         $this->carFrom = $cat->lists('platform');
         $this->warehouse = A('Wms/Warehouse','Logic')->lists();
-        $this->data=$data;
+        $this->data = $data;
         $this->display('Driver/person');
     }
 
     //司机第一次信息登记
     public function register(){
-
-        if(IS_GET){
+        $cat = A('Common/Category','Logic');
+        $this->carType = $cat->lists('car_type');
+        $this->carFrom = $cat->lists('platform');
+        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
+        if (IS_GET) {
             if(session('?user')) {
                  $this->redirect('delivery');
                  exit;
             }
             else{
                 $this->title = '请填写完整的签到信息';
-
-                $cat = A('Common/Category','Logic');
-                $this->carType = $cat->lists('car_type');
-                $this->carFrom = $cat->lists('platform');
-                $this->warehouse = A('Wms/Warehouse','Logic')->lists();
-
                 $this->display('Driver/register'); 
             }   
         }
-        if(IS_POST){
-            $code   = I('post.mobile/d',0);
+        if (IS_POST) {
+            $mobile = I('post.mobile/d',0) ? I('post.mobile/d',0) : $this->mobile;
             $name   = I('post.username');
             $num    = I('post.car_num');
             $car_type = I('post.car_type');
             $car_from = I('post.car_from');
-            $warehouse = I('post.warehouse');
-            $user['mobile']   = $code;
-            $user['username'] = $name;
-            $user['car_num']  = $num;
-            $user['car_type'] = $car_type;
-            $user['car_from'] = $car_from;
-            $user['warehouse']= $this->car['warehouse'][$warehouse];
-            if(empty($code) || empty($name) || empty($num)|| $car_type=='请选择你的车型' || $car_from=='请选择派车平台' || empty($warehouse)) {
-                $this->error ='请补全你的签到信息';
-                if(empty($name)) {
+            $ware = I('post.warehouse');
+            $data = I('post.');
+            $data['mobile'] = $mobile;
+            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile) || empty($name) || empty($num)|| empty($car_type) || empty($car_from) || empty($ware)) {
+                if (!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile)) {
+                    $data['mobile']   = '';
+                    $this->error ='请输入正确的手机号码';
+                }
+                elseif (empty($name)) {
                     $this->error ='请输入你的姓名';
                 }
-                elseif(empty($num)) {
+                elseif (empty($num)) {
                     $this->error ='请输入你的车牌号';                
                 }
-                elseif($car_type=='请选择你的车型') {
+                elseif (empty($car_type)) {
                     $this->error ='请选择你的车型';
                 }
-                elseif($car_from=='请选择派车平台') {
+                elseif (empty($car_from)) {
                     $this->error ='请选择派车平台';
                 }
-                elseif(empty($storge)) {
+                elseif (empty($ware)) {
                     $this->error ='请选择你的签到仓库';
                 }
-                $this->user=$user;
+                $this->user  = $data;
                 $this->title ='请填写完整的签到信息';
-                $this->assign('car',$this->car);
                 $this->display('Driver/register');
                 exit;
             }
-            $date = date('Y-m-d H:i:s',NOW_TIME);
-            $data = I('post.');
-            $data['created_time'] = $date;
-            $data['updated_time'] = $date;
-            $M = M('TmsUser');
-            $data = $M->create($data);
-            $res = $M->add($data);
+            $data['created_time'] = get_time();
+            $data['updated_time'] = get_time();
+            $res = M('TmsUser')->add($data);
             if ($res) {
-                unset($user);
                 $user['username'] = $data['username'];
-                $user['mobile']   =$data['mobile'];
-                $user['id']     = $res;
+                $user['mobile']   = $data['mobile'];
+                $user['id']       = $res;
                 session('user',$user);
-                $userid = $M->field('id')->where($user)->find();
-                $data['userid'] = $userid['id'];
-                $M = M('TmsSignList');
-                if (strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                unset($data);
+                if (strtotime(get_time()) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
                     $data['period'] = '上午';
                 } else {
                     $data['period'] = '下午';
                 }
-                $M->data($data)->add();
+                $data['userid'] = $user['id'];
+                $data['created_time'] = get_time();
+                $data['updated_time'] = get_time();
+                M('TmsSignList')->data($data)->add();
                 $this->redirect('delivery');
-
             } else {
-
                 session(null);
                 session('[destroy]');
-                $this->title='请填写正确的信息!';
-                $this->assign('car',$this->car);
+                $this->user  = I('post.');
+                $this->title ='请填写正确的信息!';
                 $this->display('Driver/register');
             }
         }  
