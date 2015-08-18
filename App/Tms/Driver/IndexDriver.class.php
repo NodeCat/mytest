@@ -171,6 +171,18 @@ class IndexDriver extends Controller {
         $this->display('Driver/person');
     }
 
+    /**
+     * [checkSign 验证签到]
+     * @return [type] [description]
+     */
+    public function checkSign()
+    {
+        if (IS_POST) {
+            $this->redirect('delivery');
+        } else {
+            $this->display('Index/sign-check');
+        }
+    }
     //司机第一次信息登记
     public function register(){
 
