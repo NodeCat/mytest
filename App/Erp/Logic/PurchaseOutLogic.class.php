@@ -222,46 +222,37 @@ class PurchaseOutLogic{
                     if (!$purchase_out->where($where)->find()) {
                         continue;
                     }
-                    $purSave['status'] = 'refunded';
-                    $purSave['updated_time'] = get_time();
-                    
-                    if($purchase_out->where($where)->save($purSave)){
-                        $where = array();
-                        $where['rtsg_code'] = $purchaseCode;
-                        $id = $purchase_out->where($where)->getField('id');
-                        unset($map);
-                        $map['pid'] = $out_id;
-                        $map['is_deleted'] = 0;
-                        //修改采购退货单实际出库量
-                        $detail = $stock_bill_out_detail->field('batch_code,pro_code,delivery_qty')->where($map)->select();
-                        if($detail){
-                            foreach ($detail as $vals) {
-                                unset($map);
-                                $map['pro_code'] = $vals['pro_code'];
-                                $map['batch_code'] = $vals['batch_code'];
-                                $map['pid'] = $id;
-                                $saveDetail = array();
-                                $saveDetail['updated_time'] = get_time();
-                                $saveDetail['real_return_qty'] = $vals['delivery_qty'];
-                                $purchase_out_detail->where($map)->save($saveDetail);
-                            }
-                            $return = TRUE;
-                        }else{
-                            $where = array();
-                            $purSave = array();
-                            $where['rtsg_code'] = $purchaseCode;
-                            $purSave['status'] = 'tbr';
-                            $purchase_out->where($where)->save($purSave);
-                            continue;
+
+                    $where = array();
+                    $where['rtsg_code'] = $purchaseCode;
+                    $id = $purchase_out->where($where)->getField('id');
+                    unset($map);
+                    $map['pid'] = $out_id;
+                    $map['is_deleted'] = 0;
+                    //修改采购退货单实际出库量
+                    $detail = $stock_bill_out_detail->field('batch_code,pro_code,delivery_qty')->where($map)->select();
+                    if($detail){
+
+                        foreach ($detail as $vals) {
+                            unset($map);
+                            $map['pro_code'] = $vals['pro_code'];
+                            $map['batch_code'] = $vals['batch_code'];
+                            $map['pid'] = $id;
+                            $saveDetail = array();
+                            $saveDetail['updated_time'] = get_time();
+                            $saveDetail['real_return_qty'] = $vals['delivery_qty'];
+                            $purchase_out_detail->where($map)->save($saveDetail);
                         }
-                    }else{
-                        continue;
+
+                        //修改退货单状态
+                        $purSave['status'] = 'refunded';
+                        $purSave['updated_time'] = get_time();
+                        $purchase_out->where($where)->save($purSave);
+                        $return = TRUE;
+
                     }
-                }else{
-                    continue;
+
                 }
-            }else{
-                continue;
             }
         }
         return $return;

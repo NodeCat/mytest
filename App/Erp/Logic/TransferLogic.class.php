@@ -254,20 +254,19 @@ class TransferLogic
      * @return Boolture;
      * 
      */
-    public function upPurchaseOutStatus($idArr = array()){
+    public function upTransferOutStatus($idArr = array()){
         if(!$idArr) return FALSE;
         $return = array();
         foreach ($idArr as $out_id) {
             if(!$out_id){
                 continue;
             }
-            $M = M('stock_bill_out');
+            $stock_out_m = M('stock_bill_out');
             $stock_bill_out_detail = M('stock_bill_out_detail');
-            $purchase_out_detail = M('stock_purchase_out_detail');
             $map = array();
             $where = array();
             $map['id'] = $out_id;
-            $bill_out_result = $M->where($map)->find();
+            $bill_out_result = $stock_out_m->where($map)->find();
             //用于多种类型出库单库存判断扩展 liuguangping
             $distribution_logic = A('Wms/Distribution','Logic');
             $key = $bill_out_result['type'];
@@ -290,15 +289,9 @@ class TransferLogic
                         //添加erp出库单详细
                         $this->insertErpContainer($out_id);
                         $return = true;
-                    } else {
-                        continue;
                     }
-                } else {
-                    continue;
                 }
 
-            }else{
-                continue;
             }
         }
         return $return;
@@ -308,100 +301,90 @@ class TransferLogic
     //修改调拨单@transfer_code 调拨单 ，出库单id
     public function updateTransfer($transfer_code, $out_id)
     {
+        
         $data = array();
         $map = array();
-        $return = false;
-        $data['status'] = 'refunded';
-        $data['updated_time'] = get_time();
-        $data['updated_user'] = session('user.uid');
-        $map['trf_code'] = $transfer_code;
         $transfer_m = M('erp_transfer');
         $wms_out_detail = M('stock_bill_out_detail');
         $erp_transfer_detail_m = M('erp_transfer_detail');
-        if ($transfer_m->where($map)->save($data)) {
-            $where = array();
-            $where['trf_code'] = $transfer_code;
-            $id = $transfer_m->where($where)->getField('id');
 
-            //查找出库单详细表
-            unset($map);
-            $map['pid'] = $out_id;
-            $map['is_deleted'] = 0;
-            //修改采购退货单实际出库量
-            $detail = $wms_out_detail->field('pro_code,delivery_qty')->where($map)->select();
-            if($detail){
-                foreach ($detail as $vals) {
-                    unset($map);
-                    //一个调拨单里面只有一个sku
-                    $map['pro_code'] = $vals['pro_code'];
-                    $map['pid'] = $id;
-                    $saveDetail = array();
-                    $saveDetail['updated_time'] = get_time();
-                    $saveDetail['updated_user'] = session('user.uid');
-                    $saveDetail['status'] = 'refunded';
-                    $saveDetail['real_out_qty'] = $vals['delivery_qty'];
-                    $erp_transfer_detail_m->where($map)->save($saveDetail);
-                }
-                return true;
-            }else{
-                $where = array();
-                $purSave = array();
-                $where['trf_code'] = $transfer_code;
-                $purSave['status'] = 'tbr';
-                $transfer_m->where($where)->save($purSave);
-                return false;
+        $where = array();
+        $where['trf_code'] = $transfer_code;
+        $id = $transfer_m->where($where)->getField('id');
+
+        //查找调拨单详细表实际出库量和状态
+        $map['pid'] = $out_id;
+        $map['is_deleted'] = 0;
+        $detail = $wms_out_detail->field('pro_code,delivery_qty')->where($map)->select();
+        if($detail){
+            foreach ($detail as $vals) {
+                unset($map);
+                //一个调拨单里面只有一个sku
+                $map['pro_code'] = $vals['pro_code'];
+                $map['pid'] = $id;
+                $saveDetail = array();
+                $saveDetail = array();
+                $saveDetail['updated_time'] = get_time();
+                $saveDetail['updated_user'] = session('user.uid');
+                $saveDetail['status'] = 'refunded';
+                $saveDetail['real_out_qty'] = $vals['delivery_qty'];
+                $erp_transfer_detail_m->where($map)->save($saveDetail);
             }
-
+            //修改erp调拨单状态
+            $data = array();
+            $data['status'] = 'refunded';
+            $data['updated_time'] = get_time();
+            $data['updated_user'] = session('user.uid');
+            unset($map);
+            $map['trf_code'] = $transfer_code;
+            $transfer_m->where($map)->save($data);
+            return true;
         } else {
             return false;
         }
+
     }
 
     //修改ERP 出库单 $bill_out_code erp出库单和wms 出库单 @out_id wms出库单id
     public function erpUpdateOut($bill_out_code,  $out_id){
+
         $transfer_out_m = M('erp_transfer_out');
         $transfer_out_detail_m = M('erp_transfer_out_detail');
         $wms_out_detail = M('stock_bill_out_detail');
-        $map = array();
-        $data = array();
-        $map['code'] = $bill_out_code;
-        $data['status'] = 'refunded';
-        $data['updated_time'] = get_time();
-        $data['updated_user'] = session('user.uid');
-        if ($transfer_out_m->where($map)->save($data)) {
-            $where = array();
-            $where['code'] = $bill_out_code;
-            $id = $transfer_out_m->where($where)->getField('id');
 
-            //查找出库单详细表
-            unset($map);
-            $map['pid'] = $out_id;
-            $map['is_deleted'] = 0;
-            //修改采购退货单实际出库量
-            $detail = $wms_out_detail->field('pro_code,delivery_qty')->where($map)->select();
-            if($detail){
-                foreach ($detail as $vals) {
-                    unset($map);
-                    //一个调拨单里面只有一个sku
-                    $map['pro_code'] = $vals['pro_code'];
-                    $map['pid'] = $id;
-                    $saveDetail = array();
-                    $saveDetail['updated_time'] = get_time();
-                    $saveDetail['updated_user'] = session('user.uid');
-                    $saveDetail['status'] = 'refunded';
-                    $saveDetail['real_out_qty'] = $vals['delivery_qty'];
-                    $transfer_out_detail_m->where($map)->save($saveDetail);
-                }
-                return true;
-            }else{
-                $where = array();
-                $purSave = array();
-                $where['code'] = $bill_out_code;
-                $purSave['status'] = 'tbr';
-                $transfer_out_m->where($where)->save($purSave);
-                return false;
+        $where = array();
+        $where['code'] = $bill_out_code;
+        $id = $transfer_out_m->where($where)->getField('id');
+        $map = array();
+        $map['pid'] = $out_id;
+        $map['is_deleted'] = 0;
+        //修改调拨出库单状态和出库量
+        $detail = $wms_out_detail->field('pro_code,delivery_qty')->where($map)->select();
+        if($detail){
+            foreach ($detail as $vals) {
+                unset($map);
+                //一个调拨单里面只有一个sku
+                $map['pro_code'] = $vals['pro_code'];
+                $map['pid'] = $id;
+                $saveDetail = array();
+                $saveDetail['updated_time'] = get_time();
+                $saveDetail['updated_user'] = session('user.uid');
+                $saveDetail['status'] = 'refunded';
+                $saveDetail['real_out_qty'] = $vals['delivery_qty'];
+                $transfer_out_detail_m->where($map)->save($saveDetail);
             }
-        } else {
+
+            //修改调拨出库单状态
+            $map = array();
+            $data = array();
+            $map['code'] = $bill_out_code;
+            $data['status'] = 'refunded';
+            $data['updated_time'] = get_time();
+            $data['updated_user'] = session('user.uid');
+            $transfer_out_m->where($map)->save($data);
+
+            return true;
+        }else{
             return false;
         }
     }
@@ -443,7 +426,7 @@ class TransferLogic
     public function transferHandle($pass_reduce_ids){
         //处理erp调拨实际收货量和状态
         //$distribution_logic = A('Erp/Transfer','Logic');        
-        $this->upPurchaseOutStatus($pass_reduce_ids);
+        $this->upTransferOutStatus($pass_reduce_ids);
 
         //加入wms入库单 liuguangping
         $stockin_logic = A('Wms/StockIn','Logic');        
