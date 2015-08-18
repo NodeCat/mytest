@@ -88,13 +88,15 @@ class PurchaseRefundController extends CommonController {
 		$map['pid'] = $id;
 		$pros = M('erp_purchase_refund_detail')->where($map)->order('id desc')->select();
 		$refund_total = 0;
+		$tmp = 0;
 		foreach ($pros as $key => $val) {
 			$pros[$key]['pro_names'] = '['.$val['pro_code'] .'] '. $val['pro_name'] .'（'. $val['pro_attrs'].'）';
 		
-			$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * intval($val['price_unit'] * 100) / 100;
+			$tmp = bcmul(bcsub($val['qualified_qty'],$val['expected_qty'],2), $val['price_unit'], 2);
+			$refund_total = bcadd($refund_total, $tmp, 2);
 		}
 		$this->pros = $pros;
-		$this->refund_total = formatMoney($refund_total, 2);
+		$this->refund_total = $refund_total;
 	}
 
 	protected function after_lists(&$data){
@@ -107,10 +109,12 @@ class PurchaseRefundController extends CommonController {
 			if(!empty($purchase_refund_detail)){
 				//计算冲红金额
 				$refund_total = 0;
+				$tmp = 0;
 				foreach($purchase_refund_detail as $val){
-					$refund_total += ($val['qualified_qty'] - $val['expected_qty']) * intval($val['price_unit'] * 100) / 100;
+					$tmp = bcmul(bcsub($val['qualified_qty'],$val['expected_qty'],2), $val['price_unit'], 2);
+					$refund_total = bcadd($refund_total, $tmp, 2);
 				}
-				$data[$k]['refund_total'] = formatMoney($refund_total, 2);
+				$data[$k]['refund_total'] = $refund_total;
 			}
 		}
 	}
