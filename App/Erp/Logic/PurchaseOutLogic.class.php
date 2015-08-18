@@ -145,6 +145,7 @@ class PurchaseOutLogic{
         $addStockOut['refused_type'] = 1;
         $addStockOut['status'] = 1;
         $addStockOut['created_user'] = UID;
+        $addStockOut['updated_user'] = UID;
         $addStockOut['created_time'] = get_time();
         $addStockOut['is_deleted'] = 0;
         $addStockOut['company_id'] = 1;
