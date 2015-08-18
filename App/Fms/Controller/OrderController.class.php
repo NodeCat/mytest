@@ -251,7 +251,7 @@ class OrderController extends \Common\Controller\AuthController {
             if ($is_wipezero) {
                 $old_value  = $deal_price;
                 $deal_price = floor($deal_price);
-                $wipezero   = $old_value - $deal_price;
+                $wipezero   = round($old_value - $deal_price,2);
                 if ($wipezero == 0 && $deposit == 0) {
                     $this->error('已经没有零钱，无需再抹零。');exit;
                 }
