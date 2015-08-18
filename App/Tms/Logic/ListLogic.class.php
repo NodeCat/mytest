@@ -4,38 +4,35 @@ namespace Tms\Logic;
 
 class ListLogic{
 
-	public function storge(){
-		$storge=M('Warehouse');
-		$storge=$storge->field('name')->select();
-
-		return $storge;
-	}
+    public function storge(){
+        $storge=M('Warehouse');
+        $storge=$storge->field('name')->select();
+        return $storge;
+    }
 
     /*
      *功   能：根据配送单号和sku号获得最久远的批次
-     *输入参数：$code出库单号;$sku_number,SKU号
+     *输入参数：$dist_code配送单号;$sku_number,SKU号
      *@return: 最久远的批次
     */
-    public function get_long_batch($code,$sku_number){
+    public function get_long_batch($dist_code,$sku_number){
         unset($map);
-        $map = array('refer_code' => $code, 'pro_code' => $sku_number);
+        $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
         $batch = $m->distinct(true)->field('batch')->where($map)->order('batch asc')->find();
-        
         return $batch['batch'];
     }
 
     /*
      *功   能：根据配送单号和sku号获得最近的批次
-     *输入参数：$code出库单号;$sku_number,SKU号
+     *输入参数：$dist_code配送单号;$sku_number,SKU号
      *@return: 最近的批次
     */
-    public function get_lasted_batch($code,$sku_number){
+    public function get_lasted_batch($dist_code,$sku_number){
         unset($map);
-        $map = array('refer_code' => $code, 'pro_code' => $sku_number);
+        $map = array('refer_code' => $dist_code, 'pro_code' => $sku_number);
         $m = M('stock_bill_out_container');
         $batch = $m->distinct(true)->field('batch')->where($map)->order('batch desc')->find();
-        
         return $batch['batch'];
     }
 
@@ -45,29 +42,21 @@ class ListLogic{
      * @return array   $data     返回统计信息
      * @author   jt
      */
-	public function deliveryCount($dist_id = '') {
-		if($dist_id == '') {
-			return FALSE;
-		}
+    public function deliveryCount($dist_id = '') {
+        if($dist_id == '') {
+            return FALSE;
+        }
             $M = M('tms_delivery');
-			$map['dist_id'] = $dist_id;
+            $map['dist_id'] = $dist_id;
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
             $map['created_time'] = array('between',$start_date.','.$end_date);
             $res = $M->where($map)->find();
             unset($map['created_time']);
-            if (defined('VERSION')) {
-                $map['order_by'] = array('created_time' => 'DESC');
-                $A = A('Tms/Dist','Logic');
-                $bills = $A->billOut($map);
-                $orders = $bills['orders'];
-            } else {
-                $A = A('Common/Order','Logic');
-                $map['itemsPerPage'] = $res['order_count'];//传递页数
-                $map['order_by'] = array('user_id' => 'ASC','created_time' => 'DESC');
-                $orders = $A->order($map);
-            }
-            //$this->data = $orders;
+            $map['order_by'] = array('created_time' => 'DESC');
+            $A = A('Tms/Dist','Logic');
+            $bills = $A->billOut($map);
+            $orders = $bills['orders'];
             $all_orders     = 0;  //总订单统计
             $sign_orders    = 0;  //签收统计
             $unsign_orders  = 0;  //退货统计
@@ -75,9 +64,7 @@ class ListLogic{
             $sum_deal_price = 0;  //司机回款统计
             $back_lists     = array(); //退货清单
             foreach ($orders as $key => $value) {
-                if (defined('VERSION')) {
-                    $value = $value['order_info'];
-                }
+                $value = $value['order_info'];
                 $all_orders++;
                 // 统计实收货款和签收未收订单 
                 switch($value['status_cn']){
@@ -113,7 +100,7 @@ class ListLogic{
                         }
                         break;
                     case '已完成':
-                    	$sign_finished++;
+                        $sign_finished++;
                 } 
                 
             }
@@ -146,62 +133,74 @@ class ListLogic{
         $map['mobile'] = $mobile;
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
         $map['status'] = '1';
+        //$map['type']   = '0';
         $data = M('tms_delivery')->where($map)->select();
         unset($map);
-        $A = A('Common/Order','Logic');
         $geo_array = array();
         $customer  = array();
         foreach ($data as $key => $value) {
+            if ($value['type'] == '0') {
             // dump($value['dist_id']);
-            $map['dist_id'] = $value['dist_id'];
-            if (defined('VERSION')) {
+                $map['dist_id'] = $value['dist_id'];
                 $map['order_by'] = array('created_time' => 'DESC');
                 $A = A('Tms/Dist','Logic');
                 $bills  = $A->billOut($map);
                 $orders = $bills['orders'];
-            } else { 
-                $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-                $map['itemsPerPage'] = $value['order_count'];
-                $orders = $A->order($map);
-            }
-            foreach ($orders as $keys => $values) {
-                if (defined('VERSION')) {
+                foreach ($orders as $keys => $values) {
                     $values = $values['order_info'];
-                }
-                $values['geo'] = json_decode($values['geo'],TRUE);
-                $customer[$values['user_id']] = 1;//统计商家数量
-                //如果地址为空的话跳过
-                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
-                    continue;
-                }
-                $geo = $values['geo'];
-                $geo['order_id'] = $value['id'];
-                $geo['user_id']  = $values['user_id'];
-                $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
-                // 只要有一单还没送完颜色就是0
-                if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
-                    if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
-                        $geo['color_type'] = 3;
+                    $values['geo'] = json_decode($values['geo'],TRUE);
+                    $customer[$values['user_id']] = 1;//统计商家数量
+                    //如果地址为空的话跳过
+                    if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
+                        continue;
                     }
-                    else{
+
+                    $geo = $values['geo'];
+                    $geo['order_id'] = $value['id'];
+                    $geo['user_id']  = $values['user_id'];
+                    $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                    // 只要有一单还没送完颜色就是0
+                    if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                        if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                            $geo['color_type'] = 3;
+                        }
+                        else{
+                            $geo['color_type'] = 0;
+                        }      
+                    } else {
                         $geo['color_type'] = 0;
-                    }      
+                    }
+                    unset($map);
+                    $map['is_deleted']  = '0';
+                    $map['customer_id'] = $values['user_id'];
+                    $res = M('tms_report_error')->field('id')->where($map)->find();
+                    unset($map);
+                    if ($res) {
+                        $geo['color_type'] = 2;
+                    }
+                    $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
+                }            
+            } else {
+                $nodes = M('tms_task_node')->where(array('pid' => $value['dist_id']))->select();
+                $cus_count += count($nodes);
+                foreach ($nodes as &$value) {
+                    if ($value['status'] == '2' || $value['status'] == '3' ) {
+                        $value['color_type'] = 3;
+                    } else {
+                        $value['color_type'] = 0;
+                    }
+                    $value['geo']     = isset($value['geo']) ? json_decode($value['geo'],true) : '';
+                    //$value['geo_new'] = isset($value['geo']) ? json_decode($value['geo_new'],true) : '';
+                    if ($value['geo'] != '') {
+                        $geo = $value['geo'];
+                        $geo['address'] = $value['name'];
+                        $geo['color_type'] = $value['color_type'];
+                        $geo_array[]   = $geo;
+                    }
                 }
-                else{
-                    $geo['color_type'] = 0;
-                }
-                unset($map);
-                $map['is_deleted']  = '0';
-                $map['customer_id'] = $values['user_id'];
-                $res = M('tms_report_error')->field('id')->where($map)->find();
-                unset($map);
-                if ($res) {
-                    $geo['color_type'] = 2;
-                }
-                $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
-            }            
+            }
         }
-        $customer_count = count($customer);
+        $customer_count = count($customer) + $cus_count;
         $geo_arrays     = array_values($geo_array);
         unset($data);
         $data['customer_count'] = $customer_count;

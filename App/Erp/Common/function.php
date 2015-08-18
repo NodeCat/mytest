@@ -178,6 +178,12 @@ function getSkuInfoByCode($name, $prcode) {
     return $result;
     
 }
+
+function getSkuInfoByCodeArray($arr_pro_code) {
+    $infos = A('Pms','Logic')->get_SKU_field_by_pro_codes($arr_pro_code);
+    return $infos;
+    
+}
 /**
  * getProname 根据 库位id 获取库位信息
  * @param Int $location_id 仓库id

@@ -59,7 +59,7 @@ class ProcessLossController extends CommonController
 
     /**
      * 列表字段处理
-     * @param unknown $data
+     * @param $data 加工区所有的sku数据
      */
     public function after_lists(&$data) {
         $pro_code = array();
@@ -79,7 +79,8 @@ class ProcessLossController extends CommonController
 
         $code   = implode(',', $pro_code);
         $logic  = D('ProcessLoss', 'Logic');
-        $result = $logic->getStockLoss($code, $start_time, $end_time);
+        $location_ids = $logic->getLocationList('XA-001');          //获取所有加工损耗区ID
+        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids);
         foreach ($data as $key => $val) {
             $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
             $loss_ratio                  = ($data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']));       //损耗率
@@ -145,7 +146,8 @@ class ProcessLossController extends CommonController
 
         $code   = implode(',', $pro_code);
         $logic  = D('ProcessLoss', 'Logic');
-        $result = $logic->getStockLoss($code, $start_time, $end_time);
+        $location_ids = $logic->getLocationList('XA-001');          //获取所有加工损耗区ID
+        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids);
 
         foreach ($data as $key => $val) {
             $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);

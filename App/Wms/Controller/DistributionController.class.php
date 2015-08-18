@@ -345,6 +345,15 @@ class DistributionController extends CommonController {
         $data['sku_count'] = $dis['sku_count']; //sku总数
         $data['total_price'] = $dis['total_price']; //总价格
         $data['line_count'] = $dis['line_count']; //总行数
+        $data['delivery_count'] = 0; //发货总件数
+        $data['delivery_price'] = 0; //发货总金额
+        foreach ($result as $value) {
+            foreach ($value['detail'] as $val) {
+                $data['delivery_count'] += $val['delivery_qty'];
+                $data['delivery_price'] += bcmul($val['delivery_qty'], $val['price'], 2);
+            }
+        }
+        $data['delivery_price'] = formatMoney($data['delivery_price']);
         $this->assign('data', $data);
         $this->assign('orderList', $result);
         $this->display();
@@ -415,9 +424,11 @@ class DistributionController extends CommonController {
                 if (!isset($merge[$v['pro_code']])) {
                     $merge[$v['pro_code']] = $v;
                 } else {
-                    $merge[$v['pro_code']]['order_qty'] += $v['order_qty'];
+                    $merge[$v['pro_code']]['former_qty'] += $v['former_qty'];
                     $merge[$v['pro_code']]['delivery_qty'] += $v['delivery_qty'];
                 }
+                $items['delivery_qty'] += $v['delivery_qty']; //总发货量
+                $items['delivery_amount'] += $v['delivery_qty'] * $v['price']; //总发货金额
                 unset($merge[$key]);
             }
             $items['sku_list'] = $merge;
@@ -519,6 +530,7 @@ class DistributionController extends CommonController {
         $make_ids = array(); //带生产的出库单ID
         $pass_ids = array();  //分拣出库单ID
         $reduce_ids = array(); //库存不足的出库单ID
+        $g_sku_qty =array(); //辅助记录PACK区库存
         foreach ($bill_out_status as $key => $val) {
             if ($val['status'] == 3) { //状态3 波此中 
                 $wavein_ids[] = $val['id'];
@@ -531,7 +543,7 @@ class DistributionController extends CommonController {
             } elseif ($val['status'] == 5) {
                 //分拣完成
                 //判断分拣完成的库存够不够  防止发生损毁
-                $result_detail = $D->checkout_stock_eg($val['id']);
+                $result_detail = $D->check_pack_qty($val['id'],$g_sku_qty);
                 if ($result_detail) {
                     //库存充足
                     $pass_ids[] = $val['id'];
@@ -646,7 +658,7 @@ class DistributionController extends CommonController {
                     $total_stock_qty = 0;
                     //查询PACK区内所有该sku的库存量
                     $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
-                        array(
+                        array('wh_id'=>session('user.wh_id'),
                             'pro_code'=>$v['pro_code'],
                             'location_code'=>'PACK',
                             'stock_status'=>'qualified')
@@ -999,9 +1011,10 @@ class DistributionController extends CommonController {
                 if(!empty($order_lists[0]['order_number']) && $order_lists[0]['status'] == 0){
                     //订单被取消了，不能拉进波次
                     unset($ids[$k]);
-                    //同时将出库单逻辑删除
+                    //同时将出库单关闭
                     $map['id'] = $bill_out_id;
-                    $data['is_deleted'] = 1;
+                    $data['status'] = 18;
+                    $data['dis_mark'] = 0;
                     $stock_out->where($map)->save($data);
                     unset($map);
                     unset($data);

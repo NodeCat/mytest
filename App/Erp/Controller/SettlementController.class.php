@@ -36,6 +36,7 @@ class SettlementController extends CommonController
         'code'              => '结算单号',
         'partner_name'      => '供应商',
         'created_time'      =>'创建时间',
+        'stock_in_time'     => '入库时间',
         'created_user'      => '创建人',
         'settlement_time'   => '结算时间',
         'settlement_user'   => '结算人',
@@ -171,17 +172,13 @@ class SettlementController extends CommonController
 
     protected function before_edit($data)
     {
-        $M      = M('erp_settlement_detail');
-        $join   = array(
-            ' left join stock_purchase on erp_settlement_detail.order_code=stock_purchase.code',
-            ' left join erp_purchase_refund on erp_purchase_refund.code=erp_settlement_detail.order_code',
-            ' left join stock_purchase_out on stock_purchase_out.rtsg_code=erp_settlement_detail.order_code'
-        );
+        $logic   = D('Settlement','Logic');
+        $result1 = $logic->getStockInListDetail($data['code']);     //采购单明细
+        $result2 = $logic->getPurchaseListDetail($data['code']);    //入库单明细
+        $result3 = $logic->getRefundListDetail($data['code']);      //冲红单明细
+        $result4 = $logic->getPurchaseOutListDetail($data['code']); //退款单明细
 
-        $field  =  'erp_settlement_detail.*, stock_purchase.id as pid, erp_purchase_refund.id as refund_id, stock_purchase_out.id as stockout_id';
-        $where  = "erp_settlement_detail.code='{$data['code']}'";
-        $pros   = $M->field($field)->join($join)->where($where)->select();
-
+        $pros = array_merge($result1, $result2, $result3, $result4);
         $this->pros = $pros;
     }
 
@@ -194,7 +191,7 @@ class SettlementController extends CommonController
             $partner_id   = I('post.partner_id/d');     //供应商ID
             $bill_number  = I('post.bill_number');      //发票号
             $bill_amount  = I('post.bill_amount');      //发票金额
-
+            
             if (empty($partner_id)) {
                 $this->ajaxReturn(array('code'=>'-1', 'message'=>'请选择供应商！'));
             }
@@ -332,6 +329,24 @@ class SettlementController extends CommonController
 
                 $returnArray = array_merge($result, $result1, $result2, $result3);
             }
+
+            //如果取出的单据数据，已经在其它结算单中，并且结算单不为作废状态，单据就不再显示
+            $code = array();
+            foreach ($returnArray as $key => $val) {
+                $code[] = $val['code'];
+            }
+            $code_array = array_unique($code);
+            $where['erp_settlement_detail.order_code'] = array('in',  $code_array);
+            $model  = M('erp_settlement_detail');
+            $join   = array('INNER JOIN erp_settlement ON erp_settlement.code=erp_settlement_detail.code AND erp_settlement.status!=11');
+            $field  = 'erp_settlement_detail.order_code';
+            $array = $model->field($field)->join($join)->where($where)->group('erp_settlement_detail.order_code')->getField('erp_settlement_detail.order_code,erp_settlement_detail.id');
+            foreach ($returnArray as $keys => $value) {
+                if ( !empty($array[$value['code']]) ) {
+                    unset($returnArray[$keys]);         //剔除数组
+                }
+            }
+
             $this->ajaxReturn($returnArray);
         }
     }
@@ -502,17 +517,28 @@ class SettlementController extends CommonController
     {
         $id = I('get.id/d');
 
+
         //查询结算单对应的单据详细信息，用于更新对应单据状态使用
         $join = array(
             "inner join partner on erp_settlement.partner_id=partner.id ",
             "left join user on erp_settlement.settlement_user = user.id ",
         );
 
-        $settlement = M('erp_settlement')->field('erp_settlement.code as code,erp_settlement.settlement_time as settlement_time, user.nickname as settlement_user, partner.name as partner_name, erp_settlement.total_amount')->join($join)->where('erp_settlement.id=%d', $id)->find();
+        $model = M('erp_settlement');
+
+        $settlement = $model->field('erp_settlement.code as code,erp_settlement.settlement_time as settlement_time, user.nickname as settlement_user, partner.name as partner_name, erp_settlement.total_amount')->join($join)->where('erp_settlement.id=%d', $id)->find();
         $settlement['print_time'] = get_time();
         $this->assign('settlement', $settlement);
 
-        $list = M('erp_settlement_detail')->where("code='%s'", $settlement['code'])->select();
+        $code  = $model->where('id=%d', $id)->getField('code');
+
+        $logic   = D('Settlement','Logic');
+        $result1 = $logic->getStockInListDetail($code);     //采购单明细
+        $result2 = $logic->getPurchaseListDetail($code);    //入库单明细
+        $result3 = $logic->getRefundListDetail($code);      //冲红单明细
+        $result4 = $logic->getPurchaseOutListDetail($code); //退款单明细
+
+        $list = array_merge($result1, $result2, $result3, $result4);
 
         layout(false);
         $this->assign('list', $list);

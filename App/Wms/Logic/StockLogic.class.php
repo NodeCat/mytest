@@ -308,7 +308,7 @@ class StockLogic{
                         'pro_code' => $stock['pro_code'],
                         'type' => 'ship',
                         'refer_code' => $params['refer_code'],
-                        'direction' => 'OUT',
+                        'direction' => 'OUTPUT',
                         'move_qty' => $log_qty,
                         'old_qty' => $log_old_qty,
                         'new_qty' => $log_new_qty,
@@ -367,7 +367,7 @@ class StockLogic{
                         'pro_code' => $stock['pro_code'],
                         'type' => 'ship',
                         'refer_code' => $params['refer_code'],
-                        'direction' => 'OUT',
+                        'direction' => 'OUTPUT',
                         'move_qty' => $log_qty,
                         'old_qty' => $log_old_qty,
                         'new_qty' => $log_new_qty,
@@ -428,7 +428,7 @@ class StockLogic{
                         'pro_code' => $stock['pro_code'],
                         'type' => 'ship',
                         'refer_code' => $params['refer_code'],
-                        'direction' => 'OUT',
+                        'direction' => 'OUTPUT',
                         'move_qty' => $log_qty,
                         'old_qty' => $log_old_qty,
                         'new_qty' => $log_new_qty,
@@ -465,13 +465,14 @@ class StockLogic{
      * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak = ''){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$has_source_batch=false){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
         $row['location_id'] = $location_id;
         $row['pro_code'] = $pro_code;
-        $row['batch'] = $batch;
+        //如果传入的有明确的批次号，就使用指定的批次号，如果没有就是用refer_code做批次号
+        $row['batch'] = $batch ? $batch : $refer_code;
         $row['status'] =$status;
         
         $stock_info = $stock->where($row)->find();
@@ -519,8 +520,7 @@ class StockLogic{
         //减待上架库存 增加已上量
         $map['pid'] = $inId;
         $map['pro_code'] = $pro_code;
-        //$map['pro_uom'] = $pro_uom;
-        if ($batch_bak) {
+        if ($has_source_batch) {
             $map['batch'] = $batch;
         }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
@@ -543,11 +543,11 @@ class StockLogic{
             'pro_code' => $pro_code,
             'type' => 'putaway',
             'refer_code' => $refer_code,
-            'direction' => 'IN',
+            'direction' => 'INPUT',
             'move_qty' => $pro_qty,
             'old_qty' => $log_old_qty,
             'new_qty' => $log_new_qty,
-            'batch' => $batch,
+            'batch' => $batch ? $batch : $refer_code,
             'status' => $status,
             );
         $stock_move = D('StockMoveDetail');
@@ -613,6 +613,8 @@ class StockLogic{
             $src_stock_list[$key]['stock_qty'] = formatMoney($value['stock_qty'], 2);
             $src_stock_list[$key]['assign_qty'] = formatMoney($value['assign_qty'], 2);
             $src_stock_list[$key]['prepare_qty'] = formatMoney($value['prepare_qty'], 2);
+            //生产日期 liuguangping
+            $src_stock_list[$key]['product_date'] = $value['product_date'];
         }
 
         //按照现进先出原则 减去最早的批次量
@@ -680,6 +682,7 @@ class StockLogic{
             $add_info['location_id'] = $param['dest_location_id'];
             $add_info['pro_code'] = $param['pro_code'];
             $add_info['batch'] = $src_stock['batch'];
+            $add_info['product_date'] = $src_stock['product_date'];
             $add_info['status'] = $dest_location_info['status'];
             $add_info['stock_qty'] = $param['variable_qty'];
             $add_info['assign_qty'] = 0;
@@ -697,7 +700,7 @@ class StockLogic{
                     'location_id' => $param['dest_location_id'],
                     'pro_code' => $param['pro_code'],
                     'type' => 'move',
-                    'direction' => 'IN',
+                    'direction' => 'INPUT',
                     'move_qty' => $param['variable_qty'],
                     'old_qty' => 0,
                     'new_qty' => $param['variable_qty'],
@@ -725,7 +728,7 @@ class StockLogic{
                 //写入库存交易日志
 
                 $stock_move_data['location_id'] = $param['src_location_id'];
-                $stock_move_data['direction'] = 'OUT';
+                $stock_move_data['direction'] = 'OUTPUT';
                 $stock_move_data['old_qty'] = $src_stock['stock_qty'];
                 $stock_move_data['new_qty'] = $src_stock['stock_qty'] - $param['variable_qty'];
                 $stock_move = D('StockMoveDetail');
@@ -754,6 +757,8 @@ class StockLogic{
                         //新增目标库存记录
                         $stock_add_data = $map;
                         $stock_add_data['stock_qty'] = $param['variable_qty'];
+                        //liuguangping 加入成产日期
+                        $stock_add_data['product_date'] = $src_stock['product_date'];
                         $stock = D('Stock');
                         $stock_add_data = $stock->create($stock_add_data);
                         $stock->data($stock_add_data)->add();
@@ -768,7 +773,7 @@ class StockLogic{
                         'location_id' => $param['dest_location_id'],
                         'pro_code' => $param['pro_code'],
                         'type' => 'move',
-                        'direction' => 'IN',
+                        'direction' => 'INPUT',
                         'move_qty' => $param['variable_qty'],
                         'old_qty' => $dest_stock_info['stock_qty'],
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
@@ -785,7 +790,7 @@ class StockLogic{
 
                     //写入库存交易日志
                     $stock_move_data['location_id'] = $param['src_location_id'];
-                    $stock_move_data['direction'] = 'OUT';
+                    $stock_move_data['direction'] = 'OUTPUT';
                     $stock_move_data['old_qty'] = $src_stock['stock_qty'];
                     $stock_move_data['new_qty'] = $src_stock['stock_qty'] - $param['variable_qty'];
                     $stock_move = D('StockMoveDetail');
@@ -885,7 +890,7 @@ class StockLogic{
                     'location_id' => $param['dest_location_id'],
                     'pro_code' => $param['pro_code'],
                     'type' => 'move',
-                    'direction' => 'IN',
+                    'direction' => 'INPUT',
                     'move_qty' => $param['variable_qty'],
                     'old_qty' => 0,
                     'new_qty' => $param['variable_qty'],
@@ -924,7 +929,7 @@ class StockLogic{
                 //写入库存交易日志
 
                 $stock_move_data['location_id'] = $param['src_location_id'];
-                $stock_move_data['direction'] = 'OUT';
+                $stock_move_data['direction'] = 'OUTPUT';
                 $stock_move_data['old_qty'] = $src_stock_info['stock_qty'];
                 $stock_move_data['new_qty'] = $src_stock_info['stock_qty'] - $param['variable_qty'];
                 $stock_move = D('StockMoveDetail');
@@ -963,7 +968,7 @@ class StockLogic{
                         'location_id' => $param['dest_location_id'],
                         'pro_code' => $param['pro_code'],
                         'type' => 'move',
-                        'direction' => 'IN',
+                        'direction' => 'INPUT',
                         'move_qty' => $param['variable_qty'],
                         'old_qty' => $dest_stock_info['stock_qty'],
                         'new_qty' => $dest_stock_info['stock_qty'] + $param['variable_qty'],
@@ -999,7 +1004,7 @@ class StockLogic{
 
                     //写入库存交易日志
                     $stock_move_data['location_id'] = $param['src_location_id'];
-                    $stock_move_data['direction'] = 'OUT';
+                    $stock_move_data['direction'] = 'OUTPUT';
                     $stock_move_data['old_qty'] = $src_stock_info['stock_qty'];
                     $stock_move_data['new_qty'] = $src_stock_info['stock_qty'] - $param['variable_qty'];
                     $stock_move = D('StockMoveDetail');
@@ -1073,6 +1078,9 @@ class StockLogic{
             $map['stock.pro_code'] = array('in',$pro_codes);
         }
         //根据库位编号 查询对应的location_id
+        /*
+        * @TODO: 下面的逻辑是有问题的。强制要求库位名称有特征。而不是传入了一个区域。
+        */
         if($location_code){
             $location_map['code'] = array('LIKE','%'.$location_code.'%');
             $location_ids = M('Location')->where($location_map)->getField('id',true);
@@ -1166,7 +1174,7 @@ class StockLogic{
             'pro_code' => $params['pro_code'],
             'type' => 'move',
             'refer_code' => $params['refer_code'],
-            'direction' => 'IN',
+            'direction' => 'INPUT',
             'move_qty' => $params['stock_qty'],
             'old_qty' => 0,
             'new_qty' => $params['stock_qty'],
@@ -1342,7 +1350,7 @@ class StockLogic{
                 'location_id' => $params['location_id'],
                 'pro_code' => $params['pro_code'],
                 'type' => 'status',
-                'direction' => 'OUT',
+                'direction' => 'OUTPUT',
                 'move_qty' => 0,
                 'old_qty' => $stock_info['stock_qty'],
                 'new_qty' => $stock_info['stock_qty'],
@@ -1353,7 +1361,7 @@ class StockLogic{
             $stock_move_data = $stock_move->create($stock_move_data);
             $stock_move->data($stock_move_data)->add();
             
-            $stock_move_data['direction'] = 'IN';
+            $stock_move_data['direction'] = 'INPUT';
             $stock_move_data['status'] = $params['new_status'];
             $stock_move->data($stock_move_data)->add();
 

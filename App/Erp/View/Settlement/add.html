@@ -178,13 +178,12 @@ $(function(){
             var payment_type = $(this).nextAll("input[name=payment_type]").val();
             var amount = parseInt($(this).nextAll("input[name=paid_amount]").val() * 100);
             postData[i] = id+'_'+status+'_'+payment_type;
-            if(status == 'norefund' || status == 'wait'){
+            if (status == 'wait'){
                 paid_amount -= amount;
-            }else{
+            } else {
                 paid_amount += amount;
             }
         });
-
         paid_amount /= 100;
 
         if(postData.length <= 0){
@@ -195,6 +194,7 @@ $(function(){
         var bill_number = $('input[name=bill_number]').val();   //发票号
         var bill_amount = $('input[name=bill_amount]').val();   //发票金额
         var url = '/Settlement/add';
+
         $.ajax({
             url : url,
             type : 'post',

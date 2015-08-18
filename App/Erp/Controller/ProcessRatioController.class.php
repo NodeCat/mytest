@@ -110,10 +110,7 @@ class ProcessRatioController extends CommonController {
         	    $ratio = $M->where($map)->select();
         	    
         	    unset($map);
-        	    $map['id'] = $data['created_user'];
-        	    $user = M('user');
-        	    $name = $user->where($map)->find();
-        	    $data['created_user'] = $name['nickname'];
+        	    
         	    $code = array();
         	    $code[] = $data['p_pro_code'];
         	    foreach ($ratio as $val) {
@@ -152,8 +149,8 @@ class ProcessRatioController extends CommonController {
 	    if (IS_POST) {
         	    //数据处理
         	    $post = I('post.');
-        	    if (empty($post['company_id']) || empty($post['p_pro_code_hidden'])) {
-        	        $this->msgReturn(0, '必须填写所属系统和父SKU');
+        	    if (empty($post['p_pro_code_hidden'])) {
+        	        $this->msgReturn(0, '必须填写父SKU');
         	    }
         	     
         	    if (count($post['pros']) < 2) {
@@ -209,7 +206,6 @@ class ProcessRatioController extends CommonController {
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
         	        $info[$key]['ratio'] = formatMoney($value['pro_qty'], 2);
-        	        $info[$key]['company_id'] = $post['company_id'];
         	        $info[$key]['created_user'] = session()['user']['uid'];
         	        $info[$key]['updated_user'] = session()['user']['uid'];
         	        $info[$key]['created_time'] = get_time();
@@ -306,9 +302,6 @@ class ProcessRatioController extends CommonController {
         	    }
         	    if (empty($M->c_pro_code)) {
         	        $this->msgReturn(false, '请输入子SKU编号');
-        	    }
-        	    if (empty($M->company_id)) {
-        	        $this->msgReturn(false, '请选择所属系统');
         	    }
         	    if (empty($M->ratio)) {
         	        $this->msgReturn(false, '请输入比例关系');

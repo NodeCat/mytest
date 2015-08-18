@@ -347,28 +347,45 @@ $('.modal').on('shown.bs.modal', function (e) {
 	
 	$('.table-toolbar .btn-edit, #search-addon-edit').on('click',function(e){
 		e.preventDefault();
+		//liuguangping 20150812
+		var type = $(this).attr('type-status');
 		var n=$('.content table input:checked').length;
 		if(!n){
 			alert('请选中要操作的行');
 			return false;
 		}
 		else{
-			if(n>1){
-				alert('One row limit to operate at a time.');
+			//liuguangping 20150812
+			if (typeof type == 'undefined' || !type) {
+				if(n>1){
+					alert('One row limit to operate at a time.');
+					return false;
+				}
+			}
+			
+		}
+		//liuguangping 20150812
+		if (typeof type == 'undefined' || !type) {
+			if(n!=1){
 				return false;
 			}
+			n = $("#data-table input:checked").attr('id');
+			var name=$("#data-table input:checked").data('id');
+		} else {
+			n = getChecked()+'&is_stock_move='+type;
+			var name=$(this).data('id');
 		}
-		if(n!=1){
-			return false;
-		}
-
-		var n=$("#data-table input:checked").attr('id');
-		var name=$("#data-table input:checked").data('id');
+		
 		var href=$(this).data("remote");
 	    var target=$(this).data("target");
-	     $( target +" .modal-body").html('');
+	    $( target +" .modal-body").html('');
 	    $( target +" .modal-body").load(href+'?'+name+'='+n, function() { 
 	         $(target).modal("show"); 
+	         if (type == 'move') {
+	         	$('#modal .modal-dialog').addClass('modal-lg');
+	    	 } else {
+	    	 	$('#modal .modal-dialog').removeClass('modal-lg');
+	    	 }
 	    });
 	});
 	alerts=$('#alert');

@@ -112,7 +112,6 @@ class DistributionLogic {
             foreach ($result as $value) {
                 $order_ids[] = $value['refer_code'];
             }
-            
             //获取订单详情
             $order = D('Common/Order', 'Logic');
             $order_info = $order->getOrderInfoByOrderIdArr($order_ids);
@@ -320,6 +319,50 @@ class DistributionLogic {
         $return = true;
         return $return;
     }
+
+    /**
+     * 根据出库单ID判断PACK区库存是否充足,在内存中模拟计算分配量
+     * @param int $id 出库单ID
+     * @param array $sku_qty 一个辅助的数组，用来记录这一批库存检查过程中每个sku的库存量；
+     */
+    public function check_pack_qty($id = 0,&$sku_qty) {
+        $is_enough = true;
+        
+        if (empty($id)) {
+            return $is_enough;
+        }
+        $detail = $this->get_out_detail(array($id));
+        foreach ($detail as $value) {
+            $wh_id = session('user.wh_id');
+            $pro_code =  $value['pro_code'];
+            if(!array_key_exists($pro_code, $sku_qty)){
+                $stock_infos = A('Stock','Logic')->getStockInfosByCondition(
+                        array('wh_id'=>session('user.wh_id'),
+                            'pro_code'=>$pro_code,
+                            'location_code'=>'PACK',
+                            'stock_status'=>'qualified')
+                    );
+                //累加库存量集合
+                $total_stock_qty=0;
+                foreach($stock_infos as $stock_info){
+                    $total_stock_qty += ($stock_info['stock_qty'] - $stock_info['assign_qty']);
+                }
+                $sku_qty[$pro_code] = $total_stock_qty;
+            }
+            $available_qty = $sku_qty[$pro_code];
+            if(bccomp($available_qty, 0, 2)  == 0){
+                $is_enough = false;
+            }
+            elseif (bccomp($available_qty, $value['order_qty'],2)  == -1) {
+                $is_enough = false;
+                $sku_qty[$pro_code] = 0;
+            }
+            else {
+                $sku_qty[$pro_code] = bcsub($sku_qty[$pro_code],$value['order_qty']);
+            }
+        }
+        return $is_enough;
+    }
         
     /**
      * 根据线路id获取线路名称
@@ -427,16 +470,21 @@ class DistributionLogic {
             $data['status'] = 1; //状态 未发运
             $data['is_printed'] = 0; //未打印
             $data['line_count'] = 0; //总种类
+            $data['customer_count'] = 0; //总客户数
             $data['line_id'] = ''; //路线
             $data['sku_count'] = 0; //sku总数量
             $data['total_price'] = 0;  //总价格
             $i = 0;
+            $customer_count = array();
             foreach ($stock_out as $val) {
+                if ($val['customer_id'] > 0) {
+                    $customer_count[$val['customer_id']] = null;
+                }
                 $data['line_count'] += count($val['detail']); //总种类
                 $data['line_id'] .= $val['line_id'] . ','; //路线
                 $data['total_price'] += $val['total_amount']; //总价格
                 foreach ($val['detail'] as $v) {
-                    $data['sku_count'] += $v['order_qty']; //sku总数量
+                    $data['sku_count'] += $v['former_qty']; //sku总数量
                 } 
                 if ($i < 1) {
                     //重复数据  取一次即可
@@ -447,6 +495,7 @@ class DistributionLogic {
                 $i ++;
             }
             $data['line_id'] = rtrim($data['line_id'], ',');
+            $data['customer_count'] = count($customer_count);
             if ($dis->create($data)) {
                 //写入操作
                 $pid = $dis->add();
@@ -1113,7 +1162,9 @@ class DistributionLogic {
         if(!empty($params['dist_id']) && !empty($params['status'])) {
             $map['id'] = $params['dist_id'];
             switch($params['status']) {
-                case '2'://已签收对应配送单状态3:已配送
+                //已签收或拒收对应配送单状态3:已配送
+                case '2':
+                case '3':
                     $status = '3';
                     break;
                 case '4'://已完成对应配送单状态4:已结算
@@ -1146,16 +1197,20 @@ class DistributionLogic {
                     ->field('status')
                     ->where($map)
                     ->select();
-                //所有配送单详情均为该状态时，修改配送单主表状态
-                $flag = 1;
+                //所有配送单详情均为已签收或已拒收,dflag=1,否则dflag=0
+                $dflag = 1;
+                //所有配送单详情均为已完成,sflag=1,否则sflag=0
+                $sflag = 1;
                 foreach ($detail_status as $value) {
-                    if($value['status'] != $params['status']) {
-                        $flag = 0;
-                        break;
+                    if($value['status'] !== '2' && $value['status'] !== '3') {
+                        $dflag = 0;
+                    }
+                    if($value['status'] !== '4') {
+                        $sflag = 0;
                     }
                 }
                 //更新配送单状态
-                if($flag === 1) {
+                if($dflag === 1 || $sflag === 1) {
                     unset($map);
                     $map['id'] = $params['dist_id'];
                     $data = array('status' => $status);
@@ -1234,6 +1289,35 @@ class DistributionLogic {
     }
 
     /**
+     * [getAllWarehouse 获取所有仓库信息]
+     * @return [type] [description]
+     */
+    public function getAllWarehouse()
+    {
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $res = $M->where($map)->select();
+        return $res;
+    }
+
+    /**
+     * [getWarehouseById 根据仓库ID获取仓库名称]
+     * @param  [type] $wh_id [description]
+     * @return [type]        [description]
+     */
+    public function getWarehouseById($id)
+    {
+        if (empty($id)) {
+            return '';
+        }
+        $M = M('warehouse');
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $res = $M->field('name')->where($map)->find();
+        return $res['name'];
+    }
+    
+    /*
     * 根据配送id，查询当前详情，更新配送单主表数据
     * @param $ids = array()
     * @return true/false

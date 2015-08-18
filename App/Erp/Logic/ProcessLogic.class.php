@@ -765,6 +765,11 @@ class ProcessLogic {
         if (empty($data)) {
             return $return;
         }
+        //计算总件数
+        $total = 0;
+        foreach ($data['detail'] as $val) {
+            $total += $val['plan_qty'];
+        }
         
         //主表数据
         $name = 'mno';
@@ -772,6 +777,7 @@ class ProcessLogic {
         $param['code'] = get_sn($name);
         $param['type'] = $this->get_prefix($name, 'out');
         $param['refer_code'] = $data['code'];
+        $param['total_qty'] = $total;
         $param['notes'] = $data['remark'];
         $param['dis_mark'] = 0;
         $param['status'] = 1; //状态 待生产

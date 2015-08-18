@@ -4,13 +4,9 @@ use Think\Controller;
 class ProcessInController extends CommonController {
     //列表显示定义
 	protected $columns = array (
-	      'company_id' => '所属系统',
 	      'wh_id' => '所属仓库',
 	      'code' => '入库单号',
 	      'refer_code' => '加工单号',
-          //'p_pro_code' => '父SKU',
-	      //'p_pro_name' => '父产品名称',
-	      //'p_pro_norms' => '父产品规格',
           'status' => '状态',
 	      'created_time' => '创建时间',
     );
@@ -35,12 +31,6 @@ class ProcessInController extends CommonController {
 	                'value' => 'warehouse.id,name',
 	        ),
 	         
-	       'erp_process_sku_relation.company_id' => array(
-		       'title' => '所属系统',
-	           'query_type' => 'eq',
-	           'control_type' => 'getField',
-	           'value' => 'company.id,name',
-	        ),
 	        'erp_process_in.status' => array(
 	                'title' => '状态',
 	                'query_type' => 'eq',

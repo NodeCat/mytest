@@ -1,0 +1,91 @@
+<include file="Index:nav-cur" />
+<br/>
+<div class="col-xs-12">
+<form id="f" class="form-horizontal form-pda form-scan" action="{:U('register')}" method="POST">
+  <!--<input type="hidden" name="t" value="login" />-->
+  <div class="row-fluid">
+  <div class="col-xs-12">
+  <div class="form-group">
+
+  <!--***********************信息登记的表单start*********************-->
+  <div class="input-group">
+      <span class="input-group-addon">手机</span>
+      <input autocomplete="off" value="{$user.mobile}" type="text" class="form-control input-lg input-pda" id="moblie" name="mobile" placeholder="请输入你的手机号码" readonly />
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">姓名</span>
+    <input autocomplete="off" value="{$user.username}" type="text" class="form-control input-lg input-pda" id="username" name="username" placeholder="请输入你的姓名" />
+
+  </div>
+  <br />
+
+  <div class="input-group">
+    <span class="input-group-addon">车牌</span>
+    <input autocomplete="off" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
+
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">车型</span>
+    <select autocomplete="off"  class="form-control input-lg input-pda" value= "{$user.car_type}" id="car_type" name="car_type" placeholder="请输入车型" onchange="check()" style="color:gray">                                   
+        <volist name='carType' id='cars'> 
+        <option value="{$key}">{$cars}</option>
+        </volist>
+      </select>
+
+  </div>
+  <br />
+  <div class="input-group">
+    <span class="input-group-addon">平台</span>
+    <select autocomplete="off" type="text" value="{$user.car_form}" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台" onchange="check()" style="color:gray">
+      <volist name='carFrom' id='cars'> 
+        <option value="{$key}">{$cars}</option>
+      </volist>
+    </select>
+  </div>
+
+  <br />
+
+  <div class="input-group">
+    <span class="input-group-addon">仓库</span>
+    <select autocomplete="off" value="{$user.warehouse}" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库" onchange="check()" style="color:gray" >
+      <volist name='warehouse' id='storge'> 
+        <option  value="{$key}">{$storge}</option>
+      </volist>
+    </select>
+  </div>
+
+  </div>
+ </div>
+ <div class="clearfix"></div>
+ </div>
+
+ <br/>
+<div class="form-group">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+    <button type="submit" class="btn btn-primary btn-lg btn-block"> 保 存 </button>
+  </div>
+</div>
+<br>
+
+</form>
+</div>
+
+
+
+<style type="text/css">
+	hr{
+margin-top: 10px;
+  margin-bottom: 10px;
+  	}
+
+</style>
+<script type="text/javascript">
+  if($("#username").val()=='') {
+    username.focus();
+  }
+  else if($("#car_num").val()=='') {
+    car_num.focus();
+  }
+</script>

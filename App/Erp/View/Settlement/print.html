@@ -55,7 +55,7 @@
 <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
   <thead>
   	<tr>
-  		<td>单据号</td><td>采购时间</td><td>采购金额</td>
+  		<td>单据号</td><td>单据类型</td><td>付款方式</td><td>采购时间</td><td>入库时间</td><td>货品号</td><td>货品名称</td><td>货品单价</td><td>货品数量</td><td>结算金额</td>
   	</tr>
   </thead>
 
@@ -63,8 +63,29 @@
     <volist name="list" id="vo">
     <tr>
         <td>{$vo.order_code}</td>
+        <td>
+            <switch name="vo.order_type" >
+                <case value="1" break="1">采购单</case>
+                <case value="2" break="1">入库单</case>
+                <case value="3" break="1">冲红单</case>
+                <case value="4" break="1">退货单</case>
+            </switch>
+        </td>
+        <td>
+            <switch name="vo.order_type" >
+                <case value="1" break="1">预付款</case>
+                <case value="2" break="1">货到付款</case>
+                <case value="3" break="1">预付款</case>
+                <case value="4" break="1">货到付款</case>
+            </switch>
+        </td>
         <td>{$vo.purchase_time}</td>
-        <td><if condition="$vo.order_type eq 3 OR $vo.order_type eq 4">-</if>{$vo.total_amount}</td>
+        <td>{$vo.stock_in_time}</td>
+        <td>{$vo.pro_code}</td>
+        <td>{$vo.pro_name}</td>
+        <td>{$vo.price_unit}</td>
+        <td>{$vo.pro_qty}</td>
+        <td><if condition="$vo.order_type eq 3 OR $vo.order_type eq 4">-</if>{$vo.price_subtotal|sprintf="%.2f",###}</td>
     </tr>
 
     </volist>

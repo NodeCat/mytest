@@ -74,15 +74,18 @@ class LoginController extends Controller {
 
     public function wh() {
         $id = I('get.id/d',0);
-        $A = A('Warehouse');
-        $whs = $A->get_list('Warehouse','id,name');
+        $A = A('Common/Warehouse','Logic');
+        $whs = $A->getListByRule();
         if(array_key_exists($id, $whs)) {
             $auth = session('user');
             $auth['wh_id'] = $id;
             session('user',$auth); 
             session('user_auth_sign', data_auth_sign($auth));
+            $this->success('切换成功');
         }
-        $this->success('切换成功');
+        else {
+            $this->error('您没有该仓库的访问权限');
+        }
     }
 
     public function verify(){

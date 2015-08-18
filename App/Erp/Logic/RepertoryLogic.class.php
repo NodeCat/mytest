@@ -20,7 +20,7 @@ class RepertoryLogic
         $where['snap_time'] = $time;
         $where['pro_code']  = $pro_codes;
         $Model      = D('Repertory');
-        $start_cost = $Model->field("pro_code, SUM(`stock_qty`) as stock_qty, SUM(price_unit) as price_unit")->where($where)->group('pro_code')->select();
+        $start_cost = $Model->field("pro_code, SUM(`stock_qty`) as stock_qty, count(pro_code) as nums, SUM(price_unit) as price_unit")->where($where)->group('pro_code')->select();
         $list       = array();
         foreach ($start_cost as $val) {
             $list[$val['pro_code']] = $val;
@@ -176,7 +176,6 @@ class RepertoryLogic
         $where['stock_bill_out_detail.pro_code'] = $pro_code;
         $where['DATE_FORMAT(stock_bill_out_detail.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
         $join = array(
-            #'INNER JOIN stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid AND stock_bill_out.type=1  AND stock_bill_out.is_deleted=0'
             'INNER JOIN stock_bill_out ON stock_bill_out.id=stock_bill_out_detail.pid AND stock_bill_out.type=1 AND stock_bill_out.is_deleted=0',
             'INNER JOIN stock_wave_distribution_detail ON stock_wave_distribution_detail.bill_out_id=stock_bill_out.id',
             'INNER JOIN stock_wave_distribution ON stock_wave_distribution.id=stock_wave_distribution_detail.pid',
@@ -214,17 +213,13 @@ class RepertoryLogic
         $where['erp_process_out_detail.status']   = 2;
         $where['DATE_FORMAT(erp_process_out_detail.`created_time`,\'%Y-%m-%d\')'] = array('between', "$start_time,$end_time");
         $join = array(
-            "INNER JOIN erp_process_out_price ON erp_process_out_price.pro_code=erp_process_out_detail.pro_code "
+            "INNER JOIN erp_process_out ON erp_process_out.id=erp_process_out_detail.pid",
+            "INNER JOIN erp_process_out_price ON erp_process_out_price.code=erp_process_out.code AND erp_process_out_price.pro_code=erp_process_out_detail.pro_code"
         );
         $processOut = M('erp_process_out_detail');
-        $filed = "erp_process_out_detail.pro_code, erp_process_out_detail.real_qty, SUM(erp_process_out_price.pro_qty) as pro_qty,erp_process_out_price.price,SUM(erp_process_out_price.pro_qty*erp_process_out_price.price) as total_amount";
-        $processOutDetail = $processOut->field($filed)->join($join)->where($where)->group('erp_process_out_detail.pro_code')->select();
-        $processOutList = array();
-        if (!empty($processOutDetail)) {
-            foreach ($processOutDetail as $val) {
-                $processOutList[$val['pro_code']] = $val;
-            }
-        }
+        $filed = "erp_process_out_price.pro_code, SUM(erp_process_out_price.pro_qty) as pro_qty, erp_process_out_price.price, SUM(erp_process_out_price.pro_qty*erp_process_out_price.price) as total_amount";
+        $processOutList = $processOut->join($join)->where($where)->group('erp_process_out_price.pro_code')->getField($filed);
+
         return $processOutList;
     }
 
@@ -320,7 +315,6 @@ class RepertoryLogic
     {
         //初期时间，获取前一天的结余
         $_time_1 = date('Y-m-d', (strtotime($start_time)-86400));
-
         //获取初期数量
         $startList      = $this->getSnapList($_time_1, $pro_codes);
         //获取期末数量
@@ -340,7 +334,7 @@ class RepertoryLogic
         foreach ($data as $key => $val) {
             //初期成本
             $data[$key]['first_nums']           = $this->numbers_format_2($startList[$val['pro_code']]['stock_qty']);           //期初数量
-            $data[$key]['first_amount']         = $this->numbers_format_2($startList[$val['pro_code']]['price_unit']);          //期初成本(含税)
+            $data[$key]['first_amount']         = $this->numbers_format_2($startList[$val['pro_code']]['price_unit']/$startList[$val['pro_code']]['nums']);          //期初成本(含税)
             $data[$key]['first_amounts']        = $this->numbers_format_2($data[$key]['first_amount'] / $price_rate);           //期初成本(不含税)
 
             //采购入库
@@ -398,7 +392,7 @@ class RepertoryLogic
 
             //期末成本
             $data[$key]['last_nums']            = $this->numbers_format_2($endList[$val['pro_code']]['stock_qty']);         //期末数量
-            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']);        //期末成本(含税)
+            $data[$key]['last_amount']          = $this->numbers_format_2($endList[$val['pro_code']]['price_unit']/$endList[$val['pro_code']]['nums']);        //期末成本(含税)
             $data[$key]['last_amounts']         = $this->numbers_format_2($data[$key]['last_amount'] / $price_rate);        //期末成本(不含税)
         }
     }
@@ -406,7 +400,7 @@ class RepertoryLogic
     //格式化金额，截取2位小数
     private function numbers_format_2($number)
     {
-        if (intval($number) == 0) {
+        if ($number == 0) {
             return sprintf("%.2f",0);
         }
         $p= stripos($number, '.');
