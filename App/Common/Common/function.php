@@ -274,10 +274,8 @@ function logs($id = 0, $msg = '', $model = '', $action = '', $module = ''){
 function getlogs($model='', $id = 0) {
     $map['model'] = $model;
     $map['pk']    = $id;
-    $res = M()->table('log')->field('log.id,log.pk,log.msg,user.nickname user,log.updated_time optime,ar.name role')
+    $res = M()->table('log')->field('log.id,log.pk,log.msg,user.nickname user,log.updated_time optime')
                 ->join('left join user on user.id = log.updated_user')
-                ->join('left join auth_user_role aur on aur.user_id = log.updated_user')
-                ->join('left join auth_role ar on ar.id = aur.role_id')
                 ->where($map)->order('log.id desc')->select();
     return $res;
 }
