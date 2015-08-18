@@ -27,7 +27,7 @@
           {$vo['qualified_qty'] - $vo['expected_qty']}
         </td>
         <td style="width:10%;">
-          {:formatMoney($vo['qualified_qty'] * $vo['price_unit'] - $vo['expected_qty'] * $vo['price_unit'],2)}
+          {:bcsub(bcmul($vo['qualified_qty'] , $vo['price_unit'],2),bcmul($vo['expecte    d_qty'] , $vo['price_unit'],2),2)}
         </td>
       </tr>
         
