@@ -3,7 +3,7 @@ namespace Erp\Model;
 use Think\Model;
 class ProcessRatioModel extends Model {
 
-    protected $insertFields = array('id','p_pro_code','c_pro_code',,'ratio','created_user','created_time','updated_user','updated_time','is_deleted');
+    protected $insertFields = array('id','p_pro_code','c_pro_code','ratio','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $updateFields = array('p_pro_code','c_pro_code','ratio','created_user','created_time','updated_user','updated_time','is_deleted');
     protected $readonlyField = array('id');
     public $tableName = 'erp_process_sku_relation';
