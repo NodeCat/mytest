@@ -254,7 +254,7 @@ class TransferLogic
      * @return Boolture;
      * 
      */
-    public function upTransferOutStatus($idArr = array()){
+    public function updataTransferHandle($idArr = array()){
         if(!$idArr) return FALSE;
         $return = array();
         foreach ($idArr as $out_id) {
@@ -285,7 +285,7 @@ class TransferLogic
                 }
                 if($this->updateTransfer($transfer_code, $out_id)){
                     //修改erp 出库单
-                    if ($this->erpUpdateOut($bill_out_code, $out_id)) {
+                    if ($this->updateTransferOut($bill_out_code, $out_id)) {
                         //添加erp出库单详细
                         $this->insertErpContainer($out_id);
                         $return = true;
@@ -323,7 +323,6 @@ class TransferLogic
                 $map['pro_code'] = $vals['pro_code'];
                 $map['pid'] = $id;
                 $saveDetail = array();
-                $saveDetail = array();
                 $saveDetail['updated_time'] = get_time();
                 $saveDetail['updated_user'] = session('user.uid');
                 $saveDetail['status'] = 'refunded';
@@ -346,7 +345,7 @@ class TransferLogic
     }
 
     //修改ERP 出库单 $bill_out_code erp出库单和wms 出库单 @out_id wms出库单id
-    public function erpUpdateOut($bill_out_code,  $out_id){
+    public function updateTransferOut($bill_out_code,  $out_id){
 
         $transfer_out_m = M('erp_transfer_out');
         $transfer_out_detail_m = M('erp_transfer_out_detail');
@@ -426,7 +425,7 @@ class TransferLogic
     public function transferHandle($pass_reduce_ids){
         //处理erp调拨实际收货量和状态
         //$distribution_logic = A('Erp/Transfer','Logic');        
-        $this->upTransferOutStatus($pass_reduce_ids);
+        $this->updataTransferHandle($pass_reduce_ids);
 
         //加入wms入库单 liuguangping
         $stockin_logic = A('Wms/StockIn','Logic');        
