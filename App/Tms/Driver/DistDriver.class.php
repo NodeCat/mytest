@@ -183,7 +183,14 @@ class DistDriver extends Controller {
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
                 unset($map);
                 if ($res) {
-                    logs($bill_out_id,'已装车'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
+                    unset($map);
+                    $map['pid']        = $id;
+                    $map['is_deleted'] = 0;
+                    $detail = M('stock_wave_distribution_detail')->where($map)->select();
+                    $bill_out_ids = array_column($detail,'bill_out_id');
+                    foreach ($bill_out_ids as $value) {
+                        logs($value,'已装车'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
+                    }
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
                     $M = M('TmsUser');                    
