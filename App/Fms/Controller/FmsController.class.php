@@ -96,9 +96,8 @@ class FmsController extends \Common\Controller\AuthController{
             $map['is_deleted'] = 0;
             $data['status'] = 4; //已完成
             $data['real_sum'] = $value['pay_for_price'];
-            $data['wipe_zero'] = $value['wipe_zero'];
             $s = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
-            logs($value['id'],'已完成,'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
+            logs($value['id'],'已完成','dist_detail');
         }
         //回写配送单状态
         unset($map);

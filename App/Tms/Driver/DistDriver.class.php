@@ -183,6 +183,14 @@ class DistDriver extends Controller {
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
                 unset($map);
                 if ($res) {
+                    unset($map);
+                    $map['pid']        = $id;
+                    $map['is_deleted'] = 0;
+                    $detail = M('stock_wave_distribution_detail')->where($map)->select();
+                    $bill_out_ids = array_column($detail,'bill_out_id');
+                    foreach ($bill_out_ids as $value) {
+                        logs($value,'已装车'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
+                    }
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
                     $M = M('TmsUser');                    
@@ -468,6 +476,7 @@ class DistDriver extends Controller {
             $s = $wA->saveSignDataToDistDetail($datas);
             //配送单详情的状态为2:已签收或者更成功
             if($dist_detail['status'] == 2 || $s) {
+                logs($bill_out_id,'已签收'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
                 $cdata = array();
                 //组合一个签收详情数据
                 foreach ($bill_id_details as $detail_id => $detail) {
@@ -599,6 +608,7 @@ class DistDriver extends Controller {
             );
             $s = $wA->saveSignDataToDistDetail($datas);
             if($dist_detail['status'] == 3 || $s) {
+                logs($bill_out_id,'已拒收'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
                 //出库单详情
                 $bill_details = $wA->get_out_detail(array($bill_out_id));
                 //出库单详情关联订单详情
