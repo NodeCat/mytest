@@ -239,7 +239,10 @@
     {$log.msg}
   </td>
   <td>
+    <if condition="$log.user eq null">无
+      <else />
     [{$log.role}]{$log.user}
+    </if>
   </td>
 </tr>
 </volist>
