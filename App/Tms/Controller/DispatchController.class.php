@@ -36,25 +36,19 @@ class DispatchController extends \Common\Controller\AuthController{
         $map['created_time'] = array('between',$start_date.','.$end_date); 
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        $warehouse = I('post.warehouse/d', 0);
+        $warehouse = session('user.wh_id');
         $car_from  = I('post.car_from', '' ,'trim');
-        if ($warehouse || $car_from) {
-            if ($warehouse) {
-                $map1['warehouse'] = $warehouse;
-            }
-            if ($car_from) {
-                $map1['car_from'] = $car_from;
-            }
+        $map1['warehouse'] = $warehouse;
+        if ($car_from) {
+            $map1['car_from'] = $car_from;
+        }
             $this->ware = $warehouse;
             $this->car_from  = $car_from;
             $userId = M('TmsUser')->where($map1)->getField('id',true);
             $map['userid'] = empty($userId) ? null : array('in',$userId); 
-
-        }
         //把对应仓库的用户签到信息取出来
         $map['is_deleted'] = 0;
-        $sign_lists= $D->relation('TmsUser')->where($map)->order(array('created_time' => 'DESC'))->select();
-        //dump($sign_lists);exit;
+        $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as &$value) {
@@ -66,11 +60,11 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['status'] = '1';
             //$map['type'] = '0';
             //获取司机配送单的线路和id信息
-            $delivery_msg = M('tms_delivery')->where($map)->field('line_name,dist_id,type')->order('created_time DESC')->select();
+            $delivery_msg = M('tms_delivery')->where($map)->getField('id,line_name,dist_id,type');
             $value['sign_orders']   = 0;// 已签收
             $value['unsign_orders'] = 0;// 以退货
             $value['sign_finished'] = 0;// 已完成
-            $value['delivering']    = 0;// 配送中  
+            $value['delivering']    = 0;// 配送中
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
                 if ($val['type'] == '0') {
@@ -155,20 +149,17 @@ class DispatchController extends \Common\Controller\AuthController{
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        $warehouse = I('post.warehouse/d', 0);
+        $warehouse = session('user.wh_id');
         $car_from  = I('post.car_from', '' ,'trim');
-        if ($warehouse || $car_from) {
-            if ($warehouse) {
-                $map1['warehouse'] = $warehouse;
-            }
-            if ($car_from) {
-                $map1['car_from'] = $car_from;
-            }
-            $this->warehouse = $warehouse;
-            $this->car_from  = $car_from;
-            $userId = M('TmsUser')->where($map1)->getField('id',true);
-            $map['userid'] = array('in',$userId);  
+        $map1['warehouse'] = $warehouse;
+        if ($car_from) {
+            $map1['car_from'] = $car_from;
         }
+        $this->warehouse = $warehouse;
+        $this->car_from  = $car_from;
+        $userId = M('TmsUser')->where($map1)->getField('id',true);
+        $map['userid'] = empty($userId) ? null : array('in',$userId); 
+        
         //把对应仓库的用户签到信息取出来
         $map['is_deleted'] = 0;
         $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();

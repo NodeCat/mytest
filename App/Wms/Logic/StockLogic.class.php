@@ -465,13 +465,14 @@ class StockLogic{
      * $product_date 生产日期
      * )
      */
-    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$batch_bak = ''){
+    public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$has_source_batch=false){
         $stock = D('stock');
         //增加库存
         $row['wh_id'] = $wh_id;
         $row['location_id'] = $location_id;
         $row['pro_code'] = $pro_code;
-        $row['batch'] = $batch;
+        //如果传入的有明确的批次号，就使用指定的批次号，如果没有就是用refer_code做批次号
+        $row['batch'] = $batch ? $batch : $refer_code;
         $row['status'] =$status;
         
         $stock_info = $stock->where($row)->find();
@@ -519,13 +520,17 @@ class StockLogic{
         //减待上架库存 增加已上量
         $map['pid'] = $inId;
         $map['pro_code'] = $pro_code;
-        //$map['pro_uom'] = $pro_uom;
-        if ($batch_bak) {
+        if ($has_source_batch) {
             $map['batch'] = $batch;
         }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
-        M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$pro_qty);
+        if($status == 'qualified'){
+            M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$pro_qty);
+        }
+        if($status == 'unqualified'){
+            M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$pro_qty);
+        }
         unset($map);
 
         //通知实时库存接口
@@ -547,7 +552,7 @@ class StockLogic{
             'move_qty' => $pro_qty,
             'old_qty' => $log_old_qty,
             'new_qty' => $log_new_qty,
-            'batch' => $batch,
+            'batch' => $batch ? $batch : $refer_code,
             'status' => $status,
             );
         $stock_move = D('StockMoveDetail');

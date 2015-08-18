@@ -5,7 +5,6 @@ class ProcessRatioController extends CommonController {
     private $p_pro_code = '';
     //列表显示定义
 	protected $columns = array (
-	      'company_id' => '所属系统',
           'p_pro_code' => '父SKU',
 	      'p_pro_name' => '父产品名称',
 	      'p_pro_norms' => '父产品规格',
@@ -27,12 +26,6 @@ class ProcessRatioController extends CommonController {
 	                'query_type' => 'eq',
 	                'control_type' => 'text',
 	                'value' => 'c_pro_code',
-	        ),
-	        'erp_process_sku_relation.company_id' => array(
-	                'title' => '所属系统',
-	                'query_type' => 'eq',
-	                'control_type' => 'getField',
-	                'value' => 'company.id,name',
 	        ),
 	        'erp_process_sku_relation.created_user' => array(
 	                'title' => '创建人',
@@ -110,10 +103,7 @@ class ProcessRatioController extends CommonController {
         	    $ratio = $M->where($map)->select();
         	    
         	    unset($map);
-        	    $map['id'] = $data['created_user'];
-        	    $user = M('user');
-        	    $name = $user->where($map)->find();
-        	    $data['created_user'] = $name['nickname'];
+        	    
         	    $code = array();
         	    $code[] = $data['p_pro_code'];
         	    foreach ($ratio as $val) {
@@ -152,8 +142,8 @@ class ProcessRatioController extends CommonController {
 	    if (IS_POST) {
         	    //数据处理
         	    $post = I('post.');
-        	    if (empty($post['company_id']) || empty($post['p_pro_code_hidden'])) {
-        	        $this->msgReturn(0, '必须填写所属系统和父SKU');
+        	    if (empty($post['p_pro_code_hidden'])) {
+        	        $this->msgReturn(0, '必须填写父SKU');
         	    }
         	     
         	    if (count($post['pros']) < 2) {
@@ -209,7 +199,6 @@ class ProcessRatioController extends CommonController {
         	        $info[$key]['p_pro_code'] = $post['p_pro_code_hidden'];
         	        $info[$key]['c_pro_code'] = $value['pro_code'];
         	        $info[$key]['ratio'] = formatMoney($value['pro_qty'], 2);
-        	        $info[$key]['company_id'] = $post['company_id'];
         	        $info[$key]['created_user'] = session()['user']['uid'];
         	        $info[$key]['updated_user'] = session()['user']['uid'];
         	        $info[$key]['created_time'] = get_time();
@@ -235,8 +224,6 @@ class ProcessRatioController extends CommonController {
 	        return;
 	    }
 	    
-	    $company = M('company');
-	    $company_info = $company->select();
 	    $pms = D('Pms', 'Logic');
 	    $code = array();
 	    //获取所有sku编号
@@ -256,11 +243,7 @@ class ProcessRatioController extends CommonController {
 	                $val['c_pro_norms'] = $v['pro_attrs_str'];
 	            }
 	        }
-	        foreach ($company_info as $v) {
-	            if ($val['company_id'] == $v['id']) {
-	                $val['company_id'] = $v['name'];
-	            }
-	        }
+
 	        $new_data[$key] = $val['p_pro_code'];
 	    }
 	    
@@ -306,9 +289,6 @@ class ProcessRatioController extends CommonController {
         	    }
         	    if (empty($M->c_pro_code)) {
         	        $this->msgReturn(false, '请输入子SKU编号');
-        	    }
-        	    if (empty($M->company_id)) {
-        	        $this->msgReturn(false, '请选择所属系统');
         	    }
         	    if (empty($M->ratio)) {
         	        $this->msgReturn(false, '请输入比例关系');

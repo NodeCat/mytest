@@ -68,16 +68,24 @@
 
         $('.p_qty').on('input',function(){
           if($(this).siblings('.p_wgt').length == 0) {
+            var obj = $(this);
+            var qty = obj.val();
+            var price_unit = obj.parent().find('.p_price').val();
+            obj.parent().find('.p_sum').text(accMul(qty , price_unit));//计算当前行的小计
             inputChange($(this));
           }
         });
         $('.p_wgt').on('input',function(){
-          inputChange($(this));
-        });
-        function inputChange(obj){
+          var obj = $(this);
           var qty = obj.val();
           var price_unit = obj.parent().find('.p_price').val();
           obj.parent().find('.p_sum').text(accMul(qty , price_unit));//计算当前行的小计
+          inputChange($(this));
+        });
+        $('.p_deposit').on('input',function(){
+          inputChange($(this));
+        });
+        function inputChange(obj){
           var final_price = 0;
           var line_qty = 0;
           var line_wgt = 0;
@@ -101,7 +109,13 @@
           //加上运费
           var delivery_fee = obj.parents('.order').find('.p_drive').text();
           sum = accAdd(sum, delivery_fee);
-          
+          //减去押金
+          var deposit = obj.parents('.order').find('.p_deposit').val();
+          if(deposit) {
+            deposit     = parseInt(deposit);
+            sum  = accSub(sum,deposit);
+          }
+
           obj.parents('.order').find('.p_final').text(sum);
           obj.parents('.order').find('.p_final').val(sum);
           //计算实收金额，累加所有的小计，并减去优惠金额
@@ -116,6 +130,11 @@
           if (paystatus != '已付款') {
             deal_sum = wipeZero(deal_sum);
           }
+          //减去押金
+          if(deposit) {
+            deal_sum  = accSub(deal_sum,deposit);
+          }
+
       		obj.parents('.order').find('.p_deal').val(deal_sum);
       	}
 
@@ -224,16 +243,14 @@
             dataType: 'json',
             data: params,
             success: function(msg) {
-              if (msg.status == '0') {
-                if (typeof HostApp == "undefined") {
-                  alert(msg.msg);
-                } else {
-                  HostApp.toast(msg.msg);
-                }
-                location.reload();
+              if (typeof HostApp == "undefined") {
+                alert(msg.msg);
               } else {
-                alert_error(msg.msg);
+                HostApp.toast(msg.msg);
               }
+              if (msg.status == '0') {
+                location.reload();
+              } 
               return false;
             }
           });
@@ -278,7 +295,8 @@
     function checkValue(x) {
       var val1 = $(x).data('val');
       var val2 = $(x).val();
-      //val2 = val2.replace(/[^\d]/g,'');
+      val2 = val2.replace('/[^/d/.]/g','');
+      $(x).val(val2);
       if(val1 < val2){
         if (typeof HostApp == "undefined") {
           alert('输入数量不能大于下单数量，请重新输入');
@@ -290,6 +308,26 @@
         $(x).val(val2);
       }
     }
+
+    function checkDeposit(x) {
+      var val1 = $(x).parents('.order').find('input[name=final_price]').val();
+      val1 = parseInt(val1);
+      var val2 = $(x).val();
+      val2 = val2.replace('/[^/d/.]/g','');
+      $(x).val(val2);
+      val2 = parseInt(val2);
+      if(val1 < 0){
+        if (typeof HostApp == "undefined") {
+          alert('输入的押金不能大于应收金额，请重新输入');
+        } else {
+          HostApp.toast('输入的押金不能大于应收金额，请重新输入');
+        }
+        $(x).val(0);
+      } else {
+        $(x).val(val2);
+      }
+    }
+
     $('.report').on('click',
       function() {
         if (confirm('确定要报错吗')) {

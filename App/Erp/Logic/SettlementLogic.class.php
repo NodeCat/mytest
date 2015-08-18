@@ -153,8 +153,8 @@ class SettlementLogic
         $join  = array(
             'INNER JOIN erp_purchase_refund ON erp_purchase_refund.code=erp_settlement_detail.order_code',
             'INNER JOIN erp_purchase_refund_detail ON erp_purchase_refund_detail.pid=erp_purchase_refund.id',
-            'INNER JOIN stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code',
-            'INNER JOIN erp_purchase_in_detail ON erp_purchase_in_detail.purchase_code=erp_purchase_refund.refer_code AND erp_purchase_in_detail.pro_code=erp_purchase_refund_detail.pro_code'
+            'LEFT JOIN stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code',
+            'LEFT JOIN erp_purchase_in_detail ON erp_purchase_in_detail.purchase_code=erp_purchase_refund.refer_code AND erp_purchase_in_detail.pro_code=erp_purchase_refund_detail.pro_code'
         );
         $result  = $M->field($field)->join($join)->where($where)->select();
         return $result;
