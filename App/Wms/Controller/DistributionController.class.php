@@ -806,7 +806,7 @@ class DistributionController extends CommonController {
 
             //调拨处理逻辑
             $distribution_logic = A('Erp/Transfer','Logic');        
-            $distribution_logic->transferController($pass_reduce_ids);
+            $distribution_logic->transferHandle($pass_reduce_ids);
 
         }
 

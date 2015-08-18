@@ -440,7 +440,7 @@ class TransferLogic
     }
 
     //处理调拨逻辑
-    public function transferController($pass_reduce_ids){
+    public function transferHandle($pass_reduce_ids){
         //处理erp调拨实际收货量和状态
         //$distribution_logic = A('Erp/Transfer','Logic');        
         $this->upPurchaseOutStatus($pass_reduce_ids);
