@@ -233,6 +233,9 @@ class OrderController extends \Common\Controller\AuthController {
         if (empty($deposit)) {
             $deposit = 0;
         }
+        if (is_float($deposit)) {
+            $this->error('押金不能为小数。');
+        }
         if ($order_id && $bill_id) {
             //实例化模型
             $model = M();
