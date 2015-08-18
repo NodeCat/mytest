@@ -244,12 +244,6 @@ class StockInLogic{
             $map['batch'] = $batch;
         }
 
-        if($status == 'qualified'){
-            M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$qty);
-        }
-        if($status == 'unqualified'){
-            M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$qty);
-        }
         //更新上架日期
         $stock_bill_in_detail_info = M('stock_bill_in_detail')->where($map)->find();
         if($stock_bill_in_detail_info['shelves_date'] == '0000-00-00 00:00:00'){
