@@ -5,7 +5,6 @@ class ProcessRatioController extends CommonController {
     private $p_pro_code = '';
     //列表显示定义
 	protected $columns = array (
-	      'company_id' => '所属系统',
           'p_pro_code' => '父SKU',
 	      'p_pro_name' => '父产品名称',
 	      'p_pro_norms' => '父产品规格',
@@ -27,12 +26,6 @@ class ProcessRatioController extends CommonController {
 	                'query_type' => 'eq',
 	                'control_type' => 'text',
 	                'value' => 'c_pro_code',
-	        ),
-	        'erp_process_sku_relation.company_id' => array(
-	                'title' => '所属系统',
-	                'query_type' => 'eq',
-	                'control_type' => 'getField',
-	                'value' => 'company.id,name',
 	        ),
 	        'erp_process_sku_relation.created_user' => array(
 	                'title' => '创建人',
@@ -231,8 +224,6 @@ class ProcessRatioController extends CommonController {
 	        return;
 	    }
 	    
-	    $company = M('company');
-	    $company_info = $company->select();
 	    $pms = D('Pms', 'Logic');
 	    $code = array();
 	    //获取所有sku编号
@@ -252,11 +243,7 @@ class ProcessRatioController extends CommonController {
 	                $val['c_pro_norms'] = $v['pro_attrs_str'];
 	            }
 	        }
-	        foreach ($company_info as $v) {
-	            if ($val['company_id'] == $v['id']) {
-	                $val['company_id'] = $v['name'];
-	            }
-	        }
+
 	        $new_data[$key] = $val['p_pro_code'];
 	    }
 	    
