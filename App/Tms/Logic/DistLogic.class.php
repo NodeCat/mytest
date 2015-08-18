@@ -233,4 +233,31 @@ class DistLogic {
         $res = $uM->where($map)->find();
         return $res;
     }
+
+    /**
+     * [isSignOntime 签收时间是否准点]
+     * @param  [type]  $dist_id [配送单ID]
+     * @return boolean          [description]
+     */
+    public function isSignOntime($dist_id)
+    {
+        //准点标准
+        $standard = array(
+            'am' => array('h' => 10, 'i' => 30),
+            'pm' => array('h' => 16, 'i' => 30),
+        );
+        //配送时段是上午还是下午
+        $dist = A('Wms/Distribution','Logic')->distInfo($dist_id);
+        if ($dist['deliver_time'] == 1) {
+            $key = 'am';
+        } else {
+            $key = 'pm';
+        }
+        //判断当前时间是否在准点时间段内
+        $etime = mktime($standard[$key]['h'],$standard[$key]['i'],0,date('m'),date('d'),date('Y'));
+        if (time() <= $etime) {
+            return 1;
+        }
+        return 0;
+    }
 }

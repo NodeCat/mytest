@@ -525,7 +525,12 @@ class StockLogic{
         }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
-        M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$pro_qty);
+        if($status == 'qualified'){
+            M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$pro_qty);
+        }
+        if($status == 'unqualified'){
+            M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$pro_qty);
+        }
         unset($map);
 
         //通知实时库存接口

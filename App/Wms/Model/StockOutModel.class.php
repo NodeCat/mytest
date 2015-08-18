@@ -4,8 +4,8 @@ use Think\Model;
 class StockOutModel extends Model {
 
     public $tableName='stock_bill_out';
-    protected $insertFields = array('id','code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_realname','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty','order_type','act_delivery_date');
-    protected $updateFields = array('code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_realname','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty','order_type','act_delivery_date');
+    protected $insertFields = array('id','code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_id','customer_realname','customer_phone','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty','order_type','act_delivery_date');
+    protected $updateFields = array('code','wh_id','type','refer_code','notes','op_date','process_type','line_id','wave_id','refused_type','delivery_date','delivery_time','delivery_ampm','customer_id','customer_realname','customer_phone','delivery_address','status','created_user','created_time','updated_user','updated_time','is_deleted','company_id','total_amount','total_qty','order_type','act_delivery_date');
     protected $readonlyField = array('id');
 
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
