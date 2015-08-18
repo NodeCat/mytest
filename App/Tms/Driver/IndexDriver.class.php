@@ -178,10 +178,16 @@ class IndexDriver extends Controller {
     public function checkSign()
     {
         if (IS_POST) {
-            $this->redirect('delivery');
-        } else {
-            $this->display('Index/sign-check');
+            $code = I('post.code');
+            $mobile = I('post.mobile');
+            if ($wh_id = S(md5($code))) {
+                $this->redirect('delivery');
+            } else {
+                $this->error = '签到码错误，请重新输入';
+            }
         }
+        $this->display('Index/sign-check');
+
     }
     //司机第一次信息登记
     public function register(){
