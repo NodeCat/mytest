@@ -45,14 +45,15 @@ class DispatchController extends \Common\Controller\AuthController{
             if ($car_from) {
                 $map1['car_from'] = $car_from;
             }
-            $this->warehouse = $warehouse;
+            $this->ware = $warehouse;
             $this->car_from  = $car_from;
             $userId = M('TmsUser')->where($map1)->getField('id',true);
-            $map['userid'] = array('in',$userId);  
+            $map['userid'] = empty($userId) ? null : array('in',$userId); 
+
         }
         //把对应仓库的用户签到信息取出来
         $map['is_deleted'] = 0;
-        $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
+        $sign_lists= $D->relation('TmsUser')->where($map)->order(array('created_time' => 'DESC'))->select();
         //dump($sign_lists);exit;
         unset($map);
         $A = A('Tms/List','Logic');
@@ -99,7 +100,6 @@ class DispatchController extends \Common\Controller\AuthController{
                 $value['report_error'] = '1';
             }
         }
-        $this->assign('car',$this->car);
         $this->assign('list',$sign_lists);
         $this->display('driverlist'); 
     }
