@@ -1011,9 +1011,10 @@ class DistributionController extends CommonController {
                 if(!empty($order_lists[0]['order_number']) && $order_lists[0]['status'] == 0){
                     //订单被取消了，不能拉进波次
                     unset($ids[$k]);
-                    //同时将出库单逻辑删除
+                    //同时将出库单关闭
                     $map['id'] = $bill_out_id;
-                    $data['is_deleted'] = 1;
+                    $data['status'] = 18;
+                    $data['dis_mark'] = 0;
                     $stock_out->where($map)->save($data);
                     unset($map);
                     unset($data);
