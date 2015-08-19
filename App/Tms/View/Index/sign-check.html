@@ -11,7 +11,8 @@
       <span class="input-group-addon">
       <i class="glyphicon glyphicon-log-out"></i>
       </span>
-      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="code" name="code" placeholder="请输入4位签到码">
+      <input autocomplete="off" value="" type="text" class="form-control input-lg input-pda" id="verify_code" name="verify_code" placeholder="请输入4位签到码">
+      <input type="hidden" name="id" value="{$id}">
     </div>
   </div>
  </div>
@@ -29,7 +30,7 @@
 </div>
 <script type="text/javascript">
 $(function(){
-  $('#code').focus();
+  $('#verify_code').focus();
   $('.form-pda button[type=submit]').on('click',function(){
     $(this).prop('disabled', true);
     var addr,params;

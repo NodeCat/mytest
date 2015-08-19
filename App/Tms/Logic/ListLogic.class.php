@@ -46,14 +46,7 @@ class ListLogic{
         if($dist_id == '') {
             return FALSE;
         }
-            $M = M('tms_delivery');
             $map['dist_id'] = $dist_id;
-            $start_date = date('Y-m-d',NOW_TIME);
-            $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
-            $res = $M->where($map)->find();
-            unset($map['created_time']);
-            $map['order_by'] = array('created_time' => 'DESC');
             $A = A('Tms/Dist','Logic');
             $bills = $A->billOut($map);
             $orders = $bills['orders'];
@@ -63,7 +56,7 @@ class ListLogic{
             $sign_finished  = 0;  //已完成
             $sum_deal_price = 0;  //司机回款统计
             $back_lists     = array(); //退货清单
-            foreach ($orders as $key => $value) {
+            foreach ($orders as $value) {
                 $value = $value['order_info'];
                 $all_orders++;
                 // 统计实收货款和签收未收订单 
@@ -74,29 +67,29 @@ class ListLogic{
                             $value['deal_price'] = 0;
                         }
                         $sum_deal_price += $value['deal_price'];//统计回款数
-                        foreach ($value['detail'] as $key1 => $value1) {
-                            $back_quantity = $value1['quantity']-$value1['actual_quantity'];
+                        foreach ($value['detail'] as $val) {
+                            $back_quantity = $val['quantity']-$val['actual_quantity'];
                             if ($back_quantity != 0) {
-                                if(array_key_exists($value1['sku_number'],$back_lists)){
-                                    $back_lists[$value1['sku_number']]['quantity'] += $back_quantity;
+                                if(isset($back_lists[$val['sku_number']])){
+                                    $back_lists[$val['sku_number']]['quantity'] += $back_quantity;
                                 } else {
-                                $back_lists[$value1['sku_number']]['quantity'] = $back_quantity;
+                                $back_lists[$val['sku_number']]['quantity'] = $back_quantity;
                                 }   
-                                $back_lists[$value1['sku_number']]['unit_id'] = $value1['unit_id'];
-                                $back_lists[$value1['sku_number']]['name']    = $value1['name'];
+                                $back_lists[$val['sku_number']]['unit_id'] = $val['unit_id'];
+                                $back_lists[$val['sku_number']]['name']    = $val['name'];
                             }
                         }
                         break;
                     case '已退货':
                         $unsign_orders++;
-                        foreach ($value['detail'] as $key1 => $value1) {
-                            if(array_key_exists($value1['sku_number'],$back_lists)){
-                                $back_lists[$value1['sku_number']]['quantity'] += (int) $value1['quantity'];
+                        foreach ($value['detail'] as $val) {
+                            if(isset($back_lists[$val['sku_number']])){
+                                $back_lists[$val['sku_number']]['quantity'] += (int) $val['quantity'];
                             }else{
-                                $back_lists[$value1['sku_number']]['quantity'] = (int) $value1['quantity'];
+                                $back_lists[$val['sku_number']]['quantity'] = (int) $val['quantity'];
                             }
-                            $back_lists[$value1['sku_number']]['unit_id'] = $value1['unit_id'];
-                            $back_lists[$value1['sku_number']]['name']    = $value1['name'];
+                            $back_lists[$val['sku_number']]['unit_id'] = $val['unit_id'];
+                            $back_lists[$val['sku_number']]['name']    = $val['name'];
                         }
                         break;
                     case '已完成':
