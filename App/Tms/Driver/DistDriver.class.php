@@ -466,6 +466,7 @@ class DistDriver extends Controller {
             //配送单详情的状态为2:已签收或者更成功
             if($dist_detail['status'] == 2 || $s) {
                 $cdata = array();
+                $reject_detail = array();
                 //组合一个签收详情数据
                 foreach ($bill_id_details as $detail_id => $detail) {
                     $net_weight = empty($detail['order_detail']['net_weight']) ? 0 : $detail['order_detail']['net_weight'];
@@ -476,7 +477,6 @@ class DistDriver extends Controller {
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
                     $tmp['real_sign_wgt']      = $tmp['real_sign_qty'] * $net_weight;
                     $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
-                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['single_price'];
@@ -487,9 +487,15 @@ class DistDriver extends Controller {
                         $tmp['sign_sum']      = $tmp['real_sign_wgt'] * $tmp['price_unit'];
                         $tmp['delivery_sum']  = $tmp['delivery_wgt'] * $tmp['price_unit'];
                     }
+                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['reject_sum']         = $tmp['delivery_sum'] - $tmp['sign_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
+                    //用于发送部分拒收短信提示
+                    if ($tmp['reject_qty']) {
+                        $detail['reject_qty'] = $tmp['reject_qty'];
+                        $reject_detail[] = $detail;
+                    }
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
@@ -508,7 +514,11 @@ class DistDriver extends Controller {
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
             //给母账户发送短信
-            $sres = A('Tms/SignIn', 'Logic')->sendParentAccountMsg($orderInfo['info']);
+            $sA = A('Tms/SignIn', 'Logic');
+            $sres = $sA->sendParentAccountMsg($orderInfo['info']);
+            if (!empty($reject_detail)) {
+                $rres = $sA->sendRejectMsg($orderInfo['info'], $reject_detail);
+            }
             $json = array('status' => $status, 'msg' => $msg);
             //status:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
@@ -634,7 +644,7 @@ class DistDriver extends Controller {
                 }
                 //发送短信
                 if ($reasons) {
-                    $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
+                    $sres = $sA->sendRejectMsg($orderInfo['info'] ,$bill_id_details, $reasons);
                 }
                 $res = array(
                     'status' => 0,
