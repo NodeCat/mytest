@@ -189,6 +189,7 @@ class ListLogic{
                         $geo = $value['geo'];
                         $geo['address'] = $value['name'];
                         $geo['color_type'] = $value['color_type'];
+                        $geo['sign_time']  = $value['sign_time'];
                         $geo_array[]   = $geo;
                     }
                 }
