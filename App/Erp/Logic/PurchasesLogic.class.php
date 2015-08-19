@@ -59,7 +59,7 @@ class PurchasesLogic{
                     ->join($join)
                     ->field($filed)
                     ->where($where)
-                    ->group('b.wh_id,d.pro_code,r.c_pro_code');
+                    ->group('b.wh_id,d.pro_code,r.c_pro_code')->order('r.c_pro_code asc');
                 $result = $m->select();
                 
                 if($result){
@@ -103,7 +103,7 @@ class PurchasesLogic{
                       ->join($join)
                       ->field($filed)
                       ->where($where)
-                      ->group('b.wh_id,d.pro_code,r.c_pro_code');
+                      ->group('b.wh_id,d.pro_code,r.c_pro_code')->order('r.c_pro_code asc');
 
 
         if($limit){
