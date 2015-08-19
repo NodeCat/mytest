@@ -1,0 +1,1 @@
+ALTER TABLE  `tms_sign_list` ADD  `wh_id` INT( 11 ) UNSIGNED NOT NULL DEFAULT  '0' COMMENT  '签到仓库' AFTER  `fee` ;
