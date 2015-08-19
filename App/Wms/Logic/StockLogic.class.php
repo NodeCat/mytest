@@ -110,7 +110,7 @@ class StockLogic{
         foreach($stock_list as $key=>$stock){
             //可用量
             $stock_available = bcsub($stock['stock_qty'], $stock['assign_qty'],2);
-            if($stock_available <= 0){
+            if(($stock_available*100) <= 0){
                 continue;
             }
             if($diff_qty > 0){
