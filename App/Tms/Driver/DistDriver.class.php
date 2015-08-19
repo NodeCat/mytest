@@ -436,7 +436,7 @@ class DistDriver extends Controller {
             $this->ajaxReturn($res);
         }
         //付款状态为已付款和账期支付的不进行抹零处理
-        if ($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2) {
+        if (!($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2)) {
             $deal_price = $A->wipeZero($receivable_sum);
             $wipe_zero  = round($receivable_sum - $deal_price,2);
         } else {
