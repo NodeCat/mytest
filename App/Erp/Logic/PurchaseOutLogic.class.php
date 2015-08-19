@@ -150,11 +150,13 @@ class PurchaseOutLogic{
         $addStockOut['is_deleted'] = 0;
         $addStockOut['company_id'] = 1;
         $arrsum = 0;
+        $order_qtysum = 0;
         foreach($addAll as $vals){
-            $arrsum += $vals['price_unit']*$vals['plan_return_qty'];
+            $arrsum = bcadd($arrsum,bcmul($vals['price_unit'], $vals['plan_return_qty'], 2), 2);
+            $order_qtysum = bcadd($order_qtysum, $vals['plan_return_qty'], 2);
         }
         $addStockOut['total_amount'] = formatMoney($arrsum, 2);
-        $addStockOut['total_qty'] = count($addAll);
+        $addStockOut['total_qty'] = $order_qtysum;
         $addStockOut['order_type'] = 1;
 
         if($stockOut->create($addStockOut)){
