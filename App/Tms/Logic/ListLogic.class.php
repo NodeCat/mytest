@@ -152,7 +152,7 @@ class ListLogic{
                     $geo['order_id'] = $value['id'];
                     $geo['user_id']  = $values['user_id'];
                     $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
-                    $geo['sign_time']= $this->getSignTime($value['dist_id'],$values['user_id']);
+                    $geo['sign_time']= $this->getSignTime($values['user_id'],$value['dist_id']);
                     // 只要有一单还没送完颜色就是0
                     if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
                         if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {

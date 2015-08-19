@@ -122,7 +122,7 @@
         position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
       });
       marker{$i}.setMap(map);
-      marker{$i}.setTitle("{$addr['address']}");
+      marker{$i}.setTitle("{$addr['address']}   签收时间:{$addr['sign_time']}");
       <if condition="$addr['color_type'] eq 2">
         marker{$i}.id  = "{$addr['user_id']}";
         marker{$i}.lng = "{$addr['lng']}";
