@@ -152,6 +152,7 @@ class ListLogic{
                     $geo['order_id'] = $value['id'];
                     $geo['user_id']  = $values['user_id'];
                     $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                    $geo['sign_time']= $this->getSignTime($value['dist_id'],$values['user_id']);
                     // 只要有一单还没送完颜色就是0
                     if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
                         if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
@@ -228,6 +229,29 @@ class ListLogic{
         $secs = $remain%60;
         $res = array("day" => $days,"hour" => $hours,"min" => $mins,"sec" => $secs);
         return $res;
+    }
+
+    /**
+     * 获取配送单司机签收时间
+     * @param  string $customer_id  用户id
+     * @param  string $dist_id      配送单id
+     * @return string $sign_time    返回签收时间
+     * @author   jt
+     */
+    public function getSignTime($customer_id,$dist_id)
+    {   
+        if(empty($customer_id) || empty($dist_id)) {
+            return '';
+        }
+            $res = M('stock_bill_out')
+                ->alias('b')
+                ->field('d.sign_time')
+                ->join('stock_wave_distribution_detail d ON b.id = d.bill_out_id')
+                ->where(array('b.customer_id' => $customer_id,'d.pid' => $dist_id))
+                ->order('d.sign_time DESC')
+                ->find();
+                
+            return $res['sign_time'];
     }
 
 }
