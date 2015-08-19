@@ -204,6 +204,24 @@ class SettlementController extends CommonController
                 $this->ajaxReturn(array('code'=>'-1', 'message'=>'结算金额不能为0'));
             }
 
+            //根据erp_purchase_in_detail 的id，查询与之相匹配的采购单号和到货单号一样的一组数据
+            $post_new = array();
+            foreach($post as $k => $val){
+                $postArr = explode('_', $val);
+                $map['id'] = $postArr[0];
+                $purchase_in_detail_info = M('erp_purchase_in_detail')->field('purchase_code,stock_in_code')->where($map)->find();
+                unset($map);
+
+                $purchase_in_detail_group_info = M('erp_purchase_in_detail')->field('id')->where($purchase_in_detail_info)->select();
+                unset($purchase_in_detail_info);
+
+                foreach($purchase_in_detail_group_info as $key => $value){
+                    $post_new[] = $value['id'].'_'.$postArr[1].'_'.$postArr[2];
+                }
+            }
+
+            $post = $post_new;
+
             $paid   = array();      //采购单数据
             $stock  = array();      //入库单数据
             $refund = array();      //冲红单数据
@@ -347,7 +365,20 @@ class SettlementController extends CommonController
                 }
             }
 
-            $this->ajaxReturn($returnArray);
+            //过滤重复的code字段
+            $tmp = array();
+            $result = array();
+            foreach($returnArray as $key => $val){
+                if(!isset($tmp[$val['code']])){
+                    $tmp[$val['code']] = true;
+                    $result[$val['code']] = $val;
+                }else{
+                    unset($returnArray[$key]);
+                    $result[$val['code']]['paid_amount'] = bcadd($result[$val['code']]['paid_amount'], $val['paid_amount'], 2);
+                }
+            }
+
+            $this->ajaxReturn($result);
         }
     }
 
