@@ -129,7 +129,7 @@ class DistDriver extends Controller {
                 $line_id = array_unique($line_id);//重复的去掉
                 $lines = $cA->line(array('line_ids'=>$line_id));//取出所有路线
                 // 把路线连接起来
-                $$line_names = implode('/', array_filter($lines));
+                $line_names = implode('/', array_filter($lines));
                 $data['line_name'] = $line_names;//写入devilery
                 $citys = $cA->city();
                 $data['city_id'] = $citys[$dist['city_id']];
