@@ -29,6 +29,7 @@ class ProcessLogic {
         if (!empty($id)) {
             $return = $id['id'];
         }
+                
         return $return;
     }
     
