@@ -193,7 +193,8 @@ class DistDriver extends Controller {
                     }
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
-                    $M = M('TmsUser');                    
+                    $M = M('TmsUser'); 
+                    unset($map);                   
                     $map['mobile'] = session('user.mobile');
                     $user_data = $M->field('id')->where($map)->order('created_time DESC')->find(); 
                     unset($map);
