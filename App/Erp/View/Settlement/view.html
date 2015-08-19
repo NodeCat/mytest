@@ -7,8 +7,14 @@
         <input type="hidden" value="{$data[$pk]}" id="id" />
 
         <if condition="($data.state neq '11')">
-            <a href="javascript:void(0);" data-title="修改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul" id="editInvoice">
+            <a href="javascript:void(0);" data-title="更新发票信息" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul" id="editInvoice_confirm">
                 <i class="glyphicon glyphicon-edit"></i> 更新发票信息
+            </a>
+            <a href="javascript:void(0);" data-title="确认" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul" id="editInvoice" style="display:none;">
+                <i class="glyphicon glyphicon-edit"></i> 确认
+            </a>
+            <a href="javascript:void(0);" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul" id="cancle" style="display:none;">
+                <i class="glyphicon glyphicon-edit"></i> 放弃
             </a>
         </if>
         <if condition="($data.state eq '1')">
@@ -129,7 +135,8 @@
         <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="invoice">发票号</label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
             <label class="control-label label-field">
-                <input type="text" value="{$data.invoice}" name="invoice" class="form-control input-sm" />
+                <div id="invoice_show">{$data.invoice}</div>
+                <input type="text" value="{$data.invoice}" name="invoice" class="form-control input-sm" style="display:none;"/>
                 <input type="hidden" value="{$data.invoice}" name="invoice_hid" />
             </label>
         </div>
@@ -138,7 +145,8 @@
         <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="invoice_amount">发票金额</label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
         <label class="control-label label-field">
-            <input type="text" value='<if condition="($data.invoice_amount gt 0)">{$data.invoice_amount}</if>' name="invoice_amount" class="form-control input-sm" />
+            <if condition="($data.invoice_amount gt 0)"><div id="invoice_amount_show">{$data.invoice_amount}</div></if>
+            <input type="text" value='<if condition="($data.invoice_amount gt 0)">{$data.invoice_amount}</if>' name="invoice_amount" class="form-control input-sm" style="display:none;"/>
             <input type="hidden" value="{$data.invoice_amount}" name="invoice_amount_hid"  />
         </label>
         </div>
@@ -176,10 +184,31 @@
                     return false;
                 }else{
                     alert('数据更新成功');
+                    location.reload();
                 }
             }
 
         });
     });
+
+    $("#editInvoice_confirm").click(function(){
+        $("#invoice_show").hide();
+        $("#invoice_amount_show").hide();
+        $("input[name='invoice']").show();
+        $("input[name='invoice_amount']").show();
+        $("#editInvoice_confirm").hide();
+        $("#editInvoice").show();
+        $("#cancle").show();
+    });
+
+    $("#cancle").click(function(){
+        $("input[name='invoice']").hide();
+        $("input[name='invoice_amount']").hide();
+        $("#invoice_show").show();
+        $("#invoice_amount_show").show();
+        $("#editInvoice_confirm").show();
+        $("#editInvoice").hide();
+        $("#cancle").hide();
+    })
 
 </script>
