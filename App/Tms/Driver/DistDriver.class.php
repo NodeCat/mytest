@@ -322,7 +322,7 @@ class DistDriver extends Controller {
                         //从订单详情获取SKU信息
                         foreach ($val['order_info']['detail'] as &$value) {
                             if($v['pro_code'] == $value['sku_number']) {
-                                $v['single_price']    = $value['single_price'];
+                                $v['single_price']    = $value['price'];
                                 $v['close_unit']      = $value['close_unit'];
                                 $v['unit_id']         = $value['unit_id'];
                                 $v['sum_price']       = $v['sum_price'] ? $v['sum_price'] : $value['sum_price'];

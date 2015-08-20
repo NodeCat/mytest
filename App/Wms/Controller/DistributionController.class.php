@@ -168,6 +168,36 @@ class DistributionController extends CommonController {
         }
     }
     
+        protected function before_lists(&$M){
+            $pill = array(
+                'status'=> array(
+                    '1'=>array('value'=>'1','title'=>'未发运','class'=>'warning'),
+                    '2'=>array('value'=>'2','title'=>'已发运','class'=>'info'),
+                    '3'=>array('value'=>'3','title'=>'已配送','class'=>'danger'),
+                    '4'=>array('value'=>'4','title'=>'已结算','class'=>'success')
+                )
+            );
+            $M = M('stock_wave_distribution');
+            $map['is_deleted'] = 0;
+            $map['wh_id'] = session('user.wh_id');
+            $res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
+            foreach ($res as $key => $val) {
+                if(array_key_exists($val['status'], $pill['status'])){
+                    $pill['stock_wave_distribution.status'][$val['status']]['count'] = $val['qty'];
+                    $pill['sstock_wave_distribution.tatus']['total'] += $val['qty'];
+                }
+            }
+
+            foreach($pill['stock_wave_distribution.status'] as $k => $val){
+                if(empty($val['count'])){
+                    $pill['sstock_wave_distribution.tatus'][$k]['count'] = 0;
+                }
+            }
+
+            $this->pill = $pill;
+        }
+
     /**
      * 列表处理
      */

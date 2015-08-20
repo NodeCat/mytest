@@ -2,6 +2,51 @@
 namespace Fms\Controller;
 class FmsController extends \Common\Controller\AuthController{
     
+    public function reset() {
+        $id = I('get.id',0);
+        if (empty($id)) {
+            $this->msgReturn('0','重置失败，提货码不能为空');
+        }
+        $fms_list = A('Fms/List','Logic');
+        $map['id'] = $id;
+        $dist = $fms_list->distInfo($map);
+        if (empty($dist)) {
+            $this->msgReturn('0','重置失败，未找到该配送单。');
+        }
+        $fms_list = A('Fms/List','Logic');
+        //查询是否有退货，并且已创建拒收入库单
+        $can = $fms_list->can_pay($id);
+        if ($can == 2) {
+            //有退货且已创建拒收入库单
+            $this->msgReturn('0','重置失败，该配送单中有退货，且已创建退货入库单');
+        }
+
+        //获得所有出库单id 
+        $bill_out_ids = array_column($dist['detail'],'bill_out_id');
+        $bill_outs = array();
+        foreach ($bill_out_ids as $value) {
+            //根据出库单id查出出库单信息
+            $bill_out = $fms_list->bill_out_Info($value);
+            if(!empty($bill_out)){
+                $bill_outs[] = $bill_out;
+            }
+        }
+        if (empty($bill_outs)) {
+            $this->msgReturn('0','查询失败，未找到该配送单中的订单。');
+        }
+        $order_ids = array_column($bill_outs,'refer_code');
+        $A = A('Common/Order','Logic');
+        $map['status']  = '8';//已完成
+        
+        $map['cur']['name'] = '财务'.session('user.username');
+        foreach ($order_ids as $val) {
+            $map['suborder_id'] = $order_ids;
+            $res = $A->set_status($map);
+        }
+        
+        $this->msgReturn($res);
+    }
+
     /*
     *查询按钮执行代码
     *查询配送单及它的订单信息

@@ -151,10 +151,10 @@
                     <input type="hidden" name="pro_id[]" value="{$v.id}" />
                     <!-- <input type="hidden" name="price_unit[]" value="{$v.price}" />
                     -->
-                    <input type="hidden" name="price_unit[]" class="p_price" value="{$v.single_price}"
+                    <input type="hidden" name="price_unit[]" class="p_price" value="{$v.price}"
                     />
                     <span class="input-group-addon">
-                      ¥{$v.single_price}元/{$v.close_unit}
+                      ¥{$v.price}元/{$v.close_unit}
                     </span>
                     <eq name="v['close_unit']" value="斤">
                       <switch name="vo['status_cn']">
