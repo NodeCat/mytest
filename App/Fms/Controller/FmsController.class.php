@@ -249,7 +249,7 @@ class FmsController extends \Common\Controller\AuthController{
                                 $val['unit_id'] = $sign_detail[$i]['charge_unit'];
                             }
                             //实收小计
-                            $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $sign_detail[$i]['price_unit'], 2);
+                            $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $val['price'], 2);
                             //合计
                             $value['actual_price'] += $val['actual_sum_price'];
 
