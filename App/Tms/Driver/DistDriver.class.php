@@ -193,7 +193,8 @@ class DistDriver extends Controller {
                     }
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
-                    $M = M('TmsUser');                    
+                    $M = M('TmsUser'); 
+                    unset($map);                   
                     $map['mobile'] = session('user.mobile');
                     $user_data = $M->field('id')->where($map)->order('created_time DESC')->find(); 
                     unset($map);
@@ -321,7 +322,7 @@ class DistDriver extends Controller {
                         //从订单详情获取SKU信息
                         foreach ($val['order_info']['detail'] as &$value) {
                             if($v['pro_code'] == $value['sku_number']) {
-                                $v['single_price']    = $value['single_price'];
+                                $v['single_price']    = $value['price'];
                                 $v['close_unit']      = $value['close_unit'];
                                 $v['unit_id']         = $value['unit_id'];
                                 $v['sum_price']       = $v['sum_price'] ? $v['sum_price'] : $value['sum_price'];
@@ -414,12 +415,12 @@ class DistDriver extends Controller {
                 }
             }
             //出库单详情ID对应单价
-            $price_unit[$val['id']] = $val['order_detail']['single_price'];
+            $price_unit[$val['id']] = $val['order_detail']['price'];
             //出库单详情ID对应详情数据
             $bill_id_details[$val['id']] = $val;
             //应收金额
             $unit_num = isset($weight[$val['id']]) ? $weight[$val['id']] : $quantity[$val['id']];
-            $receivable_sum += $val['order_detail']['single_price'] * $unit_num;
+            $receivable_sum += $val['order_detail']['price'] * $unit_num;
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
@@ -435,7 +436,7 @@ class DistDriver extends Controller {
             $this->ajaxReturn($res);
         }
         //付款状态为已付款和账期支付的不进行抹零处理
-        if ($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2) {
+        if (!($orderInfo['info']['pay_status'] == 1 || $orderInfo['info']['pay_type'] == 2)) {
             $deal_price = $A->wipeZero($receivable_sum);
             $wipe_zero  = round($receivable_sum - $deal_price,2);
         } else {
@@ -491,7 +492,7 @@ class DistDriver extends Controller {
                     $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
-                    $tmp['price_unit']         = $detail['order_detail']['single_price'];
+                    $tmp['price_unit']         = $detail['order_detail']['price'];
                     $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
                     $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
                     if (isset($weight[$detail_id])) {
@@ -633,7 +634,7 @@ class DistDriver extends Controller {
                     $tmp['reject_wgt']         = $tmp['delivery_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
-                    $tmp['price_unit']         = $detail['order_detail']['single_price'];
+                    $tmp['price_unit']         = $detail['order_detail']['price'];
                     $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
                     $tmp['reject_sum']         = $tmp['delivery_sum'];
                     $tmp['created_time']       = get_time();

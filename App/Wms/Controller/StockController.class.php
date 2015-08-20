@@ -319,10 +319,10 @@ class StockController extends CommonController {
                 $errorString = implode(',', $errorArr);
                 $this->msgReturn(0,'移库失败。'.$errorString);
             }
-
-            $this->msgReturn(1);
-
         }
+
+        $this->msgReturn(1);
+
     }
 
     //批次移动库存判断

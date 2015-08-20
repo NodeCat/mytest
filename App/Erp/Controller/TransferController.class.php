@@ -516,7 +516,7 @@ class TransferController extends CommonController
             $purchase_infos[$pro_info_arr[0]]['pro_qty'] = formatMoney($pro_info_arr[1], 2);
         }
         
-        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
+        $sku_list = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes,count($pro_codes));
         
         //拼接模板
         foreach($pro_codes as $pro_code){
