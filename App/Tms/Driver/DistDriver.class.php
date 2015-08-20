@@ -310,10 +310,10 @@ class DistDriver extends Controller {
                             $val['receivable_sum'] = $sign_in['receivable_sum'];
                             $val['real_sum'] = $sign_in['real_sum'];
                             $v['quantity']  = $sign_in_detail['real_sign_qty'];
-                            $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
+                            $v['sum_price'] = bcmul($sign_in_detail['real_sign_qty'], $sign_in_detail['price_unit'], 2);
                             if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
                                 $v['weight'] = $sign_in_detail['real_sign_wgt'];
-                                $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+                                $v['sum_price']     = bcmul($sign_in_detail['real_sign_wgt'], $sign_in_detail['price_unit'],2);
                             }
                         }
                         else {
@@ -420,7 +420,7 @@ class DistDriver extends Controller {
             $bill_id_details[$val['id']] = $val;
             //应收金额
             $unit_num = isset($weight[$val['id']]) ? $weight[$val['id']] : $quantity[$val['id']];
-            $receivable_sum += $val['order_detail']['single_price'] * $unit_num;
+            $receivable_sum += bcmul($val['order_detail']['single_price'], $unit_num, 2);
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
@@ -485,20 +485,20 @@ class DistDriver extends Controller {
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
-                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                    $tmp['delivery_wgt']       = bcmul($detail['delivery_qty'], $net_weight, 2);
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
-                    $tmp['real_sign_wgt']      = $tmp['real_sign_qty'] * $net_weight;
+                    $tmp['real_sign_wgt']      = bcmul($tmp['real_sign_qty'], $net_weight, 2);
                     $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
                     $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['single_price'];
-                    $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
-                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    $tmp['sign_sum']           = bcmul($tmp['real_sign_qty'], $tmp['price_unit'], 2);
+                    $tmp['delivery_sum']       = bcmul($tmp['delivery_qty'], $tmp['price_unit'], 2);
                     if (isset($weight[$detail_id])) {
                         $tmp['real_sign_wgt'] = $weight[$detail_id];
-                        $tmp['sign_sum']      = $tmp['real_sign_wgt'] * $tmp['price_unit'];
-                        $tmp['delivery_sum']  = $tmp['delivery_wgt'] * $tmp['price_unit'];
+                        $tmp['sign_sum']      = bcmul($tmp['real_sign_wgt'], $tmp['price_unit'], 2);
+                        $tmp['delivery_sum']  = bcmul($tmp['delivery_wgt'], $tmp['price_unit'], 2);
                     }
                     $tmp['reject_sum']         = $tmp['delivery_sum'] - $tmp['sign_sum'];
                     $tmp['created_time']       = get_time();
@@ -541,7 +541,7 @@ class DistDriver extends Controller {
                 $row['id']= $val;
                 $row['actual_price'] = $price_unit[$key];
                 $row['actual_quantity'] = isset($weight[$key]) ? $weight[$key]: $quantity[$key];
-                $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
+                $row['actual_sum_price'] = bcmul($row['actual_price'], $row['actual_quantity'], 2);
                 $map['order_details'][] = $row;
             }
         }
@@ -629,13 +629,13 @@ class DistDriver extends Controller {
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
-                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                    $tmp['delivery_wgt']       = bcmul($detail['delivery_qty'], $net_weight, 2);
                     $tmp['reject_qty']         = $tmp['delivery_qty'];
                     $tmp['reject_wgt']         = $tmp['delivery_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['single_price'];
-                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    $tmp['delivery_sum']       = bcmul($tmp['delivery_qty'], $tmp['price_unit'], 2);
                     $tmp['reject_sum']         = $tmp['delivery_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
@@ -749,7 +749,7 @@ class DistDriver extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            $bill_out['actual_price'] += $sign_qty * $sign_in_detail['price_unit'];
+                            $bill_out['actual_price'] += bcmul($sign_qty, $sign_in_detail['price_unit'], 2);
                         }
                         break;
 
