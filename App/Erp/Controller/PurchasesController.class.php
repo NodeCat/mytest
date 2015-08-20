@@ -145,12 +145,13 @@ class PurchasesController extends CommonController
             //子Sku总需求量 = 父下单量 x 生产比例;
             $result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty'] = f_add($requirement_qty,$result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']);
         }
+        $data           = array();
         $count          = count($result_arr);
         $data           = array_splice($result_arr, $offset, $page_size);
 
         $p_sku  = array();
         $c_sku  = array();
-        foreach ($result_arr as $c_val) {
+        foreach ($data as $c_val) {
             if ($c_val['sub']['c_pro_code']) {
                 $c_sku[] = $c_val['sub']['c_pro_code'];
             }
@@ -164,7 +165,7 @@ class PurchasesController extends CommonController
         //获取子SKU名称和规格
         $c_sku_info = getSkuInfoByCodeArray($c_sku);
 
-        foreach ($result_arr as &$d_data) {
+        foreach ($data as &$d_data) {
             $d_data['sub']['c_pro_name']         = $c_sku_info[$d_data['sub']['c_pro_code']]['name'];
             $d_data['sub']['c_pro_attrs']        = $c_sku_info[$d_data['sub']['c_pro_code']]['pro_attrs_str'];
             foreach ($d_data['detail'] as &$c_val) {
@@ -172,7 +173,8 @@ class PurchasesController extends CommonController
                 $c_val['p_pro_attrs']   = $p_sku_info[$c_val['pro_code']]['pro_attrs_str'];
             }
         }
-        $this->data = $result_arr;
+        //dump($data);die;
+        $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);
 
