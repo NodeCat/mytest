@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liuguangping <liuguangpingtest@163.com>
 // +----------------------------------------------------------------------
-namespace Erp\Logic;
+namespace Wms\Logic;
 
 class InsalesLogic{
     /**
