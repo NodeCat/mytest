@@ -199,7 +199,7 @@ class StockInLogic{
         //修改erp状态
         $bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
         if($bill_in_r['type'] == 4){
-            A('TransferIn','Logic')->updateTransferInStatus($bill_in_r['code'],'up');
+            A('Erp/TransferIn','Logic')->updateTransferInStatus($bill_in_r['code'],'up');
         }
 
         //修改状态
@@ -253,6 +253,7 @@ class StockInLogic{
         }
         
         //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
+
         if(strtotime($line['product_date']) > strtotime($product_date) || $line['product_date'] == '0000-00-00 00:00:00'){
             $stock_bill_in_detail = D('stock_bill_in_detail');
             $data['product_date'] = $product_date;
@@ -262,6 +263,7 @@ class StockInLogic{
         }
 
         //修改erp_上架量
+
         if ($inId) {
             $bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
             if($bill_in_r && $bill_in_r['type'] == '4'){
@@ -270,7 +272,7 @@ class StockInLogic{
                 $batch = $batch;
                 $qty = $qty;
                 //$is_up = up 上架量 waiting 待上架
-                A('TransferIn','Logic')->updateStockInQty($in_code, $pro_code, $batch,$qty,$status,'up');
+                A('Erp/TransferIn','Logic')->updateStockInQty($in_code, $pro_code, $batch,$qty,$status,'up');
 
             }
         }
@@ -346,7 +348,7 @@ class StockInLogic{
         //修改erp状态
         $bill_in_r = M('stock_bill_in')->field('code,type')->find($inId);
         if($bill_in_r && $bill_in_r['type'] == '4'){
-            A('TransferIn','Logic')->updateTransferInStatus($bill_in_r['code']);
+            A('Erp/TransferIn','Logic')->updateTransferInStatus($bill_in_r['code']);
         }
 
         if ($diff == 0) {
@@ -387,7 +389,7 @@ class StockInLogic{
                 $pro_code = $code;
                 $batch = $batch;
                 $qty = $qty;
-                A('TransferIn','Logic')->updateStockInQty($in_code, $pro_code, $batch, $qty);
+                A('Erp/TransferIn','Logic')->updateStockInQty($in_code, $pro_code, $batch, $qty);
 
             }
         }

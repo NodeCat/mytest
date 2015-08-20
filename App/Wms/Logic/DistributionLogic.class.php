@@ -975,21 +975,54 @@ class DistributionLogic {
     }
 
     /**
-     * [distInfo 根据配送单ID获取一条配送单信息]
-     * @param  [int] $dist_id [配送单ID]
+     * [distInfo 根据配送单ID获取配送单信息]
+     * @param  [int] $dist_id [配送单ID,支持]
      * @return [type]          [description]
      */
     public function distInfo($dist_id) {
-            if(!$dist_id) {
+            if(empty($dist_id)) {
                 return false;
             }
             $M = M('stock_wave_distribution');
-            $map['id'] = $dist_id;
             $map['is_deleted'] = 0;
-            $dist = $M->where($map)->find();
-            return $dist;
+            $map['id'] = $dist_id;
+            $res = $M->where($map)->find();
+            return $res;
     }
 
+    /**
+     * [distList 获取配送单列表]
+     * @param  [int] $dist_ids [配送单ID数组]
+     * @return [type]          [description]
+     */
+    public function distList($dist_ids) {
+            if(empty($dist_ids)) {
+                return false;
+            }
+            $M = M('stock_wave_distribution');
+            $map['id'] = array('in', $dist_ids);
+            $map['is_deleted'] = 0;
+            $list = $M->where($map)->select();
+            return $list;
+    }
+    /**
+     * [getDistDetailsByPid 根据配送单ID获取配送单详情数据]
+     * @return [type] [description]
+     */
+    public function getDistDetailsByPid($dist_id)
+    {
+        if (empty($dist_id)) {
+            return false;
+        }
+        if (is_array($dist_id)) {
+            $map['pid'] = array('in', $dist_id);
+        } else {
+            $map['pid'] = $dist_id;
+        }
+        $map['is_deleted'] = 0;
+        $list = M('stock_wave_distribution_detail')->where($map)->select();
+        return $list;
+    }
     /**
      * [getDistDetail 根据ID或出库单ID获取配送单详情]
      * @param  id 或 bill_out_id,支持数组
@@ -1048,7 +1081,11 @@ class DistributionLogic {
             return false;
         }
         $M = M('stock_wave_distribution_detail');
-        $map['id'] = $params['id'];
+        if (is_array($params['id'])) {
+            $map['id'] = array('in', $params['id']);
+        } else {
+            $map['id'] = $params['id'];
+        }
         $res = $M->where($map)->save($params['data']);
         return $res;
     }

@@ -266,6 +266,7 @@ class RepertoryController extends CommonController
             $this->msgReturn(false, '未知错误');
         }
 
+        $wh_id = I('get.wh_id');
         $ids         = I('get.ids');
         $start_time  = I('get.start_time');
         $end_time    = I('get.end_time');
@@ -304,7 +305,7 @@ class RepertoryController extends CommonController
         //获取列表
         $price_rate = $this->price_rate[$data[0]['category1']];
         $logic      = D('Repertory', 'Logic');
-        $logic->getDataList($start_time, $end_time, $pro_codes, $data, $price_rate);
+        $logic->getDataList($start_time, $end_time, $pro_codes, $wh_id, $data, $price_rate);
 
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -420,6 +421,9 @@ class RepertoryController extends CommonController
         if (empty($data)) {
             return false;
         }
+
+        $wh_id = $_POST['query']['stock_snap.wh_id'];
+
         $start_time = $_POST['query']['stock_snap.snap_time'];
         $end_time = $_POST['query']['stock_snap.snap_time_1'];
 
@@ -438,7 +442,7 @@ class RepertoryController extends CommonController
         //获取列表
         $price_rate = $this->price_rate[$data[0]['category1']];
         $logic      = D('Repertory', 'Logic');
-        $logic->getDataList($start_time, $end_time, $pro_codes, $data, $price_rate);
+        $logic->getDataList($start_time, $end_time, $pro_codes, $wh_id, $data, $price_rate);
     }
 
     //在search方法执行后 执行该方法

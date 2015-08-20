@@ -798,16 +798,16 @@ class DistributionController extends CommonController {
         $where_out['rtsg_code'] = array('in',$refer_code_Arr);
         $purchase_out = M('stock_purchase_out')->where($where_out)->select();
         if ($transfer_re || $purchase_out) {
-            //修改采购退货已收货状态和实际收货量 liuguangping        
-            $distribution_logic = A('PurchaseOut','Logic');        
-            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
-            //加入wms入库单 liuguangping
-            $stockin_logic = A('StockIn','Logic');        
-            $stockin_logic->addWmsIn($pass_reduce_ids);
 
-            //加入erp调拨入库单
-            $erp_stockin_logic = A('TransferIn', 'Logic');
-            $erp_stockin_logic->addErpIn($pass_reduce_ids);
+            /**********以下是刘广平优化代码***********/
+            //修改erp采购正品退货 状态 和 实际收货量
+            $distribution_logic = A('Erp/PurchaseOut','Logic');        
+            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
+
+            //调拨处理逻辑
+            $distribution_logic = A('Erp/Transfer','Logic');        
+            $distribution_logic->transferHandle($pass_reduce_ids);
+
         }
 
         $this->msgReturn(true, '已完成', '', U('over'));

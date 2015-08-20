@@ -1,0 +1,2 @@
+ALTER TABLE  `stock_wave_distribution_detail` ADD  `avg_fee` DECIMAL( 18, 2 ) UNSIGNED NOT NULL DEFAULT  '0.00' COMMENT  '平均运费成本' AFTER  `real_sum` ;
+ALTER TABLE  `stock_wave_distribution_detail` ADD  `delivery_ontime` TINYINT( 2 ) UNSIGNED NOT NULL DEFAULT  '1' COMMENT  '配送是否准时1准时0不准时' AFTER  `avg_fee` ;

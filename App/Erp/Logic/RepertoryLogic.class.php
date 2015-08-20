@@ -14,11 +14,14 @@ class RepertoryLogic
      * @param $pro_codes    查询的SKU
      * @return array
      */
-    public function getSnapList($time, $pro_codes)
+    public function getSnapList($time, $pro_codes, $wh_id)
     {
         //初期数量
         $where['snap_time'] = $time;
         $where['pro_code']  = $pro_codes;
+        if(!empty($wh_id)){
+            $where['wh_id']  = $wh_id;
+        }
         $Model      = D('Repertory');
         $start_cost = $Model->field("pro_code, SUM(`stock_qty`) as stock_qty, count(pro_code) as nums, SUM(price_unit) as price_unit")->where($where)->group('pro_code')->select();
         $list       = array();
@@ -311,14 +314,14 @@ class RepertoryLogic
      * @param $data             待处理数组
      * $param $price_rate       税率
      */
-    public function getDataList($start_time, $end_time, $pro_codes, &$data, $price_rate = 1)
+    public function getDataList($start_time, $end_time, $pro_codes, $wh_id, &$data, $price_rate = 1)
     {
         //初期时间，获取前一天的结余
         $_time_1 = date('Y-m-d', (strtotime($start_time)-86400));
         //获取初期数量
-        $startList      = $this->getSnapList($_time_1, $pro_codes);
+        $startList      = $this->getSnapList($_time_1, $pro_codes, $wh_id);
         //获取期末数量
-        $endList        = $this->getSnapList($end_time, $pro_codes);
+        $endList        = $this->getSnapList($end_time, $pro_codes, $wh_id);
         //采购入库单
         $purchaseList   = $this->getPurchaseList($start_time, $end_time, $pro_codes);
         //加工入库单
