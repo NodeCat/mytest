@@ -1,11 +1,13 @@
 
 <div class="table-responsive" >
-    <br><br><br><br>
-    <h1 class="text-center">
-        {$warehouse} 今日签到码： 
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        <button class="btn btn-primary btn-lg hidden-print" onclick="window.print()">打印</button>
-    </h1>
-    <br>
+            <h1 class="text-center" style="font-size:80px;">今日签到码
+            <button class="btn btn-primary btn-lg hidden-print pull-right" onclick="window.print()">打印</button>
+            </h1>
+    <hr>   
     <h1 class="text-center" style="font-size:260px;">{$code}</h1>
+    <hr>
+    <br>
+    <h1 class="text-right" style="font-size:48px;">{$warehouse}</h1>
+    <h1 class="text-right" style="font-size:48px;">{$date} {$week}</h1> 
+
 </div>

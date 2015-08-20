@@ -367,7 +367,10 @@ class DispatchController extends \Common\Controller\AuthController{
         } else {
             $code = '获取签到码失败，请联系技术人员';
         }
+        $weeks=array("星期日","星期一","星期二","星期三","星期四","星期五","星期六");
         $this->code = $code;
+        $this->date = date('Y-m-d',time());
+        $this->week = $weeks[date('w')];
         $this->display('Index/sign-code');
     }
     
