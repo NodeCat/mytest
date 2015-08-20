@@ -84,7 +84,6 @@ class IndexDriver extends Controller {
             $num      = I('post.car_num');
             $car_type = I('post.car_type');
             $car_from = I('post.car_from');
-            $storge   = I('post.warehouse');
             if(empty($code) || empty($name) || empty($num)) {
                 $this->error ='请正确的填写修改信息';
                 $this->person();
@@ -113,11 +112,15 @@ class IndexDriver extends Controller {
     public function person(){
         $map['mobile'] = session('user.mobile');
         $data = M('TmsUser')->where($map)->order('updated_time')->find();
+        //签到记录
+        $smap['userid'] = $data['id'];
+        $smap['is_deleted'] = 0;
+        $sign = M('tms_sign_list')->field('wh_id')->order('created_time DESC')->where($smap)->find();
+        $data['warehouse'] = A('Wms/Distribution', 'Logic')->getWarehouseById($sign['wh_id']);
         $this->title ='个人信息';
         $cat = A('Common/Category','Logic');
         $this->carType = $cat->lists('car_type');
         $this->carFrom = $cat->lists('platform');
-        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $this->data = $data;
         $this->display('Driver/person');
     }
@@ -199,10 +202,9 @@ class IndexDriver extends Controller {
             $num    = I('post.car_num');
             $car_type = I('post.car_type');
             $car_from = I('post.car_from');
-            $ware = I('post.warehouse');
             $data = I('post.');
             $data['mobile'] = $mobile;
-            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile) || empty($name) || empty($num)|| empty($car_type) || empty($car_from) || empty($ware)) {
+            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile) || empty($name) || empty($num)|| empty($car_type) || empty($car_from)) {
                 if (!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile)) {
                     $data['mobile']   = '';
                     $this->error ='请输入正确的手机号码';
@@ -218,9 +220,6 @@ class IndexDriver extends Controller {
                 }
                 elseif (empty($car_from)) {
                     $this->error ='请选择派车平台';
-                }
-                elseif (empty($ware)) {
-                    $this->error ='请选择你的签到仓库';
                 }
                 $this->user  = $data;
                 $this->title ='请填写完整的签到信息';

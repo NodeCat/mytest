@@ -95,10 +95,11 @@ class DistDriver extends Controller {
             $yestoday = date('Y-m-d',strtotime('-1 Days'));
             if(!empty($this->error)) {
 
-            } elseif ($dist['wh_id'] != $sign['wh_id']) {
-                $this->error = '提货失败，不能提取其他仓库单据';
-            }  elseif (empty($dist)) {
+            }elseif (empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
+            } elseif ($dist['wh_id'] != $sign['wh_id']) {
+                //只能提取签到仓库的配送单
+                $this->error = '提货失败，不能提取其他仓库单据';
             } elseif ($dist['status'] == '1') {
                 // 未发运的单据不能被认领
                 $this->error = '提货失败，未发运的配送单不能提货';
