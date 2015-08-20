@@ -245,7 +245,10 @@ class DistLogic {
         $s4 = substr(md5($date . '-' . $wh_id), 0, 4);
         $code = substr(base_convert($s4, 16, 10), -4);
         if (!S(md5($code))) {
-           S(md5($code), $wh_id, 86400); 
+            //保证当日有效
+            $etime = mktime(23, 59, 59, date('m'), date('d'), date('Y'));
+            $expire = $etime - time();
+            S(md5($code), $wh_id, $expire); 
         }
         return $code;
     }
