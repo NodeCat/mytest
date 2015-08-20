@@ -169,6 +169,7 @@ class DistributionController extends CommonController {
     }
     
         protected function before_lists(&$M){
+            /*
             $pill = array(
                 'status'=> array(
                     '1'=>array('value'=>'1','title'=>'未发运','class'=>'warning'),
@@ -194,8 +195,8 @@ class DistributionController extends CommonController {
                     $pill['sstock_wave_distribution.tatus'][$k]['count'] = 0;
                 }
             }
-
-            $this->pill = $pill;
+            */
+            //$this->pill = $pill;
         }
 
     /**
