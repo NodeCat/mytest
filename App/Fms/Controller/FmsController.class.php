@@ -2,6 +2,23 @@
 namespace Fms\Controller;
 class FmsController extends \Common\Controller\AuthController{
     
+
+    public function resetOrder($id) {
+        $id = I('id',0);
+        if (empty($id)) {
+            $this->msgReturn('0','重置失败，id不能为空');
+        }
+        $A = A('Common/Order','Logic');
+        $map['status']  = '8';//已装车
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+        $map['driver_name'] = session('user.username');
+        $map['driver_mobile'] = session('user.mobile');
+        $map['suborder_id'] = $id;
+        $A->debug = true;
+        dump($map);
+        $res = $A->set_status($map);
+
+    }
     public function reset() {
         $id = I('get.id',0);
         if (empty($id)) {
@@ -36,8 +53,7 @@ class FmsController extends \Common\Controller\AuthController{
         }
         $order_ids = array_column($bill_outs,'refer_code');
         $A = A('Common/Order','Logic');
-        $map['status']  = '8';//已完成
-        
+        $map['status']  = '8';//已签收
         $map['cur']['name'] = '财务'.session('user.username');
         foreach ($order_ids as $val) {
             $map['suborder_id'] = $order_ids;
