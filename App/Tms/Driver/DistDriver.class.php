@@ -36,6 +36,7 @@ class DistDriver extends Controller {
                 $this->taskDelivery();
                 exit;
             }
+            //当前提货单信息
             $map['dist_id'] = $id;
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
@@ -43,10 +44,14 @@ class DistDriver extends Controller {
             $map['created_time'] = array('between',$start_date.','.$end_date);
             $map['type'] = '0';
             $M = M('tms_delivery');
-            $delivery = $M->field('id,mobile,order_count')->where($map)->find();// 取出当前提货单信息
+            $delivery = $M->field('id,mobile,order_count')->where($map)->find();
             unset($map['dist_id']);
             unset($map['type']);
-            $sign = M('tms_sign_list')->field('delivery_time,created_time')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
+            //签到记录
+            $smap['userid'] = session('user.id');
+            $smap['is_deleted'] = 0;
+            $sign = M('tms_sign_list')->field('delivery_time,created_time,wh_id')->order('created_time DESC')->where($smap)->find();
+            //本次签到所有提货记录
             $map['mobile'] = session('user.mobile');
             $map['created_time'] = array('between',$sign['created_time'].','.$sign['delivery_time']);
             $delivery_all = $M->field('id,mobile,dist_id,order_count,type')->where($map)->order('created_time DESC')->select();//取出当前司机所有配送单信息
@@ -90,7 +95,9 @@ class DistDriver extends Controller {
             $yestoday = date('Y-m-d',strtotime('-1 Days'));
             if(!empty($this->error)) {
 
-            } elseif (empty($dist)) {
+            } elseif ($dist['wh_id'] != $sign['wh_id']) {
+                $this->error = '提货失败，不能提取其他仓库单据';
+            }  elseif (empty($dist)) {
                 $this->error = '提货失败，未找到该单据';
             } elseif ($dist['status'] == '1') {
                 // 未发运的单据不能被认领
@@ -128,6 +135,7 @@ class DistDriver extends Controller {
                 $line_id = array_column($orders,'line_id');
                 $line_id = array_unique($line_id);//重复的去掉
                 $lines = $cA->line(array('line_ids'=>$line_id));//取出所有路线
+                $lines = array_column($lines,'name');
                 // 把路线连接起来
                 $line_names = implode('/', array_filter($lines));
                 $data['line_name'] = $line_names;//写入devilery
