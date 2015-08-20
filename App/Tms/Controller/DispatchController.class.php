@@ -360,6 +360,13 @@ class DispatchController extends \Common\Controller\AuthController{
     public function signCode()
     {
         $code = A('Tms/Dist', 'Logic')->getSignCode();
+        if ($code) {
+            $wh_id = S(md5($code));
+            $warehouse = A('Wms/Distribution', 'Logic')->getWarehouseById($wh_id);
+            $this->warehouse = $warehouse;
+        } else {
+            $code = '获取签到码失败，请联系技术人员';
+        }
         $this->code = $code;
         $this->display('Index/sign-code');
     }
