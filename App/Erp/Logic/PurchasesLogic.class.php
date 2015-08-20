@@ -109,7 +109,7 @@ class PurchasesLogic{
         if($limit){
             $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
             $count = count($m->select());
-            $res = $m2->limit($offset,$limit)->select();
+            $res = $m2->select();
 
             $result['count'] = $count;
             $result['res']   = $res;
