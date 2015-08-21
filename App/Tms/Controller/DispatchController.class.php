@@ -42,10 +42,9 @@ class DispatchController extends \Common\Controller\AuthController{
         if ($car_from) {
             $map1['car_from'] = $car_from;
         }
-            $this->ware = $warehouse;
-            $this->car_from  = $car_from;
-            $userId = M('TmsUser')->where($map1)->getField('id',true);
-            $map['userid'] = empty($userId) ? null : array('in',$userId); 
+        $this->car_from  = $car_from;
+        $userId = M('TmsUser')->where($map1)->getField('id',true);
+        $map['userid'] = empty($userId) ? null : array('in',$userId); 
         //把对应仓库的用户签到信息取出来
         $map['is_deleted'] = 0;
         $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
@@ -155,7 +154,6 @@ class DispatchController extends \Common\Controller\AuthController{
         if ($car_from) {
             $map1['car_from'] = $car_from;
         }
-        $this->warehouse = $warehouse;
         $this->car_from  = $car_from;
         $userId = M('TmsUser')->where($map1)->getField('id',true);
         $map['userid'] = empty($userId) ? null : array('in',$userId); 
