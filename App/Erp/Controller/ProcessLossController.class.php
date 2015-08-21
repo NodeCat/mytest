@@ -20,7 +20,7 @@ class ProcessLossController extends CommonController
         'c_pro_num' => '原料加工数',
         'p_pro_num' => '成品加工数',
         'loss_ratio' => '损耗率',
-        'loss_number' => '原料损耗数',
+        'c_loss_number' => '原料损耗数',
         'y_loss_amount' => '原料损耗成本(元/斤)',
         'c_loss_amount' => '成品损耗成本(元/袋)',
     );
@@ -66,7 +66,7 @@ class ProcessLossController extends CommonController
         //格式化状态
         foreach ($data as $key => &$value) {
             $pro_code[] = $value['c_pro_code'];
-            $value['c_pro_num'] = sprintf('%.2f',$value['p_pro_num']*$value['ratio']);
+            $value['c_pro_num'] = bcmul($value['p_pro_num'], $value['ratio'], 2);
         }
 
         $start_time = $_POST['query']['erp_process.created_time'];
@@ -77,17 +77,22 @@ class ProcessLossController extends CommonController
             $end_time   = I('get.created_time_1');
         }
 
+        $wh_id = $_POST['query']['erp_process.wh_id'];
+
         $code   = implode(',', $pro_code);
         $logic  = D('ProcessLoss', 'Logic');
-        $location_ids = $logic->getLocationList('XA-001');          //获取所有加工损耗区ID
-        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids);
+        $location_ids = $logic->getLocationList('XA-001',$wh_id);          //获取所有加工损耗区ID
+        $data = $logic->getStockLoss($code, $start_time, $end_time, $location_ids, $wh_id);
+        
         foreach ($data as $key => $val) {
-            $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
-            $loss_ratio                  = ($data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']));       //损耗率
-            $data[$key]['loss_ratio']    = sprintf('%.2f', $loss_ratio * 100).'%';
-            $c_loss_amount               = ($result[$val['c_pro_code']]['total_amount'] / $result[$val['c_pro_code']]['stock_qty']) * $loss_ratio;    //原料损耗成本
-            $data[$key]['y_loss_amount'] = sprintf('%.2f', $c_loss_amount);
-            $data[$key]['c_loss_amount'] = sprintf('%.2f', $data[$key]['y_loss_amount'] * $val['ratio']);   //成品损耗成本
+            //损耗率
+            $loss_ratio                  = bcdiv($data[$key]['c_loss_number'], bcadd($val['c_pro_num'], $data[$key]['c_loss_number'], 2), 2);
+            $data[$key]['loss_ratio']    = bcmul($loss_ratio, 100, 2).'%';
+            //原料损耗成本
+            $c_loss_amount               = bcmul(bcdiv($data[$val['c_pro_code']]['total_amount'], $data[$val['c_pro_code']]['c_loss_number'], 2), $loss_ratio, 2);
+            $data[$key]['y_loss_amount'] = $c_loss_amount;
+            //成品损耗成本
+            $data[$key]['c_loss_amount'] = bcmul($data[$key]['y_loss_amount'], $val['ratio'], 2);
         }
     }
 
@@ -146,12 +151,12 @@ class ProcessLossController extends CommonController
 
         $code   = implode(',', $pro_code);
         $logic  = D('ProcessLoss', 'Logic');
-        $location_ids = $logic->getLocationList('XA-001');          //获取所有加工损耗区ID
-        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids);
+        $location_ids = $logic->getLocationList('XA-001', $wh_id);          //获取所有加工损耗区ID
+        $result = $logic->getStockLoss($code, $start_time, $end_time, $location_ids, $wh_id);
 
         foreach ($data as $key => $val) {
-            $data[$key]['loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
-            $loss_ratio                  = ($data[$key]['loss_number'] / ($val['c_pro_num'] + $data[$key]['loss_number']));       //损耗率
+            $data[$key]['c_loss_number']   = sprintf('%.2f', $result[$val['c_pro_code']]['stock_qty']);
+            $loss_ratio                  = ($data[$key]['c_loss_number'] / ($val['c_pro_num'] + $data[$key]['c_loss_number']));       //损耗率
             $data[$key]['loss_ratio']    = sprintf('%.2f', $loss_ratio * 100).'%';
             $c_loss_amount               = ($result[$val['c_pro_code']]['total_amount'] / $result[$val['c_pro_code']]['stock_qty']) * $loss_ratio;    //原料损耗成本
             $data[$key]['y_loss_amount'] = sprintf('%.2f', $c_loss_amount);
@@ -184,7 +189,7 @@ class ProcessLossController extends CommonController
             $sheet->setCellValue('E'.$i, $value['c_pro_num']);
             $sheet->setCellValue('F'.$i, $value['p_pro_num']);
             $sheet->setCellValue('G'.$i, $value['loss_ratio']);
-            $sheet->setCellValue('H'.$i, $value['loss_number']);
+            $sheet->setCellValue('H'.$i, $value['c_loss_number']);
             $sheet->setCellValue('I'.$i, $value['y_loss_amount']);
             $sheet->setCellValue('J'.$i, $value['c_loss_amount']);
         }
