@@ -49,13 +49,12 @@ class SettlementLogic
     public function getStockInListDetail($code)
     {
         $M      = M('erp_settlement_detail');
-        $field = 'erp_settlement_detail.*,stock_purchase.id as pid, stock_purchase_detail.pro_code, stock_purchase_detail.pro_name, stock_purchase_detail.pro_qty, stock_purchase_detail.price_unit, stock_purchase_detail.price_subtotal, stock_purchase.created_time as purchase_time, erp_purchase_in_detail.created_time as stock_in_time';
+        $field = 'erp_settlement_detail.*,stock_purchase.id as pid, stock_purchase_detail.pro_code, stock_purchase_detail.pro_name, stock_purchase_detail.pro_qty, stock_purchase_detail.price_unit, stock_purchase_detail.price_subtotal, stock_purchase.created_time as purchase_time, (SELECT erp_purchase_in_detail.created_time FROM erp_purchase_in_detail WHERE erp_purchase_in_detail.purchase_code = erp_settlement_detail.order_code AND erp_purchase_in_detail.pro_code = stock_purchase_detail.pro_code GROUP BY erp_purchase_in_detail.pro_code) stock_in_time';
         $where['erp_settlement_detail.code']  = $code;
         $where['erp_settlement_detail.order_type'] = 1;
         $join  = array(
             'left join stock_purchase on erp_settlement_detail.order_code=stock_purchase.code',
             'left join stock_purchase_detail ON stock_purchase_detail.pid=stock_purchase.id',
-            'left join erp_purchase_in_detail ON erp_purchase_in_detail.purchase_code=erp_settlement_detail.order_code AND erp_purchase_in_detail.pro_code=stock_purchase_detail.pro_code'
         );
         $result = $M->field($field)->join($join)->where($where)->select();
         return $result;

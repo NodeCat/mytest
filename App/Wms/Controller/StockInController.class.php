@@ -104,6 +104,12 @@ class StockInController extends CommonController {
             'control_type' => 'datetime',     
             'value' => 'stock_bill_in-partner_id-partner-id,id,name,Partner/refer',   
         ), 
+        'stock_bill_in.pid' => array (
+            'title' =>  '提货码',
+            'query_type' => 'eq',
+            'control_type' => 'text',
+            'value' => '',
+        ),
     );
     public function after_search(&$map) {
         if (array_key_exists('stock_bill_in.pro_code',$map)) {
@@ -874,12 +880,12 @@ class StockInController extends CommonController {
                     //加入调拨类型liuguangping
                     //收货=》erp_到货量调拨入库单详细待入库量和实际收货量 erp状态 待上架状态@因需求变更这步取消
                     //@refer_code 入库单code $pro_code 产品编码 $batch 批次 $pro_qty 出库量
-                    A('TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch, $pro_qty);
+                    A('Erp/TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch, $pro_qty);
                     //A('TransferIn','Logic')->updateTransferInStatus($refer_code);
                     //上架=》待入库量减去 已上架量增加
                     //$is_up = up 上架量 waiting 待上架
-                    A('TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch,$pro_qty,$status,'up');
-                    A('TransferIn','Logic')->updateTransferInStatus($refer_code,'up');
+                    A('Erp/TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch,$pro_qty,$status,'up');
+                    A('Erp/TransferIn','Logic')->updateTransferInStatus($refer_code,'up');
 
                 }
             }

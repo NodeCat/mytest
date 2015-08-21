@@ -5,11 +5,15 @@ use Boris\ExportInspector;
 class DistributionController extends CommonController {
     
     protected $filter = array(
-    	    'status' => array(
-    	        '1' => '未发运',
-    	        '2' => '已发运',
-    	        '3' => '已配送',
-    	        '4' => '已结算',
+	    'status' => array(
+	        '1' => '未发运',
+	        '2' => '已发运',
+	        '3' => '已配送',
+	        '4' => '已结算',
+        ),
+        'deliver_time' => array(
+            '1' => '上午',
+            '2' => '下午'
         )
     );
     protected $columns = array (
@@ -20,7 +24,8 @@ class DistributionController extends CommonController {
             'line_count' => '总行数',
             'sku_count' => '总件数',
             'created_user' => '创建者',
-            'created_time' => '创建时间',
+            'deliver_date' => '配送日期',
+            'deliver_time' => '时间',
             'end_time' => '发运时间',
             'status' => '状态',
     );
@@ -65,11 +70,11 @@ class DistributionController extends CommonController {
                     'control_type' => 'getField',
                     'value' => 'warehouse.id,name',
             ),
-            'stock_wave_distribution.created_time' => array(
-                    'title' => '创建时间',
+            'stock_wave_distribution.deliver_date' => array(
+                    'title' => '配送日期',
                     'query_type' => 'between',
                     'control_type' => 'datetime',
-                    'value' => 'created_time',
+                    'value' => '',
             ),
     );
     
@@ -168,6 +173,36 @@ class DistributionController extends CommonController {
         }
     }
     
+        protected function before_lists(){
+            $pill = array(
+                'status'=> array(
+                    '1'=>array('value'=>'1','title'=>'未发运','class'=>'warning'),
+                    '2'=>array('value'=>'2','title'=>'已发运','class'=>'info'),
+                    '3'=>array('value'=>'3','title'=>'已配送','class'=>'danger'),
+                    '4'=>array('value'=>'4','title'=>'已结算','class'=>'success')
+                )
+            );
+            $M = M('stock_wave_distribution');
+            $map['is_deleted'] = 0;
+            $map['wh_id'] = session('user.wh_id');
+            $res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
+            foreach ($res as $key => $val) {
+                if(array_key_exists($val['status'], $pill['status'])){
+                    $pill['status'][$val['status']]['count'] = $val['qty'];
+                    $pill['status']['total'] += $val['qty'];
+                }
+            }
+
+            foreach($pill['status'] as $k => $val){
+                if(empty($val['count'])){
+                    $pill['status'][$k]['count'] = 0;
+                }
+            }
+            
+            $this->pill = $pill;
+        }
+
     /**
      * 列表处理
      */
@@ -347,6 +382,8 @@ class DistributionController extends CommonController {
         $data['line_count'] = $dis['line_count']; //总行数
         $data['delivery_count'] = 0; //发货总件数
         $data['delivery_price'] = 0; //发货总金额
+        $data['deliver_date'] = date('Y-m-d',strtotime($dis['deliver_date'])); //配送日期
+        $data['deliver_time'] = $this->filter['deliver_time'][$dis['deliver_time']]; //配送时间
         foreach ($result as $value) {
             foreach ($value['detail'] as $val) {
                 $data['delivery_count'] += $val['delivery_qty'];
@@ -798,16 +835,16 @@ class DistributionController extends CommonController {
         $where_out['rtsg_code'] = array('in',$refer_code_Arr);
         $purchase_out = M('stock_purchase_out')->where($where_out)->select();
         if ($transfer_re || $purchase_out) {
-            //修改采购退货已收货状态和实际收货量 liuguangping        
-            $distribution_logic = A('PurchaseOut','Logic');        
-            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
-            //加入wms入库单 liuguangping
-            $stockin_logic = A('StockIn','Logic');        
-            $stockin_logic->addWmsIn($pass_reduce_ids);
 
-            //加入erp调拨入库单
-            $erp_stockin_logic = A('TransferIn', 'Logic');
-            $erp_stockin_logic->addErpIn($pass_reduce_ids);
+            /**********以下是刘广平优化代码***********/
+            //修改erp采购正品退货 状态 和 实际收货量
+            $distribution_logic = A('Erp/PurchaseOut','Logic');        
+            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
+
+            //调拨处理逻辑
+            $distribution_logic = A('Erp/Transfer','Logic');        
+            $distribution_logic->transferHandle($pass_reduce_ids);
+
         }
 
         $this->msgReturn(true, '已完成', '', U('over'));
@@ -1011,9 +1048,10 @@ class DistributionController extends CommonController {
                 if(!empty($order_lists[0]['order_number']) && $order_lists[0]['status'] == 0){
                     //订单被取消了，不能拉进波次
                     unset($ids[$k]);
-                    //同时将出库单逻辑删除
+                    //同时将出库单关闭
                     $map['id'] = $bill_out_id;
-                    $data['is_deleted'] = 1;
+                    $data['status'] = 18;
+                    $data['dis_mark'] = 0;
                     $stock_out->where($map)->save($data);
                     unset($map);
                     unset($data);

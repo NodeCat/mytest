@@ -54,7 +54,7 @@ class OrderController extends \Common\Controller\AuthController {
                                 $val['unit_id'] = $sign_detail[$i]['charge_unit'];
                             }
                             //实收小计
-                            $val['actual_sum_price'] = $val['real_sign_qty'] * $sign_detail[$i]['price_unit'];
+                            $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $sign_detail[$i]['price_unit'], 2);
                             //合计
                             $bill_out['actual_price'] += $val['actual_sum_price'];
                             
@@ -188,7 +188,7 @@ class OrderController extends \Common\Controller\AuthController {
         $data['reject_reason'] = '';
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
         //写日志logs($id = 0, $msg = '', $model = '', $action = '', $module = ‘')
-        logs($bill_out_id,'重置为已装车状态'.'[财务'.session('user.username').']','dist_detail');
+        logs($bill_out_id,'已装车','dist_detail');
 
         unset($map);
         $map['pid'] = $dist_detail_id;
@@ -223,16 +223,18 @@ class OrderController extends \Common\Controller\AuthController {
     {
         $order_id = I('post.order_id',0);
         $bill_id  = I('post.bill_id',0);
-        $wipezero = I('post.wipezero',0);
         $deposit  = I('post.deposit',0);
         $sign_msg      = I('post.sign_msg',0);
+        $is_wipezero = I('post.wipezero',0);
 
-        if ($wipezero == 0 && $deposit == 0){
-            $this->error('输入的抹零或押金有误！');exit;
+        if ($deposit == 0 && $is_wipezero == 0) {
+            $this->error('请选择抹零或者输入押金后，再修改。');
         }
-        
-        if ($wipezero < 0 || $deposit < 0){
-            $this->error('输入的抹零或押金有误！');exit;
+        if (empty($deposit)) {
+            $deposit = 0;
+        }
+        if (ceil($deposit) != $deposit) {
+            $this->error('押金不能为小数。');
         }
         if ($order_id && $bill_id) {
             //实例化模型
@@ -249,14 +251,30 @@ class OrderController extends \Common\Controller\AuthController {
                 $this->error('此订单不是已完成状态，不能修改订单实收金额。');exit;
             }
             $deal_price = $dist_detail['real_sum'];
+            if ($is_wipezero) {
+                $old_value  = $deal_price;
+                $deal_price = floor($deal_price);
+                $wipezero   = round($old_value - $deal_price,2);
+                if ($wipezero == 0 && $deposit == 0) {
+                    $this->error('已经没有零钱，无需再抹零。');exit;
+                }
+            } else {
+                $wipezero   = 0;
+            }
             $wipe_zero_sum      = $dist_detail['wipe_zero'];
             $deposit_sum        = $dist_detail['deposit'];
-            $data['real_sum']   = $deal_price - $wipezero - $deposit;
+            $data['real_sum']   = $deal_price - $deposit;
             $data['sign_msg']   = $sign_msg;
             $data['wipe_zero']   = $wipe_zero_sum + $wipezero;
             $data['deposit']    = $deposit_sum + $deposit;
+            if ($data['real_sum'] < 0) {
+                $this->error('修改失败，输入的押金超过了该订单的应收金额！');exit;
+            }
+            if ($data['real_sum'] > $dist_detail['receivable_sum']) {
+                $this->error('修改失败，输入了非法的押金，导致该订单的实收金额超过了应收金额！');exit;
+            }
             $res = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
-            logs($bill_id,'修改订单实收金额，'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
+            logs($bill_id,'修改订单实收金额，抹零'.$wipezero.'押金'.$deposit,'dist_detail');
             
             $A = A('Common/Order','Logic');
             $dist_M = M('stock_wave_distribution');

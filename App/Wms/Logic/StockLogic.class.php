@@ -102,13 +102,15 @@ class StockLogic{
         $return['is_enough'] = $is_enough;
         */
 
-        $diff_qty = intval($diff_qty);
+        //$diff_qty = intval($diff_qty);
+        /***刘广平优化支持小数点***/
+        $diff_qty = formatMoney($diff_qty,2);
 
         //按照现进先出原则 锁定库存量 assign_qty
         foreach($stock_list as $key=>$stock){
             //可用量
-            $stock_available = $stock['stock_qty'] - $stock['assign_qty'];
-            if($stock_available <= 0){
+            $stock_available = bcsub($stock['stock_qty'], $stock['assign_qty'],2);
+            if(($stock_available*100) <= 0){
                 continue;
             }
             if($diff_qty > 0){
@@ -120,12 +122,12 @@ class StockLogic{
                     $return['stock_info'][$key]['qty'] = $stock_available;
 
                     $map['id'] = $stock['id'];
-                    $data['assign_qty'] = $stock['assign_qty'] + $stock_available;
+                    $data['assign_qty'] = bcadd($stock['assign_qty'], $stock_available,2);
                     M('stock')->where($map)->data($data)->save();
                     unset($map);
                     unset($data);
 
-                    $diff_qty = $diff_qty - $stock_available;
+                    $diff_qty = bcsub($diff_qty, $stock_available,2);
 
                 //可用量大于差异量
                 }else{
@@ -136,7 +138,7 @@ class StockLogic{
 
                     //根据id 更新库存表
                     $map['id'] = $stock['id'];
-                    $data['assign_qty'] = $stock['assign_qty'] + $diff_qty;
+                    $data['assign_qty'] = bcadd($stock['assign_qty'], $diff_qty,2);
                     M('stock')->where($map)->data($data)->save();
                     unset($map);
                     unset($data);
@@ -525,7 +527,12 @@ class StockLogic{
         }
         M('stock_bill_in_detail')->where($map)->setDec('prepare_qty',$pro_qty);
         M('stock_bill_in_detail')->where($map)->setInc('done_qty',$pro_qty);
-        M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$pro_qty);
+        if($status == 'qualified'){
+            M('stock_bill_in_detail')->where($map)->setInc('qualified_qty',$pro_qty);
+        }
+        if($status == 'unqualified'){
+            M('stock_bill_in_detail')->where($map)->setInc('unqualified_qty',$pro_qty);
+        }
         unset($map);
 
         //通知实时库存接口

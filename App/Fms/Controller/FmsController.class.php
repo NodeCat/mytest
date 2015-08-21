@@ -2,6 +2,67 @@
 namespace Fms\Controller;
 class FmsController extends \Common\Controller\AuthController{
     
+
+    public function resetOrder($id) {
+        $id = I('id',0);
+        if (empty($id)) {
+            $this->msgReturn('0','重置失败，id不能为空');
+        }
+        $A = A('Common/Order','Logic');
+        $map['status']  = '8';//已装车
+        $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
+        $map['driver_name'] = session('user.username');
+        $map['driver_mobile'] = '.';
+        $map['suborder_id'] = $id;
+        $A->debug = true;
+        dump($map);
+        $res = $A->set_status($map);
+
+    }
+    public function reset() {
+        $id = I('get.id',0);
+        if (empty($id)) {
+            $this->msgReturn('0','重置失败，提货码不能为空');
+        }
+        $fms_list = A('Fms/List','Logic');
+        $map['id'] = $id;
+        $dist = $fms_list->distInfo($map);
+        if (empty($dist)) {
+            $this->msgReturn('0','重置失败，未找到该配送单。');
+        }
+        $fms_list = A('Fms/List','Logic');
+        //查询是否有退货，并且已创建拒收入库单
+        $can = $fms_list->can_pay($id);
+        if ($can == 2) {
+            //有退货且已创建拒收入库单
+            $this->msgReturn('0','重置失败，该配送单中有退货，且已创建退货入库单');
+        }
+
+        //获得所有出库单id 
+        $bill_out_ids = array_column($dist['detail'],'bill_out_id');
+        $bill_outs = array();
+        foreach ($bill_out_ids as $value) {
+            //根据出库单id查出出库单信息
+            $bill_out = $fms_list->bill_out_Info($value);
+            if(!empty($bill_out)){
+                $bill_outs[] = $bill_out;
+            }
+        }
+        if (empty($bill_outs)) {
+            $this->msgReturn('0','查询失败，未找到该配送单中的订单。');
+        }
+        $order_ids = array_column($bill_outs,'refer_code');
+        $A = A('Common/Order','Logic');
+        $map['status']  = '8';//已签收
+        $map['cur']['name'] = '财务'.session('user.username');
+        foreach ($order_ids as $val) {
+            $map['suborder_id'] = $order_ids;
+            $res = $A->set_status($map);
+        }
+        
+        $this->msgReturn($res);
+    }
+
     /*
     *查询按钮执行代码
     *查询配送单及它的订单信息
@@ -96,9 +157,8 @@ class FmsController extends \Common\Controller\AuthController{
             $map['is_deleted'] = 0;
             $data['status'] = 4; //已完成
             $data['real_sum'] = $value['pay_for_price'];
-            $data['wipe_zero'] = $value['wipe_zero'];
             $s = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
-            logs($value['id'],'已完成,'.$sign_msg.'[财务'.session('user.username').']','dist_detail');
+            logs($value['id'],'已完成','dist_detail');
         }
         //回写配送单状态
         unset($map);
@@ -250,7 +310,7 @@ class FmsController extends \Common\Controller\AuthController{
                                 $val['unit_id'] = $sign_detail[$i]['charge_unit'];
                             }
                             //实收小计
-                            $val['actual_sum_price'] = $val['real_sign_qty'] * $sign_detail[$i]['price_unit'];
+                            $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $sign_detail[$i]['price_unit'], 2);
                             //合计
                             $value['actual_price'] += $val['actual_sum_price'];
 
