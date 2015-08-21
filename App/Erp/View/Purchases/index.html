@@ -68,8 +68,9 @@
 	
 	<div class="form-group  col-lg-3">
 		<div class="col-lg-10 col-lg-offset-2">
-		   <button type="submit" data-href="{:U('Purchases/index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>&nbsp;&nbsp;&nbsp;&nbsp;
-		   <a href="{:U('Purchases/index',array('type'=>'all'))}" id="allshow" class="btn btn-default btn-sm">显示全部</a>
+		   <button type="submit" data-href="{:U('Purchases/index')}" onclick="" id="btn-query" class="btn btn-sm btn-primary btn-tool"><span class="glyphicon glyphicon-search"></span> 查询</button>
+           <!-- &nbsp;&nbsp;&nbsp;&nbsp; -->
+		   <!-- <a href="{:U('Purchases/index',array('type'=>'all'))}" id="allshow" class="btn btn-default btn-sm">显示全部</a> -->
 		</div>
 	</div>
 
@@ -91,6 +92,11 @@
                 var cat_3 = ($('#cat_3').val() == '全部')?'':$('#cat_3').val();
 
                 var delivery_date = $('[name = delivery_date]').val();
+
+                if (!delivery_date) {
+                    alert('请选择配送日期！');
+                    return false;
+                }
 
                 var delivery_ampm = ($('[name = delivery_ampm]').val() == '全天')?'':$('[name = delivery_ampm]').val();
 

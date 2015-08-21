@@ -27,7 +27,7 @@ class PurchasesController extends CommonController
         $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
         $type               = I('type');
 
-        if (!IS_GET || I('p') || ($type == 'all')) {
+        if (!IS_GET || I('p')) {
             if (!$delivery_date) {
                 $this->msgReturn(false, '请选择配送日期');
             }
