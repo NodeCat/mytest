@@ -260,13 +260,13 @@ function logs($id = 0, $msg = '', $model = '', $action = '', $module = ''){
     else {
         $M->module = $module;
     }
-
+    $uid            = session('user.uid');
     $M->operate     = CONTROLLER_NAME . '/' . ACTION_NAME;
     $M->pk          = $id;
     $M->msg         = $msg;
 	$M->url 		= __SELF__;
 	$M->ip          =  ip2long(get_client_ip());
-	$M->updated_user = session('user.uid');
+	$M->updated_user = isset($uid) ? $uid : 0;
 	$M->updated_time = get_time();
     $res = $M->add();
 }
@@ -275,7 +275,7 @@ function getlogs($model='', $id = 0) {
     $map['model'] = $model;
     $map['pk']    = $id;
     $res = M()->table('log')->field('log.id,log.pk,log.msg,user.nickname user,log.updated_time optime')
-                ->join('user on user.id = log.updated_user')
+                ->join('left join user on user.id = log.updated_user')
                 ->where($map)->order('log.id desc')->select();
     return $res;
 }

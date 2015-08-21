@@ -300,6 +300,7 @@ class DispatchController extends \Common\Controller\AuthController{
         }
         $D = D('TmsSignList');
         foreach ($fees as $key => $value) {
+            //保存运费到签到列表
             $s = $D->where(array('id' => $key))-> save(array('fee' => $value));
             $map['id'] = $key;
             $map['is_deleted'] = 0;
@@ -311,22 +312,21 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile'] = $sign_info['mobile'];
             $map['created_time'] = array('between',$sign_info['created_time'].','.$sign_info['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
-            $map['type'] = 1;
-            $delivery_msg = M('tms_delivery')->where($map)->field('dist_id')->select();
+            //该条签到记录对应的提货记录
+            $delivery_msg = M('tms_delivery')->where($map)->field('dist_id,type')->select();
             unset($map);
             if (empty($delivery_msg)) {
                 continue;
             }
-            $task_ids = array();
-            foreach ($delivery_msg as $v) {
-                $task_ids[] = $v['dist_id'];
+            $type = $delivery_msg[0]['type'];
+            $ids = array_column($delivery_msg, 'dist_id');
+            if ($type == 1) {
+                //均摊运费到单个任务
+                A('Tms/Dispatch','Logic')->avgDeliveryFeeToTask($ids, $value);
+            } else {
+                //均摊运费到订单
+                A('Tms/Dispatch', 'Logic')->avgDeliveryFeeToOrder($ids, $value);
             }
-            $cou = count($task_ids);
-            $task_fee = sprintf('%.2f', $value/$cou);
-            $map['id'] = array('in',$task_ids);
-            $map['is_deleted'] = 0;
-            M('tms_dispatch_task')->where($map)->save(array('delivery_fee' => $task_fee));
-            unset($map);
         }
         $re = array(
             'status' => 0,

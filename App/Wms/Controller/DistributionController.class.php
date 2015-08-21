@@ -168,6 +168,37 @@ class DistributionController extends CommonController {
         }
     }
     
+        protected function before_lists(&$M){
+            /*
+            $pill = array(
+                'status'=> array(
+                    '1'=>array('value'=>'1','title'=>'未发运','class'=>'warning'),
+                    '2'=>array('value'=>'2','title'=>'已发运','class'=>'info'),
+                    '3'=>array('value'=>'3','title'=>'已配送','class'=>'danger'),
+                    '4'=>array('value'=>'4','title'=>'已结算','class'=>'success')
+                )
+            );
+            $M = M('stock_wave_distribution');
+            $map['is_deleted'] = 0;
+            $map['wh_id'] = session('user.wh_id');
+            $res = $M->field('status,count(status) as qty')->where($map)->group('status')->select();
+
+            foreach ($res as $key => $val) {
+                if(array_key_exists($val['status'], $pill['status'])){
+                    $pill['stock_wave_distribution.status'][$val['status']]['count'] = $val['qty'];
+                    $pill['sstock_wave_distribution.tatus']['total'] += $val['qty'];
+                }
+            }
+
+            foreach($pill['stock_wave_distribution.status'] as $k => $val){
+                if(empty($val['count'])){
+                    $pill['sstock_wave_distribution.tatus'][$k]['count'] = 0;
+                }
+            }
+            */
+            //$this->pill = $pill;
+        }
+
     /**
      * 列表处理
      */
@@ -798,16 +829,16 @@ class DistributionController extends CommonController {
         $where_out['rtsg_code'] = array('in',$refer_code_Arr);
         $purchase_out = M('stock_purchase_out')->where($where_out)->select();
         if ($transfer_re || $purchase_out) {
-            //修改采购退货已收货状态和实际收货量 liuguangping        
-            $distribution_logic = A('PurchaseOut','Logic');        
-            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
-            //加入wms入库单 liuguangping
-            $stockin_logic = A('StockIn','Logic');        
-            $stockin_logic->addWmsIn($pass_reduce_ids);
 
-            //加入erp调拨入库单
-            $erp_stockin_logic = A('TransferIn', 'Logic');
-            $erp_stockin_logic->addErpIn($pass_reduce_ids);
+            /**********以下是刘广平优化代码***********/
+            //修改erp采购正品退货 状态 和 实际收货量
+            $distribution_logic = A('Erp/PurchaseOut','Logic');        
+            $distribution_logic->upPurchaseOutStatus($pass_reduce_ids);
+
+            //调拨处理逻辑
+            $distribution_logic = A('Erp/Transfer','Logic');        
+            $distribution_logic->transferHandle($pass_reduce_ids);
+
         }
 
         $this->msgReturn(true, '已完成', '', U('over'));
