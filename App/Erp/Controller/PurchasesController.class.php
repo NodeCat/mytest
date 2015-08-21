@@ -12,7 +12,6 @@ class PurchasesController extends CommonController
     //显示数据列表
     protected function lists()
     {
-        $p_sku_info = getSkuInfoByCodeArray(array('1001575'));
         //获得仓库信息
         $this->warehouse = M('warehouse')->field('id,name')->select();
 
