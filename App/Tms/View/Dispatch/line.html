@@ -99,7 +99,6 @@
        }); 
        polyline.setMap(map);
      })();
-
     //添加侧边控制条
     map.plugin(["AMap.ToolBar"],function(){   
     toolBar = new AMap.ToolBar();
@@ -122,12 +121,21 @@
         position:new AMap.LngLat("{$addr['lng']}","{$addr['lat']}"),
       });
       marker{$i}.setMap(map);
-      marker{$i}.setTitle("{$addr['address']}");
+      marker{$i}.setTitle("{$addr['address']}   签收时间:{$addr['sign_time']}");
+      var infoWindow{$i} = new AMap.InfoWindow({
+            content:"<h5><font face='微软雅黑'color='#3366FF'>"+ "{$addr['address']}" +"</font></h5>" + "<span>签收时间：" + "{$addr['sign_time']}</span>",
+                size:new AMap.Size(250,0),
+                autoMove:true,
+                offset:new AMap.Pixel(0,-20)
+      });
+      var info = function(e){infoWindow{$i}.open(map,marker{$i}.getPosition());};
+      AMap.event.addListener(marker{$i}, "mouseover", info);
+
       <if condition="$addr['color_type'] eq 2">
         marker{$i}.id  = "{$addr['user_id']}";
         marker{$i}.lng = "{$addr['lng']}";
         marker{$i}.lat = "{$addr['lat']}";
-        //marker{$i}.setAnimation('AMAP_ANIMATION_BOUNCE');
+        marker{$i}.setAnimation('AMAP_ANIMATION_BOUNCE');
         update(marker{$i});
       </if>
       </volist>
@@ -185,6 +193,7 @@ function update(obj)
   AMap.event.addListener(obj,'dragstart',function(e){
     lng = e.lnglat.getLng();
     lat = e.lnglat.getLat();
+    this.setAnimation(false);
     this.setPosition(new AMap.LngLat(lng,lat));
   });
   AMap.event.addListener(obj,'dragend',function(e){

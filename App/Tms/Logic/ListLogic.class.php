@@ -46,14 +46,7 @@ class ListLogic{
         if($dist_id == '') {
             return FALSE;
         }
-            $M = M('tms_delivery');
             $map['dist_id'] = $dist_id;
-            $start_date = date('Y-m-d',NOW_TIME);
-            $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
-            $res = $M->where($map)->find();
-            unset($map['created_time']);
-            $map['order_by'] = array('created_time' => 'DESC');
             $A = A('Tms/Dist','Logic');
             $bills = $A->billOut($map);
             $orders = $bills['orders'];
@@ -63,7 +56,7 @@ class ListLogic{
             $sign_finished  = 0;  //已完成
             $sum_deal_price = 0;  //司机回款统计
             $back_lists     = array(); //退货清单
-            foreach ($orders as $key => $value) {
+            foreach ($orders as $value) {
                 $value = $value['order_info'];
                 $all_orders++;
                 // 统计实收货款和签收未收订单 
@@ -74,29 +67,29 @@ class ListLogic{
                             $value['deal_price'] = 0;
                         }
                         $sum_deal_price += $value['deal_price'];//统计回款数
-                        foreach ($value['detail'] as $key1 => $value1) {
-                            $back_quantity = $value1['quantity']-$value1['actual_quantity'];
+                        foreach ($value['detail'] as $val) {
+                            $back_quantity = $val['quantity']-$val['actual_quantity'];
                             if ($back_quantity != 0) {
-                                if(array_key_exists($value1['sku_number'],$back_lists)){
-                                    $back_lists[$value1['sku_number']]['quantity'] += $back_quantity;
+                                if(isset($back_lists[$val['sku_number']])){
+                                    $back_lists[$val['sku_number']]['quantity'] += $back_quantity;
                                 } else {
-                                $back_lists[$value1['sku_number']]['quantity'] = $back_quantity;
+                                $back_lists[$val['sku_number']]['quantity'] = $back_quantity;
                                 }   
-                                $back_lists[$value1['sku_number']]['unit_id'] = $value1['unit_id'];
-                                $back_lists[$value1['sku_number']]['name']    = $value1['name'];
+                                $back_lists[$val['sku_number']]['unit_id'] = $val['unit_id'];
+                                $back_lists[$val['sku_number']]['name']    = $val['name'];
                             }
                         }
                         break;
                     case '已退货':
                         $unsign_orders++;
-                        foreach ($value['detail'] as $key1 => $value1) {
-                            if(array_key_exists($value1['sku_number'],$back_lists)){
-                                $back_lists[$value1['sku_number']]['quantity'] += (int) $value1['quantity'];
+                        foreach ($value['detail'] as $val) {
+                            if(isset($back_lists[$val['sku_number']])){
+                                $back_lists[$val['sku_number']]['quantity'] += (int) $val['quantity'];
                             }else{
-                                $back_lists[$value1['sku_number']]['quantity'] = (int) $value1['quantity'];
+                                $back_lists[$val['sku_number']]['quantity'] = (int) $val['quantity'];
                             }
-                            $back_lists[$value1['sku_number']]['unit_id'] = $value1['unit_id'];
-                            $back_lists[$value1['sku_number']]['name']    = $value1['name'];
+                            $back_lists[$val['sku_number']]['unit_id'] = $val['unit_id'];
+                            $back_lists[$val['sku_number']]['name']    = $val['name'];
                         }
                         break;
                     case '已完成':
@@ -159,6 +152,7 @@ class ListLogic{
                     $geo['order_id'] = $value['id'];
                     $geo['user_id']  = $values['user_id'];
                     $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                    $geo['sign_time']= $this->getSignTime($values['user_id'],$value['dist_id']);
                     // 只要有一单还没送完颜色就是0
                     if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
                         if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
@@ -195,6 +189,7 @@ class ListLogic{
                         $geo = $value['geo'];
                         $geo['address'] = $value['name'];
                         $geo['color_type'] = $value['color_type'];
+                        $geo['sign_time']  = $value['sign_time'];
                         $geo_array[]   = $geo;
                     }
                 }
@@ -235,6 +230,29 @@ class ListLogic{
         $secs = $remain%60;
         $res = array("day" => $days,"hour" => $hours,"min" => $mins,"sec" => $secs);
         return $res;
+    }
+
+    /**
+     * 获取配送单司机签收时间
+     * @param  string $customer_id  用户id
+     * @param  string $dist_id      配送单id
+     * @return string $sign_time    返回签收时间
+     * @author   jt
+     */
+    public function getSignTime($customer_id,$dist_id)
+    {   
+        if(empty($customer_id) || empty($dist_id)) {
+            return '';
+        }
+            $res = M('stock_bill_out')
+                ->alias('b')
+                ->field('d.sign_time')
+                ->join('stock_wave_distribution_detail d ON b.id = d.bill_out_id')
+                ->where(array('b.customer_id' => $customer_id,'d.pid' => $dist_id))
+                ->order('d.sign_time DESC')
+                ->find();
+                
+            return $res['sign_time'];
     }
 
 }
