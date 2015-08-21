@@ -41,11 +41,10 @@ class PurchasesController extends CommonController
         //优化代码如果没选择分类则查本地库
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
             if (!IS_GET || I('p')) {
-                $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm, $offset, $page_size);
+                $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm);
                 if($pro_codeArr){
                     $array = $pro_codeArr['res'];
                 }
-                //$count          = $pro_codeArr['count'];
                 $data           = $array;
             }
         }else{
@@ -63,8 +62,6 @@ class PurchasesController extends CommonController
             if($pro_codeArr){
                 $array = $pro_codeArr;
             }
-            //$count          = count($array);
-            //$data           = array_splice($array, $offset, $page_size);
             $data = $array;
 
         }
@@ -220,7 +217,7 @@ class PurchasesController extends CommonController
         header("Content-Transfer-Encoding: binary");
         header('Accept-Ranges: bytes');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition:attachment;filename = Insales-".date('Y-m-d-H-i-s',time()).".xlsx");
+        header("Content-Disposition:attachment;filename = PurchaseQty-".date('Y-m-d-H-i-s',time()).".xlsx");
         header('Cache-Control: max-age=0');
         header("Pragma:no-cache");
         header("Expires:0");
@@ -280,8 +277,7 @@ class PurchasesController extends CommonController
                 $tmp_arr[$keys]['c_purchase_qty'] = f_add($tmp_arr[$keys]['c_purchase_qty'], $c_purchase_qty);
                 $result_arr[$tmp_arr[$keys]['index']]['sub']['c_purchase_qty']    = $tmp_arr[$keys]['c_purchase_qty'];
             }
-            //父sku
-            //子sku
+            //父sku详细赋值
             $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['ratio']      = $val['ratio'];
             $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['wh_name']    = $val['wh_name'];
             $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['pro_code']   = $val['pro_code'];
