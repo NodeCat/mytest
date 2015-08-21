@@ -39,9 +39,7 @@ class PurchasesController extends CommonController
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
             if (!IS_GET || I('p') || ($type == 'all')) {
                 $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm, $offset, $page_size);
-
                 if($pro_codeArr){
-
                     $array = $pro_codeArr['res'];
                 }
                 //$count          = $pro_codeArr['count'];
@@ -60,7 +58,6 @@ class PurchasesController extends CommonController
                 }
             }
             if($pro_codeArr){
-
                 $array = $pro_codeArr;
             }
             //$count          = count($array);
@@ -91,7 +88,6 @@ class PurchasesController extends CommonController
             }
             foreach ($c_val['detail'] as $p_val) {
                 $p_sku[] = $p_val['pro_code'];
-            
             }
         }
         //获取父SKU名称和规格
@@ -117,18 +113,15 @@ class PurchasesController extends CommonController
      */
     public function exportPurchases()
     {
-        
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
         }
-        
         $wh_id              = (I('wh_id')== '全部')?'':I('wh_id');
         $cat_1              = I('cat_1');
         $cat_2              = I('cat_2');
         $cat_3              = I('cat_3');
         $delivery_date      = I('delivery_date');
         $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
-
         //获取sku 第三级分类id
         $param = array();
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
@@ -156,7 +149,6 @@ class PurchasesController extends CommonController
         if(!$pro_codeArr){
             $this->msgReturn(false, '导出数据为空！');
         }
-
         /****刘广平优化20150820****/
         $result_arr = array();
         $result_arr = $this->dataHandle($pro_codeArr, $delivery_date,$delivery_ampm);
@@ -240,7 +232,6 @@ class PurchasesController extends CommonController
         $tmp_arr    = array();
         $result_arr = array();
         foreach ($data as $index => $val) {
-            
             $keys = $val['c_pro_code'] .'_join_'.$val['wh_id'];
             //子Sku在库量
             $c_qty = getStockQtyByWpcode($val['c_pro_code'], $val['wh_id']);
@@ -260,7 +251,6 @@ class PurchasesController extends CommonController
                 $result_arr[$index]['sub']['c_in_qty']        = 0.00;
                 //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
                 $result_arr[$index]['sub']['available_qty']   = 0.00;
-
                 //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
                 $result_arr[$index]['sub']['c_purchase_qty']  = 0.00;
             } elseif (!isset($tmp_arr[$keys])) {
@@ -277,16 +267,15 @@ class PurchasesController extends CommonController
                 $result_arr[$index]['sub']['c_purchase_qty']  = $tmp_arr[$keys]['c_purchase_qty'];
             }else {
                 $tmp_arr[$keys]['key_num'] ++;
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['rowspan']          = $tmp_arr[$keys]['key_num'];
+                $result_arr[$tmp_arr[$keys]['index']]['sub']['rowspan']           = $tmp_arr[$keys]['key_num'];
                 $tmp_arr[$keys]['available_qty'] = f_add($tmp_arr[$keys]['available_qty'], $c_qty_count);
                 //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['available_qty']    = $tmp_arr[$keys]['available_qty'];
+                $result_arr[$tmp_arr[$keys]['index']]['sub']['available_qty']     = $tmp_arr[$keys]['available_qty'];
                 //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
                 $c_purchase_qty = f_sub($requirement_qty,$c_qty_count);
                 $tmp_arr[$keys]['c_purchase_qty'] = f_add($tmp_arr[$keys]['c_purchase_qty'], $c_purchase_qty);
                 $result_arr[$tmp_arr[$keys]['index']]['sub']['c_purchase_qty']    = $tmp_arr[$keys]['c_purchase_qty'];
             }
-
             //父sku
             //子sku
             $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['ratio']      = $val['ratio'];
@@ -297,7 +286,7 @@ class PurchasesController extends CommonController
             //父采购量
             $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['purchase_num'] = f_sub($down_qty, $p_qty);
             //子Sku总需求量 = 父下单量 x 生产比例;
-            $result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty'] = f_add($requirement_qty,$result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']);
+            $result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']       = f_add($requirement_qty,$result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']);
         }
         return $result_arr;
     }
