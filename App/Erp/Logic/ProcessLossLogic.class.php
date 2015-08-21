@@ -17,7 +17,7 @@ class ProcessLossLogic
      * @param $location_ids  加工损耗区ID
      * @return array
      */
-    public function getStockLoss($code, $start_time, $end_time, $location_ids, $wh_id)
+    public function getStockLoss($c_code, $p_code, $start_time, $end_time, $location_ids, $wh_id)
     {
         //根据条件查找加工单 和加工单详情
         if (!empty($start_time) && !empty($end_time)) {
@@ -28,6 +28,7 @@ class ProcessLossLogic
             $map['erp_process.wh_id'] = $wh_id;
         }
         $map['erp_process_sku_relation.is_deleted'] = 0;
+        $map['erp_process_detail.p_pro_code'] = array('in', $p_code);
         $process_detail_info = M('erp_process')
         ->join('INNER JOIN erp_process_detail ON erp_process.id=erp_process_detail.pid')
         ->join('INNER JOIN erp_process_sku_relation ON erp_process_detail.p_pro_code=erp_process_sku_relation.p_pro_code')

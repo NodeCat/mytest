@@ -62,37 +62,48 @@ class ProcessLossController extends CommonController
      * @param $data 加工区所有的sku数据
      */
     public function after_lists(&$data) {
-        $pro_code = array();
-        //格式化状态
-        foreach ($data as $key => &$value) {
-            $pro_code[] = $value['c_pro_code'];
-            $value['c_pro_num'] = bcmul($value['p_pro_num'], $value['ratio'], 2);
-        }
+        if(!IS_GET || I('p')){
+            $query = I('query');
+            $c_pro_code = array();
+            $p_pro_code = array();
+            //格式化状态
+            foreach ($data as $key => &$value) {
+                $c_pro_code[] = $value['c_pro_code'];
+                $p_pro_code[] = $value['p_pro_code'];
+                $value['c_pro_num'] = bcmul($value['p_pro_num'], $value['ratio'], 2);
+            }
 
-        $start_time = $_POST['query']['erp_process.created_time'];
-        $end_time   = $_POST['query']['erp_process.created_time_1'];
+            $start_time = $query['erp_process.created_time'];
+            $end_time   = $query['erp_process.created_time_1'];
 
-        if (empty($start_time)) {
-            $start_time = I('get.created_time');
-            $end_time   = I('get.created_time_1');
-        }
+            if (empty($start_time)) {
+                $start_time = I('get.created_time');
+                $end_time   = I('get.created_time_1');
+            }
 
-        $wh_id = $_POST['query']['erp_process.wh_id'];
+            $wh_id = $query['erp_process.wh_id'];
 
-        $code   = implode(',', $pro_code);
-        $logic  = D('ProcessLoss', 'Logic');
-        $location_ids = $logic->getLocationList('XA-001',$wh_id);          //获取所有加工损耗区ID
-        $data = $logic->getStockLoss($code, $start_time, $end_time, $location_ids, $wh_id);
-        
-        foreach ($data as $key => $val) {
-            //损耗率
-            $loss_ratio                  = bcdiv($data[$key]['c_loss_number'], bcadd($val['c_pro_num'], $data[$key]['c_loss_number'], 2), 2);
-            $data[$key]['loss_ratio']    = bcmul($loss_ratio, 100, 2).'%';
-            //原料损耗成本
-            $c_loss_amount               = bcmul(bcdiv($data[$val['c_pro_code']]['total_amount'], $data[$val['c_pro_code']]['c_loss_number'], 2), $loss_ratio, 2);
-            $data[$key]['y_loss_amount'] = $c_loss_amount;
-            //成品损耗成本
-            $data[$key]['c_loss_amount'] = bcmul($data[$key]['y_loss_amount'], $val['ratio'], 2);
+            $c_code   = implode(',', $c_pro_code);
+            $p_code   = implode(',', $p_pro_code);
+            $logic  = D('ProcessLoss', 'Logic');
+            //获取所有加工损耗区ID
+            $location_ids = $logic->getLocationList('XA-001',$wh_id);
+            $data = $logic->getStockLoss($c_code, $p_code, $start_time, $end_time, $location_ids, $wh_id);
+
+            foreach ($data as $key => $val) {
+                //损耗率
+                $loss_ratio                  = bcdiv($data[$key]['c_loss_number'], bcadd($val['c_pro_num'], $data[$key]['c_loss_number'], 2), 2);
+                $data[$key]['loss_ratio']    = bcmul($loss_ratio, 100, 2).'%';
+                //原料损耗成本
+                $c_loss_amount               = bcmul(bcdiv($data[$val['c_pro_code']]['total_amount'], $data[$val['c_pro_code']]['c_loss_number'], 2), $loss_ratio, 2);
+                $data[$key]['y_loss_amount'] = $c_loss_amount;
+                //成品损耗成本
+                $data[$key]['c_loss_amount'] = bcmul($data[$key]['y_loss_amount'], $val['ratio'], 2);
+            }
+        }else{
+            $data = '';
+            $this->page(0);
+            exit;
         }
     }
 
