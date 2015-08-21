@@ -345,7 +345,8 @@ class DistributionLogic {
                 //累加库存量集合
                 $total_stock_qty=0;
                 foreach($stock_infos as $stock_info){
-                    $total_stock_qty += ($stock_info['stock_qty'] - $stock_info['assign_qty']);
+                    $tmp = bcsub($stock_info['stock_qty'],$stock_info['assign_qty'],2);
+                    $total_stock_qty = bcadd($total_stock_qty,$tmp,2);
                 }
                 $sku_qty[$pro_code] = $total_stock_qty;
             }
