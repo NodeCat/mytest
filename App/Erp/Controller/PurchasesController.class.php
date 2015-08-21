@@ -43,7 +43,7 @@ class PurchasesController extends CommonController
             if (!IS_GET || I('p')) {
                 $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm);
                 if($pro_codeArr){
-                    $array = $pro_codeArr['res'];
+                    $array = $pro_codeArr;
                 }
                 $data           = $array;
             }
