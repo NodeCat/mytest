@@ -27,6 +27,11 @@ class PurchasesController extends CommonController
         $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
         $type               = I('type');
 
+        if (!IS_GET || I('p') || ($type == 'all')) {
+            if (!$delivery_date) {
+                $this->msgReturn(false, '请选择配送日期');
+            }
+        }
         //获取sku 第三级分类id
         $param = array();
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
@@ -122,6 +127,7 @@ class PurchasesController extends CommonController
         $cat_3              = I('cat_3');
         $delivery_date      = I('delivery_date');
         $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
+
         //获取sku 第三级分类id
         $param = array();
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
