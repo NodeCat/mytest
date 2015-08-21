@@ -7,14 +7,14 @@ return array(
 	'URL_MODEL'			=> 2,
 	'SHOW_PAGE_TRACE' => FALSE,
 	//Database
-	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型
+/*	'DB_TYPE'   		=> 	'mysql', 	// 数据库类型
 	'DB_HOST'   		=> 	'123.59.54.246',// 服务器地址
 	//'DB_HOST'   		=> 	'127.0.0.1',
 	'DB_NAME'   		=> 	'wms', 	// 数据库名
 	'DB_USER'   		=> 	'root',
 	'DB_PWD'    		=> 	'42C23744C955C90E30F78CF5053137', 	// 密码	
 	'DB_PORT'   		=> 	3306, 		// 端口
-	'DB_PREFIX' 		=> 	'',  // 数据库表前缀
+	'DB_PREFIX' 		=> 	'',  // 数据库表前缀*/
 	'URL_CASE_INSENSITIVE' => TRUE,
 	'DEFAULT_FILTER' => 'strip_tags,htmlspecialchars,trim',
 );

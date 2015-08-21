@@ -201,6 +201,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $value['line_name'] = $lines;// 保存路线
             $lines = NULL;// 清空上一配送单路线    
         }
+        unset($value);
         for($j  = 0;$j<count($sign_lists) ; ++$j){
             $i  = 1;
             foreach ($columns as $key  => $value){
