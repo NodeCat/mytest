@@ -224,6 +224,23 @@ class SettlementController extends CommonController
                 }
             }
 
+            //根据erp_purchase_in_detail 的id，查询与之相匹配的采购单号和到货单号一样的一组数据
+            $stock_new = array();
+            foreach($stock as $k => $val){
+                $map['id'] = $val;
+                $purchase_in_detail_info = M('erp_purchase_in_detail')->field('purchase_code,stock_in_code')->where($map)->find();
+                unset($map);
+
+                $purchase_in_detail_group_info = M('erp_purchase_in_detail')->field('id')->where($purchase_in_detail_info)->select();
+                unset($purchase_in_detail_info);
+
+                foreach($purchase_in_detail_group_info as $key => $value){
+                    $stock_new[] = $value['id'];
+                }
+            }
+
+            $stock = $stock_new;
+
             $sn = get_sn('settlement');
             $logic  = D('Settlement', 'Logic');
             $result = $logic->saveData($partner_id, $total_amount, $bill_number, $bill_amount, $sn, $paid, $stock, $refund, $purchaseOut);
@@ -326,6 +343,21 @@ class SettlementController extends CommonController
                 $result1 = $logic->getStockInList($map);
                 $result2 = $logic->getRefundList($map);
                 $result3 = $logic->getPurchaseOutList($map);
+
+                //入库单需要过滤重复的code字段
+                $tmp = array();
+                $result1_new = array();
+                foreach($result1 as $key => $val){
+                    if(!isset($tmp[$val['code']])){
+                        $tmp[$val['code']] = true;
+                        $result1_new[$val['code']] = $val;
+                    }else{
+                        unset($returnArray[$key]);
+                        $result1_new[$val['code']]['paid_amount'] = bcadd($result1_new[$val['code']]['paid_amount'], $val['paid_amount'], 2);
+                    }
+                }
+
+                $result1 = $result1_new;
 
                 $returnArray = array_merge($result, $result1, $result2, $result3);
             }

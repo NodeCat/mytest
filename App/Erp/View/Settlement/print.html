@@ -55,7 +55,7 @@
 <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
   <thead>
   	<tr>
-  		<td>单据号</td><td>单据类型</td><td>付款方式</td><td>采购时间</td><td>入库时间</td><td>货品号</td><td>货品名称</td><td>货品单价</td><td>货品数量</td><td>结算金额</td>
+  		<td>单据号</td><td>单据类型</td><td>付款方式</td><td>采购时间</td><td>入库时间</td><td>入库员</td><td>货品号</td><td>货品名称</td><td>货品单价</td><td>货品数量</td><td>结算金额</td>
   	</tr>
   </thead>
 
@@ -81,6 +81,7 @@
         </td>
         <td>{$vo.purchase_time}</td>
         <td>{$vo.stock_in_time}</td>
+        <td>{$vo.nickname}</td>
         <td>{$vo.pro_code}</td>
         <td>{$vo.pro_name}</td>
         <td>{$vo.price_unit}</td>
