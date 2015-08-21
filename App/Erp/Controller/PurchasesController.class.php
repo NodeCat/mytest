@@ -217,7 +217,7 @@ class PurchasesController extends CommonController
         header("Content-Transfer-Encoding: binary");
         header('Accept-Ranges: bytes');
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition:attachment;filename = PurchaseQty-".date('Y-m-d-H-i-s',time()).".xlsx");
+        header("Content-Disposition:attachment;filename = PurchaseQty_".date('YmdHis',time()).".xlsx");
         header('Cache-Control: max-age=0');
         header("Pragma:no-cache");
         header("Expires:0");
