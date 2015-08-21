@@ -12,7 +12,7 @@ class FmsController extends \Common\Controller\AuthController{
         $map['status']  = '8';//已装车
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $map['driver_name'] = session('user.username');
-        $map['driver_mobile'] = session('user.mobile');
+        $map['driver_mobile'] = '.';
         $map['suborder_id'] = $id;
         $A->debug = true;
         dump($map);
