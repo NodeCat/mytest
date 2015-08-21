@@ -200,7 +200,7 @@ class DistDriver extends Controller {
             $this->error = '提货失败,提货码不能为空';
         }
         if (empty($this->error)) {
-            $res = array('status' =>'1', 'message' => '提货成功','code' => session('user.id'),'tyep' => 0);
+            $res = array('status' =>'1', 'message' => '提货成功','code' => session('user.id'));
         } else {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);
