@@ -53,6 +53,9 @@ class DispatchController extends \Common\Controller\AuthController{
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as &$value) {
             $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            if ($value['wh_id']) {
+                $value['warehouse'] = $this->warehouse[$value['wh_id']];
+            }
             $value['car_type']  = $this->carType[$value['car_type']];
             $value['car_from']  = $this->carFrom[$value['car_from']];
             $map['mobile']      = $value['mobile'];
