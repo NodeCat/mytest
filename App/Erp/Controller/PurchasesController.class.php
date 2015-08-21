@@ -27,7 +27,6 @@ class PurchasesController extends CommonController
         $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
         $type               = I('type');
 
-
         //获取sku 第三级分类id
         $param = array();
         $param['top'] = ($cat_1 == '全部')?'':$cat_1;
@@ -45,13 +44,10 @@ class PurchasesController extends CommonController
 
                     $array = $pro_codeArr['res'];
                 }
-
                 //$count          = $pro_codeArr['count'];
                 $data           = $array;
             }
-
         }else{
-            
             $categoryLogic = A('Category', 'Logic');
             $categoryChild = $categoryLogic->getPidBySecondChild($param);
             $pro_codeArr   = array();
@@ -63,12 +59,10 @@ class PurchasesController extends CommonController
                     $pro_codeArr = $purchasesLogic->getSkuInfoByWhId($result, $wh_id, $delivery_date, $delivery_ampm);
                 }
             }
-            
             if($pro_codeArr){
 
                 $array = $pro_codeArr;
             }
-
             //$count          = count($array);
             //$data           = array_splice($array, $offset, $page_size);
             $data = $array;
@@ -83,68 +77,8 @@ class PurchasesController extends CommonController
         $maps['delivery_date']  = $delivery_date;
         $maps['delivery_ampm']  = $delivery_ampm;
         /****刘广平优化20150820****/
-        $tmp_arr    = array();
         $result_arr = array();
-        foreach ($data as $index => $val) {
-            
-            $keys = $val['c_pro_code'] .'_join_'.$val['wh_id'];
-            //子Sku在库量
-            $c_qty = getStockQtyByWpcode($val['c_pro_code'], $val['wh_id']);
-            //父在在库量
-            $p_qty = getStockQtyByWpcode($val['pro_code'], $val['wh_id']);
-            //需要生产子的量 = 父在在库量 x 生产比例;
-            $c_qty_count = f_mul($p_qty,$val['ratio']);
-            //父下单量
-            $down_qty = getDownOrderNum($val['pro_code'],$delivery_date,$delivery_ampm,$val['wh_id']);
-            //子Sku总需求量 = 父下单量 x 生产比例; 
-            $requirement_qty = f_mul($down_qty,$val['ratio']);
-            if (!$val['c_pro_code']) {
-                $tmp_arr[$keys]['key_num']                    = 1;
-                $tmp_arr[$keys]['index']                      = $index;
-                $result_arr[$index]['sub']['c_pro_code']      = $val['c_pro_code'];
-                $result_arr[$index]['sub']['rowspan']         = 1;
-                $result_arr[$index]['sub']['c_in_qty']        = 0.00;
-                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $result_arr[$index]['sub']['available_qty']   = 0.00;
-
-                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
-                $result_arr[$index]['sub']['c_purchase_qty']  = 0.00;
-            } elseif (!isset($tmp_arr[$keys])) {
-                $tmp_arr[$keys]['key_num']                    = 1;
-                $tmp_arr[$keys]['index']                      = $index;
-                $result_arr[$index]['sub']['c_pro_code']      = $val['c_pro_code'];
-                $result_arr[$index]['sub']['rowspan']         = 1;
-                $result_arr[$index]['sub']['c_in_qty']        = $c_qty;
-                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $tmp_arr[$keys]['available_qty']              = f_add($c_qty_count, $c_qty);
-                $result_arr[$index]['sub']['available_qty']   = $tmp_arr[$keys]['available_qty'];
-                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
-                $tmp_arr[$keys]['c_purchase_qty']             = f_sub($requirement_qty,$tmp_arr[$keys]['available_qty']);
-                $result_arr[$index]['sub']['c_purchase_qty']  = $tmp_arr[$keys]['c_purchase_qty'];
-            }else {
-                $tmp_arr[$keys]['key_num'] ++;
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['rowspan']          = $tmp_arr[$keys]['key_num'];
-                $tmp_arr[$keys]['available_qty'] = f_add($tmp_arr[$keys]['available_qty'], $c_qty_count);
-                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['available_qty']    = $tmp_arr[$keys]['available_qty'];
-                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
-                $c_purchase_qty = f_sub($requirement_qty,$c_qty_count);
-                $tmp_arr[$keys]['c_purchase_qty'] = f_add($tmp_arr[$keys]['c_purchase_qty'], $c_purchase_qty);
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['c_purchase_qty']    = $tmp_arr[$keys]['c_purchase_qty'];
-            }
-
-            //父sku
-            //子sku
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['ratio']      = $val['ratio'];
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['wh_name']    = $val['wh_name'];
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['pro_code']   = $val['pro_code'];
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['p_in_qty']   = $p_qty;
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['p_down_qty'] = $down_qty;
-            //父采购量
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['purchase_num'] = f_sub($down_qty, $p_qty);
-            //子Sku总需求量 = 父下单量 x 生产比例;
-            $result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty'] = f_add($requirement_qty,$result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']);
-        }
+        $result_arr = $this->dataHandle($data, $delivery_date,$delivery_ampm);
         $data           = array();
         $count          = count($result_arr);
         $data           = array_splice($result_arr, $offset, $page_size);
@@ -173,7 +107,6 @@ class PurchasesController extends CommonController
                 $c_val['p_pro_attrs']   = $p_sku_info[$c_val['pro_code']]['pro_attrs_str'];
             }
         }
-        //dump($data);die;
         $this->data = $data;
         $template= IS_AJAX ? 'list':'index';
         $this->page($count,$maps,$template);
@@ -182,7 +115,8 @@ class PurchasesController extends CommonController
     /**
      * 采购需求数据存导出
      */
-    public function exportPurchases() {
+    public function exportPurchases()
+    {
         
         if (!IS_GET) {
             $this->msgReturn(false, '未知错误');
@@ -224,76 +158,8 @@ class PurchasesController extends CommonController
         }
 
         /****刘广平优化20150820****/
-        $tmp_arr    = array();
         $result_arr = array();
-        foreach ($pro_codeArr as $index => $val) {
-            
-            $keys = $val['c_pro_code'] .'_join_'.$val['wh_id'];
-            //子Sku在库量
-            $c_qty = getStockQtyByWpcode($val['c_pro_code'], $val['wh_id']);
-            //父在在库量
-            $p_qty = getStockQtyByWpcode($val['pro_code'], $val['wh_id']);
-            //需要生产子的量 = 父在在库量 x 生产比例;
-            $c_qty_count = f_mul($p_qty,$val['ratio']);
-            //父下单量
-            $down_qty = getDownOrderNum($val['pro_code'],$delivery_date,$delivery_ampm,$val['wh_id']);
-            //子Sku总需求量 = 父下单量 x 生产比例; 
-            $requirement_qty = f_mul($down_qty,$val['ratio']);
-            if (!$val['c_pro_code']) {
-                $tmp_arr[$keys]['key_num']                    = 1;
-                $tmp_arr[$keys]['index']                      = $index;
-                $result_arr[$index]['sub']['c_pro_code']      = $val['c_pro_code'];
-                $result_arr[$index]['sub']['rowspan']         = 1;
-                $result_arr[$index]['sub']['c_in_qty']        = 0;
-                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $result_arr[$index]['sub']['available_qty']   = 0;
-
-                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
-                $result_arr[$index]['sub']['c_purchase_qty']  = 0;
-            } elseif (!isset($tmp_arr[$keys])) {
-                $tmp_arr[$keys]['key_num']                    = 1;
-                $tmp_arr[$keys]['index']                      = $index;
-                $result_arr[$index]['sub']['c_pro_code']      = $val['c_pro_code'];
-
-                $result_arr[$index]['sub']['rowspan']         = 1;
-                
-                $result_arr[$index]['sub']['c_in_qty']        = $c_qty;
-                
-                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $tmp_arr[$keys]['available_qty']              = f_add($c_qty_count, $c_qty);
-                $result_arr[$index]['sub']['available_qty']   = $tmp_arr[$keys]['available_qty'];
-
-                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
-                $tmp_arr[$keys]['c_purchase_qty']             = f_sub($requirement_qty,$tmp_arr[$keys]['available_qty']);
-                $result_arr[$index]['sub']['c_purchase_qty']  = $tmp_arr[$keys]['c_purchase_qty'];
-            }else {
-                $tmp_arr[$keys]['key_num'] ++;
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['rowspan']          = $tmp_arr[$keys]['key_num'];
-                $tmp_arr[$keys]['available_qty'] = f_add($tmp_arr[$keys]['available_qty'], $c_qty_count);
-                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['available_qty']    = $tmp_arr[$keys]['available_qty'];
-                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
-                $c_purchase_qty = f_sub($requirement_qty,$c_qty_count);
-                $tmp_arr[$keys]['c_purchase_qty'] = f_add($tmp_arr[$keys]['c_purchase_qty'], $c_purchase_qty);
-                $result_arr[$tmp_arr[$keys]['index']]['sub']['c_purchase_qty']    = $tmp_arr[$keys]['c_purchase_qty'];
-
-            }
-
-            //父sku
-            //子sku
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['ratio']      = $val['ratio'];
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['wh_name']    = $val['wh_name'];
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['pro_code']   = $val['pro_code'];
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['p_in_qty']   = $p_qty;
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['p_down_qty'] = $down_qty;
-            //父采购量
-            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['purchase_num'] = f_sub($down_qty, $p_qty);
-
-            //子Sku总需求量 = 父下单量 x 生产比例;
-            $result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty'] = f_add($requirement_qty,$result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']);
-
-
-        }
+        $result_arr = $this->dataHandle($pro_codeArr, $delivery_date,$delivery_ampm);
 
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -366,5 +232,73 @@ class PurchasesController extends CommonController
         $objWriter  =  \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007');
         $objWriter->save('php://output');
         
+    }
+    //数据处理
+    public function dataHandle($data, $delivery_date, $delivery_ampm)
+    {
+        /****刘广平优化20150820****/
+        $tmp_arr    = array();
+        $result_arr = array();
+        foreach ($data as $index => $val) {
+            
+            $keys = $val['c_pro_code'] .'_join_'.$val['wh_id'];
+            //子Sku在库量
+            $c_qty = getStockQtyByWpcode($val['c_pro_code'], $val['wh_id']);
+            //父在在库量
+            $p_qty = getStockQtyByWpcode($val['pro_code'], $val['wh_id']);
+            //需要生产子的量 = 父在在库量 x 生产比例;
+            $c_qty_count = f_mul($p_qty,$val['ratio']);
+            //父下单量
+            $down_qty = getDownOrderNum($val['pro_code'],$delivery_date,$delivery_ampm,$val['wh_id']);
+            //子Sku总需求量 = 父下单量 x 生产比例; 
+            $requirement_qty = f_mul($down_qty,$val['ratio']);
+            if (!$val['c_pro_code']) {
+                $tmp_arr[$keys]['key_num']                    = 1;
+                $tmp_arr[$keys]['index']                      = $index;
+                $result_arr[$index]['sub']['c_pro_code']      = $val['c_pro_code'];
+                $result_arr[$index]['sub']['rowspan']         = 1;
+                $result_arr[$index]['sub']['c_in_qty']        = 0.00;
+                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
+                $result_arr[$index]['sub']['available_qty']   = 0.00;
+
+                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
+                $result_arr[$index]['sub']['c_purchase_qty']  = 0.00;
+            } elseif (!isset($tmp_arr[$keys])) {
+                $tmp_arr[$keys]['key_num']                    = 1;
+                $tmp_arr[$keys]['index']                      = $index;
+                $result_arr[$index]['sub']['c_pro_code']      = $val['c_pro_code'];
+                $result_arr[$index]['sub']['rowspan']         = 1;
+                $result_arr[$index]['sub']['c_in_qty']        = $c_qty;
+                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
+                $tmp_arr[$keys]['available_qty']              = f_add($c_qty_count, $c_qty);
+                $result_arr[$index]['sub']['available_qty']   = $tmp_arr[$keys]['available_qty'];
+                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
+                $tmp_arr[$keys]['c_purchase_qty']             = f_sub($requirement_qty,$tmp_arr[$keys]['available_qty']);
+                $result_arr[$index]['sub']['c_purchase_qty']  = $tmp_arr[$keys]['c_purchase_qty'];
+            }else {
+                $tmp_arr[$keys]['key_num'] ++;
+                $result_arr[$tmp_arr[$keys]['index']]['sub']['rowspan']          = $tmp_arr[$keys]['key_num'];
+                $tmp_arr[$keys]['available_qty'] = f_add($tmp_arr[$keys]['available_qty'], $c_qty_count);
+                //子sku总可用量 = (父在在库量 x 生产比例)*n + 子Sku在库量;
+                $result_arr[$tmp_arr[$keys]['index']]['sub']['available_qty']    = $tmp_arr[$keys]['available_qty'];
+                //子Sku采购量 = 子SKU总需求量 - 子SKU总可用量;
+                $c_purchase_qty = f_sub($requirement_qty,$c_qty_count);
+                $tmp_arr[$keys]['c_purchase_qty'] = f_add($tmp_arr[$keys]['c_purchase_qty'], $c_purchase_qty);
+                $result_arr[$tmp_arr[$keys]['index']]['sub']['c_purchase_qty']    = $tmp_arr[$keys]['c_purchase_qty'];
+            }
+
+            //父sku
+            //子sku
+            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['ratio']      = $val['ratio'];
+            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['wh_name']    = $val['wh_name'];
+            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['pro_code']   = $val['pro_code'];
+            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['p_in_qty']   = $p_qty;
+            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['p_down_qty'] = $down_qty;
+            //父采购量
+            $result_arr[$tmp_arr[$keys]['index']]['detail'][$index]['purchase_num'] = f_sub($down_qty, $p_qty);
+            //子Sku总需求量 = 父下单量 x 生产比例;
+            $result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty'] = f_add($requirement_qty,$result_arr[$tmp_arr[$keys]['index']]['sub']['requirement_qty']);
+        }
+        return $result_arr;
     }
 }
