@@ -24,7 +24,6 @@ class PurchasesController extends CommonController
         $cat_3              = I('cat_3');
         $delivery_date      = I('delivery_date');
         $delivery_ampm      = (I('delivery_ampm') == '全天')?'':I('delivery_ampm');
-        $type               = I('type');
 
         if (!IS_GET || I('p')) {
             if (!$delivery_date) {
@@ -41,7 +40,7 @@ class PurchasesController extends CommonController
         $array = array();
         //优化代码如果没选择分类则查本地库
         if(!$param['top'] && !$param['second'] && !$param['second_child']){
-            if (!IS_GET || I('p') || ($type == 'all')) {
+            if (!IS_GET || I('p')) {
                 $pro_codeArr = $purchasesLogic->getSkuInfoByWhIdUp($wh_id, $delivery_date, $delivery_ampm, $offset, $page_size);
                 if($pro_codeArr){
                     $array = $pro_codeArr['res'];
