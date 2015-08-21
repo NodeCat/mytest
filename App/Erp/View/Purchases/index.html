@@ -10,7 +10,7 @@
 		<select class="form-control" name="wh_id" id="wh_ids">
 			<option value="">全部</option>
 			<volist name="warehouse" id="wh">
-				<option value="{$wh.id}">{$wh.name}</option>
+				<option value="{$wh.id}" class="{$wh.action}" {$wh.action}>{$wh.name}</option>
 			</volist>
 		</select>
 		</div>
