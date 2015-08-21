@@ -13,7 +13,15 @@ class PurchasesController extends CommonController
     protected function lists()
     {
         //获得仓库信息
-        $this->warehouse = M('warehouse')->field('id,name')->select();
+        $warehouse = M('warehouse')->field('id,name')->select();
+        //当前所在的仓库
+        $wh_id_now = session('user.wh_id');
+        foreach ($warehouse as &$wh_val) {
+            if ($wh_val['id'] == $wh_id_now) {
+                $wh_val['action'] = 'selected';
+            }
+        }
+        $this->warehouse = $warehouse;
 
         $p                  = I("p",1);
         $page_size          = C('PAGE_SIZE');
