@@ -186,7 +186,7 @@ class ProcessLossController extends CommonController
 
         foreach ($data as $key => $val) {
             //损耗率
-            $loss_ratio                  = bcdiv($data[$key]['c_loss_number'], bcadd($val['c_pro_num'], $data[$key]['c_loss_number'], 2), 2);
+            $loss_ratio                  = bcdiv($data[$key]['c_loss_number'], bcadd($val['c_pro_num'], $data[$key]['c_loss_number'], 2), 4);
             $data[$key]['loss_ratio']    = bcmul($loss_ratio, 100, 2).'%';
             //原料损耗成本
             $c_loss_amount               = bcmul(bcdiv($data[$val['c_pro_code']]['total_amount'], $data[$val['c_pro_code']]['c_loss_number'], 2), $loss_ratio, 2);
