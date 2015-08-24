@@ -37,9 +37,9 @@ class SignInLogic
      * @param  string $reasons [description]
      * @return [type]          [description]
      */
-    public function sendRejectMsg($data = array(),$reasons = '')
+    public function sendRejectMsg($data = array(), $sku = array(), $reasons = '')
     {
-        if (empty($data) || empty($reasons)) {
+        if (empty($data) || empty($sku)) {
             return array(
                 'status' => -1,
                 'msg'    => '参数错误'
@@ -56,26 +56,20 @@ class SignInLogic
             $mobiles[] = $data['bd']['mobile'];
         }
         //产品列表
-        foreach ($data['detail'] as $key => $pro) {
-            if ($key == 0) {
-                $products = $pro['name']; 
-            } else {
-                $products .= ',' . $pro['name'];
-            }
-        }
+        $pro_name = array_column($sku, 'pro_name');
+        $products = implode(',', $pro_name);
         //拒收原因
-        $reasons = json_decode($reasons, 1);
-        foreach ($reasons as $k => $reason) {
-            if ($k == 0) {
-                $reject_reason = $reason;
-            } else {
-                $reject_reason .= ',' . $reason;
-            }
+        if ($reasons === '') {
+            $reject_reason = "将产品“{$products}”部分拒收";
+        } else {
+           $reasons = json_decode($reasons, 1);
+           $reject_reason = implode(',', $reasons);
+           $reject_reason = "将产品“{$products}”拒收，拒收原因：{$reject_reason}";
         }
+        
         //组合内容
         $content = "伙伴们，订单号：{$data['id']}，商圈：{$data['line']}，店铺名称：{$data['shop_name']}，";
-        $content .= "客户姓名：{$data['realname']} 将产品{$products}拒收，";
-        $content .= "拒收原因：{$reject_reason}，电话：{$data['mobile']} 。";
+        $content .= "客户姓名：{$data['realname']}，{$reject_reason}，电话：{$data['mobile']} 。";
         $content .= "请在方便的时候给客户打个电话，了解具体情况，便于各部门改进工作，如果需要请联系在线部做进一步客情维护。";
         $content .= "退订请回复TD";
         $map = array(
