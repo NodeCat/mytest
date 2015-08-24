@@ -67,12 +67,12 @@ class ProcessLossController extends CommonController
             $start_time = $query['erp_process.created_time'];
             $end_time   = $query['erp_process.created_time_1'];
 
-            if (empty($start_time)) {
+            if (empty($start_time) || empty($end_time)) {
                 $start_time = I('get.created_time');
                 $end_time   = I('get.created_time_1');
             }
 
-            $wh_id = $query['erp_process.wh_id'];
+            $wh_id = (!empty($query['erp_process.wh_id'])) ? $query['erp_process.wh_id'] : I('wh_id');
 
             $data = $this->prepareData($data, $start_time, $end_time, $wh_id);
         }else{
