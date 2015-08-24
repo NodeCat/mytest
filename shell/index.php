@@ -1,4 +1,13 @@
 <?php
+function add_attrs($sku_number, $val){
+    $attr = '';
+    foreach($sku_number[$val['pro_code']]['description'] as $value){
+        $attr .= $value['name'].':'.$value['val'].';';
+    }
+
+    return $attr;
+}
+
 set_time_limit(0);
 date_default_timezone_set('PRC');
 error_reporting(E_ERROR);
@@ -76,7 +85,8 @@ while ($start <= $max) {
 
     foreach ($insert_array as $key => $val) {
         $insert_array[$key]['pro_name'] = $sku_number[$val['pro_code']]['name'];
-        $insert_array[$key]['pro_attrs'] = $sku_number[$val['pro_code']]['description'][0]['name'].':'.$sku_number[$val['pro_code']]['description'][0]['val'].';'.$sku_number[$val['pro_code']]['description'][1]['name'].':'.$sku_number[$val['pro_code']]['description'][1]['val'];
+
+        $insert_array[$key]['pro_attrs'] = add_attrs($sku_number, $val);
         $insert_array[$key]['pro_uom'] = $sku_number[$val['pro_code']]['unit_name'];
         $insert_array[$key]['category1'] = $sku_number[$val['pro_code']]['category_info']['top'][0]['id'];
         $insert_array[$key]['category2'] = $sku_number[$val['pro_code']]['category_info']['second'][0]['id'];
@@ -153,7 +163,7 @@ if ($json_res[0] == 200) {
 
 foreach ($insert_array as $key => $val) {
     $insert_array[$key]['pro_name']  = $sku_number[$val['pro_code']]['name'];
-    $insert_array[$key]['pro_attrs'] = $sku_number[$val['pro_code']]['description'][0]['name'].':'.$sku_number[$val['pro_code']]['description'][0]['val'].';'.$sku_number[$val['pro_code']]['description'][1]['name'].':'.$sku_number[$val['pro_code']]['description'][1]['val'];
+    $insert_array[$key]['pro_attrs'] = add_attrs($sku_number, $val);
     $insert_array[$key]['pro_uom']   = $sku_move[$val['pro_code']]['unit_name'];
     $insert_array[$key]['category1'] = $sku_move[$val['pro_code']]['category_info']['top'][0]['id'];
     $insert_array[$key]['category2'] = $sku_move[$val['pro_code']]['category_info']['second'][0]['id'];
