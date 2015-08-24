@@ -279,8 +279,7 @@ class StockLogic{
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
                     $notice_params['pro_code'] = $params['pro_code'];
-                    $notice_params['type'] = '';
-                    $notice_params['qty'] = $stock['stock_qty'];
+                    $notice_params['type'] = 'change';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -338,8 +337,7 @@ class StockLogic{
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
                     $notice_params['pro_code'] = $params['pro_code'];
-                    $notice_params['type'] = '';
-                    $notice_params['qty'] = $stock['stock_qty'];
+                    $notice_params['type'] = 'change';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -404,8 +402,7 @@ class StockLogic{
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
                     $notice_params['pro_code'] = $params['pro_code'];
-                    $notice_params['type'] = '';
-                    $notice_params['qty'] = $diff_qty;
+                    $notice_params['type'] = 'change';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -538,8 +535,7 @@ class StockLogic{
         //通知实时库存接口
         $notice_params['wh_id'] = $wh_id;
         $notice_params['pro_code'] = $pro_code;
-        $notice_params['type'] = '';
-        $notice_params['qty'] = $pro_qty;
+        $notice_params['type'] = 'change';
         A('Dachuwang','Logic')->notice_stock_update($notice_params);
         unset($notice_params);
 
@@ -816,8 +812,7 @@ class StockLogic{
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
             $notice_params['pro_code'] = $param['pro_code'];
-            $notice_params['type'] = '';
-            $notice_params['qty'] = $param['variable_qty'];
+            $notice_params['type'] = 'change';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
             unset($notice_params);
         }
@@ -1030,8 +1025,7 @@ class StockLogic{
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
             $notice_params['pro_code'] = $param['pro_code'];
-            $notice_params['type'] = '';
-            $notice_params['qty'] = $param['variable_qty'];
+            $notice_params['type'] = 'change';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
             unset($notice_params);
         }
@@ -1402,8 +1396,7 @@ class StockLogic{
                 //通知实时库存接口
                 $notice_params['wh_id'] = $params['wh_id'];
                 $notice_params['pro_code'] = $params['pro_code'];
-                $notice_params['type'] = '';
-                $notice_params['qty'] = $stock_info['stock_qty'];
+                $notice_params['type'] = 'change';
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
                 unset($notice_params);
             }

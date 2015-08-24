@@ -21,14 +21,28 @@ class DachuwangLogic{
     * 
     */
     public function notice_stock_update($params = array()){
-        $data = array(
-            0=>array(
-                'picking_type_id' => $params['wh_id'],
-                'product_code' => $params['pro_code'],
+        if($params['type'] == 'change'){
+            $data = array(
                 'type' => $params['type'],
-                'qty' => $params['qty'],
-                ),
-            );
+                'data' => array(
+                    'pro_code' => $params['pro_code'],
+                    'wh_id' => $params['wh_id'],
+                    'msg' => 'change',
+                    ),
+                );
+        }elseif($params['type'] == 'out'){
+            $data = array(
+                'type' => $params['type'],
+                'data' => array(
+                    'pro_code' => $params['pro_code'],
+                    'wh_id' => $params['wh_id'],
+                    'suborder_id' => $params['suborder_ids'],
+                    ),
+                );
+        }else{
+            return false;
+        }
+
         $url = $this->server.'/mall_stock/notice_stock_update';
         $json_data = json_encode($data);
         $result = $this->request->post($url,$json_data);
