@@ -119,24 +119,27 @@
      </tr> 
     </thead> 
     <tbody> 
-    <volist name="data" id="vo" key="k">
+    <volist name="data" id="vo">
+    <volist name="vo.detail" id='vos' key='k'>
      <tr class="list_info_all"> 
-      <td>{$vo.pro_code}</td> 
-      <td>{$vo.p_pro_name}</td>
-      <td>{$vo.p_pro_attrs}</td>
-      <td>{$vo.wh_name}</td>
-      <td>{$vo.p_in_qty}</td>
-      <td>{$vo.p_down_qty}</td>
-      <td>{$vo.purchase_num}</td>
-      <td>{$vo.ratio}</td>
-      <td>{$vo.c_pro_code}</td>
-      <td>{$vo.c_pro_name}</td>
-      <td>{$vo.c_in_qty}</td>
-      <td>{$vo.available_qty}</td>
-      <td>{$vo.requirement_qty}</td>
-      <!-- <td>{$vo.c_pro_code|getProcessByCode=$vo['pro_code'],$vo['wh_id'],$vo['delivery_date'],$vo['delivery_ampm'],###}</td> -->
-      <td>{$vo.c_purchase_qty}</td>
+      <td>{$vos.pro_code}</td> 
+      <td>{$vos.p_pro_name}</td>
+      <td>{$vos.p_pro_attrs}</td>
+      <td>{$vos.wh_name}</td>
+      <td>{$vos.p_in_qty}</td>
+      <td>{$vos.p_down_qty}</td>
+      <td>{$vos.purchase_num}</td>
+      <td>{$vos.ratio}</td>
+      <if condition="$k eq 1">
+        <td rowspan="{$vo.sub.rowspan}">{$vo.sub.c_pro_code}</td>
+        <td rowspan="{$vo.sub.rowspan}">{$vo.sub.c_pro_name}</td>
+        <td rowspan="{$vo.sub.rowspan}">{$vo.sub.c_in_qty}</td>
+        <td rowspan="{$vo.sub.rowspan}">{$vo.sub.available_qty}</td>
+        <td rowspan="{$vo.sub.rowspan}">{$vo.sub.requirement_qty}</td>
+        <td rowspan="{$vo.sub.rowspan}">{$vo.sub.c_purchase_qty}</td>
+      </if>
      </tr>
+     </volist>
     </volist>
      
     </tbody> 

@@ -10,7 +10,7 @@
   <!--***********************信息登记的表单start*********************-->
   <div class="input-group">
       <span class="input-group-addon">手机</span>
-      <input autocomplete="off" value="{$user.mobile}" type="text" class="form-control input-lg input-pda" id="moblie" name="mobile" placeholder="请输入你的手机号码" readonly />
+      <input autocomplete="off" value="{$user.mobile}" type="text" class="form-control input-lg input-pda" id="mobile" name="mobile" placeholder="请输入你的手机号码" />
   </div>
   <br />
   <div class="input-group">
@@ -22,15 +22,16 @@
 
   <div class="input-group">
     <span class="input-group-addon">车牌</span>
-    <input autocomplete="off" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" placeholder="请输入你的车牌号" />
+    <input autocomplete="off" type="text" class="form-control input-lg input-pda" id="car_num" name="car_num" value="{$user.car_num}" placeholder="请输入你的车牌号" />
 
   </div>
   <br />
   <div class="input-group">
     <span class="input-group-addon">车型</span>
-    <select autocomplete="off"  class="form-control input-lg input-pda" value= "{$user.car_type}" id="car_type" name="car_type" placeholder="请输入车型" onchange="check()" style="color:gray">                                   
+    <select autocomplete="off"  class="form-control input-lg input-pda" id="car_type" name="car_type" placeholder="请输入车型" onchange="check()" style="color:gray">
+        <option value="0">请选择车型</option>
         <volist name='carType' id='cars'> 
-        <option value="{$key}">{$cars}</option>
+        <option value="{$key}"  <eq name="user['car_type']" value="$key">selected="true"</eq> >{$cars}</option>
         </volist>
       </select>
 
@@ -38,23 +39,26 @@
   <br />
   <div class="input-group">
     <span class="input-group-addon">平台</span>
-    <select autocomplete="off" type="text" value="{$user.car_form}" class="form-control input-lg input-pda" id="car_from" name="car_from" placeholder="派车平台" onchange="check()" style="color:gray">
+    <select autocomplete="off" class="form-control input-lg input-pda" id="car_from" 
+    name="car_from" placeholder="派车平台" onchange="check()" style="color:gray">
+      <option value="0">请选择派车平台</option>
       <volist name='carFrom' id='cars'> 
-        <option value="{$key}">{$cars}</option>
+        <option value="{$key}" <eq name="user['car_from']" value="$key">selected="true"</eq> >{$cars}</option>
       </volist>
     </select>
   </div>
 
-  <br />
+  <!-- <br />
 
   <div class="input-group">
     <span class="input-group-addon">仓库</span>
-    <select autocomplete="off" value="{$user.warehouse}" type="text" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库" onchange="check()" style="color:gray" >
+    <select autocomplete="off" class="form-control input-lg input-pda" id="warehouse" name="warehouse" placeholder="仓库" onchange="check()" style="color:gray" >
+      <option value="0">请选择仓库</option>
       <volist name='warehouse' id='storge'> 
-        <option  value="{$key}">{$storge}</option>
+        <option  value="{$key}" <eq name="user['warehouse']" value="$key">selected="true"</eq> >{$storge}</option>
       </volist>
     </select>
-  </div>
+  </div> -->
 
   </div>
  </div>
@@ -65,6 +69,10 @@
 <div class="form-group">
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
     <button type="submit" class="btn btn-primary btn-lg btn-block"> 保 存 </button>
+  </div>
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+    <br>
+    <a href="{:U('login')}" class="btn btn-default pull-right btn-lg btn-block">返回</a>
   </div>
 </div>
 <br>
@@ -82,10 +90,36 @@ margin-top: 10px;
 
 </style>
 <script type="text/javascript">
-  if($("#username").val()=='') {
+  if ($("#mobile").val()=='') {
+    mobile.focus();
+  }
+  else if($("#username").val()=='') {
     username.focus();
   }
   else if($("#car_num").val()=='') {
     car_num.focus();
+  }
+  function check(){
+    x=document.getElementById('f');
+    if(x.warehouse.options[0].selected==true){
+      x.warehouse.style.color="gray";
+    }
+    else{
+      x.warehouse.style.color="black";
+    }
+
+    if(x.car_type.options[0].selected==true) {
+      x.car_type.style.color="gray";
+    }
+    else{
+      x.car_type.style.color="black";
+    }
+
+    if(x.car_from.options[0].selected==true) {
+      x.car_from.style.color="gray";
+    }
+    else{
+      x.car_from.style.color="black";
+    }
   }
 </script>

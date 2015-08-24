@@ -158,7 +158,7 @@ class PurchaseOutController extends CommonController {
             'edit'=>array('name'=>'edit', 'show' => isset($this->auth['edit']),'new'=>'true','domain'=>"audit,cancelled,rejected"), //编辑
             'pass'=>array('name'=>'pass' ,'show' => isset($this->auth['pass']),'new'=>'true','domain'=>"audit"),//通过 批准
             'reject'=>array('name'=>'reject' ,'show' => isset($this->auth['reject']),'new'=>'true','domain'=>"audit"),//拒绝 驳回
-            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"audit,rejected")//作废
+            'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"audit,rejected,tbr")//作废
         );
         parent::view();
   }
@@ -366,7 +366,7 @@ class PurchaseOutController extends CommonController {
   public function editStatus($id,$status){
 
       if(!trim($id) || !$status){
-        $this->msgReturn('0','请合法操作');
+          $this->msgReturn('0','请合法操作');
       }
 
       $m = M('stock_purchase_out');
@@ -377,9 +377,20 @@ class PurchaseOutController extends CommonController {
       $save['status'] = $status;
 
       if($m->where($where)->save($save)){
-        $this->msgReturn('1','操作成功！');
+          if($status == 'cancelled'){
+              //将wms中对应的到货单置为已关闭
+              $purchase_out_info = $m->where($where)->find();
+
+              $map['wh_id'] = $purchase_out_info['wh_id'];
+              $map['refer_code'] = $purchase_out_info['rtsg_code'];
+              $data['status'] = 18;
+              M('stock_bill_out')->where($map)->save($data);
+              unset($map);
+              unset($data);
+          }
+          $this->msgReturn('1','操作成功！');
       }else{
-        $this->msgReturn('0','操作失败！');
+          $this->msgReturn('0','操作失败！');
       }
     }
    

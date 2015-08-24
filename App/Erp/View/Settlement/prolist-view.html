@@ -7,7 +7,7 @@
     <div role="tabpanel" class="tab-pane active" id="home">
     	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
   		<thead>
-  			<th>单据号</th><th>单据类型</th><th>付款方式</th><th>采购时间</th><th>入库时间</th><th>货品号</th><th>货品名称</th><th>货品单价</th><th>货品数量</th><th>实际结算金额</th><th>操作</th>
+  			<th>单据号</th><th>单据类型</th><th>付款方式</th><th>采购时间</th><th>入库时间</th><th>人库员</th><th>货品号</th><th>货品名称</th><th>货品单价</th><th>货品数量</th><th>实际结算金额</th><th>操作</th>
   		</thead>
   		<tbody>
       <volist name="pros" id="vo">
@@ -29,15 +29,16 @@
                     <case value="4" break="1">货到付款</case>
                 </switch>
             </td>
-            <td  style="width:20%;" class="text-left p_qty">
+            <td style="width:10%;" class="text-left p_qty">
               {$vo.purchase_time}
             </td>
-            <td>{$vo.stock_in_time}</td>
+            <td style="width:10%;" class="text-left p_qty">{$vo.stock_in_time}</td>
+            <td>{$vo.nickname}</td>
             <td>{$vo.pro_code}</td>
-            <td>{$vo.pro_name}</td>
+            <td style="width:10%;" class="text-left p_qty">{$vo.pro_name}</td>
             <td>{$vo.price_unit}</td>
             <td>{$vo.pro_qty}</td>
-            <td style="width:15%;">
+            <td style="width:10%;">
                 <if condition="$vo.order_type eq 3 OR $vo.order_type eq 4">
                     -{$vo.price_subtotal|sprintf="%.2f",###}
                 <else />

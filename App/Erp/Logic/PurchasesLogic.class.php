@@ -59,7 +59,7 @@ class PurchasesLogic{
                     ->join($join)
                     ->field($filed)
                     ->where($where)
-                    ->group('b.wh_id,d.pro_code,r.c_pro_code');
+                    ->group('b.wh_id,d.pro_code,r.c_pro_code')->order('r.c_pro_code desc');
                 $result = $m->select();
                 
                 if($result){
@@ -73,7 +73,7 @@ class PurchasesLogic{
     }
 
     //采购需求没有选择分类时做逻辑操作
-    public function getSkuInfoByWhIdUp($wh_id,$delivery_date='', $delivery_ampm='', $offset='',$limit=''){
+    public function getSkuInfoByWhIdUp($wh_id,$delivery_date='', $delivery_ampm=''){
         $m               = M();
         $where           = array();
         $where['b.status'] = array('in','1,3');//待生产or波次中
@@ -103,19 +103,10 @@ class PurchasesLogic{
                       ->join($join)
                       ->field($filed)
                       ->where($where)
-                      ->group('b.wh_id,d.pro_code,r.c_pro_code');
+                      ->group('b.wh_id,d.pro_code,r.c_pro_code')->order('r.c_pro_code desc');
 
-
-        if($limit){
-            $m2 = clone $m;//深度拷贝，m2用来统计数量, m 用来select数据。
-            $count = count($m->select());
-            $res = $m2->limit($offset,$limit)->select();
-
-            $result['count'] = $count;
-            $result['res']   = $res;
-        }else{
-            $result = $m->select();
-        }
+        $result = $m->select();
+        
         return $result;
     }
 }
