@@ -11,7 +11,6 @@ class DistDriver extends Controller {
         if (IS_GET) {
             //只显示当天的记录
             $map['mobile'] = session('user.mobile');
-            $this->userid  = M('tms_user')->field('id')->where($map)->find();//传递出userid
             $map['status'] = '1';
             $start_date    = date('Y-m-d',NOW_TIME);
             $end_date      = date('Y-m-d',strtotime('+1 Days'));
@@ -38,7 +37,6 @@ class DistDriver extends Controller {
                 exit;
             }
             $map['dist_id'] = $id;
-            //$map['mobile'] = session('user.mobile');
             $map['status'] = '1';
             $start_date = date('Y-m-d',NOW_TIME);
             $end_date = date('Y-m-d',strtotime('+1 Days'));
@@ -101,14 +99,14 @@ class DistDriver extends Controller {
                 //已配送或已结算的配送单不能认领
                 $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             } elseif (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date)) {
-                    $this->error = '提货失败，该配送单已过期';
+                $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
             if (empty($this->error)) {
                 $data['dist_id']      = $dist['id'];
                 $data['dist_code']    = $dist['dist_code'];
                 $data['mobile']       = session('user.mobile');
-                $data['user_id']       = session('user.id');
+                $data['user_id']      = session('user.id');
                 $data['order_count']  = $dist['order_count'];
                 $data['sku_count']    = $dist['sku_count'];
                 $data['line_count']   = $dist['line_count'];
@@ -126,20 +124,13 @@ class DistDriver extends Controller {
                     $orders = $bills['orders'];
                     unset($map);
                 }
-                //遍历每个订单的取出路线id
-                foreach ($orders as $v) {
-                    $line_id[] = $v['line_id'];
-                }
+                //取出订单路线id
+                $line_id = array_column($orders,'line_id');
                 $line_id = array_unique($line_id);//重复的去掉
                 $lines = $cA->line(array('line_ids'=>$line_id));//取出所有路线
+                $lines = array_column($lines,'name');
                 // 把路线连接起来
-                foreach ($lines as $key => $val) {
-                    if ($key==0) {
-                        $line_names = $val['name'];
-                    } else {
-                        $line_names .= '/' . $val['name'];
-                    }
-                }
+                $line_names = implode('/', array_filter($lines));
                 $data['line_name'] = $line_names;//写入devilery
                 $citys = $cA->city();
                 $data['city_id'] = $citys[$dist['city_id']];
@@ -173,15 +164,12 @@ class DistDriver extends Controller {
                 $map['driver_name'] = session('user.username');
                 $map['driver_mobile'] = session('user.mobile');
                 foreach ($orders as $val) {
-                    $order_ids[] = $val['refer_code'];
+                    //$order_ids[] = $val['refer_code'];
                     $map['suborder_id'] = $val['refer_code'];
                     $res = $cA->set_status($map);
                 }
                 unset($map);
-                $map['status']  = '1';
-                $map['dist_id'] = $id;
-                A('Wms/Distribution', 'Logic')->set_dist_detail_status($map);
-                unset($map);
+                A('Wms/Distribution', 'Logic')->set_dist_detail_status(array('status' => '1','dist_id' => $id));
                 if ($res) {
                     unset($map);
                     $map['pid']        = $id;
@@ -193,47 +181,34 @@ class DistDriver extends Controller {
                     }
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
-                    $M = M('TmsUser'); 
-                    unset($map);                   
-                    $map['mobile'] = session('user.mobile');
-                    $user_data = $M->field('id')->where($map)->order('created_time DESC')->find(); 
-                    unset($map);
-                    $M = M('TmsSignList');
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
                     if ($status=='4') {
                         $map['updated_time'] = $data['updated_time'];
                         $map['created_time'] = $data['created_time'];
-                        $map['userid']       = $user_data['id'];
-                        $M->add($map);
+                        $map['userid']       = session('user.id');
+                        M('TmsSignList')->add($map);
                         unset($map);
                         unset($status);
                     }
-                    $map['created_time'] = array('between',$start_date.','.$end_date);
-                    $map['userid']       =  $user_data['id'];
-                    $sign_id = $M->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
-                    unset($map);
+                    $sign = M('TmsSignList')->field('id')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();//获取最新的签到记录
                     if ($dist['deliver_time']=='1') {
                         $map['period'] = '上午';
                     } elseif ($dist['deliver_time']=='2') {
                         $map['period'] = '下午';
                     }
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
-                    $map['id']            = $sign_id['id'];
-                    $M->save($map); 
-                    unset($map);
+                    $map['id']            = $sign['id'];
+                    M('TmsSignList')->save($map);
                 }
                 else {
-                    $this->error = "提货失败";
+                    $this->error = "提货失败,请重新提货";
                 }
             }
-        }else{
-
-          $this->error = '提货失败,提货码不能为空';
+        } else {
+            $this->error = '提货失败,提货码不能为空';
         }
         if (empty($this->error)) {
-            $map['mobile'] = session('user.mobile');
-            $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code'=>$userid['id'],'tyep' => 0);
+            $res = array('status' =>'1', 'message' => '提货成功','code' => session('user.id'));
         } else {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);
@@ -310,10 +285,10 @@ class DistDriver extends Controller {
                             $val['receivable_sum'] = $sign_in['receivable_sum'];
                             $val['real_sum'] = $sign_in['real_sum'];
                             $v['quantity']  = $sign_in_detail['real_sign_qty'];
-                            $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
+                            $v['sum_price'] = bcmul($sign_in_detail['real_sign_qty'], $sign_in_detail['price_unit'], 2);
                             if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
                                 $v['weight'] = $sign_in_detail['real_sign_wgt'];
-                                $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+                                $v['sum_price']     = bcmul($sign_in_detail['real_sign_wgt'], $sign_in_detail['price_unit'],2);
                             }
                         }
                         else {
@@ -420,7 +395,9 @@ class DistDriver extends Controller {
             $bill_id_details[$val['id']] = $val;
             //应收金额
             $unit_num = isset($weight[$val['id']]) ? $weight[$val['id']] : $quantity[$val['id']];
-            $receivable_sum += $val['order_detail']['price'] * $unit_num;
+
+            $receivable_sum += bcmul($val['order_detail']['price'], $unit_num, 2);
+
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
@@ -479,30 +456,36 @@ class DistDriver extends Controller {
             if($dist_detail['status'] == 2 || $s) {
                 logs($bill_out_id,'已签收'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
                 $cdata = array();
+                $reject_detail = array();
                 //组合一个签收详情数据
                 foreach ($bill_id_details as $detail_id => $detail) {
                     $net_weight = empty($detail['order_detail']['net_weight']) ? 0 : $detail['order_detail']['net_weight'];
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
-                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                    $tmp['delivery_wgt']       = bcmul($detail['delivery_qty'], $net_weight, 2);
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
-                    $tmp['real_sign_wgt']      = $tmp['real_sign_qty'] * $net_weight;
+                    $tmp['real_sign_wgt']      = bcmul($tmp['real_sign_qty'], $net_weight, 2);
                     $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
-                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['price'];
-                    $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
-                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    $tmp['sign_sum']           = bcmul($tmp['real_sign_qty'], $tmp['price_unit'], 2);
+                    $tmp['delivery_sum']       = bcmul($tmp['delivery_qty'], $tmp['price_unit'], 2);
                     if (isset($weight[$detail_id])) {
                         $tmp['real_sign_wgt'] = $weight[$detail_id];
-                        $tmp['sign_sum']      = $tmp['real_sign_wgt'] * $tmp['price_unit'];
-                        $tmp['delivery_sum']  = $tmp['delivery_wgt'] * $tmp['price_unit'];
+                        $tmp['sign_sum']      = bcmul($tmp['real_sign_wgt'], $tmp['price_unit'], 2);
+                        $tmp['delivery_sum']  = bcmul($tmp['delivery_wgt'], $tmp['price_unit'], 2);
                     }
+                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['reject_sum']         = $tmp['delivery_sum'] - $tmp['sign_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
+                    //用于发送部分拒收短信提示
+                    if ($tmp['reject_qty']) {
+                        $detail['reject_qty'] = $tmp['reject_qty'];
+                        $reject_detail[] = $detail;
+                    }
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
@@ -521,7 +504,11 @@ class DistDriver extends Controller {
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
             //给母账户发送短信
-            $sres = A('Tms/SignIn', 'Logic')->sendParentAccountMsg($orderInfo['info']);
+            $sA = A('Tms/SignIn', 'Logic');
+            $sres = $sA->sendParentAccountMsg($orderInfo['info']);
+            if (!empty($reject_detail)) {
+                $rres = $sA->sendRejectMsg($orderInfo['info'], $reject_detail);
+            }
             $json = array('status' => $status, 'msg' => $msg);
             //status:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
@@ -541,7 +528,7 @@ class DistDriver extends Controller {
                 $row['id']= $val;
                 $row['actual_price'] = $price_unit[$key];
                 $row['actual_quantity'] = isset($weight[$key]) ? $weight[$key]: $quantity[$key];
-                $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
+                $row['actual_sum_price'] = bcmul($row['actual_price'], $row['actual_quantity'], 2);
                 $map['order_details'][] = $row;
             }
         }
@@ -629,13 +616,13 @@ class DistDriver extends Controller {
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
-                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                    $tmp['delivery_wgt']       = bcmul($detail['delivery_qty'], $net_weight, 2);
                     $tmp['reject_qty']         = $tmp['delivery_qty'];
                     $tmp['reject_wgt']         = $tmp['delivery_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['price'];
-                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    $tmp['delivery_sum']       = bcmul($tmp['delivery_qty'], $tmp['price_unit'], 2);
                     $tmp['reject_sum']         = $tmp['delivery_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
@@ -661,7 +648,7 @@ class DistDriver extends Controller {
             }
             //发送短信
             if ($reasons) {
-                $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
+                $sres = $sA->sendRejectMsg($orderInfo['info'], $bill_details, $reasons);
             }
         }
         $this->ajaxReturn($res);
@@ -749,7 +736,7 @@ class DistDriver extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            $bill_out['actual_price'] += $sign_qty * $sign_in_detail['price_unit'];
+                            $bill_out['actual_price'] += bcmul($sign_qty, $sign_in_detail['price_unit'], 2);
                         }
                         break;
 
@@ -910,7 +897,7 @@ class DistDriver extends Controller {
                 $map['is_deleted']   = '0';
                 $map['created_time'] = array('between',$start_date.','.$end_date);
                 $map['userid']       =  $user['id'];
-                $sign_id = M('TmsSignList')->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
+                $sign = M('TmsSignList')->field('id')->order('created_time DESC')->where($map)->find();//获取最新的签到记录
                 unset($map);
                 if ($task['deliver_time']=='1') {
                     $map['period'] = '上午';
@@ -918,7 +905,7 @@ class DistDriver extends Controller {
                     $map['period'] = '下午';
                 }
                 $map['delivery_time'] = $data['created_time'];//加入提货时间
-                $map['id']            = $sign_id['id'];
+                $map['id']            = $sign['id'];
                 M('TmsSignList')->save($map); 
                 unset($map);
                 $this->msg = "提货成功"; 
