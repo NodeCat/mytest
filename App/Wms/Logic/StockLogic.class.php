@@ -280,6 +280,7 @@ class StockLogic{
                     $notice_params['wh_id'] = $params['wh_id'];
                     $notice_params['pro_code'] = $params['pro_code'];
                     $notice_params['type'] = 'change';
+                    $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -338,6 +339,7 @@ class StockLogic{
                     $notice_params['wh_id'] = $params['wh_id'];
                     $notice_params['pro_code'] = $params['pro_code'];
                     $notice_params['type'] = 'change';
+                    $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -403,6 +405,7 @@ class StockLogic{
                     $notice_params['wh_id'] = $params['wh_id'];
                     $notice_params['pro_code'] = $params['pro_code'];
                     $notice_params['type'] = 'change';
+                    $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -536,6 +539,7 @@ class StockLogic{
         $notice_params['wh_id'] = $wh_id;
         $notice_params['pro_code'] = $pro_code;
         $notice_params['type'] = 'change';
+        $notice_params['msg'] = 'adjustStockByShelves';
         A('Dachuwang','Logic')->notice_stock_update($notice_params);
         unset($notice_params);
 
@@ -813,6 +817,7 @@ class StockLogic{
             $notice_params['wh_id'] = $param['wh_id'];
             $notice_params['pro_code'] = $param['pro_code'];
             $notice_params['type'] = 'change';
+            $notice_params['msg'] = 'incDestStockDecSrcStock';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
             unset($notice_params);
         }
@@ -1026,6 +1031,7 @@ class StockLogic{
             $notice_params['wh_id'] = $param['wh_id'];
             $notice_params['pro_code'] = $param['pro_code'];
             $notice_params['type'] = 'change';
+            $notice_params['msg'] = 'adjustStockByMove';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
             unset($notice_params);
         }
@@ -1397,6 +1403,7 @@ class StockLogic{
                 $notice_params['wh_id'] = $params['wh_id'];
                 $notice_params['pro_code'] = $params['pro_code'];
                 $notice_params['type'] = 'change';
+                $notice_params['msg'] = 'adjustStockStatus';
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
                 unset($notice_params);
             }

@@ -27,14 +27,13 @@ class DachuwangLogic{
                 'data' => array(
                     'pro_code' => $params['pro_code'],
                     'wh_id' => $params['wh_id'],
-                    'msg' => 'change',
+                    'msg' => $params['msg'],
                     ),
                 );
         }elseif($params['type'] == 'out'){
             $data = array(
                 'type' => $params['type'],
                 'data' => array(
-                    'pro_code' => $params['pro_code'],
                     'wh_id' => $params['wh_id'],
                     'suborder_id' => $params['suborder_ids'],
                     ),
