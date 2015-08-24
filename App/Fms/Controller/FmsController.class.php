@@ -12,7 +12,7 @@ class FmsController extends \Common\Controller\AuthController{
         $map['status']  = '8';//已装车
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
         $map['driver_name'] = session('user.username');
-        $map['driver_mobile'] = session('user.mobile');
+        $map['driver_mobile'] = '.';
         $map['suborder_id'] = $id;
         $A->debug = true;
         dump($map);
@@ -310,7 +310,7 @@ class FmsController extends \Common\Controller\AuthController{
                                 $val['unit_id'] = $sign_detail[$i]['charge_unit'];
                             }
                             //实收小计
-                            $val['actual_sum_price'] = $val['real_sign_qty'] * $sign_detail[$i]['price_unit'];
+                            $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $sign_detail[$i]['price_unit'], 2);
                             //合计
                             $value['actual_price'] += $val['actual_sum_price'];
 

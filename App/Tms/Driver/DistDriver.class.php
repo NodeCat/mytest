@@ -216,7 +216,7 @@ class DistDriver extends Controller {
             $this->error = '提货失败,提货码不能为空';
         }
         if (empty($this->error)) {
-            $res = array('status' =>'1', 'message' => '提货成功','code' => session('user.id'),'tyep' => 0);
+            $res = array('status' =>'1', 'message' => '提货成功','code' => session('user.id'));
         } else {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);
@@ -293,10 +293,10 @@ class DistDriver extends Controller {
                             $val['receivable_sum'] = $sign_in['receivable_sum'];
                             $val['real_sum'] = $sign_in['real_sum'];
                             $v['quantity']  = $sign_in_detail['real_sign_qty'];
-                            $v['sum_price'] = $sign_in_detail['real_sign_qty'] * $sign_in_detail['price_unit'];
+                            $v['sum_price'] = bcmul($sign_in_detail['real_sign_qty'], $sign_in_detail['price_unit'], 2);
                             if($sign_in_detail['measure_unit'] !== $sign_in_detail['charge_unit']) {
                                 $v['weight'] = $sign_in_detail['real_sign_wgt'];
-                                $v['sum_price']     = $sign_in_detail['real_sign_wgt'] * $sign_in_detail['price_unit'];
+                                $v['sum_price']     = bcmul($sign_in_detail['real_sign_wgt'], $sign_in_detail['price_unit'],2);
                             }
                         }
                         else {
@@ -403,7 +403,9 @@ class DistDriver extends Controller {
             $bill_id_details[$val['id']] = $val;
             //应收金额
             $unit_num = isset($weight[$val['id']]) ? $weight[$val['id']] : $quantity[$val['id']];
-            $receivable_sum += $val['order_detail']['price'] * $unit_num;
+
+            $receivable_sum += bcmul($val['order_detail']['price'], $unit_num, 2);
+
         }
         //实收抹零
         $A = A('Tms/Dist','Logic');
@@ -462,30 +464,36 @@ class DistDriver extends Controller {
             if($dist_detail['status'] == 2 || $s) {
                 logs($bill_out_id,'已签收'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
                 $cdata = array();
+                $reject_detail = array();
                 //组合一个签收详情数据
                 foreach ($bill_id_details as $detail_id => $detail) {
                     $net_weight = empty($detail['order_detail']['net_weight']) ? 0 : $detail['order_detail']['net_weight'];
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
-                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                    $tmp['delivery_wgt']       = bcmul($detail['delivery_qty'], $net_weight, 2);
                     $tmp['real_sign_qty']      = $quantity[$detail_id];
-                    $tmp['real_sign_wgt']      = $tmp['real_sign_qty'] * $net_weight;
+                    $tmp['real_sign_wgt']      = bcmul($tmp['real_sign_qty'], $net_weight, 2);
                     $tmp['reject_qty']         = $tmp['delivery_qty'] - $tmp['real_sign_qty'];
-                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['price'];
-                    $tmp['sign_sum']           = $tmp['real_sign_qty'] * $tmp['price_unit'];
-                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    $tmp['sign_sum']           = bcmul($tmp['real_sign_qty'], $tmp['price_unit'], 2);
+                    $tmp['delivery_sum']       = bcmul($tmp['delivery_qty'], $tmp['price_unit'], 2);
                     if (isset($weight[$detail_id])) {
                         $tmp['real_sign_wgt'] = $weight[$detail_id];
-                        $tmp['sign_sum']      = $tmp['real_sign_wgt'] * $tmp['price_unit'];
-                        $tmp['delivery_sum']  = $tmp['delivery_wgt'] * $tmp['price_unit'];
+                        $tmp['sign_sum']      = bcmul($tmp['real_sign_wgt'], $tmp['price_unit'], 2);
+                        $tmp['delivery_sum']  = bcmul($tmp['delivery_wgt'], $tmp['price_unit'], 2);
                     }
+                    $tmp['reject_wgt']         = $tmp['delivery_wgt'] - $tmp['real_sign_wgt'];
                     $tmp['reject_sum']         = $tmp['delivery_sum'] - $tmp['sign_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
+                    //用于发送部分拒收短信提示
+                    if ($tmp['reject_qty']) {
+                        $detail['reject_qty'] = $tmp['reject_qty'];
+                        $reject_detail[] = $detail;
+                    }
                     $cdata[] = $tmp;
                     unset($tmp);
                 }
@@ -504,7 +512,11 @@ class DistDriver extends Controller {
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
             //给母账户发送短信
-            $sres = A('Tms/SignIn', 'Logic')->sendParentAccountMsg($orderInfo['info']);
+            $sA = A('Tms/SignIn', 'Logic');
+            $sres = $sA->sendParentAccountMsg($orderInfo['info']);
+            if (!empty($reject_detail)) {
+                $rres = $sA->sendRejectMsg($orderInfo['info'], $reject_detail);
+            }
             $json = array('status' => $status, 'msg' => $msg);
             //status:－1(更新失败或未执行更新);0(更新成功);
             $this->ajaxReturn($json);
@@ -524,7 +536,7 @@ class DistDriver extends Controller {
                 $row['id']= $val;
                 $row['actual_price'] = $price_unit[$key];
                 $row['actual_quantity'] = isset($weight[$key]) ? $weight[$key]: $quantity[$key];
-                $row['actual_sum_price'] = $row['actual_price'] * $row['actual_quantity'];
+                $row['actual_sum_price'] = bcmul($row['actual_price'], $row['actual_quantity'], 2);
                 $map['order_details'][] = $row;
             }
         }
@@ -612,13 +624,13 @@ class DistDriver extends Controller {
                     $tmp['pid']                = $dist_detail['id'];
                     $tmp['bill_out_detail_id'] = $detail_id;
                     $tmp['delivery_qty']       = $detail['delivery_qty'];
-                    $tmp['delivery_wgt']       = $detail['delivery_qty'] * $net_weight;
+                    $tmp['delivery_wgt']       = bcmul($detail['delivery_qty'], $net_weight, 2);
                     $tmp['reject_qty']         = $tmp['delivery_qty'];
                     $tmp['reject_wgt']         = $tmp['delivery_wgt'];
                     $tmp['measure_unit']       = $detail['order_detail']['unit_id'];
                     $tmp['charge_unit']        = $detail['order_detail']['close_unit'];
                     $tmp['price_unit']         = $detail['order_detail']['price'];
-                    $tmp['delivery_sum']       = $tmp['delivery_qty'] * $tmp['price_unit'];
+                    $tmp['delivery_sum']       = bcmul($tmp['delivery_qty'], $tmp['price_unit'], 2);
                     $tmp['reject_sum']         = $tmp['delivery_sum'];
                     $tmp['created_time']       = get_time();
                     $tmp['updated_time']       = get_time();
@@ -644,7 +656,7 @@ class DistDriver extends Controller {
             }
             //发送短信
             if ($reasons) {
-                $sres = $sA->sendRejectMsg($orderInfo['info'], $reasons);
+                $sres = $sA->sendRejectMsg($orderInfo['info'], $bill_details, $reasons);
             }
         }
         $this->ajaxReturn($res);
@@ -732,7 +744,7 @@ class DistDriver extends Controller {
                                 $arrays[$key]['name'] =  $value['pro_name'];   //sku名称
                                 $arrays[$key]['unit_id'] = $unit;   //单位
                             }
-                            $bill_out['actual_price'] += $sign_qty * $sign_in_detail['price_unit'];
+                            $bill_out['actual_price'] += bcmul($sign_qty, $sign_in_detail['price_unit'], 2);
                         }
                         break;
 

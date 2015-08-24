@@ -26,7 +26,8 @@ class IndexController extends \Common\Controller\AuthController{
 
         $data['driver_fee']['title'] = '近7天数据统计';
         $data['driver_fee']['data'] = M()->query('
-                    select a.*,b.name,b.driver_qty,b.notpaid_qty,b.fee,ROUND(b.fee / a.total_price * 100,2) fee_precent
+                    select a.*,b.name,b.driver_qty,b.notpaid_qty,b.fee,ROUND(b.fee / a.total_price * 100,2) fee_precent,
+                    c.order_qty,c.ontime_qty,c.order_qty-c.ontime_qty overtime_qty,c.ontime_percent
                      from(
                     SELECT 
                         d.wh_id,
@@ -68,6 +69,21 @@ class IndexController extends \Common\Controller\AuthController{
                     ORDER BY u.warehouse , deliver_date DESC #, period
                     ) b 
                     on a.wh_id = b.wh_id and a.deliver_date = b.deliver_date
+                    INNER JOIN
+                    (SELECT 
+                        wh_id,
+                            COUNT(*) order_qty,
+                            SUM(dd.delivery_ontime) ontime_qty,
+                            ROUND(SUM(dd.delivery_ontime) / COUNT(*) * 100, 2) ontime_percent,
+                            DATE(d.deliver_date) deliver_date
+                    FROM
+                        stock_wave_distribution_detail dd
+                    INNER JOIN stock_wave_distribution d ON dd.pid = d.id
+                    WHERE
+                        d.is_deleted = 0 and dd.is_deleted = 0 and  DATE(d.deliver_date) > "'.$date_week.'" and d.wh_id = '.session('user.wh_id').'
+                    GROUP BY d.deliver_date , d.wh_id
+                    ORDER BY d.deliver_date DESC) c ON a.wh_id = c.wh_id
+                        AND a.deliver_date = c.deliver_date
                     '
             );
 /*
@@ -174,6 +190,8 @@ class IndexController extends \Common\Controller\AuthController{
             'notpaid_qty' => '无运费司机数量',
             'dist_qty' => '配送单数量',
             'order_qty' => '出库单数量',
+            'overtime_qty' => '晚点配送数',
+            'ontime_percent' => '准点率',
             'dist_order_average' => '平均出库单数/每配送单',
             'dist_price_percent' => '预计运费比',
             'fee_precent' => '实际运费占比'

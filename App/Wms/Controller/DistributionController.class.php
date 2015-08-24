@@ -5,11 +5,15 @@ use Boris\ExportInspector;
 class DistributionController extends CommonController {
     
     protected $filter = array(
-    	    'status' => array(
-    	        '1' => '未发运',
-    	        '2' => '已发运',
-    	        '3' => '已配送',
-    	        '4' => '已结算',
+	    'status' => array(
+	        '1' => '未发运',
+	        '2' => '已发运',
+	        '3' => '已配送',
+	        '4' => '已结算',
+        ),
+        'deliver_time' => array(
+            '1' => '上午',
+            '2' => '下午'
         )
     );
     protected $columns = array (
@@ -20,7 +24,8 @@ class DistributionController extends CommonController {
             'line_count' => '总行数',
             'sku_count' => '总件数',
             'created_user' => '创建者',
-            'created_time' => '创建时间',
+            'deliver_date' => '配送日期',
+            'deliver_time' => '时间',
             'end_time' => '发运时间',
             'status' => '状态',
     );
@@ -65,11 +70,11 @@ class DistributionController extends CommonController {
                     'control_type' => 'getField',
                     'value' => 'warehouse.id,name',
             ),
-            'stock_wave_distribution.created_time' => array(
-                    'title' => '创建时间',
+            'stock_wave_distribution.deliver_date' => array(
+                    'title' => '配送日期',
                     'query_type' => 'between',
                     'control_type' => 'datetime',
-                    'value' => 'created_time',
+                    'value' => '',
             ),
     );
     
@@ -168,8 +173,7 @@ class DistributionController extends CommonController {
         }
     }
     
-        protected function before_lists(&$M){
-            /*
+        protected function before_lists(){
             $pill = array(
                 'status'=> array(
                     '1'=>array('value'=>'1','title'=>'未发运','class'=>'warning'),
@@ -185,18 +189,18 @@ class DistributionController extends CommonController {
 
             foreach ($res as $key => $val) {
                 if(array_key_exists($val['status'], $pill['status'])){
-                    $pill['stock_wave_distribution.status'][$val['status']]['count'] = $val['qty'];
-                    $pill['sstock_wave_distribution.tatus']['total'] += $val['qty'];
+                    $pill['status'][$val['status']]['count'] = $val['qty'];
+                    $pill['status']['total'] += $val['qty'];
                 }
             }
 
-            foreach($pill['stock_wave_distribution.status'] as $k => $val){
+            foreach($pill['status'] as $k => $val){
                 if(empty($val['count'])){
-                    $pill['sstock_wave_distribution.tatus'][$k]['count'] = 0;
+                    $pill['status'][$k]['count'] = 0;
                 }
             }
-            */
-            //$this->pill = $pill;
+            
+            $this->pill = $pill;
         }
 
     /**
@@ -378,6 +382,8 @@ class DistributionController extends CommonController {
         $data['line_count'] = $dis['line_count']; //总行数
         $data['delivery_count'] = 0; //发货总件数
         $data['delivery_price'] = 0; //发货总金额
+        $data['deliver_date'] = date('Y-m-d',strtotime($dis['deliver_date'])); //配送日期
+        $data['deliver_time'] = $this->filter['deliver_time'][$dis['deliver_time']]; //配送时间
         foreach ($result as $value) {
             foreach ($value['detail'] as $val) {
                 $data['delivery_count'] += $val['delivery_qty'];

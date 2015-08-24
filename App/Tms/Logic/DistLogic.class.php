@@ -70,7 +70,7 @@ class DistLogic {
  	**/
     public function wipeZero($price =0.0) 
     {
-        if ($price + 0.5 < ceil($price)) {
+        if (bccomp(bcadd($price, 0.5, 1), ceil($price)) == -1 ) {
             $price = floor($price);
         }
         $price = round($price, 1);
