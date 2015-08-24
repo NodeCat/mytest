@@ -13,7 +13,7 @@ $db_config = require(ROOT . "/../App/Wms/Conf/production.php");
 
 $db 	= new ezSQL_mysqli($db_config['DB_USER'], $db_config['DB_PWD'], $db_config['DB_NAME'], $db_config['DB_HOST'], 'utf8');
 //获取数据库中最大的ID
-$maxQuey= "SELECT count(*) FROM `stock` WHERE `is_deleted`='0' and `status`='qualified'";
+$maxQuey= "SELECT count(*) FROM `stock` WHERE `is_deleted`='0'";
 $max  = $db->get_var($maxQuey);
 
 $start = 0;
@@ -31,7 +31,7 @@ while ($start <= $max) {
     $result = $db->get_results($query);
 
     if (empty($result)) {
-        die('暂无数据备份');
+        break;
     }
 
     foreach ($result as $val) {
@@ -76,6 +76,7 @@ while ($start <= $max) {
 
     foreach ($insert_array as $key => $val) {
         $insert_array[$key]['pro_name'] = $sku_number[$val['pro_code']]['name'];
+        $insert_array[$key]['pro_attrs'] = $sku_number[$val['pro_code']]['description'][0]['name'].':'.$sku_number[$val['pro_code']]['description'][0]['val'].';'.$sku_number[$val['pro_code']]['description'][1]['name'].':'.$sku_number[$val['pro_code']]['description'][1]['val'];
         $insert_array[$key]['pro_uom'] = $sku_number[$val['pro_code']]['unit_name'];
         $insert_array[$key]['category1'] = $sku_number[$val['pro_code']]['category_info']['top'][0]['id'];
         $insert_array[$key]['category2'] = $sku_number[$val['pro_code']]['category_info']['second'][0]['id'];
@@ -94,7 +95,7 @@ while ($start <= $max) {
     unset($insert_array);
     unset($pro_codes);
 
-    $insert = "INSERT INTO stock_snap(`wh_id`, `pro_code`, `pro_name`, `batch`, `price_unit`, `pro_attrs`, `stock_qty`, `snap_time`, `status`, `is_deleted`, `created_time`, `pro_uom`, `category1`, `category2`, `category3`, `category_name1`, `category_name2`, `category_name3`) VALUES {$insert_query}";
+    $insert = "INSERT INTO stock_snap(`wh_id`, `pro_code`, `batch`, `stock_qty`, `snap_time`, `status`, `is_deleted`, `created_time`,`pro_name`, `pro_attrs`, `pro_uom`, `category1`, `category2`, `category3`, `category_name1`, `category_name2`, `category_name3`) VALUES {$insert_query}";
 
     $db->query($insert);
 
@@ -119,10 +120,10 @@ foreach ($move_result as $val) {
     $insert_array[] = array(
         'wh_id'     => $val->wh_id,
         'pro_code'  => $val->pro_code,
-        'pro_name'  => $val->pro_name,
+        //'pro_name'  => $val->pro_name,
         'batch'     => $val->batch,
-        'price_unit'=> 0,
-        'pro_attrs' => $val->pro_attrs,
+        //'price_unit'=> 0,
+        //'pro_attrs' => $val->pro_attrs,
         'stock_qty' => 0,
         'snap_time' => $snap_time,
         'status'    => $val->status,
@@ -152,6 +153,7 @@ if ($json_res[0] == 200) {
 
 foreach ($insert_array as $key => $val) {
     $insert_array[$key]['pro_name']  = $sku_number[$val['pro_code']]['name'];
+    $insert_array[$key]['pro_attrs'] = $sku_number[$val['pro_code']]['description'][0]['name'].':'.$sku_number[$val['pro_code']]['description'][0]['val'].';'.$sku_number[$val['pro_code']]['description'][1]['name'].':'.$sku_number[$val['pro_code']]['description'][1]['val'];
     $insert_array[$key]['pro_uom']   = $sku_move[$val['pro_code']]['unit_name'];
     $insert_array[$key]['category1'] = $sku_move[$val['pro_code']]['category_info']['top'][0]['id'];
     $insert_array[$key]['category2'] = $sku_move[$val['pro_code']]['category_info']['second'][0]['id'];
@@ -170,7 +172,7 @@ unset($insert_query_array);
 unset($insert_array);
 unset($pro_codes);
 
-$insert = "INSERT INTO stock_snap(`wh_id`, `pro_code`, `pro_name`, `batch`, `price_unit`, `pro_attrs`, `stock_qty`, `snap_time`, `status`, `is_deleted`, `created_time`, `pro_uom`, `category1`, `category2`, `category3`, `category_name1`, `category_name2`, `category_name3`) VALUES {$insert_query}";
+$insert = "INSERT INTO stock_snap(`wh_id`, `pro_code`, `batch`, `stock_qty`, `snap_time`, `status`, `is_deleted`, `created_time`,`pro_name`, `pro_attrs`, `pro_uom`, `category1`, `category2`, `category3`, `category_name1`, `category_name2`, `category_name3`) VALUES {$insert_query}";
 
 $db->query($insert);
 
