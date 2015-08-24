@@ -36,9 +36,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $map['created_time'] = array('between',$start_date.','.$end_date); 
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        $warehouse = session('user.wh_id');
-        $car_from  = I('post.car_from', '' ,'trim');
-        $map1['warehouse'] = $warehouse;
+        $car_from  = I('post.car_from');
         if ($car_from) {
             $map1['car_from'] = $car_from;
         }
@@ -46,12 +44,13 @@ class DispatchController extends \Common\Controller\AuthController{
         $userId = M('TmsUser')->where($map1)->getField('id',true);
         $map['userid'] = empty($userId) ? null : array('in',$userId); 
         //把对应仓库的用户签到信息取出来
+        $map['wh_id'] = session('user.wh_id');
         $map['is_deleted'] = 0;
         $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as &$value) {
-            $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            $value['warehouse'] = $this->warehouse[$value['wh_id']];//把仓库id变成名字
             $value['car_type']  = $this->carType[$value['car_type']];
             $value['car_from']  = $this->carFrom[$value['car_from']];
             $map['mobile']      = $value['mobile'];
@@ -148,23 +147,21 @@ class DispatchController extends \Common\Controller\AuthController{
         $map['created_time'] = array('between',$start_date.','.$end_date);
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
-        $warehouse = session('user.wh_id');
-        $car_from  = I('post.car_from', '' ,'trim');
-        $map1['warehouse'] = $warehouse;
+        $car_from  = I('post.car_from');
         if ($car_from) {
             $map1['car_from'] = $car_from;
         }
         $this->car_from  = $car_from;
         $userId = M('TmsUser')->where($map1)->getField('id',true);
         $map['userid'] = empty($userId) ? null : array('in',$userId); 
-        
         //把对应仓库的用户签到信息取出来
+        $map['wh_id'] = session('user.wh_id');
         $map['is_deleted'] = 0;
         $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
         unset($map);
         $A = A('Tms/List','Logic');
         foreach ($sign_lists as $key => &$value) {
-            $value['warehouse'] = $this->warehouse[$value['warehouse']];//把仓库id变成名字
+            $value['warehouse'] = $this->warehouse[$value['wh_id']];//把仓库id变成名字
             $value['car_type']  = $this->carType[$value['car_type']];
             $value['car_from']  = $this->carFrom[$value['car_from']];            
             $map['mobile'] = $value['mobile'];
@@ -350,6 +347,27 @@ class DispatchController extends \Common\Controller\AuthController{
             );
         }
         $this->ajaxReturn($return);
+    }
+
+    /**
+     * [signCode 显示打印签到码]
+     * @return [type] [description]
+     */
+    public function signCode()
+    {
+        $code = A('Tms/Dist', 'Logic')->getSignCode();
+        if ($code) {
+            $wh_id = S(md5($code));
+            $warehouse = A('Wms/Distribution', 'Logic')->getWarehouseById($wh_id);
+            $this->warehouse = $warehouse;
+        } else {
+            $code = '获取签到码失败，请联系技术人员';
+        }
+        $weeks=array("星期日","星期一","星期二","星期三","星期四","星期五","星期六");
+        $this->code = $code;
+        $this->date = date('Y-m-d',time());
+        $this->week = $weeks[date('w')];
+        $this->display('Index/sign-code');
     }
     
 }
