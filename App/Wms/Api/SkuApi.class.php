@@ -8,6 +8,58 @@ use Think\Controller;
 class SkuApi extends CommApi 
 {
     /**
+    * 实时库存接口
+    * @param array sku_codes sku
+    * @param int wh_id 仓库id
+    */
+    public function getProductQuant(){
+        $params = I('json.');
+        $pro_codes = I('json.sku_codes');
+        $wh_id = I('json.wh_id');
+
+        if(empty($params)) {
+            $return = array('status' => -1, 'msg' => 'params is empty');
+            $this->ajaxReturn($return);
+        }
+
+        if(empty($pro_codes)){
+            $return = array('status' => -1, 'msg' => 'sku_codes are empty');
+            $this->ajaxReturn($return);
+        }
+
+        if(count($pro_codes) > 200){
+            $return = array('status' => -1, 'msg' => 'sku_codes\'s number must less than 200 ');
+            $this->ajaxReturn($return);
+        }
+
+        $map['pro_code'] = array('in',$pro_codes);
+        if(!empty($wh_id)){
+            $map['wh_id'] = $wh_id;
+        }
+        $stock_info = M('stock')->field('wh_id,pro_code,status,sum(stock_qty) as stock_qty')->where($map)->group('wh_id,pro_code,status')->select();
+
+        $list = array();
+        foreach($stock_info as $key => $value){
+            switch($value['status']){
+                case 'qualified':
+                    $list[$value['pro_code']][$value['wh_id']]['qualified_qty'] = $value['stock_qty'];
+                    break;
+                case 'unqualified':
+                    $list[$value['pro_code']][$value['wh_id']]['unqualified_qty'] = $value['stock_qty'];
+                    break;
+                case 'freeze':
+                    $list[$value['pro_code']][$value['wh_id']]['freeze_qty'] = $value['stock_qty'];
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $return = array('status' => 0, 'list'=>$list, 'msg' => 'succ');
+        $this->ajaxReturn($return);
+    }
+
+    /**
      * SKU统计接口
      * @param int post.category_id 品类ID
      * @param int post.stime 开始时间戳
