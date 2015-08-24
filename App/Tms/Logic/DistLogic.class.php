@@ -235,6 +235,24 @@ class DistLogic {
     }
 
     /**
+     * [getSignCode 生成用户签到验证码]
+     * @return [type] [description]
+     */
+    public function getSignCode()
+    {
+        $date  = date('Y-m-d', time());
+        $wh_id = session('user.wh_id');
+        $s4 = substr(md5($date . '-' . $wh_id), 0, 4);
+        $code = substr(base_convert($s4, 16, 10), -4);
+        if (!S(md5($code))) {
+            //保证当日有效
+            $etime = mktime(23, 59, 59, date('m'), date('d'), date('Y'));
+            $expire = $etime - time();
+            S(md5($code), $wh_id, $expire); 
+        }
+        return $code;
+    }
+    /**
      * [isSignOntime 签收时间是否准点]
      * @param  [type]  $dist_id [配送单ID]
      * @return boolean          [description]

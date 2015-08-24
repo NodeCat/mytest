@@ -10,7 +10,7 @@ class IndexDriver extends Controller {
         }
 
         if(!session('?user.mobile')) {
-            if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register') {
+            if(ACTION_NAME != 'login' && ACTION_NAME != 'logout' && ACTION_NAME !='register' && ACTION_NAME != 'checksign') {
                 $this->redirect('logout');
             }
         }
@@ -52,39 +52,13 @@ class IndexDriver extends Controller {
                 $this->error = "您输入的手机号码格式不正确！";
                 $this->display('Index:login');
                 exit;
-
             }
             else {
                 $user = M('TmsUser')->field('id,username,mobile')->where(array('mobile' => $mobile))->order('created_time DESC')->find();          
-                if ($user) { // 如果以前签到过
-                    $start_date = date('Y-m-d',NOW_TIME);
-                    $end_date = date('Y-m-d',strtotime('+1 Days'));
-                    $map['created_time'] = array('between',$start_date.','.$end_date);
-                    $map['userid'] = $user['id'];
-                    $map['is_deleted'] = '0';
-                    $M = M('TmsSignList');
-                    $sign = $M->field('id')->order('created_time DESC')->where($map)->find();
-                    //如果今天已经签到过了那就改成最新的签到时间
-                    if ($sign) {
-                        $M->save(array('id' => $sign['id'],'updated_time' => get_time()));
-                        session('user',$user); //把用户id、姓名、手机号写入session
-                        $this->redirect('delivery');
-                    } else {
-                        if(strtotime($date) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                            $data['period'] = '上午';
-                        } else {
-                            $data['period'] = '下午';
-                        }
-                        $data['userid'] = $user['id'];
-                        $data['created_time'] = get_time();
-                        $data['updated_time'] = get_time();
-                        $M->add($data);//否则就签到
-                        session('user',$user);
-                        $this->redirect('delivery');
-                    }
+                if ($user) {
+                    $this->redirect('checkSign', array('id' => $user['id']));
                 } else {
-                    $this->mobile = $mobile;
-                    $this->register();
+                    $this->redirect('register',array('mobile' => $mobile));
                 }
                     
             }
@@ -110,7 +84,6 @@ class IndexDriver extends Controller {
             $num      = I('post.car_num');
             $car_type = I('post.car_type');
             $car_from = I('post.car_from');
-            $storge   = I('post.warehouse');
             if(empty($code) || empty($name) || empty($num)) {
                 $this->error ='请正确的填写修改信息';
                 $this->person();
@@ -139,15 +112,72 @@ class IndexDriver extends Controller {
     public function person(){
         $map['mobile'] = session('user.mobile');
         $data = M('TmsUser')->where($map)->order('updated_time')->find();
+        //签到记录
+        $smap['userid'] = $data['id'];
+        $smap['is_deleted'] = 0;
+        $sign = M('tms_sign_list')->field('wh_id')->order('created_time DESC')->where($smap)->find();
+        $data['warehouse'] = A('Wms/Distribution', 'Logic')->getWarehouseById($sign['wh_id']);
         $this->title ='个人信息';
         $cat = A('Common/Category','Logic');
         $this->carType = $cat->lists('car_type');
         $this->carFrom = $cat->lists('platform');
-        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $this->data = $data;
         $this->display('Driver/person');
     }
 
+    /**
+     * [checkSign 验证签到]
+     * @return [type] [description]
+     */
+    public function checkSign()
+    {
+        //验证前先判断用户信息
+        $userid = I('param.id/d', 0);
+        $user = M('TmsUser')->field('id,username,mobile')->order('created_time DESC')->find($userid);
+        if (empty($userid) || empty($user)) {
+            $this->redirect('login');
+        }
+        //post请求执行验证过程
+        if (IS_POST) {
+            $code = I('post.verify_code');
+            if ($wh_id = S(md5($code))) {
+                //验证通过则生成签到记录
+                if(time() < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
+                    $data['period'] = '上午';
+                } else {
+                    $data['period'] = '下午';
+                }
+                $data['userid'] = $userid;
+                $data['wh_id']  = $wh_id;
+                $data['created_time'] = get_time();
+                $data['updated_time'] = get_time();
+                M('TmsSignList')->add($data);//否则就签到
+                session('user',$user);
+                $this->redirect('delivery');
+            } else {
+                $this->error = '签到码错误，请重新输入';
+            }
+        } else {
+            //如果当天签到过，跳过验证
+            $start_date = date('Y-m-d',NOW_TIME);
+            $end_date = date('Y-m-d',strtotime('+1 Days'));
+            $map['created_time'] = array('between',$start_date.','.$end_date);
+            $map['userid'] = $userid;
+            $map['is_deleted'] = '0';
+            $M = M('TmsSignList');
+            //当天签到记录
+            $sign = $M->field('id')->order('created_time DESC')->where($map)->find();
+            if ($sign) {
+                $M->save(array('id' => $sign['id'],'updated_time' => get_time()));
+                session('user',$user); //把用户id、姓名、手机号写入session
+                $this->redirect('delivery');
+            }
+        }
+        $this->id = $userid;
+        $this->display('Index/sign-check');
+
+    }
+    
     //司机第一次信息登记
     public function register(){
         $cat = A('Common/Category','Logic');
@@ -160,6 +190,8 @@ class IndexDriver extends Controller {
                  exit;
             }
             else{
+                $user['mobile'] = I('get.mobile');
+                $this->user = $user;
                 $this->title = '请填写完整的签到信息';
                 $this->display('Driver/register'); 
             }   
@@ -170,10 +202,9 @@ class IndexDriver extends Controller {
             $num    = I('post.car_num');
             $car_type = I('post.car_type');
             $car_from = I('post.car_from');
-            $ware = I('post.warehouse');
             $data = I('post.');
             $data['mobile'] = $mobile;
-            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile) || empty($name) || empty($num)|| empty($car_type) || empty($car_from) || empty($ware)) {
+            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile) || empty($name) || empty($num)|| empty($car_type) || empty($car_from)) {
                 if (!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile)) {
                     $data['mobile']   = '';
                     $this->error ='请输入正确的手机号码';
@@ -190,9 +221,6 @@ class IndexDriver extends Controller {
                 elseif (empty($car_from)) {
                     $this->error ='请选择派车平台';
                 }
-                elseif (empty($ware)) {
-                    $this->error ='请选择你的签到仓库';
-                }
                 $this->user  = $data;
                 $this->title ='请填写完整的签到信息';
                 $this->display('Driver/register');
@@ -202,21 +230,8 @@ class IndexDriver extends Controller {
             $data['updated_time'] = get_time();
             $res = M('TmsUser')->add($data);
             if ($res) {
-                $user['username'] = $data['username'];
-                $user['mobile']   = $data['mobile'];
-                $user['id']       = $res;
-                session('user',$user);
-                unset($data);
-                if (strtotime(get_time()) < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
-                    $data['period'] = '上午';
-                } else {
-                    $data['period'] = '下午';
-                }
-                $data['userid'] = $user['id'];
-                $data['created_time'] = get_time();
-                $data['updated_time'] = get_time();
-                M('TmsSignList')->data($data)->add();
-                $this->redirect('delivery');
+                //注册成功跳到签到验证界面
+                $this->redirect('checkSign', array('id' => $res));
             } else {
                 session(null);
                 session('[destroy]');
