@@ -28,6 +28,7 @@ class StatisController extends \Common\Controller\AuthController
 	 */
 	public function index() {
 		$login = I('get.login/d',0);
+		//$login 为1表示模拟登陆成功
 		if($login) {
 			foreach ($this->charts as &$value) {
 				$value = $this->saiku_tms . $value;

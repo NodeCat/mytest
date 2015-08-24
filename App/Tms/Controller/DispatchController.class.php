@@ -30,14 +30,14 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->carFrom = $cat->lists('platform');
         $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $D = D("TmsSignList");
-        $sign_date = I('post.sign_date', '' , 'trim');
+        $sign_date = I('post.sign_date');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
         $map['created_time'] = array('between',$start_date.','.$end_date); 
         $this->start_date = $start_date;
         //以仓库为单位的签到统计
         $warehouse = session('user.wh_id');
-        $car_from  = I('post.car_from', '' ,'trim');
+        $car_from  = I('post.car_from');
         $map1['warehouse'] = $warehouse;
         if ($car_from) {
             $map1['car_from'] = $car_from;
@@ -57,22 +57,18 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile']      = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
             $map['status'] = '1';
-            //$map['type'] = '0';
-            //获取司机配送单的线路和id信息
-            $delivery_msg = M('tms_delivery')->where($map)->getField('id,line_name,dist_id,type');
-            $value['sign_orders']   = 0;// 已签收
-            $value['unsign_orders'] = 0;// 以退货
-            $value['sign_finished'] = 0;// 已完成
-            $value['delivering']    = 0;// 配送中
+            //获取配送单各状态订单统计
+            $delivery_msg = M('tms_delivery')->field('id,line_name,dist_id,type')->where($map)->select();
+            if (!empty($delivery_msg) && $delivery_msg[0]['type'] == '0') {
+                $dist_ids = array_column($delivery_msg, 'dist_id');
+                $deliveryStatis = $A->deliveryStatis($dist_ids);
+                $value['sign_orders']   = $deliveryStatis['sign_orders'];
+                $value['unsign_orders'] = $deliveryStatis['unsign_orders'];
+                $value['sign_finished'] = $deliveryStatis['sign_finished'];
+                $value['delivering']    = $deliveryStatis['delivering'];
+            }
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
-                if ($val['type'] == '0') {
-                    $delivery = $A->deliveryCount($val['dist_id']);
-                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                    $value['delivering']    += $delivery['delivery_count']['delivering'];
-                }            
                 if (empty($val['line_name'])) {// 配送路线为空就跳过
                     continue;
                 }
@@ -170,23 +166,18 @@ class DispatchController extends \Common\Controller\AuthController{
             $map['mobile'] = $value['mobile'];
             $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
             $map['status'] = '1';
-            //$map['type']   = '0';
-            //获取司机配送单的线路和id信息取出来
-            $delivery_msg = M('tms_delivery')->where($map)->field('line_name,dist_id,type')->order('created_time DESC')->select();
-            $value['sign_orders']   = 0;// 已签收
-            $value['unsign_orders'] = 0;// 以退货
-            $value['sign_finished'] = 0;// 已完成
-            $value['delivering']    = 0;// 配送中  
+            //获取配送单各状态订单统计
+            $delivery_msg = M('tms_delivery')->field('id,line_name,dist_id,type')->where($map)->select();
+            if (!empty($delivery_msg) && $delivery_msg[0]['type'] == '0') {
+                $dist_ids = array_column($delivery_msg, 'dist_id');
+                $deliveryStatis = $A->deliveryStatis($dist_ids);
+                $value['sign_orders']   = $deliveryStatis['sign_orders'];
+                $value['unsign_orders'] = $deliveryStatis['unsign_orders'];
+                $value['sign_finished'] = $deliveryStatis['sign_finished'];
+                $value['delivering']    = $deliveryStatis['delivering'];
+            } 
             // 把配送单线路和配送单id遍历出来
             foreach ($delivery_msg as $val) {
-                 // dump($val);exit;
-                if ($val['type'] == '0') {
-                    $delivery = $A->deliveryCount($val['dist_id']);
-                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                    $value['delivering']    += $delivery['delivery_count']['delivering'];
-                }            
                 if(empty($val['line_name'])){// 配送路线为空就跳过
                     continue;
                 }

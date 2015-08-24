@@ -37,6 +37,44 @@ class ListLogic{
     }
 
     /**
+     * [deliveryStatis 签到列表配送统计]
+     * @param  array  $dist_ids [配送单ID数组]
+     * @return [type]           [description]
+     */
+    public function deliveryStatis($dist_ids = array())
+    {
+        $wA = A('Wms/Distribution', 'Logic');
+        //未删除配送单列表
+        $dist = $wA->distList($dist_ids);
+        $dist_ids = array_column($dist, 'id');
+        //配送单详情
+        $details = $wA->getDistDetailsByPid($dist_ids);
+        $statis = array(
+            'sign_orders'   => 0,
+            'unsign_orders' => 0,
+            'sign_finished' => 0,
+            'delivering'    => 0,
+        );
+        foreach ($details as $value) {
+            switch ($value['status']) {
+                case '1'://配送中
+                    $statis['delivering'] ++;
+                    break;
+                case '2'://已签收
+                    $statis['sign_orders'] ++;
+                    break;
+                case '3'://已拒收
+                    $statis['unsign_orders'] ++;
+                    break;
+                case '4'://已完成
+                    $statis['sign_finished'] ++;
+                    break;
+            }
+        }
+        return $statis;
+    }
+
+    /**
      * 统计配送单的订单状态
      * @param  string  $dist_id  配送单id
      * @return array   $data     返回统计信息
