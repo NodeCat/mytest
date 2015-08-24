@@ -19,7 +19,7 @@ VALUES (
 NULL ,  '签到码', NULL ,  'Dispatch/signCode',  '0',  '0',  '1',  '1',  '_self',  'left',  '1',  '0', NULL ,  'Tms'
 );
 
-INSERT INTO  `wms_wangshuang`.`menu` (
+INSERT INTO  `wms`.`menu` (
 `id` ,
 `name` ,
 `icon` ,
@@ -39,7 +39,7 @@ VALUES (
 NULL ,  '签到码', NULL ,  'Dispatch/signCode',  '236',  '1',  '1',  '1',  '_self',  'left',  '1',  '0', NULL ,  'Tms'
 );
 
-INSERT INTO  `wms_wangshuang`.`auth_authority` (
+INSERT INTO  `wms`.`auth_authority` (
 `id` ,
 `name` ,
 `type` ,
