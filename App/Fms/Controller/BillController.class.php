@@ -18,6 +18,25 @@ class BillController extends \Wms\Controller\CommonController
 		'bd_mobile' => 'BD手机号',
 		'status' => '账单状态'
     );
+    protected $excel_columns = array(
+        'deliver_date' => '发货日期',
+        'suborder_id' => '子单号(短)',
+        'primary_category_cn' => '一级分类',
+        'shui' => '税率',
+        'name' => '末级明细',
+        'val' => '规格',
+        'unit_cn' => '单位',
+        'actual_quantity' => '实收数量',
+        'actual_sum_price' => '签收金额',
+        'refuse_quantity' => '退货数量',
+        'refuse_price' => '退货金额',
+        'deliver_fee' => '运费',
+        'minus_amount' => '优惠',
+        'pay_reduce' => '支付减免',
+        'deposit' => '押金',
+        'deal_price' => '实收金额',
+    );
+
     protected $filter = array (
         'expire_status' => array(
             '0' => '',
@@ -37,6 +56,7 @@ class BillController extends \Wms\Controller\CommonController
                 'statusbar' => true
         );
         //$this->search_addon = true;
+
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
         );
@@ -254,7 +274,7 @@ class BillController extends \Wms\Controller\CommonController
             $map['payment'] = '0';
         }
         $res = $A->billPay($map);
-        $url = $res['status'] == '0' ? U('view',array('id'=>$map[   'id'])) : '';
+        $url = $res['status'] == '0' ? U('view',array('id'=>$map['id'])) : '';
         $status = $res['status'] == 0 ? 1 : 0;
         if($status == 1) {
             $this->addRemark($map['id'], $payType);
@@ -353,5 +373,286 @@ class BillController extends \Wms\Controller\CommonController
         $maps = $this->condition;
         $template= IS_AJAX ? 'Common@Table/list':'Common@Table/index';
         $this->page($data['total'],$maps,$template);
+    }
+    
+    //根据账单信息到excel表格
+    public function export()
+    {
+        $id = I('id');
+        if(empty($id)){
+            $this->msgReturn('0','请选择账单');
+        }
+        $A = A('Common/Order', 'Logic');
+        $List_Logic = A('Fms/List', 'Logic');
+        $map['billing_ids'] = $id;
+        //根据账单id获取账单信息
+        $res = $A->billGetExcelData($map);
+        if(!$res){
+            $this->msgReturn('0','要导出数据为空！');
+        }
+        if($res['status'] != 0) {
+            $this->msgReturn('0',$res['msg']);
+        }
+        $res = $res['list'];
+
+        unset($map);
+        $map['type'] = 'sku_type';
+        $map['is_deleted'] = 0;
+        //取出一级分类对应的税率
+        $tax = M('category')->where($map)->getField('code as id, val');
+        
+        import("Common.Lib.PHPExcel");
+        import("Common.Lib.PHPExcel.IOFactory");
+        
+        $bill = $res[0];
+        $Excel = new \PHPExcel(); 
+        $Sheet = $this->get_excel_sheet($Excel);
+        $Sheet->setTitle('对账单');
+        $Sheet->mergeCells('A1:P1');
+        $Sheet->setCellValue('A1', $bill['shop_name'].' 对账单'.$bill['start_time'].'~'.$bill['end_time']);
+        $Sheet->getStyle('A1')->getFont()->setSize(16);
+        $Sheet->getStyle('A1')->getFont()->setBold(true);
+        $Sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+        $i = 1;
+        $columns = $this->excel_columns;
+        $ary  =  array("", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z");
+        foreach ($columns as $value) { 
+            $Sheet->setCellValue($ary[$i/27].$ary[$i%27].'2', $value);
+            $Sheet->getStyle($ary[$i/27].$ary[$i%27].'2')->getFont()->setSize(14);
+            $Sheet->getStyle($ary[$i/27].$ary[$i%27].'2')->getFont()->setBold(true);
+            ++$i;
+        }
+
+        $bill_price = 0;
+        $i = 2;
+        foreach($bill['suborder_list'] as $key => $value) {
+            //对sku根据一级分类进行分组
+            $result = array();
+            foreach ($value['order_details'] as $k => $val) {
+                $result[$val['primary_category']][] = $val;
+            }
+            
+            //对分组根据sku的实收金额降序排序
+            $array_sum_price = array();
+            foreach ($result as $k => &$val) {
+                $sum_price = array();
+                foreach ($val as &$v) {
+                    $sum_price[] = $v['actual_sum_price'];
+                    $val['sum_price'] += $v['actual_sum_price'];
+                    $v['spec'] = json_decode($v['spec'],true);
+                }
+                array_multisort($sum_price,SORT_DESC,$val);
+                $array_sum_price[] = $val['sum_price'];
+            }
+            array_multisort($array_sum_price,SORT_DESC,$result);
+            foreach ($result as &$gp) {
+                array_pop($gp);
+            }
+            
+            $value['order_details'] = $result;
+            foreach ($value['order_details'] as $ky => $grp) {
+                //分组实收数量
+                $grp_actual_qty = 0;
+                //分组签收金额
+                $grp_deal_price = 0;
+                //分组退货数量
+                $grp_refuse_qty = 0;
+                //分组退货金额
+                $grp_refuse_price = 0;
+                foreach ($grp as $k => $sku) {
+                    $i++;
+                    $Sheet->setCellValue('A'.$i, $value['deliver_date']);
+                    $Sheet->setCellValue('B'.$i, $value['id']);
+                    $Sheet->setCellValue('C'.$i, $sku['primary_category_cn']);
+                    $Sheet->setCellValue('D'.$i, $tax[$sku['primary_category']]);
+                    $Sheet->setCellValue('E'.$i, $sku['name']);
+                    $spec = '';
+                    foreach ($sku['spec'] as $sp) {
+                        if ($sp['name'] == '规格') {
+                            $spec = $sp['val'];
+                        }
+                    }
+                    $Sheet->setCellValue('F'.$i, $spec);
+                    $Sheet->setCellValue('G'.$i, $sku['unit_cn']);
+                    $sku_qty = $sku['actual_quantity'] - $sku['refuse_quantity'];
+                    if ($sku_qty < 0) {
+                        $sku_qty = 0;
+                    }
+                    //分组实收数量
+                    $grp_actual_qty += $sku_qty;
+                    $Sheet->setCellValue('H'.$i, $sku_qty);
+                    //分组签收金额
+                    $grp_deal_price += $sku['actual_sum_price'];
+                    $Sheet->setCellValue('I'.$i, $sku['actual_sum_price']);
+                    //分组退货数量
+                    $grp_refuse_qty += $sku['refuse_quantity'];
+                    $Sheet->setCellValue('J'.$i, $sku['refuse_quantity']);
+                    //分组退货金额
+                    $grp_refuse_price += $sku['refuse_price'];
+                    $Sheet->setCellValue('K'.$i, $sku['refuse_price']);
+                    if ($k == 0) {
+                        $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
+                        $Sheet->setCellValue('M'.$i, $value['minus_amount']);
+                        $Sheet->setCellValue('N'.$i, $value['pay_reduce']);
+                        $Sheet->setCellValue('O'.$i, $value['deposit']);
+                    }
+                    $sku_price = $sku['actual_sum_price'] - $sku['refuse_price'];
+                    if ($sku_price < 0) {
+                        $sku_price = 0;
+                    }
+                    $Sheet->setCellValue('P'.$i, $sku_price);
+                }
+                $i += 1;
+                $Sheet->mergeCells('A'.$i.':'.'G'.$i);
+                $Sheet->setCellValue('A'.$i, '小计');
+                $Sheet->getStyle('A'.$i)->getAlignment()->setHorizontal('center');
+                $actual_qty = $grp_actual_qty - $grp_refuse_qty;
+                if ($actual_qty < 0) {
+                    $actual_qty = 0;
+                }
+                $Sheet->setCellValue('H'.$i, $actual_qty);
+                $Sheet->setCellValue('I'.$i, $grp_deal_price);
+                $Sheet->setCellValue('J'.$i, $grp_refuse_qty);
+                $Sheet->setCellValue('K'.$i, $grp_refuse_price);
+                if ($ky == 0) {
+                    $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
+                    $Sheet->setCellValue('M'.$i, $value['minus_amount']);
+                    $Sheet->setCellValue('N'.$i, $value['pay_reduce']);
+                    $Sheet->setCellValue('O'.$i, $value['deposit']);
+                }
+                //分组实收金额 ＝ 分组签收金额 － 分组退货金额
+                $grp_actual_price = $grp_deal_price - $grp_refuse_price;
+                if ($grp_actual_price < 0) {
+                    $grp_actual_price = 0;
+                }
+                $Sheet->setCellValue('P'.$i, $grp_actual_price);
+            }
+            $i += 1;
+            $Sheet->mergeCells('A'.$i.':'.'G'.$i);
+            $Sheet->setCellValue('A'.$i, '合计');
+            $Sheet->getStyle('A'.$i)->getAlignment()->setHorizontal('center');
+            $order_actual_qty = $value['sum_actual_quantity'] - $value['sum_refuse_quantity'];
+            if ($order_actual_qty < 0) {
+                $order_actual_qty = 0;
+            }
+            $Sheet->setCellValue('H'.$i, $order_actual_qty);
+            $Sheet->setCellValue('I'.$i, $value['deal_price']);
+            $Sheet->setCellValue('J'.$i, $value['sum_refuse_quantity']);
+            $Sheet->setCellValue('K'.$i, $value['sum_refuse_price']);
+            $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
+            $Sheet->setCellValue('M'.$i, $value['minus_amount']);
+            $Sheet->setCellValue('N'.$i, $value['pay_reduce']);
+            $Sheet->setCellValue('O'.$i, $value['deposit']);
+            $order_actual_price = $value['deal_price'] - $value['sum_refuse_price'];
+            if ($order_actual_price < 0) {
+                $order_actual_price = 0;
+            }
+            $bill_price += $order_actual_price;
+            $Sheet->setCellValue('P'.$i, $order_actual_price);
+        }
+        $i += 1;
+        $Sheet->mergeCells('A'.$i.':'.'B'.$i);
+        $Sheet->setCellValue('A'.$i, '大写金额合计');
+        $Sheet->mergeCells('C'.$i.':'.'O'.$i);
+        $Sheet->setCellValue('P'.$i, $List_Logic->cny($bill_price));
+        $i += 1;
+        $Sheet->mergeCells('A'.$i.':'.'B'.$i);
+        $Sheet->setCellValue('A'.$i, '经办人:');
+        $Sheet->mergeCells('C'.$i.':'.'M'.$i);
+        $Sheet->mergeCells('N'.$i.':'.'O'.$i);
+        $Sheet->setCellValue('N'.$i, '财务部核对人:');
+        //销售收入明细表
+        $Sheet1 = $Excel->createSheet();
+        $Sheet1->setTitle('销售收入明细表');
+        $Excel->setActiveSheetIndex(1);
+        $Sheet1->mergeCells('A1:F1');
+        $Sheet1->setCellValue('A1', $bill['shop_name'].' 销售收入明细表'.$bill['start_time'].'~'.$bill['end_time']);
+        $Sheet1->getStyle('A1')->getFont()->setSize(16);
+        $Sheet1->getStyle('A1')->getFont()->setBold(true);
+        $Sheet1->getStyle('A1')->getAlignment()->setHorizontal('center');
+        $Sheet1->setCellValue('A2', '城市');
+        $Sheet1->setCellValue('B2', '一级分类');
+        $Sheet1->setCellValue('C2', '价格');
+        $Sheet1->setCellValue('D2', '税率');
+        $Sheet1->setCellValue('E2', '税额');
+        $Sheet1->setCellValue('F2', '价税合计');
+        $category_group = array();
+        foreach($bill['suborder_list'] as $key => $value) {
+            foreach ($value['order_details'] as $k => $val) {
+                $category_group[$val['primary_category']][] = $val;
+            }
+        }
+        $j = 2;
+        //账单的单价总计
+        $grp_sum_price = 0;
+        //账单的税率总计
+        $grp_sum_tax   = 0;
+        //账单的价税总计
+        $grp_sum_tax_price = 0;
+        foreach ($category_group as $key => $value) {
+            $j++;
+            //单个分组的单价总计
+            $sum_actual_price = 0;
+            $category = '';
+            foreach ($value as $k => $val) {
+                $sum_actual_price += $val['actual_price'];
+                $category = $val['primary_category_cn'];
+            }
+            $Sheet1->setCellValue('B'.$j, $category);
+            //账单的单价总计
+            $grp_sum_price += $sum_actual_price;
+            $Sheet1->setCellValue('C'.$j, $sum_actual_price);
+            //账单的税率总计
+            $grp_sum_tax += $tax[$key];
+            $Sheet1->setCellValue('D'.$j, $tax[$key]);
+            $tax_price = bcmul($sum_actual_price, $tax[$key], 2);
+            //账单的价税总计
+            $grp_sum_tax_price += $tax_price;
+            $Sheet1->setCellValue('E'.$j, $tax_price);
+            $Sheet1->setCellValue('F'.$j, $sum_actual_price + $tax_price);
+        }
+        $Sheet1->mergeCells('A3:A'.$j);
+        $Sheet1->setCellValue('A3', $bill['city_cn']);
+        $Sheet1->getStyle('A3')->getAlignment()->setHorizontal('center');
+        $Sheet1->getStyle('A3')->getAlignment()->setVertical('center');
+        $j += 1;
+        $Sheet1->mergeCells('A'.$j.':B'.$j);
+        $Sheet1->setCellValue('A'.$j, '合计');
+        $Sheet1->getStyle('A'.$j)->getAlignment()->setHorizontal('center');
+        $Sheet1->setCellValue('C'.$j, $grp_sum_price);
+        $Sheet1->setCellValue('D'.$j, $grp_sum_tax);
+        $Sheet1->setCellValue('E'.$j, $grp_sum_tax_price);
+        $Sheet1->setCellValue('F'.$j, $grp_sum_price + $grp_sum_tax_price);
+         
+        date_default_timezone_set("Asia/Shanghai");
+        header("Content-Type: application/force-download");
+        header("Content-Type: application/download");
+        header("Content-Transfer-Encoding: binary");
+        header('Accept-Ranges: bytes');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition:attachment;filename = 对账单-".date('Y-m-d-H-i-s',time())."-".$bill['id'].".xlsx");
+        header('Cache-Control: max-age=0');
+        header("Pragma:no-cache");
+        header("Expires:0");
+        header("Content-Length: "); 
+        $objWriter  = \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007');
+        $objWriter->save('php://output');
+    }
+    protected function get_excel_sheet(&$Excel) 
+    {
+        $Excel->getProperties()
+        ->setCreator("Dachuwang")
+        ->setLastModifiedBy("Dachuwang")
+        ->setTitle("Dachuwang")
+        ->setSubject("Dachuwang")
+        ->setDescription("Dachuwang")
+        ->setKeywords("Dachuwang")
+        ->setCategory("Dachuwang");
+        $Excel->setActiveSheetIndex(0);
+        $Sheet  =  $Excel->getActiveSheet();          
+        $Sheet->getDefaultColumnDimension()->setAutoSize(true);
+        $Sheet->getDefaultStyle()->getFont()->setName('Arial');
+        $Sheet->getDefaultStyle()->getFont()->setSize(13);
+        return $Sheet;
     }
 }
