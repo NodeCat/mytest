@@ -108,7 +108,7 @@ $insert_array = array();
 //获取交易日志表中存在的SKU，但不存在于库存表的SKU
 $not_query = $db->get_col("SELECT pro_code FROM stock group by pro_code", 0);
 $not_in    = implode(',', $not_query);
-$move_query = "SELECT stock_move.`wh_id`, stock_move.`pro_code`, stock_bill_in_detail.`pro_name`, stock_bill_in_detail.`pro_attrs`, stock_move.`batch`, stock_move.`status` FROM stock_move INNER JOIN stock_bill_in_detail ON stock_bill_in_detail.`pro_code`=stock_move.`pro_code` WHERE DATE(stock_move.created_time)=date_sub(CURDATE(),INTERVAL 1 day) AND stock_move.`pro_code` NOT IN($not_in) GROUP BY stock_move.`pro_code`";
+$move_query = "SELECT stock_move.`wh_id`, stock_move.`pro_code`, stock_bill_in_detail.`pro_name`, stock_bill_in_detail.`pro_attrs`, stock_move.`batch`, stock_move.`status` FROM stock_move INNER JOIN stock_bill_in_detail ON stock_bill_in_detail.`pro_code`=stock_move.`pro_code` WHERE DATE(stock_move.created_time)=date_sub(CURDATE(),INTERVAL 1 day) AND stock_move.`pro_code` NOT IN($not_in) GROUP BY stock_move.`pro_code`,stock_move.`wh_id`,stock_move.`batch`";
 $move_result = $db->get_results($move_query);
 
 if (empty($move_result)) {
