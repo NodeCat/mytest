@@ -1,7 +1,7 @@
 <?php
 set_time_limit(0);
 date_default_timezone_set('PRC');
-error_reporting(E_ERROR | E_WARNING | E_PARSE);
+error_reporting(E_ERROR);
 define('ROOT', __DIR__);
 
 include_once ROOT . "/ezsql/ez_sql_core.php";
