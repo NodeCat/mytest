@@ -32,7 +32,6 @@ class BillController extends \Wms\Controller\CommonController
         'refuse_price' => '退货金额',
         'deliver_fee' => '运费',
         'minus_amount' => '优惠',
-        'pay_reduce' => '支付减免',
         'deposit' => '押金',
         'deal_price' => '实收金额',
     );
@@ -408,7 +407,7 @@ class BillController extends \Wms\Controller\CommonController
         $Excel = new \PHPExcel(); 
         $Sheet = $this->get_excel_sheet($Excel);
         $Sheet->setTitle('对账单');
-        $Sheet->mergeCells('A1:P1');
+        $Sheet->mergeCells('A1:O1');
         $Sheet->setCellValue('A1', $bill['shop_name'].' 对账单'.$bill['start_time'].'~'.$bill['end_time']);
         $Sheet->getStyle('A1')->getFont()->setSize(16);
         $Sheet->getStyle('A1')->getFont()->setBold(true);
@@ -425,6 +424,12 @@ class BillController extends \Wms\Controller\CommonController
 
         $bill_price = 0;
         $i = 2;
+        //对所有订单按发货时间进行排序
+        $date_deliver = array();
+        foreach($bill['suborder_list'] as $order) {
+            $date_deliver[] = $order['deliver_date'];
+        }
+        array_multisort($date_deliver,$bill['suborder_list']);
         foreach($bill['suborder_list'] as $key => $value) {
             //对sku根据一级分类进行分组
             $result = array();
@@ -493,14 +498,13 @@ class BillController extends \Wms\Controller\CommonController
                     if ($k == 0) {
                         $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
                         $Sheet->setCellValue('M'.$i, $value['minus_amount']);
-                        $Sheet->setCellValue('N'.$i, $value['pay_reduce']);
-                        $Sheet->setCellValue('O'.$i, $value['deposit']);
+                        $Sheet->setCellValue('N'.$i, $value['deposit']);
                     }
                     $sku_price = $sku['actual_sum_price'] - $sku['refuse_price'];
                     if ($sku_price < 0) {
                         $sku_price = 0;
                     }
-                    $Sheet->setCellValue('P'.$i, $sku_price);
+                    $Sheet->setCellValue('O'.$i, $sku_price);
                 }
                 $i += 1;
                 $Sheet->mergeCells('A'.$i.':'.'G'.$i);
@@ -517,15 +521,14 @@ class BillController extends \Wms\Controller\CommonController
                 if ($ky == 0) {
                     $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
                     $Sheet->setCellValue('M'.$i, $value['minus_amount']);
-                    $Sheet->setCellValue('N'.$i, $value['pay_reduce']);
-                    $Sheet->setCellValue('O'.$i, $value['deposit']);
+                    $Sheet->setCellValue('N'.$i, $value['deposit']);
                 }
                 //分组实收金额 ＝ 分组签收金额 － 分组退货金额
                 $grp_actual_price = $grp_deal_price - $grp_refuse_price;
                 if ($grp_actual_price < 0) {
                     $grp_actual_price = 0;
                 }
-                $Sheet->setCellValue('P'.$i, $grp_actual_price);
+                $Sheet->setCellValue('O'.$i, $grp_actual_price);
             }
             $i += 1;
             $Sheet->mergeCells('A'.$i.':'.'G'.$i);
@@ -541,25 +544,24 @@ class BillController extends \Wms\Controller\CommonController
             $Sheet->setCellValue('K'.$i, $value['sum_refuse_price']);
             $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
             $Sheet->setCellValue('M'.$i, $value['minus_amount']);
-            $Sheet->setCellValue('N'.$i, $value['pay_reduce']);
-            $Sheet->setCellValue('O'.$i, $value['deposit']);
+            $Sheet->setCellValue('N'.$i, $value['deposit']);
             $order_actual_price = $value['deal_price'] - $value['sum_refuse_price'];
             if ($order_actual_price < 0) {
                 $order_actual_price = 0;
             }
             $bill_price += $order_actual_price;
-            $Sheet->setCellValue('P'.$i, $order_actual_price);
+            $Sheet->setCellValue('O'.$i, $order_actual_price);
         }
         $i += 1;
         $Sheet->mergeCells('A'.$i.':'.'B'.$i);
         $Sheet->setCellValue('A'.$i, '大写金额合计');
         $Sheet->mergeCells('C'.$i.':'.'O'.$i);
-        $Sheet->setCellValue('P'.$i, $List_Logic->cny($bill_price));
+        $Sheet->setCellValue('C'.$i, $List_Logic->cny($bill_price));
+        $Sheet->getStyle('C'.$i)->getAlignment()->setHorizontal('right');
         $i += 1;
         $Sheet->mergeCells('A'.$i.':'.'B'.$i);
         $Sheet->setCellValue('A'.$i, '经办人:');
         $Sheet->mergeCells('C'.$i.':'.'M'.$i);
-        $Sheet->mergeCells('N'.$i.':'.'O'.$i);
         $Sheet->setCellValue('N'.$i, '财务部核对人:');
         //销售收入明细表
         $Sheet1 = $Excel->createSheet();
@@ -583,11 +585,11 @@ class BillController extends \Wms\Controller\CommonController
             }
         }
         $j = 2;
-        //账单的单价总计
+        //一级分类的实收金额总计
         $grp_sum_price = 0;
-        //账单的税率总计
+        //一级分类的税率总计
         $grp_sum_tax   = 0;
-        //账单的价税总计
+        //一级分类的价税总计
         $grp_sum_tax_price = 0;
         foreach ($category_group as $key => $value) {
             $j++;
@@ -595,18 +597,22 @@ class BillController extends \Wms\Controller\CommonController
             $sum_actual_price = 0;
             $category = '';
             foreach ($value as $k => $val) {
-                $sum_actual_price += $val['actual_price'];
+                $actual_price = $val['actual_sum_price'] - $val['refuse_price'];
+                if ($actual_price < 0 ) {
+                    $actual_price = 0;
+                }
+                $sum_actual_price += $actual_price;
                 $category = $val['primary_category_cn'];
             }
             $Sheet1->setCellValue('B'.$j, $category);
-            //账单的单价总计
+            //一级分类的实收金额总计
             $grp_sum_price += $sum_actual_price;
             $Sheet1->setCellValue('C'.$j, $sum_actual_price);
-            //账单的税率总计
+            //一级分类的税率总计
             $grp_sum_tax += $tax[$key];
             $Sheet1->setCellValue('D'.$j, $tax[$key]);
             $tax_price = bcmul($sum_actual_price, $tax[$key], 2);
-            //账单的价税总计
+            //一级分类的价税总计
             $grp_sum_tax_price += $tax_price;
             $Sheet1->setCellValue('E'.$j, $tax_price);
             $Sheet1->setCellValue('F'.$j, $sum_actual_price + $tax_price);
