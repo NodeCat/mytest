@@ -637,6 +637,7 @@ class BillController extends \Wms\Controller\CommonController
         header("Content-Length: "); 
         $objWriter  = \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007');
         $objWriter->save('php://output');
+        exit;
     }
     protected function get_excel_sheet(&$Excel) 
     {
