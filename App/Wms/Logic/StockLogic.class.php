@@ -812,7 +812,7 @@ class StockLogic{
         }
         
         //如果源库存状态由合格状态改为不合格，库存量发生变化，需要通知实时库存接口
-        if($src_stock['status'] == 'qualified' && $dest_location_info['status'] != 'qualified'){
+        if($src_stock['status'] != $dest_location_info['status']){
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
             $notice_params['pro_code'] = array($param['pro_code']);
@@ -1398,7 +1398,7 @@ class StockLogic{
             $stock_adjustment_detail->data($stock_adjustment_detail_data)->add();
         
             //如果源库存状态由合格状态改为不合格，库存量发生变化，需要通知实时库存接口
-            if($stock_info['status'] == 'qualified' && $dest_stock_info['status'] != 'qualified'){
+            if($stock_info['status'] != $dest_stock_info['status']){
                 //通知实时库存接口
                 $notice_params['wh_id'] = $params['wh_id'];
                 $notice_params['pro_code'] = array($params['pro_code']);
