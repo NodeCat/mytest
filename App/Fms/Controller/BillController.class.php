@@ -499,8 +499,11 @@ class BillController extends \Wms\Controller\CommonController
                         $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
                         $Sheet->setCellValue('M'.$i, $value['minus_amount']);
                         $Sheet->setCellValue('N'.$i, $value['deposit']);
+                        $sku_price = $sku['actual_sum_price'] - $sku['rejected_sum_price'] + $value['deliver_fee'] - $value['minus_amount'] - $value['deposit'];
+                    } else {
+                        $sku_price = $sku['actual_sum_price'] - $sku['rejected_sum_price'];
                     }
-                    $sku_price = $sku['actual_sum_price'] - $sku['rejected_sum_price'];
+                    
                     if ($sku_price < 0) {
                         $sku_price = 0;
                     }
@@ -522,9 +525,12 @@ class BillController extends \Wms\Controller\CommonController
                     $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
                     $Sheet->setCellValue('M'.$i, $value['minus_amount']);
                     $Sheet->setCellValue('N'.$i, $value['deposit']);
+                    //分组实收金额 ＝ 分组签收金额 － 分组退货金额
+                    $grp_actual_price = $grp_deal_price - $grp_refuse_price + $value['deliver_fee'] - $value['minus_amount'] - $value['deposit'];
+                } else {
+                    //分组实收金额 ＝ 分组签收金额 － 分组退货金额
+                    $grp_actual_price = $grp_deal_price - $grp_refuse_price;
                 }
-                //分组实收金额 ＝ 分组签收金额 － 分组退货金额
-                $grp_actual_price = $grp_deal_price - $grp_refuse_price;
                 if ($grp_actual_price < 0) {
                     $grp_actual_price = 0;
                 }
@@ -578,22 +584,39 @@ class BillController extends \Wms\Controller\CommonController
         $Sheet1->setCellValue('D2', '税率');
         $Sheet1->setCellValue('E2', '税额');
         $Sheet1->setCellValue('F2', '价税合计');
-        $category_group = array();
-        foreach($bill['suborder_list'] as $key => $value) {
-            foreach ($value['order_details'] as $k => $val) {
-                $category_group[$val['primary_category']][] = $val;
-            }
-        }
-        $j = 2;
+        //dump($bill['suborder_list']);
         //一级分类的实收金额总计
         $grp_sum_price = 0;
         //一级分类的税率总计
         $grp_sum_tax   = 0;
         //一级分类的价税总计
         $grp_sum_tax_price = 0;
+        //对订单的所有sku根据sku的实收金额降序排序
+        foreach ($bill['suborder_list'] as &$suborder) {
+            $sum_price = array();
+            foreach ($suborder['order_details'] as $detail) {
+                $sum_price[] = $detail['actual_sum_price'];
+            }
+            array_multisort($sum_price,SORT_DESC,$suborder['order_details']);
+        }//dump($bill['suborder_list']);
+        //对账单里的所有sku按一级分类进行分组
+        $category_group = array();
+        foreach($bill['suborder_list'] as $key => $value) {
+            //一级分类的实收金额总计
+            $grp_sum_price += $value['deal_price'];
+            
+            foreach ($value['order_details'] as $k => &$val) {
+                if ($k == 0) {
+                    $val['actual_sum_price'] = $val['actual_sum_price'] - $value['minus_amount'] - $value['deposit'] + $value['deliver_fee'];
+                }
+                $category_group[$val['primary_category']][] = $val;
+            }
+        }
+        $j = 2;
+        //dump($category_group);
         foreach ($category_group as $key => $value) {
             $j++;
-            //单个分组的单价总计
+            //sku实收总计
             $sum_actual_price = 0;
             $category = '';
             foreach ($value as $k => $val) {
@@ -604,9 +627,8 @@ class BillController extends \Wms\Controller\CommonController
                 $sum_actual_price += $actual_price;
                 $category = $val['primary_category_cn'];
             }
+
             $Sheet1->setCellValue('B'.$j, $category);
-            //一级分类的实收金额总计
-            $grp_sum_price += $sum_actual_price;
             $Sheet1->setCellValue('C'.$j, $sum_actual_price);
             //一级分类的税率总计
             $grp_sum_tax += $tax[$key];
