@@ -566,10 +566,9 @@ class StockLogic{
         $map['batch'] = $cost_batch;
         $map['pro_code'] = $cost_pro_code;
         $storage_cost = M('erp_storage_cost')->where($map)->find();
-        unset($map);
 
+        $cost_price_unit = A('Process','Logic')->get_price_by_sku($cost_batch, $cost_pro_code);
         if(empty($storage_cost)){
-            $cost_price_unit = A('Process','Logic')->get_price_by_sku($cost_batch, $cost_pro_code);
             $cost_data['wh_id'] = $cost_wh_id;
             $cost_data['pro_code'] = $cost_pro_code;
             $cost_data['batch'] = $cost_batch;
@@ -579,8 +578,12 @@ class StockLogic{
             $storage_cost = D('StorageCost');
             $cost_data = $storage_cost->create($cost_data);
             $storage_cost->data($cost_data)->add();
+        }else{
+            $cost_data['price_unit'] = $cost_price_unit;
+            M('erp_storage_cost')->where($map)->save($cost_data);
         }
-        
+        unset($map);
+        unset($cost_data);
 
         return true;
     }
