@@ -811,8 +811,7 @@ class DistributionController extends CommonController {
             $map['pid'] = array('in', $synch_hop_bill_out_ids);
             $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
             foreach($bill_out_detail_infos as $bill_out_detail_info){
-                $notice_params['wh_id'] = session('user.wh_id');
-                $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
+                $notice_params['wh_id'] = session('user.wh_id');;
                 $notice_params['type'] = 'out';
                 $notice_params['suborder_ids'] = $synch_hop_bill_out_ids;
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);

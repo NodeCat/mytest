@@ -42,7 +42,7 @@ class DachuwangLogic{
             return false;
         }
 
-        $url = $this->server.'/mall_stock/notice_stock_update';
+        $url = $this->server.'/stock_service/notice_stock_update';
         $json_data = json_encode($data);
         $result = $this->request->post($url,$json_data);
         return json_decode($result,true);

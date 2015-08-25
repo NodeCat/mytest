@@ -278,7 +278,7 @@ class StockLogic{
 
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
-                    $notice_params['pro_code'] = $params['pro_code'];
+                    $notice_params['pro_code'] = array($params['pro_code']);
                     $notice_params['type'] = 'change';
                     $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
@@ -337,7 +337,7 @@ class StockLogic{
 
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
-                    $notice_params['pro_code'] = $params['pro_code'];
+                    $notice_params['pro_code'] = array($params['pro_code']);
                     $notice_params['type'] = 'change';
                     $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
@@ -403,7 +403,7 @@ class StockLogic{
 
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
-                    $notice_params['pro_code'] = $params['pro_code'];
+                    $notice_params['pro_code'] = array($params['pro_code']);
                     $notice_params['type'] = 'change';
                     $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
@@ -537,7 +537,7 @@ class StockLogic{
 
         //通知实时库存接口
         $notice_params['wh_id'] = $wh_id;
-        $notice_params['pro_code'] = $pro_code;
+        $notice_params['pro_code'] = array($pro_code);
         $notice_params['type'] = 'change';
         $notice_params['msg'] = 'adjustStockByShelves';
         A('Dachuwang','Logic')->notice_stock_update($notice_params);
@@ -815,7 +815,7 @@ class StockLogic{
         if($src_stock['status'] == 'qualified' && $dest_location_info['status'] != 'qualified'){
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
-            $notice_params['pro_code'] = $param['pro_code'];
+            $notice_params['pro_code'] = array($param['pro_code']);
             $notice_params['type'] = 'change';
             $notice_params['msg'] = 'incDestStockDecSrcStock';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
@@ -1029,7 +1029,7 @@ class StockLogic{
         if($src_stock_info['status'] == 'qualified' && $dest_stock_info['status'] != 'qualified'){
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
-            $notice_params['pro_code'] = $param['pro_code'];
+            $notice_params['pro_code'] = array($param['pro_code']);
             $notice_params['type'] = 'change';
             $notice_params['msg'] = 'adjustStockByMove';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
@@ -1401,7 +1401,7 @@ class StockLogic{
             if($stock_info['status'] == 'qualified' && $dest_stock_info['status'] != 'qualified'){
                 //通知实时库存接口
                 $notice_params['wh_id'] = $params['wh_id'];
-                $notice_params['pro_code'] = $params['pro_code'];
+                $notice_params['pro_code'] = array($params['pro_code']);
                 $notice_params['type'] = 'change';
                 $notice_params['msg'] = 'adjustStockStatus';
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
