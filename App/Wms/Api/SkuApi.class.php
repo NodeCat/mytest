@@ -13,9 +13,9 @@ class SkuApi extends CommApi
     * @param int wh_id 仓库id
     */
     public function getProductQuant(){
-        $params = I('json.');
-        $pro_codes = I('json.sku_codes');
-        $wh_id = I('json.wh_id');
+        $params = I('post.');
+        $pro_codes = $params['sku_codes'];
+        $wh_id = $params['wh_id'];
 
         if(empty($params)) {
             $return = array('status' => -1, 'msg' => 'params is empty');
