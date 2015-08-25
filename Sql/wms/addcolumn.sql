@@ -9,3 +9,6 @@ INSERT INTO `category` (`id`, `code`, `name`, `type`, `val`, `pid`, `level`, `qu
 (32, '269', '疏菜', 'sku_type', '0', 0, 0, 0, '', '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0, '', 0),
 (33, '303', '酒水饮料', 'sku_type', '0.17', 0, 0, 0, '', '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0, '', 0),
 (34, '326', '肉类禽蛋', 'sku_type', '0', 0, 0, 0, '', '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0, '', 0);
+
+
+INSERT INTO `wms`.`auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `log`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES ('571', 'export', '4', 'Wms', 'Fms', 'Bill', 'export', 'Fms/Bill/export', '', '', '导出', '0', '1', '454', '0', '0', '0', '', '', '1', '0', '0000-00-00 00:00:00', '0', '0000-00-00 00:00:00', '0');
