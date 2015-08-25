@@ -36,6 +36,7 @@ class DachuwangLogic{
                 'data' => array(
                     'wh_id' => $params['wh_id'],
                     'suborder_id' => $params['suborder_ids'],
+                    'msg' => $params['msg'],
                     ),
                 );
         }else{
