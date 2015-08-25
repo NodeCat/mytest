@@ -97,7 +97,7 @@ class DistDriver extends Controller {
                 $deliver_date = $dist['deliver_date'];
             }
             $yestoday = date('Y-m-d',strtotime('-1 Days'));
-            
+
             if(!empty($this->error)) {
 
             }elseif (empty($dist)) {
@@ -200,9 +200,11 @@ class DistDriver extends Controller {
                     $this->msg = "提货成功";
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
                     if ($status=='4') {
+                        unset($map);
                         $map['updated_time'] = $data['updated_time'];
                         $map['created_time'] = $data['created_time'];
                         $map['userid']       = session('user.id');
+                        $map['wh_id']       = session('user.wh_id');
                         M('TmsSignList')->add($map);
                         unset($map);
                         unset($status);
@@ -906,6 +908,7 @@ class DistDriver extends Controller {
                 if ($status=='4') {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
+                    $map['wh_id']       = session('user.wh_id');
                     $map['userid']       = $user['id'];
                     M('tms_sign_list')->add($map);
                     unset($map);
