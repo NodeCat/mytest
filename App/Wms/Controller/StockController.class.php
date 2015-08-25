@@ -207,8 +207,8 @@ class StockController extends CommonController {
 					$pro_codes = array(0);
 				}
 				$map['stock.pro_code'] = array('in',$pro_codes);
-                unset($map['stock.pro_name']);
 			}
+            unset($map['stock.pro_name']);
 
 			//是否包含空库位
 			$in_empty_location = I('in_empty_location');

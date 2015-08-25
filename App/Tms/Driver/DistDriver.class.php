@@ -92,7 +92,12 @@ class DistDriver extends Controller {
             //查询该配送单的信息
             $wA = A('Wms/Distribution','Logic');
             $dist = $wA->distInfo($id);
+            
+            if($dist['deliver_date'] != '0000-00-00 00:00:00') {
+                $deliver_date = $dist['deliver_date'];
+            }
             $yestoday = date('Y-m-d',strtotime('-1 Days'));
+
             if(!empty($this->error)) {
 
             }elseif (empty($dist)) {
@@ -106,7 +111,11 @@ class DistDriver extends Controller {
             } elseif ($dist['status'] == '3' || $dist['status'] == '4') {
                 //已配送或已结算的配送单不能认领
                 $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
-            } elseif (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date)) {
+            } elseif (
+                !empty($deliver_date) &&(strtotime($deliver_date) < strtotime($yestoday) || strtotime($deliver_date) > strtotime($end_date))
+                || empty($deliver_date) && (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date))
+            ) {
+                //配送日期不为空，则判断配送日期是否在两天以内；配送日期为空，则判断创建日期是否在两天以内
                 $this->error = '提货失败，该配送单已过期';
             }
             //添加提货数据
@@ -191,9 +200,11 @@ class DistDriver extends Controller {
                     $this->msg = "提货成功";
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
                     if ($status=='4') {
+                        unset($map);
                         $map['updated_time'] = $data['updated_time'];
                         $map['created_time'] = $data['created_time'];
                         $map['userid']       = session('user.id');
+                        $map['wh_id']       = session('user.wh_id');
                         M('TmsSignList')->add($map);
                         unset($map);
                         unset($status);
@@ -897,6 +908,7 @@ class DistDriver extends Controller {
                 if ($status=='4') {
                     $map['updated_time'] = $data['updated_time'];
                     $map['created_time'] = $data['created_time'];
+                    $map['wh_id']       = session('user.wh_id');
                     $map['userid']       = $user['id'];
                     M('tms_sign_list')->add($map);
                     unset($map);
