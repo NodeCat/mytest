@@ -152,6 +152,7 @@ class IndexDriver extends Controller {
                 $data['created_time'] = get_time();
                 $data['updated_time'] = get_time();
                 M('TmsSignList')->add($data);//否则就签到
+                $user['wh_id']  = $wh_id;
                 session('user',$user);
                 $this->redirect('delivery');
             } else {
@@ -166,9 +167,10 @@ class IndexDriver extends Controller {
             $map['is_deleted'] = '0';
             $M = M('TmsSignList');
             //当天签到记录
-            $sign = $M->field('id')->order('created_time DESC')->where($map)->find();
+            $sign = $M->field('id,wh_id')->order('created_time DESC')->where($map)->find();
             if ($sign) {
                 $M->save(array('id' => $sign['id'],'updated_time' => get_time()));
+                $user['wh_id'] = $sign['wh_id'];
                 session('user',$user); //把用户id、姓名、手机号写入session
                 $this->redirect('delivery');
             }
