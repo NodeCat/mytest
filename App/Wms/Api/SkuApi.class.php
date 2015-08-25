@@ -55,6 +55,23 @@ class SkuApi extends CommApi
             }
         }
 
+        //补充qualified_qty unqualified_qty freeze_qty是空的
+        foreach($list as $pro_code => $skus){
+            foreach($skus as $wh_id => $whs){
+                foreach($whs as $qty){
+                    if(isset($qty['qualified_qty'])){
+                        $list[$pro_code][$wh_id]['qualified_qty'] = 0;
+                    }
+                    if(isset($qty['unqualified_qty'])){
+                        $list[$pro_code][$wh_id]['unqualified_qty'] = 0;
+                    }
+                    if(isset($qty['freeze_qty'])){
+                        $list[$pro_code][$wh_id]['freeze_qty'] = 0;
+                    }
+                }
+            }
+        }
+
         $return = array('status' => 0, 'list'=>$list, 'msg' => 'succ');
         $this->ajaxReturn($return);
     }
