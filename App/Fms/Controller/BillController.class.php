@@ -28,8 +28,8 @@ class BillController extends \Wms\Controller\CommonController
         'unit_cn' => '单位',
         'actual_quantity' => '实收数量',
         'actual_sum_price' => '签收金额',
-        'refuse_quantity' => '退货数量',
-        'refuse_price' => '退货金额',
+        'rejected_quantity' => '退货数量',
+        'rejected_sum_price' => '退货金额',
         'deliver_fee' => '运费',
         'minus_amount' => '优惠',
         'deposit' => '押金',
@@ -479,7 +479,7 @@ class BillController extends \Wms\Controller\CommonController
                     }
                     $Sheet->setCellValue('F'.$i, $spec);
                     $Sheet->setCellValue('G'.$i, $sku['unit_cn']);
-                    $sku_qty = $sku['actual_quantity'] - $sku['refuse_quantity'];
+                    $sku_qty = $sku['actual_quantity'] - $sku['rejected_quantity'];
                     if ($sku_qty < 0) {
                         $sku_qty = 0;
                     }
@@ -490,17 +490,17 @@ class BillController extends \Wms\Controller\CommonController
                     $grp_deal_price += $sku['actual_sum_price'];
                     $Sheet->setCellValue('I'.$i, $sku['actual_sum_price']);
                     //分组退货数量
-                    $grp_refuse_qty += $sku['refuse_quantity'];
-                    $Sheet->setCellValue('J'.$i, $sku['refuse_quantity']);
+                    $grp_refuse_qty += $sku['rejected_quantity'];
+                    $Sheet->setCellValue('J'.$i, $sku['rejected_quantity']);
                     //分组退货金额
-                    $grp_refuse_price += $sku['refuse_price'];
-                    $Sheet->setCellValue('K'.$i, $sku['refuse_price']);
+                    $grp_refuse_price += $sku['rejected_sum_price'];
+                    $Sheet->setCellValue('K'.$i, $sku['rejected_sum_price']);
                     if ($k == 0) {
                         $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
                         $Sheet->setCellValue('M'.$i, $value['minus_amount']);
                         $Sheet->setCellValue('N'.$i, $value['deposit']);
                     }
-                    $sku_price = $sku['actual_sum_price'] - $sku['refuse_price'];
+                    $sku_price = $sku['actual_sum_price'] - $sku['rejected_sum_price'];
                     if ($sku_price < 0) {
                         $sku_price = 0;
                     }
@@ -534,18 +534,18 @@ class BillController extends \Wms\Controller\CommonController
             $Sheet->mergeCells('A'.$i.':'.'G'.$i);
             $Sheet->setCellValue('A'.$i, '合计');
             $Sheet->getStyle('A'.$i)->getAlignment()->setHorizontal('center');
-            $order_actual_qty = $value['sum_actual_quantity'] - $value['sum_refuse_quantity'];
+            $order_actual_qty = $value['sum_actual_quantity'] - $value['sum_rejected_quantity'];
             if ($order_actual_qty < 0) {
                 $order_actual_qty = 0;
             }
             $Sheet->setCellValue('H'.$i, $order_actual_qty);
             $Sheet->setCellValue('I'.$i, $value['deal_price']);
-            $Sheet->setCellValue('J'.$i, $value['sum_refuse_quantity']);
-            $Sheet->setCellValue('K'.$i, $value['sum_refuse_price']);
+            $Sheet->setCellValue('J'.$i, $value['sum_rejected_quantity']);
+            $Sheet->setCellValue('K'.$i, $value['sum_rejected_price']);
             $Sheet->setCellValue('L'.$i, $value['deliver_fee']);
             $Sheet->setCellValue('M'.$i, $value['minus_amount']);
             $Sheet->setCellValue('N'.$i, $value['deposit']);
-            $order_actual_price = $value['deal_price'] - $value['sum_refuse_price'];
+            $order_actual_price = $value['deal_price'] - $value['sum_rejected_price'];
             if ($order_actual_price < 0) {
                 $order_actual_price = 0;
             }
@@ -597,7 +597,7 @@ class BillController extends \Wms\Controller\CommonController
             $sum_actual_price = 0;
             $category = '';
             foreach ($value as $k => $val) {
-                $actual_price = $val['actual_sum_price'] - $val['refuse_price'];
+                $actual_price = $val['actual_sum_price'] - $val['rejected_sum_price'];
                 if ($actual_price < 0 ) {
                     $actual_price = 0;
                 }
