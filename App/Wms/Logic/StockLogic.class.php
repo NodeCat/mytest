@@ -470,11 +470,11 @@ class StockLogic{
     public function adjustStockByShelves($wh_id,$location_id,$refer_code,$batch,$pro_code,$pro_qty,$pro_uom,$status,$product_date,$inId,$has_source_batch=false){
         $stock = D('stock');
         //增加库存
-        $row['wh_id'] = $wh_id;
+        $row['wh_id'] = $cost_wh_id = $wh_id;
         $row['location_id'] = $location_id;
-        $row['pro_code'] = $pro_code;
+        $row['pro_code'] = $cost_pro_code = $pro_code;
         //如果传入的有明确的批次号，就使用指定的批次号，如果没有就是用refer_code做批次号
-        $row['batch'] = $batch ? $batch : $refer_code;
+        $row['batch'] = $cost_batch = $batch ? $batch : $refer_code;
         $row['status'] =$status;
         
         $stock_info = $stock->where($row)->find();
@@ -484,7 +484,7 @@ class StockLogic{
             $row['stock_qty'] = $pro_qty;
             $row['assign_qty'] = 0;
             //增加生产日期
-            $row['product_date'] = (empty($product_date)) ? date('Y-m-d') : $product_date;
+            $row['product_date'] = $cost_product_date = (empty($product_date)) ? date('Y-m-d') : $product_date;
             
             $data = $stock->create($row);
 
@@ -505,9 +505,10 @@ class StockLogic{
             $res = $stock->where($map)->save($data);
             unset($data);
 
+            $cost_product_date = $stock_info['product_date'];
             //是否修改生产日期 暂定每个批次只有一个生产日期 如果有不同 取最早的生产日期
             if(strtotime($stock_info['product_date']) > strtotime($product_date) || $stock_info['product_date'] == '0000-00-00 00:00:00'){
-                $data['product_date'] = (empty($product_date)) ? date('Y-m-d') : $product_date;
+                $data['product_date'] = $cost_product_date = (empty($product_date)) ? date('Y-m-d') : $product_date;
                 $data = $stock->create($data,2);
                 $res = $stock->where($map)->save($data);
                 unset($data);
@@ -560,6 +561,26 @@ class StockLogic{
         $stock_move = D('StockMoveDetail');
         $stock_move_data = $stock_move->create($stock_move_data);
         $stock_move->data($stock_move_data)->add();
+
+        //写入入库成本erp_storage_cost
+        $map['batch'] = $cost_batch;
+        $map['pro_code'] = $cost_pro_code;
+        $storage_cost = M('erp_storage_cost')->where($map)->find();
+        unset($map);
+
+        if(empty($storage_cost)){
+            $cost_price_unit = A('Process','Logic')->get_price_by_sku($cost_batch, $cost_pro_code);
+            $cost_data['wh_id'] = $cost_wh_id;
+            $cost_data['pro_code'] = $cost_pro_code;
+            $cost_data['batch'] = $cost_batch;
+            $cost_data['price_unit'] = $cost_price_unit;
+            $cost_data['product_date'] = $cost_product_date;
+
+            $storage_cost = D('StorageCost');
+            $cost_data = $storage_cost->create($cost_data);
+            $storage_cost->data($cost_data)->add();
+        }
+        
 
         return true;
     }
