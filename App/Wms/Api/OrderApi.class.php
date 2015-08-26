@@ -98,5 +98,164 @@ class OrderApi extends CommApi{
         $this->ajaxReturn($return);
     }
 
-    //取消订单
+    //客退入库单
+    public function guestBackStorage(){
+        $order_infos = I('back_storage_infos')?I('back_storage_infos'):I('json.back_storage_infos');
+        $return = array();
+        if (!$order_infos) {
+            $return['status'] = -1;
+            $return['data']   = '';
+            $return['msg']    = '请合法传参';
+            $this->ajaxReturn($return);
+        }
+        
+        $order_code_arr = array_column($order_infos, 'order_code');
+        $pro_code_arr = array_column($order_infos, 'pro_code');
+        $order_code_num = count($order_code_arr);
+
+        if ($order_code_num != count(array_unique($pro_code_arr))) {
+            $return['status'] = -1;
+            $return['data']   = '';
+            $return['msg']    = '请不要重复退相同的商品！';
+            $this->ajaxReturn($return);            
+        }
+
+        //得到订单单号查询出库id
+        $bill_out = M('stock_bill_out');
+        $map = array();
+        $map['code'] = array('in',$order_code_arr);
+        $map['status'] = 2;
+        $bill_out_code_res = $bill_out->where($map)->field('code,refer_code')->select();
+        //合法出库单号|订单号
+        $bill_out_code_arr = array_column($bill_out_code_res, 'code');
+
+        //判断订单合法性
+        $order_code_res = $this->judgeOrder($order_code_arr,$bill_out_code_arr);
+        if ($order_code_res['status'] === -1) {
+            $return['status'] = -1;
+            $return['data']   = '订单为' . implode(',', $order_code_res['data']) . '有问题，原因是订单还没有出库或不正常单';
+            $return['msg']    = '订单为' . implode(',', $order_code_res['data']) . '有问题，原因是订单还没有出库或不正常单';
+            $this->ajaxReturn($return);
+        }
+
+        //判断订单退货量是否合法（退货量是否大于出库量）
+        $order_code_qty = $this->judgeOutQty($order_infos, $bill_out_code_arr);
+
+        if ($order_code_qty['status'] === -1) {
+            $return['status'] = -1;
+            $return['data']   = $order_code_qty['msg'];
+            $return['msg']    = $order_code_qty['msg'];
+            $this->ajaxReturn($return);
+        }
+
+        //创建客退入库单
+        //加入wms入库单 liuguangping
+        $stockin_logic = A('Wms/StockIn','Logic');    
+        $is_created = $stockin_logic->addWmsInOfGuestBack($order_infos);
+        if ($is_created) {
+            $return['status'] = 0;
+            $return['data']   = '客退成功';
+            $return['msg']    = '客退成功';
+            $this->ajaxReturn($return);
+        } else {
+            $return['status'] = -1;
+            $return['data']   = '客退失败';
+            $return['msg']    = '客退失败';
+            $this->ajaxReturn($return);
+        }      
+    }
+
+    //判断订单合法性 @order_code_arr 订单号集合 bill_out_code_arr 合法的订单集合
+    public function judgeOrder($order_code_arr = array(), $bill_out_code_arr = array()){
+        $return = array('status'=>-1,'data'=>'','msg'=>'');
+        if ($order_code_arr) {
+            
+            //以第一个数组为基础去差集
+            $intersection = array_diff($order_code_arr, $bill_out_code_arr);
+            if ($intersection){
+                $return = array('status'=>-1,'data'=>$intersection,'msg'=>'ERO');
+            } else {
+                $return = array('status'=>0,'data'=>'','msg'=>'SUC');
+            }
+
+        }
+
+        return $return;
+    }
+
+    //判断订单退货量是否合法（退货量是否大于出库量） $order_infos 客退详细信息 $bill_out_code_arr 合法的出库单号
+    public function judgeOutQty($order_infos = array(), $bill_out_code_arr = array()){
+        $return = array('status'=>-1,'data'=>'','msg'=>'');
+        if ($order_infos) {
+            $pro_code_arr = array_column($order_infos, 'pro_code');
+            $order_code_arr = array_column($order_infos, 'order_code');
+            if ($pro_code_arr && $bill_out_code_arr) {
+                $stock_bill_out_container = M('stock_bill_out_container');
+                $map = array();
+                $map['a.refer_code'] = array('in', $bill_out_code_arr);
+                $map['a.pro_code']   = array('in', $pro_code_arr);
+                $map['a.is_deleted']   = 0;
+
+                $join = array('as a join stock_bill_out as b on b.code = a.refer_code');
+                $res = $stock_bill_out_container->field('a.pro_code,a.refer_code,sum(a.qty) as qty,b.code as order_code')->join($join)->where($map)->group('a.pro_code,b.code')->select();
+                if ($res) {
+                    //查询入库单入库量
+                    $bill_in_detail_m = M('stock_bill_in_detail');
+                    $where = array();
+                    $where['a.pro_code'] = array('in',$pro_code_arr);
+                    $where['b.refer_code'] = array('in',$order_code_arr);
+                    $joins = array('as a join stock_bill_in as b on a.pid = b.id');
+                    $bill_in_res = $bill_in_detail_m->field('a.pro_code,b.code,sum(a.expected_qty) as qty,b.refer_code as order_code')->join($joins)->where($where)->group('a.pro_code,b.refer_code')->select();
+                    $expected_qty_arr = array();
+                    foreach ($bill_in_res  as $index => $vals) {
+                        $expected_qty_arr[$vals['order_code'].'_qty_'.$vals['pro_code']] = $vals['qty'];
+                    }
+                    //判断退货量是否大于出库量
+                    //客退量大与出库量数据
+                    $unqulify = array();
+                    $error_unqulify = array();
+                    //合法的订单
+                    $qulify   = array();
+                    foreach($res as $val){
+                        foreach ($order_infos as $value) {
+                            if ( $value['order_code'] == $val['order_code'] && $value['pro_code'] == $val['pro_code']){
+                                //出库单的量是 出库量-入库量 等于这次该入库的量
+                                $bill_in_qty = isset($expected_qty_arr[$val['order_code'].'_qty_'.$val['pro_code']])?$expected_qty_arr[$val['order_code'].'_qty_'.$val['pro_code']]:0;
+                                $pro_qty = bcsub($val['qty'], $bill_in_qty, 2);
+                                if (bccomp($value['pro_qty'], $pro_qty, 2) == 1) {
+                                    array_push($unqulify, $val['order_code']);
+                                    $mes = "订单号" . $val['order_code'] . '中的商品编号为' . $val['pro_code'] ;
+                                    array_push($error_unqulify,$mes);
+                                }
+                                array_push($qulify, $val['order_code']);
+                            }
+                        }
+                    }
+
+                    if ($unqulify) {
+                        $return = array('status'=>-1,'data'=>$unqulify,'msg'=>implode(',', $error_unqulify).'客退量大与出库量');
+                    } else {
+                        if ($qulify) {
+                            
+                            $judge_code = $this->judgeOrder($order_code_arr, $qulify);
+                            if ($judge_code['status'] === -1) {
+                                $return = array('status'=>-1,'data'=>$judge_code['data'],'msg'=>'订单为' . implode(',', $judge_code['data']) . '有问题，原因是订单还没有出库或不正常单');
+                            } else {
+                                $return = array('status'=>0,'data'=>'','msg'=>'SUC');
+                            }
+                        } else {
+                            $return = array('status'=>-1,'data'=>'','msg'=>'请选择正确的合法商品和订单');
+                        }
+                    }
+                    
+                } else {
+                    $return = array('status'=>-1,'data'=>'','msg'=>'请选择正确的合法商品和订单');
+                }
+            } else {
+                $return = array('status'=>-1,'data'=>'','msg'=>'请选择正确的合法商品和订单');
+            }
+        }
+        return $return;
+    }
+    
 }
