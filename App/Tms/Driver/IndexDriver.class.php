@@ -140,7 +140,8 @@ class IndexDriver extends Controller {
         //post请求执行验证过程
         if (IS_POST) {
             $code = I('post.verify_code');
-            if ($wh_id = S(md5($code))) {
+            $key = 'sign_code_' . $code;
+            if ($wh_id = S($key)) {
                 //验证通过则生成签到记录
                 if(time() < mktime(12,0,0,date('m'),date('d'),date('Y'))) {
                     $data['period'] = '上午';
