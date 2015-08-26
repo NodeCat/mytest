@@ -699,22 +699,18 @@ class StockInLogic{
             }
         }
         return ture;
-
-        
         
     }
 
-    //客退加入入库单 @order_info_arr 客退信息 liuguangping @todoliuguangping
-    public function addWmsInOfGuestBack($order_info_arr = array())
+    //客退加入入库单 @order_info_arr 客退信息 $order_code 订单号===出库单 liuguangping @todoliuguangping
+    public function addWmsInOfGuestBack($order_info_arr = array(), $order_code = '')
     {
         if (empty($order_info_arr)) {
             return false;
         }
-        //订单号
-        $order_code_arr = array_column($order_info_arr, 'order_code');
         $bill_out_m = M('stock_bill_out');
         $out_m = M('stock_bill_out_container');
-        $map['b.code'] = array('in', $order_code_arr);
+        $map['b.code'] = array('in', $order_code);
         $map['b.is_deleted'] = 0;
         $map['a.is_deleted'] = 0;
         $in_infos = $out_m->field('b.wh_id,b.code,b.code as order_code,a.batch,a.pro_code,a.qty')->join(' as a left join stock_bill_out as b on b.code = a.refer_code')->where($map)->order('a.created_time asc')->select();
@@ -725,9 +721,9 @@ class StockInLogic{
         $bill_in_m = M('stock_bill_in');
         $bill_in_detail_m = M('stock_bill_in_detail');
         $where = array();
-        $pro_code_arr = array_column($order_info_arr, 'pro_code');
+        $pro_code_arr = array_column($order_info_arr, 'code');
         $where['a.pro_code'] = array('in',$pro_code_arr);
-        $where['b.refer_code'] = array('in',$order_code_arr);
+        $where['b.refer_code'] = array('in',$order_code);
         $where['a.batch'] != '';
         $joins = array('as a join stock_bill_in as b on a.pid = b.id');
         $bill_in_res = $bill_in_detail_m->field('a.batch,a.pro_code,b.code,sum(a.expected_qty) as qty,b.refer_code as order_code')->join($joins)->where($where)->group('a.pro_code,b.refer_code,a.batch')->select();
@@ -739,7 +735,7 @@ class StockInLogic{
         $pro_code_w = array();
         $pro_code_info_arr = array();
         $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
-        $pro_code_w['b.code'] = array('in', $order_code_arr);
+        $pro_code_w['b.code'] = array('in', $order_code);
         $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
         foreach ($pro_code_infos as $info_val) {
             $pro_code_info_arr[$info_val['pro_code']]= $info_val;
@@ -749,12 +745,12 @@ class StockInLogic{
         }
         $tmp_arr = array();
         foreach ($order_info_arr as $key => $value) {
-            $diff = $value['pro_qty'];
+            $diff = $value['qty'];
             foreach ($in_infos as $index => $val) {
                 if ($diff*1000 <= 0) {
                     break;
                 }
-                if ($val['order_code'] == $value['order_code'] && $val['pro_code'] == $value['pro_code']) {
+                if ($val['pro_code'] == $value['code']) {
                     //出库单的量是 出库量-入库量 等于这次该入库的量
                     $bill_in_qty = $expected_qty_arr[$val['order_code'].'_qty_'.$val['pro_code'].'_'.$val['batch']]?$expected_qty_arr[$val['order_code'].'_qty_'.$val['pro_code'].'_'.$val['batch']]:0;
                     $pro_qty = bcsub($val['qty'], $bill_in_qty, 2);
@@ -850,7 +846,9 @@ class StockInLogic{
                 $bill_in_detail_m->addAll($detail);
             }
         }
-        return true;        
+
+        $return = array("order_number"=>$order_code,"in_code"=>$bill_in['code']);
+        return $return;        
     }
 
 }
