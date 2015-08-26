@@ -74,7 +74,10 @@
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
             <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
-            <td></td>
+            <td>
+                <a class="btn btn-default  btn-sm" data-toggle="modal" data-target="#remarkModal" data-id="{$k.id}" onclick="changeData(this);">编辑</a>
+                <span>备注信息</span>
+            </td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
                     <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
@@ -84,9 +87,41 @@
         </volist>
         </tbody>
       </table>
+      <!-- 备注模态框 -->
+      <div class="modal fade" id="remarkModal" tabindex="-1" role="dialog" aria-labelledby="remarkModal">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title text-center" id="remarkModal">编辑备注信息</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+              <div class="approve-data hidden" data-step="0" data-id="0"></div>
+              <button type="button" class="btn btn-default js-refuse" data-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary pull-left js-pass">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <input type="hidden" name="tmp-data" class="form-control" data-id="" value="">
     </div>
 
 <script type="text/javascript">
+function changeData(obj){
+    var id = $(obj).data('id'),
+        desc = $(obj).siblings('span').text();
+    $("input[name='tmp-data']").attr('data-id',id).attr('data-desc',desc);
+}
+$('#remarkModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var sid = $("input[name='tmp-data']").data('id'),
+        desc = $("input[name='tmp-data']").data('desc'),
+        input = '<input type="text" name="remark-data" class="form-control" data-id="'+sid+'" value="'+desc+'">';
+    var modal = $(this);
+    modal.find('.modal-body').html(input)
+})
 function select(){ 
     x=document.getElementById('f');
     x.action="{:U('Dispatch/index')}";
