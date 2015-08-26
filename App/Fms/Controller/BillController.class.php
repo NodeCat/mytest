@@ -245,7 +245,7 @@ class BillController extends \Wms\Controller\CommonController
                 $deal_price += $vo['actual_sum_price'];
             }
             if($deal_price > 0) {
-                $order['actual_price'] = $deal_price + $order['deliver_fee'] - $order['minus_amount']- $order['pay_reduce'];
+                $order['actual_price'] = $deal_price + $order['deliver_fee'] - $order['minus_amount'] - $order['pay_reduce'] - $order['deposit'];
             } else {
                 $order['actual_price'] = 0 ;
             }
