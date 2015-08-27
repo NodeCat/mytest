@@ -7,6 +7,35 @@ use Think\Controller;
  */
 class SkuApi extends CommApi 
 {
+    public function addCost(){
+        $map['is_deleted'] = 0;
+        $stock_info = M('stock')->where($map)->select();
+
+        foreach($stock_info as $stock){
+            $cost_data = array();
+            $cost_price_unit = A('Process','Logic')->get_price_by_sku($stock['batch'], $stock['pro_code']);
+            
+            $map['batch'] = $stock['batch'];
+            $map['pro_code'] = $stock['pro_code'];
+            $storage_cost = M('erp_storage_cost')->where($map)->find();
+
+            if(empty($storage_cost)){
+                $cost_data['wh_id'] = $stock['wh_id'];
+                $cost_data['pro_code'] = $stock['pro_code'];
+                $cost_data['batch'] = $stock['batch'];
+                $cost_data['price_unit'] = $cost_price_unit;
+                $cost_data['product_date'] = $stock['product_date'];
+
+                $storage_cost = D('StorageCost');
+                $cost_data = $storage_cost->create($cost_data);
+                $storage_cost->data($cost_data)->add();
+            }else{
+                $cost_data['price_unit'] = $cost_price_unit;
+                M('erp_storage_cost')->where($map)->save($cost_data);
+            }
+        }
+
+    }
     /**
      * SKU统计接口
      * @param int post.category_id 品类ID
