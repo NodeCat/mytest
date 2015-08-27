@@ -51,7 +51,7 @@ class StockInApi extends CommApi{
         $stock_in_m = M('stock_bill_in');
         $map = array();
         $map['code'] = $in_code;
-        $map['is_deleted'] = 0;
+        
         $result = $stock_in_m->field('id,status')->where($map)->find();
         if (!$result || !$result['status']) {
             $return = array('status' => 203, 'data' => '', "msg"=>"请合法传单，没有找到该单数据");
