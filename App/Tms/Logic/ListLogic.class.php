@@ -41,21 +41,18 @@ class ListLogic{
      * @param  array  $dist_ids [配送单ID数组]
      * @return [type]           [description]
      */
-    public function deliveryStatis($dist_ids = array())
+    public function deliveryStatis($details)
     {
-        $wA = A('Wms/Distribution', 'Logic');
-        //未删除配送单列表
-        $dist = $wA->distList($dist_ids);
-        $dist_ids = array_column($dist, 'id');
-        //配送单详情
-        $details = $wA->getDistDetailsByPid($dist_ids);
         $statis = array(
             'sign_orders'   => 0,
             'unsign_orders' => 0,
             'sign_finished' => 0,
             'delivering'    => 0,
-        );
+            'ontime'        => 0,
+          );
+        $total = count($details);
         foreach ($details as $value) {
+            //配送状态统计
             switch ($value['status']) {
                 case '1'://配送中
                     $statis['delivering'] ++;
@@ -70,7 +67,12 @@ class ListLogic{
                     $statis['sign_finished'] ++;
                     break;
             }
+            //配送准时统计
+            if ($value['delivery_ontime'] == 1) {
+                $statis['ontime'] ++;
+            }
         }
+        $statis['ontime'] = sprintf('%.1f',$statis['ontime'] / $total * 100) . '%';
         return $statis;
     }
 

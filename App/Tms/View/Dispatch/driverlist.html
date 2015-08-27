@@ -33,13 +33,13 @@
             <th>派车平台</th>
             <th>签到仓库</th>
             <th>第一次签到时间</th>
-            <th>最后签到时间</th>
             <th>时间段</th>
             <th>线路</th>
             <th>已签收</th>
             <th>已退货</th>
             <th>配送中</th>
             <th>已完成</th>
+            <th>准点率</th>
             <th>总里程/km</th>
             <th>当次运费(元)</th>
             <th>备注</th>
@@ -49,7 +49,7 @@
         <tbody>
           <volist name='list' id="k">
           <tr>
-            <th scope="row">{$k.userid}</th>
+            <th scope="row">{$key+1}</th>
             <td>{$k.username}</td>
             <td>{$k.mobile}</td>
             <td>{$k.car_num}</td>
@@ -57,7 +57,6 @@
             <td>{$k.car_from}</td>
             <td>{$k.warehouse}</td>
             <td>{$k.created_time}</td>
-            <td>{$k.updated_time}</td>
             <td>{$k.period}</td>
             <td>
                 <if condition="$k.report_error eq '1'">
@@ -70,6 +69,7 @@
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>
+            <td>{$k.ontime}</td>
             <td>{$k.distance}</br>
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
