@@ -215,6 +215,7 @@ class CommonController extends \Common\Controller\AuthController {
             'LocationArea',
             'Location',
             'Distribution',
+            'Refund',
         );
 
         $controllers_muilt = array(

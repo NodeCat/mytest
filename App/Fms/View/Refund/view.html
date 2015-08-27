@@ -1,0 +1,272 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<input type="hidden" name="id" value="{$data['id']}">
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+      <include file="status-bar" />
+
+      <div class="clearfix">
+      </div>
+    </h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-lg-6">
+        <h3>
+          退款单 {$data['id']}
+        </h3>
+      </div>
+      <div class="col-lg-6">
+      
+      </div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          店铺名称
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['shop_name']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          客户姓名
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_name']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          客户电话
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_mobile']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          生成时间
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['created_time']} 
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          母订单id
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['order_id']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+      <div class="row">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          子订单id
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['suborder_id']}
+          </label>
+        </div>
+      </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          拒收入库单
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['reject_code']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          退款方式
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['pay_type']}
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          退款金额
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['sum_reject_price']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          退款单类型
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['type']}
+          </label>
+        </div>
+      </div>
+    </div>
+    </div>
+    <br>
+
+    <div class="table-responsive">
+
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" >
+      <table class="data-table table table-bordered table-striped table-condensed table-hover">
+        <thead>
+          <tr>
+            <td>
+                一级分类
+            </td>
+            <td>
+                商品编号
+            </td>
+            <td>
+                商品名称
+            </td>
+            <td>
+                商品单价
+            </td>
+            
+            <td>
+                商品数量
+            </td>
+            <td>
+                退款金额
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <volist name="data['detail']" id="vo">
+            <tr>
+              <td>
+                {$vo.primary_category_cn}
+              </td>
+              <td>
+                {$vo.pro_code}
+              </td>
+              <td>
+                {$vo.pro_name}
+              </td>
+              <td>
+                {$vo.price}
+              </td>
+              <td>
+                {$vo.reject_qty}
+              </td>
+              <td>
+                {$vo.reject_price}
+              </td>
+              
+            </tr>
+          </volist>
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+<br>
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 账单动态 </a></li>
+  </ul>
+<div class="row">
+<div class="col-md-6">
+    <table class="data-table table table-bordered table-condensed table-hover" id="table-remarks">
+      <thead>
+        <tr>
+        <th>日期</th><th>操作</th><th>人员</th>
+        </tr>
+      </thead>
+      <tbody>
+      <volist name="remarks" id="vo">
+        <tr>
+          <td>{$vo.created_time}</td><td>{$vo.content}</td><td>{$vo.role_name} {$vo.author_name}</td>
+        </tr>
+      </volist>
+      </tbody>
+    </table>
+</div>
+<div class="col-md-6">
+<br>
+<neq name="data.state" value="5">
+    <div class="input-group">
+        <input type="text" class="form-control" name="remark" id="txt-remark" placeholder="请输入工作人员备注信息">
+        <span class="input-group-btn">
+          <button class="btn btn-default btn-add-remark btn-ajax" data-input="#txt-remark" data-target="#table-remarks" data-href="{:U('remark')}" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加备注</button>
+        </span>
+      </div>
+</neq>
+</div>
+</div>
+  </div>
+</div>
+</form>
+<script type="text/javascript">
+  $('body').delegate('.btn-add-remark','click',function (e) {
+      e.preventDefault();
+    var addr,params,form,target,input;
+    form = $(this).parents('form');
+    if(form != '' && form != null ){
+      params=$(form).serialize();
+    }
+
+    if(addr == null ) {
+      addr=$(this).data('href');
+    }
+    
+    target = $(this).data('target');
+    if(target == '' || target == null ){
+      target = '.content';
+    }
+
+    $.ajax({
+      url:addr,
+      type:'post',
+      cache : false,
+      async:true,
+      dataType:'json',
+      data:params,
+      success: function(msg){
+        alert(msg.msg);
+        if(msg.url != '' && msg.url != null ){
+            setTimeout(function() {document.location=msg.url}, 0);
+        }
+        $('#txt-remark').val('');
+        if(msg.data != '' && msg.data != null ){
+          var vo = msg.data;
+          $(target).find('tbody').html('');
+          for (var i = 0; i < vo.length - 1; i++) {
+            var tr = '<tr><td>'+vo[i].created_time + '</td><td>' + vo[i].content + '</td><td>' + vo[i].role_name + ' ' +vo[i].author_name + '</td></tr>';
+            $(target).find('tbody').append(tr);
+          };
+        }
+      }
+    }); 
+    return false;
+  });
+
+</script>
