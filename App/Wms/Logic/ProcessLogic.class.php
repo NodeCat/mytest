@@ -114,8 +114,7 @@ class ProcessLogic {
         if (empty($batch) || empty($sku_code)) {
             return $return;
         }
-        $pos = strpos($batch, 'ASN');
-        if ($pos !== false) {
+        if (strstr($batch, 'ASN')) {
             //采购入库
             $map['code'] = $batch;
             $res = M('stock_bill_in')->where($map)->find();
@@ -136,7 +135,7 @@ class ProcessLogic {
             if (empty($result)) {
                 return $return; 
             }
-        } elseif(strpos($batch, 'MNI')) {
+        } elseif(strstr($batch, 'MNI')) {
             //加工入库
             $result['price_unit'] = 0;
             $map['erp_process_in_detail.pro_code'] = $sku_code;
