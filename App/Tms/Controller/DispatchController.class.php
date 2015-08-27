@@ -36,22 +36,24 @@ class DispatchController extends \Common\Controller\AuthController{
      */
     protected function getSignList($export = 0)
     {
+        //车型、平台、仓库列表
         $cat = A('Common/Category','Logic');
         $this->carType = $cat->lists('car_type');
         $this->carFrom = $cat->lists('platform');
         $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $D = D("TmsSignList");
+        //日期筛选
         $sign_date = I('post.sign_date');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
         $this->start_date = $start_date;
-        //以仓库为单位的签到统计
+        //平台筛选
         $car_from  = I('post.car_from');
         if ($car_from) {
             $platform = "WHERE tu.car_from = {$car_from}";
         }
         $wh_id = session('user.wh_id');
         $this->car_from  = $car_from;
-        //把对应仓库的用户签到信息取出来
+        //以仓库为单位的签到统计
         $A = A('Tms/List','Logic');
         $sql = "SELECT a.*, tu.*, b.line_name, b.dist_ids, b.type
             FROM (
@@ -78,23 +80,28 @@ class DispatchController extends \Common\Controller\AuthController{
             INNER JOIN tms_user tu ON a.user_id = tu.id {$platform}
             ORDER BY a.sid DESC";
         $sign_lists = $D->query($sql);
+        //取出所有配送单ID
         $dist_ids = array_column($sign_lists, 'dist_ids');
         $dist_ids = implode(',', $dist_ids);
         $dist_ids = explode(',', $dist_ids);
+        //所有配送单详情数据
         $dist_details = A('Wms/Distribution', 'Logic')->getDistDetailsByPid($dist_ids);
         $dist_id_detail = array();
+        //配送单ID对应详情列表
         foreach ($dist_details as $key => $value) {
             $dist_id_detail[$value['pid']][] = $value;
         }
         foreach ($sign_lists as &$value) {
-            $value['warehouse'] = $this->warehouse[$value['swh_id']];//把仓库id变成名字
+            //仓库、车型、平台的中文名称
+            $value['warehouse'] = $this->warehouse[$value['swh_id']];
             $value['car_type']  = $this->carType[$value['car_type']];
             $value['car_from']  = $this->carFrom[$value['car_from']];
-            //获取配送单各状态订单统计
+            //签到记录对应的配送详情列表
             $value['dist_ids'] = explode(',', $value['dist_ids']);
             foreach ($value['dist_ids'] as $va) {
                 $details = array_merge($dist_id_detail[$va]);
             }
+            //配送状态、准点率统计
             $deliveryStatis = $A->deliveryStatis($details);
             $value['sign_orders']   = $deliveryStatis['sign_orders'];
             $value['unsign_orders'] = $deliveryStatis['unsign_orders'];
@@ -115,7 +122,11 @@ class DispatchController extends \Common\Controller\AuthController{
         }
         return $sign_lists;
     }
-    // 司机轨迹页面的的输出
+    
+    /**
+     * [showLine 司机轨迹页面]
+     * @return [type] [description]
+     */
     public function showLine() {
         $id = I('get.id');
         $mobile = I('get.mobile');
@@ -140,7 +151,10 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->display('line');
     }
 
-     //导出司机信息
+    /**
+     * [export 导出司机列表数据]
+     * @return [type] [description]
+     */
     public function export() {
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
@@ -243,7 +257,10 @@ class DispatchController extends \Common\Controller\AuthController{
         }
     }
 
-    //保存运费
+    /**
+     * [saveFee 保存运费]
+     * @return [type] [description]
+     */
     public function saveFee() {
         $fees = I('post.fees');
         if(empty($fees)) {
@@ -290,6 +307,10 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->ajaxReturn($re);
     }
 
+    /**
+     * [deleteSign 删除签到记录]
+     * @return [type] [description]
+     */
     public function deleteSign()
     {
         $id = I('post.id');
