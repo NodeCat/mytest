@@ -317,7 +317,8 @@ class DispatchController extends \Common\Controller\AuthController{
     {
         $code = A('Tms/Dist', 'Logic')->getSignCode();
         if ($code) {
-            $wh_id = S(md5($code));
+            $key = 'sign_code_' . $code;
+            $wh_id = S($key);
             $warehouse = A('Wms/Distribution', 'Logic')->getWarehouseById($wh_id);
             $this->warehouse = $warehouse;
         } else {
