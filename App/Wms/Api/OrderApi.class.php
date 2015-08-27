@@ -143,6 +143,7 @@ class OrderApi extends CommApi{
         $map = array();
         $map['code'] = array('in',$sku_number);
         $map['status'] = 2;
+        $map['is_deleted'] = 0;
         $bill_out_code_res = $bill_out->where($map)->field('code,refer_code')->find();
         if (!$bill_out_code_res) {
             $return['status'] = -1;
@@ -187,6 +188,7 @@ class OrderApi extends CommApi{
         $map['a.refer_code'] = array('in', $sku_number);
         $map['a.pro_code']   = array('in', $pro_code_arr);
         $map['a.is_deleted']   = 0;
+        $map['b.is_deleted']   = 0;
         $stock_bill_out_container = M('stock_bill_out_container');
         $join = array('as a join stock_bill_out as b on b.code = a.refer_code');
         $res = $stock_bill_out_container->field('a.pro_code')->join($join)->where($map)->group('a.pro_code')->select();
@@ -217,6 +219,7 @@ class OrderApi extends CommApi{
                 $map['a.refer_code'] = array('in', $order_code);
                 $map['a.pro_code']   = array('in', $pro_code_arr);
                 $map['a.is_deleted']   = 0;
+                $map['b.is_deleted']   = 0;
 
                 $join = array('as a join stock_bill_out as b on b.code = a.refer_code');
                 $res = $stock_bill_out_container->field('a.pro_code,a.refer_code,sum(a.qty) as qty,b.code as order_code')->join($join)->where($map)->group('a.pro_code,b.code')->select();
@@ -226,6 +229,8 @@ class OrderApi extends CommApi{
                     $where = array();
                     $where['a.pro_code'] = array('in',$pro_code_arr);
                     $where['b.refer_code'] = array('in',$order_code);
+                    $where['b.is_deleted'] = 0;
+                    $where['a.is_deleted'] = 0;
                     $joins = array('as a join stock_bill_in as b on a.pid = b.id');
                     $bill_in_res = $bill_in_detail_m->field('a.pro_code,b.code,sum(a.expected_qty) as qty,b.refer_code as order_code')->join($joins)->where($where)->group('a.pro_code,b.refer_code')->select();
                     $expected_qty_arr = array();

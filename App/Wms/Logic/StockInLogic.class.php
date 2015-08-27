@@ -725,6 +725,8 @@ class StockInLogic{
         $where['a.pro_code'] = array('in',$pro_code_arr);
         $where['b.refer_code'] = array('in',$order_code);
         $where['a.batch'] != '';
+        $where['a.is_deleted'] = 0;
+        $where['b.is_deleted'] = 0;
         $joins = array('as a join stock_bill_in as b on a.pid = b.id');
         $bill_in_res = $bill_in_detail_m->field('a.batch,a.pro_code,b.code,sum(a.expected_qty) as qty,b.refer_code as order_code')->join($joins)->where($where)->group('a.pro_code,b.refer_code,a.batch')->select();
         $expected_qty_arr = array();
@@ -736,6 +738,8 @@ class StockInLogic{
         $pro_code_info_arr = array();
         $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
         $pro_code_w['b.code'] = array('in', $order_code);
+        $pro_code_w['a.is_deleted'] = 0;
+        $pro_code_w['b.is_deleted'] = 0;
         $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
         foreach ($pro_code_infos as $info_val) {
             $pro_code_info_arr[$info_val['pro_code']]= $info_val;
