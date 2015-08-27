@@ -743,7 +743,7 @@ class StockInLogic{
         if (!$pro_code_info_arr) {
             return false;
         }
-        $tmp_arr = array();
+        $tmp_result = array();
         foreach ($order_info_arr as $key => $value) {
             $diff = $value['qty'];
             foreach ($in_infos as $index => $val) {
@@ -763,7 +763,16 @@ class StockInLogic{
                         $array['pro_code']   = $val['pro_code'];
                         $array['order_code'] = $val['order_code'];
                         $array['batch']      = $val['batch'];
-                        array_push($tmp_arr,$array);
+
+                        $parent = array();
+                        $parent['wh_id']     = $val['wh_id'];
+                        $parent['refer_code']= $val['order_code'];
+                        $tmp_result[$val['order_code']]['parent'] = $parent;
+                        if (!isset($tmp_result[$val['order_code']]['sub'])) {
+                            $tmp_result[$val['order_code']]['sub'] = array();
+                        }
+                        array_push($tmp_result[$val['order_code']]['sub'], $array);
+                        
                         $diff = bcsub($diff, $pro_qty,2);
                     } else {
                         $array['qty']        = $diff;
@@ -771,37 +780,48 @@ class StockInLogic{
                         $array['wh_id']      = $val['wh_id'];
                         $array['order_code'] = $val['order_code'];
                         $array['batch']      = $val['batch'];
-                        array_push($tmp_arr,$array);
+
+                        $parent = array();
+                        $parent['wh_id']     = $val['wh_id'];
+                        $parent['refer_code']= $val['order_code'];
+                        $tmp_result[$val['order_code']]['parent'] = $parent;
+                        if (!isset($tmp_result[$val['order_code']]['sub'])) {
+                            $tmp_result[$val['order_code']]['sub'] = array();
+                        }
+                        array_push($tmp_result[$val['order_code']]['sub'], $array);
+
                         $diff = 0;
                         break;
                     }
                 }
             }
         }
-        if (!$tmp_arr) {
+        if (!$tmp_result) {
             return false;
         }
-        //对结果集分组，同一个订单同一个仓库为一个出库单
-        $tmp_res = array();
-        foreach ($tmp_arr as $vo) {
-           $index_k = $vo['order_code'].'_'.$vo['wh_id'];
-           if (!isset($tmp_res[$index_k])) {
-                $arrays['wh_id']             = $vo['wh_id'];
-                $arrays['refer_code']        = $vo['order_code'];
-                $tmp_res[$index_k]['parent'] = $arrays;
-                $tmp_res[$index_k]['sub'][]  = $vo;
-           } else {
-                $tmp_res[$index_k]['sub'][]  = $vo;
-           }
+        //创建入库单
+        $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
+        if ($in_code) {
+            $return = array("order_number"=>$order_code,"in_code"=>$bill_in['code']);
+        } else {
+            $return = false;
         }
-        if (!$tmp_res) {
-            return false;
+        return $return;    
+    }
+
+    public function insertWmsIn($tmp_result = array(), $pro_code_info_arr = array())
+    {   
+        $return = false;
+        if (!$tmp_result || !$pro_code_info_arr) {
+            $return = false;
         }
+        $bill_in_m = M('stock_bill_in');
+        $bill_in_detail_m = M('stock_bill_in_detail');
         $stock_type = M('stock_bill_in_type');
         $type_name = $stock_type->field('type')->where(array('id' => 3))->find();
         $numbs = M('numbs');
         $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
-        foreach ($tmp_res as $vos) {
+        foreach ($tmp_result as $vos) {
             //加入入库单
             $bill_in['wh_id']        = $vos['parent']['wh_id']?$vos['parent']['wh_id']:'';//入库仓库@todo
             $bill_in['type']         = 3;
@@ -847,8 +867,7 @@ class StockInLogic{
             }
         }
 
-        $return = array("order_number"=>$order_code,"in_code"=>$bill_in['code']);
-        return $return;        
+        return $bill_in['code'];
     }
 
 }

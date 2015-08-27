@@ -180,7 +180,8 @@ class OrderApi extends CommApi{
     }
 
     //判断订单中的商品合法性
-    public function judgeCode($pro_code_arr = array(), $sku_number = ''){
+    public function judgeCode($pro_code_arr = array(), $sku_number = '')
+    {
         $return = array('status'=>-1,'data'=>'','msg'=>'出错！');
         $map = array();
         $map['a.refer_code'] = array('in', $sku_number);
@@ -205,7 +206,8 @@ class OrderApi extends CommApi{
     }
 
     //判断订单退货量是否合法（退货量是否大于出库量） $order_infos 客退详细信息 order_code 订单单号 订单单号==出库单单
-    public function judgeOutQty($order_infos = array(),$order_code){
+    public function judgeOutQty($order_infos = array(),$order_code)
+    {
         $return = array('status'=>-1,'data'=>'','msg'=>'');
         if ($order_infos) {
             $pro_code_arr = array_column($order_infos, 'code');
