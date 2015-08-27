@@ -1,7 +1,7 @@
 <?php
 /**
-* 前端商城订单 进入到wms 转换成出库单
-* @author liang 2015-6-12
+* 入库单操作
+* @author liuguangping 2015-8-27
 */
 namespace Wms\Api;
 use Think\Controller;
