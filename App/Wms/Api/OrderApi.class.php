@@ -80,8 +80,11 @@ class OrderApi extends CommApi{
                     'pro_code' => $order_detail['sku_number'],
                     'order_qty' => $order_detail['quantity'],
                     'price' => $order_detail['price'],
+                    'name' => $order_detail['name'],
+                    'spec' => $order_detail['spec'],
                     );
             }
+
             $params['detail'] = $detail;
             A('StockOut','Logic')->addStockOut($params);
             unset($params);

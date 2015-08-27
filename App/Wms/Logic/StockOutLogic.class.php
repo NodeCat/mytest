@@ -49,10 +49,6 @@ class StockOutLogic{
         $data['is_deleted'] = 0;
         //添加出库单
         $stock_out_id = M('stock_bill_out')->add($data);
-        //请求pms数据
-        $pro_codes = array_column($params['detail'],'pro_code');
-        $pms = A('Pms','Logic')->get_SKU_field_by_pro_codes($pro_codes);
-        unset($pro_codes);
         $total = 0;//计算一个出库单的总出库数量
         $total_amount = 0; //总金额
         //添加明细
@@ -69,10 +65,10 @@ class StockOutLogic{
             }else {
                 $detail['delivery_qty'] = $val['order_qty'];
             }
-            $detail['pro_name'] = $pms[$val['pro_code']]['name'];  
+            $detail['pro_name'] = $val['name'];  
             //拼接货品的规格
             unset($detail['pro_attrs']);
-            foreach($pms[$val['pro_code']]['pro_attrs'] as $k=>$v) {
+            foreach($val['spec'] as $k=>$v){
                 $detail['pro_attrs'] .= $v['name'] . ":" . $v['val'] . ",";
             }
             $detail['wh_id'] = $params['wh_id'];
@@ -83,6 +79,7 @@ class StockOutLogic{
             $detail['updated_time'] = date('Y-m-d H:i:s');
             $detail['updated_user'] = UID;
             $detail['is_deleted'] = 0;
+
             $total += $val['order_qty'];
             $res = M('stock_bill_out_detail')->add($detail);
 
