@@ -40,6 +40,7 @@
             <th>已退货</th>
             <th>配送中</th>
             <th>已完成</th>
+            <th>准点率</th>
             <th>总里程/km</th>
             <th>当次运费(元)</th>
             <th>备注</th>
@@ -70,13 +71,14 @@
             <td>{$k.unsign_orders}</td>
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>
+            <td>{$k.ontime}</td>
             <td>{$k.distance}</br>
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
             <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
-            <td>
-                <a class="btn btn-default  btn-sm" data-toggle="modal" data-target="#remarkModal" data-id="{$k.id}" onclick="changeData(this);">编辑</a>
-                <span>备注信息</span>
+            <td data-id="{$k.id}" style="max-width:110px;">
+                <span>{$k.note}</span> <br>  
+                <a class="btn btn-default  btn-xs" data-toggle="modal" data-target="#remarkModal" data-id="{$k.id}" onclick="changeData(this);">编辑</a>
             </td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
@@ -98,29 +100,59 @@
             <div class="modal-body">
             </div>
             <div class="modal-footer">
-              <div class="approve-data hidden" data-step="0" data-id="0"></div>
-              <button type="button" class="btn btn-default js-refuse" data-dismiss="modal">取消</button>
-              <button type="button" class="btn btn-primary pull-left js-pass">保存</button>
+              <button type="button" class="btn btn-default js-cancle" data-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary pull-left js-save">保存</button>
             </div>
           </div>
         </div>
       </div>
-      <input type="hidden" name="tmp-data" class="form-control" data-id="" value="">
     </div>
 
 <script type="text/javascript">
 function changeData(obj){
     var id = $(obj).data('id'),
         desc = $(obj).siblings('span').text();
-    $("input[name='tmp-data']").attr('data-id',id).attr('data-desc',desc);
+    var tmpHtml = '<input type="hidden" name="tmp-data" class="form-control" data-id="'+id+'" data-desc="'+desc+'">';
+    $('#remarkModal').after(tmpHtml);
 }
 $('#remarkModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var sid = $("input[name='tmp-data']").data('id'),
-        desc = $("input[name='tmp-data']").data('desc'),
+    var tmpInput = $("input[name='tmp-data']");
+    var sid = tmpInput.data('id'),
+        desc = tmpInput.data('desc'),
+
         input = '<input type="text" name="remark-data" class="form-control" data-id="'+sid+'" value="'+desc+'">';
+        console.log(sid);
+        console.log(desc);
+        console.log(input);
     var modal = $(this);
-    modal.find('.modal-body').html(input)
+    modal.find('.modal-body').html(input);
+    $('.js-save').on('click',function(e){
+      e.preventDefault();
+      var addr = "{:U('saveNote')}",
+          dataInput = $("input[name='remark-data']");
+      var obj = {id:dataInput.data('id'), note:dataInput.val()};
+      $.ajax({
+          url :addr,
+          type:'post',
+          cache:false,
+          dataType:'json',
+          data:obj,
+          success:function(res){
+              if(res.status == 0){
+                $("a[data-id='"+obj.id+"']").siblings('span').text(obj.note);
+              } else{
+                alert(res.msg);
+              }
+          }
+      })
+      $('#remarkModal').modal('hide');
+    })
+})
+$('#remarkModal').on('hide.bs.modal', function (event) {
+    $(this).find("input[name='remark-data']").remove();
+    $(this).find("input[name='tmp-data']").remove();
+    $('.js-save').off('click');
+
 })
 function select(){ 
     x=document.getElementById('f');
