@@ -101,12 +101,6 @@ class FmsController extends \Common\Controller\AuthController{
             $this->msgReturn('0','结算失败，未找到该配送单。');
         }
         $fms_list = A('Fms/List','Logic');
-        //查询是否有退货，并且已创建拒收入库单
-        $can = $fms_list->can_pay($id);
-        if ($can == 3) {
-            //有退货没有创建拒收入库单
-            $this->msgReturn('0','结算失败，该配送单中有退货，请交货后再做结算');
-        }
 
         //获得所有出库单id 
         $bill_out_ids = array_column($dist['detail'],'bill_out_id');
@@ -138,6 +132,12 @@ class FmsController extends \Common\Controller\AuthController{
                 }
                 $this->msgReturn('0','结算失败，该配送单含有未处理的订单');
             }
+        }
+        //查询是否有退货，并且已创建拒收入库单
+        $can = $fms_list->can_pay($id);
+        if ($can == 3) {
+            //有退货没有创建拒收入库单
+            $this->msgReturn('0','结算失败，该配送单中有退货，请交货后再做结算');
         }
         //根据配送单id或配送单号获得配送单信息及订单信息
         $array_result = $this->get_orders($id);
