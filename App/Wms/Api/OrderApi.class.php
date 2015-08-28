@@ -104,7 +104,7 @@ class OrderApi extends CommApi{
         $order_infos = I('json.');
         $return = array();
         if (!is_array($order_infos) || empty($order_infos)) {
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '请合法传参';
             $this->ajaxReturn($return);
@@ -115,7 +115,7 @@ class OrderApi extends CommApi{
         $pro_code_arr = array_column($sku_info, 'code');
 
         if (!$sku_number || !$sku_info) {
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '请合法传参';
             $this->ajaxReturn($return);
@@ -123,7 +123,7 @@ class OrderApi extends CommApi{
 
         //判断同一次退货退相同的商品
         if (count($pro_code_arr) != count(array_unique($pro_code_arr))) {
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '请不要退相同的商品！';
             $this->ajaxReturn($return);
@@ -132,7 +132,7 @@ class OrderApi extends CommApi{
         $is_set = $this->judgeCode($pro_code_arr, $sku_number);
         if ($is_set['status'] === -1) {
             $intersection = $is_set['data'];
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '该订单' . $sku_number . '的'.implode(',', $intersection).'商品没有出库量，不能退货';
             $this->ajaxReturn($return);
@@ -146,7 +146,7 @@ class OrderApi extends CommApi{
         $map['is_deleted'] = 0;
         $bill_out_code_res = $bill_out->where($map)->field('code,refer_code')->find();
         if (!$bill_out_code_res) {
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '该订单' . $sku_number . '有问题，原因是订单还没有出库或不正常单';
             $this->ajaxReturn($return);
@@ -156,7 +156,7 @@ class OrderApi extends CommApi{
         //判断订单退货量是否合法（退货量是否大于出库量）
         $order_code_qty = $this->judgeOutQty($sku_info, $order_code);
         if ($order_code_qty['status'] === -1) {
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = $order_code_qty['msg'];
             $this->ajaxReturn($return);
@@ -172,7 +172,7 @@ class OrderApi extends CommApi{
             $return['msg']    = '客退成功';
             $this->ajaxReturn($return);
         } else {
-            $return['status'] = -1;
+            $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '客退失败';
             $this->ajaxReturn($return);
