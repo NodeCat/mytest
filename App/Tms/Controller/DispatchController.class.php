@@ -45,41 +45,54 @@ class DispatchController extends \Common\Controller\AuthController{
         //日期筛选
         $sign_date = I('post.sign_date');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d', strtotime($start_date . '+1 Day'));
         $this->start_date = $start_date;
         //平台筛选
-        $car_from  = I('post.car_from');
-        if ($car_from) {
-            $platform = "WHERE tu.car_from = {$car_from}";
+        if ($car_from = I('post.car_from/d', 0)) {
+            $map1['tu.car_from'] = $car_from;
+            $this->car_from  = $car_from;
         }
+        //仓库ID
         $wh_id = session('user.wh_id');
-        $this->car_from  = $car_from;
-        //以仓库为单位的签到统计
         $A = A('Tms/List','Logic');
-        $sql = "SELECT a.*, tu.*, b.line_name, b.dist_ids, b.type
-            FROM (
-            SELECT id sid, wh_id swh_id, userid user_id, created_time screated_time, distance,
-            DATE( delivery_time ) deliver_date, fee, period
-            FROM tms_sign_list
-            WHERE DATE(created_time) = '{$start_date}' AND wh_id = {$wh_id} AND is_deleted =0
-            )a
-            INNER JOIN (
-            SELECT user_id, DATE( d.created_time ) deliver_date, d.type type, (
+        //子查询1，签到记录对应用户信息
+        $map1['sl.wh_id'] = $wh_id;
+        $map1['sl.is_deleted'] = 0;
+        $map1['sl.created_time'] = array('between',$start_date.','.$end_date);
+        $field1 = 'sl.id sid, sl.wh_id, sl.userid user_id, sl.created_time screated_time, 
+        sl.distance, DATE( sl.delivery_time ) deliver_date, sl.fee, sl.period,tu.*';
+        $sub1 = $D->alias('sl')
+            ->field($field1)
+            ->join('tms_user as tu on sl.userid = tu.id')
+            ->where($map1)
+            ->buildSql();
+        //子查询2，提货记录对应配送单
+        $map2['d.created_time'] = array('between',$start_date.','.$end_date);
+        $map2['d.type'] = 0;
+        $map2['wd.is_deleted'] = 0;
+        $group2 = 'd.user_id, deliver_date, deliver_time';
+        $field2 = "user_id, DATE( d.created_time ) deliver_date, d.type, (
             CASE wd.deliver_time
             WHEN 1 
             THEN  '上午'
             ELSE  '下午'
             END
-            )period, GROUP_CONCAT( dist_id ) dist_ids, CONCAT_WS(',',line_name ) line_name
-            FROM tms_delivery d
-            INNER JOIN stock_wave_distribution wd ON d.dist_id = wd.id
-            WHERE DATE(d.created_time) = '{$start_date}' AND d.type = 0 AND wd.is_deleted = 0
-            GROUP BY d.user_id, deliver_date, deliver_time
-            )b ON a.user_id = b.user_id
-            AND a.deliver_date = b.deliver_date
-            AND a.period = b.period
-            INNER JOIN tms_user tu ON a.user_id = tu.id {$platform}
-            ORDER BY a.sid DESC";
-        $sign_lists = $D->query($sql);
+            )period, GROUP_CONCAT( dist_id ) dist_ids, CONCAT_WS(',',line_name ) line_name";
+        $sub2 = M('tms_delivery')->alias('d')
+            ->field($field2)
+            ->join('stock_wave_distribution as wd on d.dist_id = wd.id')
+            ->where($map2)
+            ->group($group2)
+            ->buildSql();
+        //以仓库为单位的签到统计
+        $field = 'a.*, b.line_name, b.dist_ids, b.type';
+        $sign_lists = $D->field($field)
+            ->table($sub1 . 'a')
+            ->join('inner join ' .$sub2 . ' b on a.user_id = b.user_id
+                    AND a.deliver_date = b.deliver_date
+                    AND a.period = b.period')
+            ->order('a.sid DESC')
+            ->select();
         //取出所有配送单ID
         $dist_ids = array_column($sign_lists, 'dist_ids');
         $dist_ids = implode(',', $dist_ids);
@@ -93,7 +106,7 @@ class DispatchController extends \Common\Controller\AuthController{
         }
         foreach ($sign_lists as &$value) {
             //仓库、车型、平台的中文名称
-            $value['warehouse'] = $this->warehouse[$value['swh_id']];
+            $value['warehouse'] = $this->warehouse[$value['wh_id']];
             $value['car_type']  = $this->carType[$value['car_type']];
             $value['car_from']  = $this->carFrom[$value['car_from']];
             //签到记录对应的配送详情列表
