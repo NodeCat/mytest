@@ -110,11 +110,11 @@ class OrderApi extends CommApi{
             $this->ajaxReturn($return);
         }
 
-        $sku_number = $order_infos['order_number'];
+        $order_number = $order_infos['order_number'];
         $sku_info   = $order_infos['sku_info'];
         $pro_code_arr = array_column($sku_info, 'code');
 
-        if (!$sku_number || !$sku_info) {
+        if (!$order_number || !$sku_info) {
             $return['status'] = 1;
             $return['data']   = '';
             $return['msg']    = '请合法传参';
@@ -129,26 +129,26 @@ class OrderApi extends CommApi{
             $this->ajaxReturn($return);
         }
         //判断商品是否属于这个订单
-        $is_set = $this->judgeCode($pro_code_arr, $sku_number);
+        $is_set = $this->judgeCode($pro_code_arr, $order_number);
         if ($is_set['status'] === -1) {
             $intersection = $is_set['data'];
             $return['status'] = 1;
             $return['data']   = '';
-            $return['msg']    = '该订单' . $sku_number . '的'.implode(',', $intersection).'商品没有出库量，不能退货';
+            $return['msg']    = '该订单' . $order_number . '的'.implode(',', $intersection).'商品没有出库量，不能退货';
             $this->ajaxReturn($return);
         }
 
         //该订单是否存在对应的出库单并且状态为出库
         $bill_out = M('stock_bill_out');
         $map = array();
-        $map['code'] = array('in',$sku_number);
+        $map['code'] = array('in',$order_number);
         $map['status'] = 2;
         $map['is_deleted'] = 0;
         $bill_out_code_res = $bill_out->where($map)->field('code,refer_code')->find();
         if (!$bill_out_code_res) {
             $return['status'] = 1;
             $return['data']   = '';
-            $return['msg']    = '该订单' . $sku_number . '有问题，原因是订单还没有出库或不正常单';
+            $return['msg']    = '该订单' . $order_number . '没有出库或不正常单';
             $this->ajaxReturn($return);
         }
 
@@ -169,23 +169,23 @@ class OrderApi extends CommApi{
         if ($is_created) {
             $return['status'] = 0;
             $return['data']   = $is_created;
-            $return['msg']    = '客退成功';
+            $return['msg']    = '创建客退入库单成功';
             $this->ajaxReturn($return);
         } else {
             $return['status'] = 1;
             $return['data']   = '';
-            $return['msg']    = '客退失败';
+            $return['msg']    = '创建客退入库单失败';
             $this->ajaxReturn($return);
         }      
 
     }
 
     //判断订单中的商品合法性
-    public function judgeCode($pro_code_arr = array(), $sku_number = '')
+    public function judgeCode($pro_code_arr = array(), $order_number = '')
     {
         $return = array('status'=>-1,'data'=>'','msg'=>'出错！');
         $map = array();
-        $map['a.refer_code'] = array('in', $sku_number);
+        $map['a.refer_code'] = $order_number;
         $map['a.pro_code']   = array('in', $pro_code_arr);
         $map['a.is_deleted']   = 0;
         $map['b.is_deleted']   = 0;

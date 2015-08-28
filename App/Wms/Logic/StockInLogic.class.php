@@ -837,8 +837,8 @@ class StockInLogic{
             $bill_in['partner_id']   = '';//供应商；@todoliuguangping
             $bill_in['remark']       = '客退入库单';
             $bill_in['updated_time'] = date('Y-m-d H:i:s');
-            $bill_in['created_user'] = 1;
-            $bill_in['updated_user'] = 1;
+            $bill_in['created_user'] = 2;
+            $bill_in['updated_user'] = 2;
             $bill_in['created_time'] = date('Y-m-d H:i:s');
             $bill_in['status'] = 21; //状态 21待入库
             if($pid = $bill_in_m->add($bill_in)){
@@ -861,8 +861,8 @@ class StockInLogic{
                     $detail[$i]['prepare_qty']  = 0;
                     $detail[$i]['done_qty']     = 0;
                     $detail[$i]['receipt_qty']  = 0;
-                    $detail[$i]['created_user'] = 1;
-                    $detail[$i]['updated_user'] = 1;
+                    $detail[$i]['created_user'] = 2;
+                    $detail[$i]['updated_user'] = 2;
                     $detail[$i]['created_time'] = date('Y-m-d H:i:s', time());
                     $detail[$i]['updated_time'] = date('Y-m-d H:i:s', time());
                     $i++;
