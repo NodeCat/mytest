@@ -177,7 +177,6 @@ class OrderController extends \Common\Controller\AuthController {
             $bill_map['id']         = $bill_out_id;
             $bill_map['is_deleted'] = 0;
             $bill_out_code = M('stock_bill_out')->where($bill_map)->getField('code');
-            dump($bill_out_code);
             if ($bill_out_code) {
                 $in_map['refer_code'] = $bill_out_code;
                 $in_map['type']       = 7;
@@ -196,7 +195,7 @@ class OrderController extends \Common\Controller\AuthController {
                             $s1 = $M->where($con_map)->save($in_data);   
                         } 
                     } else {
-                        $this->error('此订单对应的拒收入库单已经上架，不能生置订单状态！');
+                        $this->error('此订单对应的拒收入库单已经上架，不能重置订单状态！');
                     }
                 }
             }
