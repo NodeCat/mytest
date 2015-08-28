@@ -111,15 +111,16 @@ class StockMoveDetailController extends CommonController {
         }
     }
 
-    public function export(){
+    protected function before_export(&$M){
         $query = I('query');
-        //必须选择条件才能导出
         $start_time = $query['stock_move.created_time'];
         $end_time = $query['stock_move.created_time_1'];
+
         if(!$start_time || !$end_time) {
             $this->msgReturn(false,'选择时间范围才能导出数据');
         }
-        parent::export();
+        $map['stock_move.wh_id'] = session('user.wh_id');
+        $M->where($map);
     }
 
     //serach方法执行后，执行该方法
