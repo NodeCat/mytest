@@ -246,7 +246,7 @@ class IndexDriver extends Controller {
     }
 
     /*
-     * 功能：根据配送单id 生成相应的客退入库单
+     * 功能：根据配送单id 生成相应的拒收入库单
      * @para：$dist_id,配送单id
      * $return: null
     */
@@ -259,9 +259,6 @@ class IndexDriver extends Controller {
             if ($is_can == 1) {
                 $this->error("此车单没有退货，无需交货。");
             }
-            if ($is_can == 2) {
-                $this->error("已经交货，无需再次交货。");
-            }
             
         }else{
             $this->error("没有找到相应的车单");
@@ -271,10 +268,15 @@ class IndexDriver extends Controller {
         $res = A('Wms/StockOut', 'Logic')->bill_out_list($map);
         $stock_bill_out = $res['list'];
         foreach ($stock_bill_out as $value) {
-            if ($value['sign_status'] == 2 || $value['sign_status'] == 3 || $value['sign_status'] == 4) {
+            if ($value['sign_status'] == 2 || $value['sign_status'] == 3) {
                 continue;
             } else {
-                $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
+                if ( $value['sign_status'] == 4) {
+                    //若是已经完成
+                    $this->error('此车单已经完成，无需交货。');exit;
+                } else {
+                    $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
+                }
             }
         }
         
@@ -282,6 +284,14 @@ class IndexDriver extends Controller {
         if(!empty($stock_bill_out)){
             $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
             for($n = 0; $n < count($stock_bill_out); $n++){
+                //若已经创建过拒收入库单
+                unset($map);
+                $map['refer_code'] = $stock_bill_out[$n]['code'];
+                $map['is_deleted'] = 0;
+                $bill_in = M('stock_bill_in')->where($map)->find();
+                if ($bill_in) {
+                    continue;
+                }
                 //创建拒收入库单
                 unset($bill);
                 $bill['pid'] = $dist_id;
@@ -309,14 +319,7 @@ class IndexDriver extends Controller {
                         $batch = '';
                         
                         switch ($stock_bill_out[$n]['sign_status']) {
-                            case '0':
-                                //若是已分拨状态
-                                $this->error('此车单中有已分拨的订单，请提货并签收或拒收后再提出交货申请。');exit;
-                                break;
-                            case '1':
-                                //若是已装车状态
-                                $this->error('此车单中有正在派送中的订单，请签收或拒收后再提出交货申请。');exit;
-                                break;
+                            
                             case '2':
                                 //若是已签收状态
                                 unset($map);
@@ -329,16 +332,14 @@ class IndexDriver extends Controller {
                                 //获得最久远的批次
                                 $batch = $A->get_long_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
+
                             case '3':
                                 //若已经拒收
                                 $real_sign_qty = 0;
                                 //获得最近的批次
                                 $batch = $A->get_lasted_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
-                            case '4':
-                                //若是已经完成
-                                $this->error('此车单已经完成，无需交货。');exit;
-                                break;
+                        
                             default:
                                 # code...
                                 break;
