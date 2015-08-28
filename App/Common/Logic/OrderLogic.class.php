@@ -85,8 +85,16 @@ class OrderLogic{
     	return $res;
     }
 
-    //获取订单列表
+    //根据账单id列表获取需要导出excel的账单信息
+    //参数：{"billing_ids" :"1,2,3"} 
+    public function billGetExcelData($map = '')
+    {
+        $url = '/billing/export_billing_ex';
+        $res = $this->get($url,$map);
+        return $res;
+    }
 
+    //获取订单列表
     public function order($map=''){
         $url = '/suborder/lists';
         $res = $this->get($url,$map);

@@ -249,15 +249,7 @@ class ProcessController extends CommonController {
                 }
                 $price = f_add($price, $out_back['price']);
             }
-            /** 2---父SKU入库 */
             
-            //格式化入库数据（父SKU入库）
-            $in_data = $Logic->format_move_stock($process, 'p', 'in');
-            //入库 （父SKU 只有一个 无需循环）
-            $in_back = $Logic->in_stock($in_data);
-            if (!$out_back) {
-                $this->msgReturn(false, '入库失败');
-            }
             /** 3---获取WMS ERP 出 入库单的ID */
             
             $wms_in_id = $Logic->get_code_by_process($process['code'], 'wms_in');
@@ -293,6 +285,16 @@ class ProcessController extends CommonController {
                     $this->msgReturn(false, '更新出库单失败');
                 }
             }
+
+            /** 2---父SKU入库 */
+            
+            //格式化入库数据（父SKU入库）
+            $in_data = $Logic->format_move_stock($process, 'p', 'in');
+            //入库 （父SKU 只有一个 无需循环）
+            $in_back = $Logic->in_stock($in_data);
+            if (!$out_back) {
+                $this->msgReturn(false, '入库失败');
+            }
            
         } else {
             /**
@@ -315,18 +317,6 @@ class ProcessController extends CommonController {
                 $this->msgReturn(false, $out_back['msg']);
             }
             $price = formatMoney($out_back['price'], 2);
-            
-            /** 2---子SKU入库 */
-            
-            //格式化入库数据（子SKU入库 可能有多个 需要循环）
-            $in_data = $Logic->format_move_stock($process, 'c', 'in');
-            //入库 （子SKU）
-            foreach ($in_data as $value) {
-                $in_back = $Logic->in_stock($value);
-                if (!$out_back) {
-                    $this->msgReturn(false, '入库失败');
-                }
-            }
             
             /** 3---获取WMS ERP 出 入库单的ID */
             
@@ -362,6 +352,18 @@ class ProcessController extends CommonController {
                 $erporder_back_in = $Logic->update_in_stock_erp($val, $erp_in_id, $price);
                 if (!$erporder_back_in) {
                     $this->msgReturn(false, '更新入库单失败');
+                }
+            }
+
+            /** 2---子SKU入库 */
+            
+            //格式化入库数据（子SKU入库 可能有多个 需要循环）
+            $in_data = $Logic->format_move_stock($process, 'c', 'in');
+            //入库 （子SKU）
+            foreach ($in_data as $value) {
+                $in_back = $Logic->in_stock($value);
+                if (!$out_back) {
+                    $this->msgReturn(false, '入库失败');
                 }
             }
         }

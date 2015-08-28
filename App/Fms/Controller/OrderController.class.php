@@ -174,8 +174,34 @@ class OrderController extends \Common\Controller\AuthController {
         //查询订单是否有退货，并且已创建拒收入库单
         $is_can = $fms_list->can_replace($bill_out_id);
         if ($is_can == 2) {
-            $this->error('此订单有退货且已经交货，不能重置订单状态。');exit;
+            $bill_map['id']         = $bill_out_id;
+            $bill_map['is_deleted'] = 0;
+            $bill_out_code = M('stock_bill_out')->where($bill_map)->getField('code');
+            if ($bill_out_code) {
+                $in_map['refer_code'] = $bill_out_code;
+                $in_map['type']       = 7;
+                $in_map['is_deleted'] = 0;
+                $in_data['is_deleted'] = 1;
+                $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
+                $rej_bill = $Min->where($in_map)->find();
+                if ($rej_bill) {
+                    if ($rej_bill['status'] == '21') {
+                        $s = $Min->relation('detail')->where($in_map)->save($in_data);
+                        if ($s) {
+                            $M = M('stock_bill_in_container');
+                            //写入拒收入库单详情表的详情表
+                            $con_map['refer_code'] = $rej_bill['code'];
+                            $con_map['is_deleted'] = 0;
+                            $s1 = $M->where($con_map)->save($in_data);   
+                        } 
+                    } else {
+                        $this->error('此订单对应的拒收入库单已经上架，不能重置订单状态！');
+                    }
+                }
+            }
+            
         }
+        
         $dist_detail_id = $dist_detail_id['id'];
         $data['status']     = 1; //重置为已装车状态
         $data['real_sum']   = 0; //实收金额置0
@@ -184,11 +210,11 @@ class OrderController extends \Common\Controller\AuthController {
         $data['minus_amount'] = 0;
         $data['pay_reduce'] = 0;
         $data['deliver_fee'] = 0;
-        $data['sign_msg']   = '';
-        $data['reject_reason'] = '';
+        //$data['sign_msg']   = '';
+        //$data['reject_reason'] = '';
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
         //写日志logs($id = 0, $msg = '', $model = '', $action = '', $module = ‘')
-        logs($bill_out_id,'已装车','dist_detail');
+        logs($bill_out_id,'重置订单状态已装车','dist_detail');
 
         unset($map);
         $map['pid'] = $dist_detail_id;
