@@ -806,7 +806,7 @@ class StockInLogic{
         //创建入库单
         $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
         if ($in_code) {
-            $return = array("order_number"=>$order_code,"in_code"=>$bill_in['code']);
+            $return = array("order_number"=>$order_code,"in_code"=>$in_code['code']);
         } else {
             $return = false;
         }
