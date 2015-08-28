@@ -79,7 +79,6 @@ class StockMoveDetailController extends CommonController {
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
-            //echo $this->auth['export'];die;
 
         $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
