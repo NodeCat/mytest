@@ -21,12 +21,26 @@ class StockInApi extends CommApi{
         $map['code'] = $in_code;
         $res = $stock_in_m->field('status,is_deleted')->where($map)->find();
         if ($res) {
+
             $result = array();
             if ($res['is_deleted'] == 1) {
-                $status = "04";
+                $status = "close";//关闭
             } else {
                $status = $res['status']; 
             }
+
+            if ($status == '21') {
+                $status = "received";//待收货
+            } elseif ($status == '31'){
+                $status = "shelves";//待上架
+            } elseif($status == '33'){
+                $status = "up";//已上架
+            } elseif($status == '0') {
+                $status = "draft";//草稿
+            } else {
+                $status = "error";//错误
+            }
+
             $result['status'] = $status;
             $result['in_code'] = $in_code;
             $return['status'] = 0;
@@ -51,9 +65,8 @@ class StockInApi extends CommApi{
         $stock_in_m = M('stock_bill_in');
         $map = array();
         $map['code'] = $in_code;
-        
-        $result = $stock_in_m->field('id,status')->where($map)->find();
-        if (!$result || !$result['status']) {
+        $result = $stock_in_m->field('id,status,is_deleted')->where($map)->find();
+        if (!$result || !$result['status'] || $result['is_deleted'] == 1) {
             $return = array('status' => 1, 'data' => '', "msg"=>"请合法传单，没有找到该单数据");
             $this->ajaxReturn($return);
         }
@@ -62,11 +75,13 @@ class StockInApi extends CommApi{
             $map['id']   = $result['id'];
             $data = array();
             $data['is_deleted'] = 1;
+            $data['updated_time'] = date('Y-m-d H:i:s');
             if ($stock_in_m->where($map)->save($data)) {
                 unset($map);
                 $map['pid'] = $result['id'];
                 unset($data);
                 $data['is_deleted'] = 1;
+                $data['updated_time'] = date('Y-m-d H:i:s');
                 M('stock_bill_in_detail')->where($map)->save($data);
                 $return['status'] = 0;
                 $return['data'] = '';
