@@ -204,7 +204,6 @@ class StockOutController extends CommonController {
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
-            array('name'=>'export', 'show' => true,'new'=>'false')
             );
         $this->search_addon = true;
         $this->query['stock_bill_out.order_type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
