@@ -39,7 +39,7 @@ class StockInApi extends CommApi{
                 $status = "draft";//草稿
             } elseif($status == '-1'){
                 $status = "close";//关闭
-            }else{
+            } else {
                 $status = "error";//错误
             }
 
