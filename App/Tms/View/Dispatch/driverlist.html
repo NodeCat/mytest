@@ -121,9 +121,6 @@ $('#remarkModal').on('show.bs.modal', function (event) {
         desc = tmpInput.data('desc'),
 
         input = '<input type="text" name="remark-data" class="form-control" data-id="'+sid+'" value="'+desc+'">';
-        console.log(sid);
-        console.log(desc);
-        console.log(input);
     var modal = $(this);
     modal.find('.modal-body').html(input);
     $('.js-save').on('click',function(e){
