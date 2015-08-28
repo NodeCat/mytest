@@ -11,9 +11,9 @@ class StockInApi extends CommApi{
     public function getStockInStatus(){
         //入库单单号
         $in_code = I('json.in_code');
-        $return = array('status' => 201, 'data' => '', "msg"=>"错误信息");
+        $return = array('status' => 1, 'data' => '', "msg"=>"错误信息");
         if (!$in_code) {
-            $return = array('status' => 202, 'data' => '', "msg"=>"请合法传参");
+            $return = array('status' => 1, 'data' => '', "msg"=>"请合法传参");
             $this->ajaxReturn($return);
         }
         $stock_in_m = M('stock_bill_in');
@@ -29,12 +29,12 @@ class StockInApi extends CommApi{
             }
             $result['status'] = $status;
             $result['in_code'] = $in_code;
-            $return['status'] = 200;
+            $return['status'] = 0;
             $return['data'] = $result;
             $return['msg'] = "获取状态成功";
             $this->ajaxReturn($return);
         } else {
-            $return = array('status' => 203, 'data' => '', "msg"=>"请合法传单，没有该单数据");
+            $return = array('status' => 1, 'data' => '', "msg"=>"请合法传单，没有该单数据");
             $this->ajaxReturn($return);
         }
     }
@@ -43,9 +43,9 @@ class StockInApi extends CommApi{
     public function stockInClosed(){
          //入库单单号
         $in_code = I('json.in_code');
-        $return = array('status' => 201, 'data' => '', "msg"=>"错误信息");
+        $return = array('status' => 1, 'data' => '', "msg"=>"错误信息");
         if (!$in_code) {
-            $return = array('status' => 202, 'data' => '', "msg"=>"请合法传参");
+            $return = array('status' => 1, 'data' => '', "msg"=>"请合法传参");
             $this->ajaxReturn($return);
         }
         $stock_in_m = M('stock_bill_in');
@@ -54,7 +54,7 @@ class StockInApi extends CommApi{
         
         $result = $stock_in_m->field('id,status')->where($map)->find();
         if (!$result || !$result['status']) {
-            $return = array('status' => 203, 'data' => '', "msg"=>"请合法传单，没有找到该单数据");
+            $return = array('status' => 1, 'data' => '', "msg"=>"请合法传单，没有找到该单数据");
             $this->ajaxReturn($return);
         }
         if ($result['status'] == "21") {
@@ -68,17 +68,17 @@ class StockInApi extends CommApi{
                 unset($data);
                 $data['is_deleted'] = 1;
                 M('stock_bill_in_detail')->where($map)->save($data);
-                $return['status'] = 200;
+                $return['status'] = 0;
                 $return['data'] = '';
                 $return['msg'] = "关闭成功！";
                 $this->ajaxReturn($return);
             } else {
-                $return = array('status' => 205, 'data' => '', "msg"=>"该订单关闭失败");
+                $return = array('status' => 1, 'data' => '', "msg"=>"该订单关闭失败");
                 $this->ajaxReturn($return); 
             }
 
         } else {
-           $return = array('status' => 204, 'data' => '', "msg"=>"该订单状态不能关闭");
+           $return = array('status' => 1, 'data' => '', "msg"=>"该订单状态不能关闭");
            $this->ajaxReturn($return); 
         }
     }
