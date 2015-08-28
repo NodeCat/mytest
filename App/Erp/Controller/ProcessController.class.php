@@ -870,9 +870,6 @@ class ProcessController extends CommonController {
         D('Process', 'Logic')->get_process_all_sku_detail($processInfo);
         
         $processInfo['print_time'] = get_time(); //打印时间
-        foreach ($processInfo['detail'] as &$detail) {
-            $detail['sur_qty'] = $detail['plan_qty'] - $detail['real_qty']; //剩余加工量 
-        }
         
         layout(false);
         $this->assign('list', $processInfo);
