@@ -24,7 +24,7 @@ class StockInApi extends CommApi{
 
             $result = array();
             if ($res['is_deleted'] == 1) {
-                $status = "close";//关闭
+                $status = "-1";//关闭
             } else {
                $status = $res['status']; 
             }
@@ -37,7 +37,9 @@ class StockInApi extends CommApi{
                 $status = "up";//已上架
             } elseif($status == '0') {
                 $status = "draft";//草稿
-            } else {
+            } elseif($status == '-1'){
+                $status = "close";//关闭
+            }else{
                 $status = "error";//错误
             }
 
@@ -67,7 +69,7 @@ class StockInApi extends CommApi{
         $map['code'] = $in_code;
         $result = $stock_in_m->field('id,status,is_deleted')->where($map)->find();
         if (!$result || !$result['status'] || $result['is_deleted'] == 1) {
-            $return = array('status' => 1, 'data' => '', "msg"=>"请合法传单，没有找到该单数据");
+            $return = array('status' => 1, 'data' => '', "msg"=>"没有找到该单数据或该单已被删除");
             $this->ajaxReturn($return);
         }
         if ($result['status'] == "21") {
