@@ -201,7 +201,7 @@ class PurchaseInDetailController extends CommonController {
             $map['pro_code'] = array(array('like','%'.$pro_code.'%'));
         }
         if(!empty($status)){
-            $map['status'] = $status;
+            $map['erp_purchase_in_detail.status'] = $status;
         }
         if(!empty($id)){
             $map['erp_purchase_in_detail.id'] = $id;
