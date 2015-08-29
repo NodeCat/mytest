@@ -357,7 +357,8 @@ class DispatchController extends \Common\Controller\AuthController{
     {
         $code = A('Tms/Dist', 'Logic')->getSignCode();
         if ($code) {
-            $wh_id = S(md5($code));
+            $key = 'sign_code_' . $code;
+            $wh_id = S($key);
             $warehouse = A('Wms/Distribution', 'Logic')->getWarehouseById($wh_id);
             $this->warehouse = $warehouse;
         } else {
@@ -370,6 +371,35 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->display('Index/sign-code');
     }
     
+    /**
+     * [saveNote 更新备注]
+     * @return [type] [description]
+     */
+    public function saveNote()
+    {
+        $id = I('post.id/d', 0);
+        $note = I('post.note');
+        if (empty($id) || empty($note)) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '参数错误'
+            );
+            $this->ajaxReturn($res);
+        }
+        $flag = M('tms_sign_list')->where(array('id' => $id))->save(array('note' => $note));
+        if ($flag) {
+            $res = array(
+                'status' => 0,
+                'msg'    => '更新成功'
+            );
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '更新失败'
+            );
+        }
+        $this->ajaxReturn($res);
+    }
 }
 
 

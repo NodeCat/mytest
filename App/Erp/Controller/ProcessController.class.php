@@ -79,6 +79,7 @@ class ProcessController extends CommonController {
         );
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => isset($this->auth['view']),'new'=>'true'), 
+            array('name'=>'print','link'=>'printPage','icon'=>'print','title'=>'打印', 'show'=>true,'new'=>'true','target'=>'_blank'),
             array('name'=>'edit', 'show' => false,'new'=>'true'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
         );
@@ -475,20 +476,20 @@ class ProcessController extends CommonController {
         }
         
         //获取详情
-            $data['status'] = 5; //5作废
-            $back = M('erp_process')->where($map)->save($data);
-            if (!$back) {
-                $this->msgReturn(false, '作废失败');
-            }
+        $data['status'] = 5; //5作废
+        $back = M('erp_process')->where($map)->save($data);
+        if (!$back) {
+            $this->msgReturn(false, '作废失败');
+        }
             
-            //作废关联的出入库单
-            unset($map);
-            $map['refer_code'] = $res['code'];
-            $wms_update['is_deleted'] = 1;
-            M('stock_bill_out')->where($map)->save($wms_update);
-            M('stock_bill_in')->where($map)->save($wms_update);
+        //作废关联的出入库单
+        unset($map);
+        $map['refer_code'] = $res['code'];
+        $wms_update['is_deleted'] = 1;
+        M('stock_bill_out')->where($map)->save($wms_update);
+        M('stock_bill_in')->where($map)->save($wms_update);
             
-            $erp_update['status'] = 3; //已作废
+        $erp_update['status'] = 3; //已作废
         M('erp_process_out')->where($map)->save($erp_update);
         M('erp_process_in')->where($map)->save($erp_update);
         
@@ -847,5 +848,31 @@ class ProcessController extends CommonController {
         }
          
         $this->msgReturn(1,'',array('html'=>$result));
+    }
+    
+    /**
+     * 加工单打印
+     */
+    public function printPage()
+    {
+        $processId = I('get.id');
+        if (empty($processId)) {
+            $this->msgReturn(false, '参数有误');
+        }
+        //获取加工单
+        $map['erp_process.id'] = $processId;
+        $processInfo = D('Process')->scope('default')->where($map)->find();
+        
+        if (empty($processInfo)) {
+            $this->msgReturn(false, '不存在的加工单');
+        }
+        //加工单详情
+        D('Process', 'Logic')->get_process_all_sku_detail($processInfo);
+        
+        $processInfo['print_time'] = get_time(); //打印时间
+        
+        layout(false);
+        $this->assign('list', $processInfo);
+        $this->display('print');
     }
 }

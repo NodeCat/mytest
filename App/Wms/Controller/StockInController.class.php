@@ -236,29 +236,27 @@ class StockInController extends CommonController {
                 $map['code'] = $code;
                 $res = M('stock_bill_in')->where($map)->find();
                 if(!empty($res)) {
-                    if(true){
-                        if($res['status'] =='31' || $res['status'] =='32' || $res['status'] == '21' || $res['status'] =='33') {
-                            $data['id'] = $res['id'];
-                            $data['code'] = $res['code'];
-                            $data['title'] = '扫描货品';
-                            $this->assign($data);
-                            layout(false);
-                            $this->msg = '查询成功。';
-                            $this->title = '扫描货品';
-                            $data = $this->fetch('StockIn:on-scan-procode');
-                            $this->msgReturn(1,'查询成功。',$data);
-                        }
-                        /*if($res['status'] =='33') {
-                            $this->msgReturn(0,'查询失败，该单据待上架数量为0。');
-                        }*/
-                        if($res['status'] == '53'){
-                            $this->msgReturn(0,'查询失败，该单据已完成。');
-                        }
-                        $this->msgReturn(0,'查询失败，该单据状态异常。');
+                    if($res['type'] == 2){
+                        $this->msgReturn(0,'加工入库单不能上架');
                     }
-                    else {
-                        $this->msgReturn(0,'查询失败，您没有权限。');
+                    if($res['status'] =='31' || $res['status'] =='32' || $res['status'] == '21' || $res['status'] =='33') {
+                        $data['id'] = $res['id'];
+                        $data['code'] = $res['code'];
+                        $data['title'] = '扫描货品';
+                        $this->assign($data);
+                        layout(false);
+                        $this->msg = '查询成功。';
+                        $this->title = '扫描货品';
+                        $data = $this->fetch('StockIn:on-scan-procode');
+                        $this->msgReturn(1,'查询成功。',$data);
                     }
+                    /*if($res['status'] =='33') {
+                        $this->msgReturn(0,'查询失败，该单据待上架数量为0。');
+                    }*/
+                    if($res['status'] == '53'){
+                        $this->msgReturn(0,'查询失败，该单据已完成。');
+                    }
+                    $this->msgReturn(0,'查询失败，该单据状态异常。');
                 }
                 else {
                     $this->msgReturn(0,'查询失败，未找到该单据。');
@@ -332,6 +330,9 @@ class StockInController extends CommonController {
                 $res = M('stock_bill_in')->where($map)->find();
                 unset($map);
                 if(!empty($res)) {
+                    if($res['type'] == 2){
+                        $this->msgReturn(0,'加工入库单不能收货');
+                    }
                     if(!empty($res['refer_code'])){
                         //如果是销售到货单，货到付款，判断结算金额是否大于0，如果大于0则证明已经收过货，不让继续收货
                         $map['code'] = $res['refer_code'];
@@ -567,7 +568,7 @@ class StockInController extends CommonController {
         ->join('user on user.id = stock_bill_in.created_user')
         ->join('warehouse on warehouse.id = stock_bill_in.wh_id')
         ->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-        ->where($map)->field('stock_bill_in.id, stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')
+        ->where($map)->field('stock_bill_in.id, stock_purchase.created_time, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')
         ->select();
         unset($map);
 
@@ -583,7 +584,7 @@ class StockInController extends CommonController {
             $data[$key]['remark'] = $value['remark'];
             $data[$key]['print_time'] = get_time();
             $data[$key]['partner_name'] = $value['partner_name'];
-            $data[$key]['expecting_date'] = $value['expecting_date'];
+            $data[$key]['created_time'] = $value['created_time'];
             $data[$key]['created_user_name'] = $value['created_user_name'];
             $data[$key]['session_user_name'] = session('user.username');
             $data[$key]['dest_wh_name'] = $value['dest_wh_name'];
@@ -805,7 +806,10 @@ class StockInController extends CommonController {
         $stock_bill_in_infos = M('stock_bill_in')->where($map)->select();
         foreach($stock_bill_in_infos as $stock_bill_in_info){
                 if($stock_bill_in_info['status'] == 33){
-                    $this->msgReturn(0,'含有已上架的出库单，不能重复上架，请重新选择');
+                    $this->msgReturn(0,'含有已上架的入库单，不能重复上架，请重新选择');
+                }
+                if($stock_bill_in_info['type'] == 2){
+                    $this->msgReturn(0,'含有加工入库单，不能一键上架，请重新选择');
                 }
         }
         unset($map);

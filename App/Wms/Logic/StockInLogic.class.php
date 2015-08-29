@@ -699,9 +699,179 @@ class StockInLogic{
             }
         }
         return ture;
+        
+    }
 
-        
-        
+    //客退加入入库单 @order_info_arr 客退信息 $order_code 订单号===出库单 liuguangping @todoliuguangping
+    public function addWmsInOfGuestBack($order_info_arr = array(), $order_code = '')
+    {
+        if (empty($order_info_arr)) {
+            return false;
+        }
+        $bill_out_m = M('stock_bill_out');
+        $out_m = M('stock_bill_out_container');
+        $map['b.code'] = array('in', $order_code);
+        $map['b.is_deleted'] = 0;
+        $map['a.is_deleted'] = 0;
+        $in_infos = $out_m->field('b.wh_id,b.code,b.code as order_code,a.batch,a.pro_code,a.qty')->join(' as a left join stock_bill_out as b on b.code = a.refer_code')->where($map)->order('a.created_time asc')->select();
+        if (!$in_infos) {
+            return false;
+        }
+        //查询入库单入库量
+        $bill_in_m = M('stock_bill_in');
+        $bill_in_detail_m = M('stock_bill_in_detail');
+        $where = array();
+        $pro_code_arr = array_column($order_info_arr, 'code');
+        $where['a.pro_code'] = array('in',$pro_code_arr);
+        $where['b.refer_code'] = array('in',$order_code);
+        $where['a.batch'] != '';
+        $where['a.is_deleted'] = 0;
+        $where['b.is_deleted'] = 0;
+        $joins = array('as a join stock_bill_in as b on a.pid = b.id');
+        $bill_in_res = $bill_in_detail_m->field('a.batch,a.pro_code,b.code,sum(a.expected_qty) as qty,b.refer_code as order_code')->join($joins)->where($where)->group('a.pro_code,b.refer_code,a.batch')->select();
+        $expected_qty_arr = array();
+        foreach ($bill_in_res  as $vals) {
+            $expected_qty_arr[$vals['order_code'].'_qty_'.$vals['pro_code'].'_'.$vals['batch']] = $vals['qty'];
+        }
+        //获取商品信息
+        $pro_code_w = array();
+        $pro_code_info_arr = array();
+        $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
+        $pro_code_w['b.code'] = array('in', $order_code);
+        $pro_code_w['a.is_deleted'] = 0;
+        $pro_code_w['b.is_deleted'] = 0;
+        $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
+        foreach ($pro_code_infos as $info_val) {
+            $pro_code_info_arr[$info_val['pro_code']]= $info_val;
+        }
+        if (!$pro_code_info_arr) {
+            return false;
+        }
+        $tmp_result = array();
+        foreach ($order_info_arr as $key => $value) {
+            $diff = $value['qty'];
+            foreach ($in_infos as $index => $val) {
+                if ((bccomp($diff, 0, 2) == -1) || (bccomp($diff, 0, 2) == 0) || ($diff*1000 <= 0)) {
+                        break;
+                }
+                if ($val['pro_code'] == $value['code']) {
+                    //出库单的量是 出库量-入库量 等于这次该入库的量
+                    $bill_in_qty = $expected_qty_arr[$val['order_code'].'_qty_'.$val['pro_code'].'_'.$val['batch']]?$expected_qty_arr[$val['order_code'].'_qty_'.$val['pro_code'].'_'.$val['batch']]:0;
+                    $pro_qty = bcsub($val['qty'], $bill_in_qty, 2);
+                    if (bccomp($pro_qty, 0, 2) == 0) {
+                        continue;
+                    }
+                    if (bccomp($pro_qty, $diff, 2) == -1) {
+                        $array['qty']        = $pro_qty;
+                        $array['wh_id']      = $val['wh_id'];
+                        $array['pro_code']   = $val['pro_code'];
+                        $array['order_code'] = $val['order_code'];
+                        $array['batch']      = $val['batch'];
+
+                        $parent = array();
+                        $parent['wh_id']     = $val['wh_id'];
+                        $parent['refer_code']= $val['order_code'];
+                        $tmp_result[$val['order_code']]['parent'] = $parent;
+                        if (!isset($tmp_result[$val['order_code']]['sub'])) {
+                            $tmp_result[$val['order_code']]['sub'] = array();
+                        }
+                        array_push($tmp_result[$val['order_code']]['sub'], $array);
+                        
+                        $diff = bcsub($diff, $pro_qty,2);
+                    } else {
+                        $array['qty']        = $diff;
+                        $array['pro_code']   = $val['pro_code'];
+                        $array['wh_id']      = $val['wh_id'];
+                        $array['order_code'] = $val['order_code'];
+                        $array['batch']      = $val['batch'];
+
+                        $parent = array();
+                        $parent['wh_id']     = $val['wh_id'];
+                        $parent['refer_code']= $val['order_code'];
+                        $tmp_result[$val['order_code']]['parent'] = $parent;
+                        if (!isset($tmp_result[$val['order_code']]['sub'])) {
+                            $tmp_result[$val['order_code']]['sub'] = array();
+                        }
+                        array_push($tmp_result[$val['order_code']]['sub'], $array);
+
+                        $diff = 0;
+                        break;
+                    }
+                }
+            }
+        }
+        if (!$tmp_result) {
+            return false;
+        }
+        //创建入库单
+        $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
+        if ($in_code) {
+            $return = array("order_number"=>$order_code,"in_code"=>$in_code);
+        } else {
+            $return = false;
+        }
+        return $return;    
+    }
+
+    public function insertWmsIn($tmp_result = array(), $pro_code_info_arr = array())
+    {   
+        $return = false;
+        if (!$tmp_result || !$pro_code_info_arr) {
+            $return = false;
+        }
+        $bill_in_m = M('stock_bill_in');
+        $bill_in_detail_m = M('stock_bill_in_detail');
+        $stock_type = M('stock_bill_in_type');
+        $type_name = $stock_type->field('type')->where(array('id' => 3))->find();
+        $numbs = M('numbs');
+        $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
+        foreach ($tmp_result as $vos) {
+            //加入入库单
+            $bill_in['wh_id']        = $vos['parent']['wh_id']?$vos['parent']['wh_id']:'';//入库仓库@todo
+            $bill_in['type']         = 3;
+            $bill_in['company_id']   = 1;
+            $bill_in['refer_code']   = $vos['parent']['refer_code'];//订单号
+            $bill_in['pid']          = 0;
+            $bill_in['code']         = get_sn($name['name']); //入库单号
+            $bill_in['batch_code']   = get_batch();
+            $bill_in['partner_id']   = '';//供应商；@todoliuguangping
+            $bill_in['remark']       = '客退入库单';
+            $bill_in['updated_time'] = date('Y-m-d H:i:s');
+            $bill_in['created_user'] = 2;
+            $bill_in['updated_user'] = 2;
+            $bill_in['created_time'] = date('Y-m-d H:i:s');
+            $bill_in['status'] = 21; //状态 21待入库
+            if($pid = $bill_in_m->add($bill_in)){
+                $process_logic = A('Process', 'Logic');
+                //插入出库单详细表
+                $detail = array();
+                $i = 0;
+                foreach ($vos['sub'] as $child_v) {
+                    $sku_code_info              = $pro_code_info_arr[$child_v['pro_code']];
+                    $detail[$i]['wh_id']        = $bill_in['wh_id'];
+                    $detail[$i]['pid']          = $pid;
+                    $detail[$i]['refer_code']   = $bill_in['code'];//关联的是入库单号
+                    $detail[$i]['pro_code']     = $child_v['pro_code']? $child_v['pro_code']:'';
+                    $detail[$i]['pro_name']     = $sku_code_info['pro_name']?$sku_code_info['pro_name']:'';
+                    $detail[$i]['pro_attrs']    = $sku_code_info['pro_attrs']?$sku_code_info['pro_attrs']:'';
+                    $detail[$i]['batch']        = $child_v['batch'];
+                    $detail[$i]['expected_qty'] = $child_v['qty'];
+                    $detail[$i]['pro_uom']      = $sku_code_info['measure_unit']?$sku_code_info['measure_unit']:'';
+                    $detail[$i]['price_unit']   = $process_logic->get_price_by_sku($child_v['batch'], $child_v['pro_code']);//平均价
+                    $detail[$i]['prepare_qty']  = 0;
+                    $detail[$i]['done_qty']     = 0;
+                    $detail[$i]['receipt_qty']  = 0;
+                    $detail[$i]['created_user'] = 2;
+                    $detail[$i]['updated_user'] = 2;
+                    $detail[$i]['created_time'] = date('Y-m-d H:i:s', time());
+                    $detail[$i]['updated_time'] = date('Y-m-d H:i:s', time());
+                    $i++;
+                }
+                $bill_in_detail_m->addAll($detail);
+            }
+        }
+
+        return $bill_in['code'];
     }
 
 }

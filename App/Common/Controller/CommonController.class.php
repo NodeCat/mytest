@@ -555,7 +555,10 @@ class CommonController extends \Common\Controller\AuthController {
         $map = $this->search($this->query);//获取界面上传过来的查询条件
 
         $M  =  D(CONTROLLER_NAME);
-        $result = $M->scope('default')->where($map)->select();
+        $M->scope('default')->where($map);
+        $this->before($M);
+        $result = $M->select();
+        $this->after($result);
         $this->filter_list($result);
         for($j  = 0;$j<count($result) ; ++$j){
             $i  = 1;

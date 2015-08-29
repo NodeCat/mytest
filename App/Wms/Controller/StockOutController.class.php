@@ -204,6 +204,7 @@ class StockOutController extends CommonController {
         );
         $this->toolbar =array(
             array('name'=>'add', 'show' => isset($this->auth['add']),'new'=>'true'),
+            array('name'=>'export', 'show' => isset($this->auth['export']),'new'=>'false')
             );
         $this->search_addon = true;
         $this->query['stock_bill_out.order_type']['value'] = D('Distribution', 'Logic')->getOrderTypeByTms();
@@ -237,6 +238,12 @@ class StockOutController extends CommonController {
             }
         }
         $this->pill = $pill;
+    }
+
+    protected function before_export(&$M){
+        $query = I('query');
+        $map['stock_bill_out.wh_id'] = session('user.wh_id');
+        $M->where($map);
     }
    
     protected function after_lists(&$data) {

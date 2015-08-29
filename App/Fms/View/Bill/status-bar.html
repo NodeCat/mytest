@@ -1,4 +1,12 @@
 <ul class="form-status pull-right">
+  <li style="position:absolute;left:35px;">
+    <notempty name="auth['export']">
+  <a href="{:U('Bill/export','id='.$data['billing_info']['id'])}" data-target="#modal" role="button" data-title="导出" rel="tooltip" data-placement="bottom" class="btn btn-primary btn-sm" data-id="" data-original-title="" title=""> 导出 
+<span class="glyphicon glyphicon-export"></span>
+  </a>
+  </notempty>
+  </li>
+  
   <li class="<eq name='data.state' value='2'>active</eq>"><label>未打款</label>
 <span class="arrow"><span></span></span>
   </li>

@@ -114,8 +114,7 @@ class ProcessLogic {
         if (empty($batch) || empty($sku_code)) {
             return $return;
         }
-        $pos = strpos($batch, 'ASN');
-        if ($pos !== false) {
+        if (strstr($batch, 'ASN')) {
             //采购入库
             $map['code'] = $batch;
             $res = M('stock_bill_in')->where($map)->find();
@@ -132,10 +131,11 @@ class ProcessLogic {
             $map['pid'] = $pur['id'];
             $map['pro_code'] = $sku_code;
             $result = M('stock_purchase_detail')->where($map)->find();
+            unset($map);
             if (empty($result)) {
                 return $return; 
             }
-        } else {
+        } elseif(strstr($batch, 'MNI')) {
             //加工入库
             $result['price_unit'] = 0;
             $map['erp_process_in_detail.pro_code'] = $sku_code;
@@ -148,6 +148,13 @@ class ProcessLogic {
             if (!empty($result)) {
                 $result['price_unit'] = $result['price'];
             }
+            unset($map);
+        }else{
+            //在erp_storage_cost中搜索最近的一个价格
+            $map['pro_code'] = $sku_code;
+            $storage_cost_info = M('erp_storage_cost')->where($map)->order('id desc')->find();
+            unset($map);
+            $result['price_unit'] = $storage_cost_info['price_unit'];
         }
         $return = formatMoney($result['price_unit'], 2);
         return $return;
