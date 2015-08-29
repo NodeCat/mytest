@@ -704,7 +704,45 @@ class StockInLogic{
 
     //客退加入入库单 @order_info_arr 客退信息 $order_code 订单号===出库单 liuguangping @todoliuguangping
     public function addWmsInOfGuestBack($order_info_arr = array(), $order_code = '')
-    {
+    {   
+        if (empty($order_info_arr)) {
+            return false;
+        }
+        if (!$order_code) {
+            return false;
+        }
+        //系统分配批次
+        $tmp_result = $this->systemDisBatch($order_info_arr, $order_code);
+        if (!$tmp_result) {
+            return false;
+        }
+        $pro_code_arr = array_column($order_info_arr, 'code');
+        //获取商品信息
+        $pro_code_w = array();
+        $pro_code_info_arr = array();
+        $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
+        $pro_code_w['b.code'] = array('in', $order_code);
+        $pro_code_w['a.is_deleted'] = 0;
+        $pro_code_w['b.is_deleted'] = 0;
+        $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
+        foreach ($pro_code_infos as $info_val) {
+            $pro_code_info_arr[$info_val['pro_code']]= $info_val;
+        }
+        if (!$pro_code_info_arr) {
+            return false;
+        }
+        //创建入库单
+        $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
+        if ($in_code) {
+            $return = array("order_number"=>$order_code,"in_code"=>$in_code);
+        } else {
+            $return = false;
+        }
+        return $return;    
+    }
+
+    public function systemDisBatch($order_info_arr = array(), $order_code = ''){
+
         if (empty($order_info_arr)) {
             return false;
         }
@@ -733,20 +771,7 @@ class StockInLogic{
         foreach ($bill_in_res  as $vals) {
             $expected_qty_arr[$vals['order_code'].'_qty_'.$vals['pro_code'].'_'.$vals['batch']] = $vals['qty'];
         }
-        //获取商品信息
-        $pro_code_w = array();
-        $pro_code_info_arr = array();
-        $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
-        $pro_code_w['b.code'] = array('in', $order_code);
-        $pro_code_w['a.is_deleted'] = 0;
-        $pro_code_w['b.is_deleted'] = 0;
-        $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
-        foreach ($pro_code_infos as $info_val) {
-            $pro_code_info_arr[$info_val['pro_code']]= $info_val;
-        }
-        if (!$pro_code_info_arr) {
-            return false;
-        }
+        
         $tmp_result = array();
         foreach ($order_info_arr as $key => $value) {
             $diff = $value['qty'];
@@ -803,14 +828,8 @@ class StockInLogic{
         if (!$tmp_result) {
             return false;
         }
-        //创建入库单
-        $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
-        if ($in_code) {
-            $return = array("order_number"=>$order_code,"in_code"=>$in_code);
-        } else {
-            $return = false;
-        }
-        return $return;    
+
+        return $tmp_result;
     }
 
     public function insertWmsIn($tmp_result = array(), $pro_code_info_arr = array())
