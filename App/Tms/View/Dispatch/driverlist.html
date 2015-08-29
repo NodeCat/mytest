@@ -71,13 +71,13 @@
             <td>{$k.sign_finished}</td>
             <td>{$k.ontime}</td>
             <td>{$k.distance}</br>
-            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
+            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['sid'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
-            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
+            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.sid}">{$k.fee}</td>    
             <td></td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
-                    <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
+                    <a data-id="{$k.sid}" onclick="delete_sign(this)">删除</a>
                 </if>
             </td>
           </tr>
