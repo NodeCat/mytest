@@ -70,14 +70,14 @@ class DispatchController extends \Common\Controller\AuthController{
         $map2['d.created_time'] = array('between',$start_date.','.$end_date);
         $map2['d.type'] = 0;
         $map2['wd.is_deleted'] = 0;
-        $group2 = 'd.user_id, deliver_date, deliver_time';
-        $field2 = "user_id, DATE( d.created_time ) deliver_date, d.type, (
+        $group2 = 'd.user_id, delivery_date, deliver_time';
+        $field2 = "user_id,deliver_time, DATE( d.created_time ) delivery_date, d.type, (
             CASE wd.deliver_time
             WHEN 1 
             THEN  '上午'
             ELSE  '下午'
             END
-            )period, GROUP_CONCAT( dist_id ) dist_ids, CONCAT_WS(',',line_name ) line_name";
+            )period, GROUP_CONCAT( dist_id ) dist_ids, GROUP_CONCAT( line_name ) line_name";
         $sub2 = M('tms_delivery')->alias('d')
             ->field($field2)
             ->join('stock_wave_distribution as wd on d.dist_id = wd.id')
@@ -89,7 +89,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $sign_lists = $D->field($field)
             ->table($sub1 . 'a')
             ->join('inner join ' .$sub2 . ' b on a.user_id = b.user_id
-                    AND a.deliver_date = b.deliver_date
+                    AND a.deliver_date = b.delivery_date
                     AND a.period = b.period')
             ->order('a.sid DESC')
             ->select();
@@ -104,6 +104,7 @@ class DispatchController extends \Common\Controller\AuthController{
         foreach ($dist_details as $key => $value) {
             $dist_id_detail[$value['pid']][] = $value;
         }
+        $details = array();
         foreach ($sign_lists as &$value) {
             //仓库、车型、平台的中文名称
             $value['warehouse'] = $this->warehouse[$value['wh_id']];
@@ -112,7 +113,7 @@ class DispatchController extends \Common\Controller\AuthController{
             //签到记录对应的配送详情列表
             $value['dist_ids'] = explode(',', $value['dist_ids']);
             foreach ($value['dist_ids'] as $va) {
-                $details = array_merge($dist_id_detail[$va]);
+                $details = array_merge($details, $dist_id_detail[$va]);
             }
             //配送状态、准点率统计
             $deliveryStatis = $A->deliveryStatis($details);
