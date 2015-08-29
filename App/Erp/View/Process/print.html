@@ -1,0 +1,89 @@
+<include file="Index:header"/>
+<style type="text/css">
+.printpage {
+  width:100%;
+  margin:auto;
+  font-size:12px;
+  page-break-before:avoid;
+  page-break-inside:avoid;
+  page-break-after:always
+}
+#data-table td {
+	text-align:center;
+	height: 40px;
+}
+#data-table-detail td {
+	text-align:center;
+	height: 60px;
+}
+</style>
+<body>
+
+<div class="container printpage">
+<div class="row">
+	<div class="text-center">
+		<div><h3>加工单号:{$list.code}</h3></div>
+	</div>
+</div>
+
+<div class="row">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$list.code}" style="height:100px;width:240px" class="img-responsive center-block" alt="Responsive image">
+</div>
+
+<br/>
+<div class="row">
+<table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  </thead>
+
+  <tbody>
+  	<tr>
+  		<td>创建人</td><td>{$list.created_user}</td>
+  		<td>创建时间</td><td>{$list.created_time}</td>
+  		<td>所属仓库</td><td>{$list.wh_id}</td>
+  		<td>加工类型</td><td>{:en_to_cn($list['type'])}</td>
+  	</tr>
+  	<tr>
+  		<td>总任务数</td><td>{$list.task}</td>
+  		<td>已完成任务数</td><td>{$list.over_task}</td>
+  		<td>打印时间</td><td>{$list.print_time}</td>
+  		<td>备注</td><td>{$list.remark}</td>
+  	</tr>
+  </tbody>
+</table>
+</div>
+
+<div class="row">
+<div><h3>加工货品明细</h3></div>
+</div>
+
+<div class="row">
+<table id="data-table-detail" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+  <thead>
+  	<tr>
+  		<td>货品号</td><td>货品条码</td><td>产品名称</td><td>计划加工数量</td><td>实际加工数量</td><td>计量单位</td>
+  	</tr>
+  </thead>
+
+  <tbody>
+  	<volist name="list.detail" id="detail">
+	  	<tr>
+	  		<td style="width:10%;">{$detail.p_pro_code}</td>
+            <td style="width:25%;">
+    				<img src="http://api.pda.dachuwang.com/barcode/get?text={$detail.p_pro_code}" style="height:50px;width:240px" class="img-responsive center-block" alt="Responsive image">
+            </td>
+            <td style="width:30%;">{$detail.p_pro_name}</td>
+            <td style="width:10%;">{$detail.plan_qty}</td>
+            <td style="width:10%;">{$detail.real_qty}</td>
+            <td style="width:10%;">{$detail.p_uom_name}</td>
+	  	</tr>
+  	</volist>
+  </tbody>
+</table>
+</div>
+</br>
+</br>
+
+</div>
+</body>
+</html>

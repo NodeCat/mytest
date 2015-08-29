@@ -58,11 +58,17 @@ class StockMoveDetailController extends CommonController {
             'control_type' => 'text',
             'value' => '',
         ),
+        'stock_move.created_time' =>    array (    
+            'title' => '操作时间',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => '',   
+        ), 
     );
 	//设置列表页选项
 	protected function before_index() {
         $this->table = array(
-            'toolbar'   => false,
+            'toolbar'   => true,
             'searchbar' => true, 
             'checkbox'  => true, 
             'status'    => false, 
@@ -73,15 +79,16 @@ class StockMoveDetailController extends CommonController {
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false')
         );
-        /*$this->toolbar =array(
+
+        $this->toolbar =array(
             array('name'=>'add', 'show' => false,'new'=>'false'), 
             array('name'=>'edit', 'show' => false,'new'=>'false'), 
             array('name'=>'delete' ,'show' => false,'new'=>'false'),
             array('name'=>'import' ,'show' => false,'new'=>'false'),
-            array('name'=>'export' ,'show' => false,'new'=>'false'),
+            array('name'=>'export' ,'show' => isset($this->auth['export']),'new'=>'false'),
             array('name'=>'print' ,'show' => false,'new'=>'false'),
             array('name'=>'setting' ,'show' => false,'new'=>'false'),
-        );*/
+        );
     }
 
     //lists方法执行后，执行该方法
@@ -102,6 +109,18 @@ class StockMoveDetailController extends CommonController {
             $location_info = A('Location','Logic')->getParentById($data['location_id']);
             $data['area_name'] = $location_info['name'];
         }
+    }
+
+    protected function before_export(&$M){
+        $query = I('query');
+        $start_time = $query['stock_move.created_time'];
+        $end_time = $query['stock_move.created_time_1'];
+
+        if(!$start_time || !$end_time) {
+            $this->msgReturn(false,'选择时间范围才能导出数据');
+        }
+        $map['stock_move.wh_id'] = session('user.wh_id');
+        $M->where($map);
     }
 
     //serach方法执行后，执行该方法

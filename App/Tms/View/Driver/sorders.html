@@ -152,7 +152,7 @@
                       
                       <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
                        
-                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" data-val="{$v.quantity}" onkeyup="checkValue(this)" >
+                      <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" data-val="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')" >
                       <span class="input-group-addon">{$v.unit_id}</span>
 
                 	    <neq name="v['close_unit']" value="$v['unit_id']">

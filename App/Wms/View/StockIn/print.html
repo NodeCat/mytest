@@ -8,17 +8,15 @@
   page-break-inside:avoid;
   page-break-after:always
 }
+#data-table-detail td {
+	height: 60px;
+}
 </style>
 <body>
 
 <volist name="result" id="vo">
 <div class="container printpage">
 
-<div class="row">
-<div class="text-center"><h3>到货单</h3></div>
-</div>
-</br>
-</br>
 
 <div class="row">
 	<div class="text-center">
@@ -27,7 +25,7 @@
 </div>
 
 <div class="row">
-    <img src="http://api.pda.dachuwang.com/barcode/get?text={$vo.refer_code}" style="height:60px;width:240px" class="img-responsive center-block" alt="Responsive image">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$vo.refer_code}" style="height:100px;width:240px" class="img-responsive center-block" alt="Responsive image">
 </div>
 
 <br/>
@@ -37,25 +35,14 @@
   </thead>
 
   <tbody>
-  	<tr>
-  		<td>收货人</td><td>{$vo.session_user_name}</td>
-  	</tr>
-  	<tr>
-  		<td>到货时间</td><td>{$vo.expecting_date}</td>
-  	</tr>
-  	<tr>
+    <tr>
+  		<td>创建时间</td><td>{$vo.created_time}</td>
   		<td>打印时间</td><td>{$vo.print_time}</td>
-  	</tr>
-  	<tr>
   		<td>供应商</td><td>{$vo.partner_name}</td>
   	</tr>
   	<tr>
   		<td>采购人</td><td>{$vo.created_user_name}</td>
-  	</tr>
-  	<tr>
   		<td>目的仓库</td><td>{$vo.dest_wh_name}</td>
-  	</tr>
-  	<tr>
   		<td>备注</td><td>{$vo.remark}</td>
   	</tr>
   </tbody>
@@ -79,7 +66,7 @@
 	  	<tr>
 	  		<td style="width:5%;">{$bill_in_detail.pro_code}</td>
             <td style="width:25%;">
-    <img src="http://api.pda.dachuwang.com/barcode/get?text={$bill_in_detail.barcode}" style="height:30px;width:240px" class="img-responsive center-block" alt="Responsive image">
+    <img src="http://api.pda.dachuwang.com/barcode/get?text={$bill_in_detail.barcode}" style="height:50px;width:240px" class="img-responsive center-block" alt="Responsive image">
             </td>
             <td style="width:30%;">{$bill_in_detail.pro_name}</td>
             <td style="width:5%;">{$bill_in_detail.expected_qty}</td>

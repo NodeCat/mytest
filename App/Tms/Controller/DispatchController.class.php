@@ -59,7 +59,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $map1['sl.wh_id'] = $wh_id;
         $map1['sl.is_deleted'] = 0;
         $map1['sl.created_time'] = array('between',$start_date.','.$end_date);
-        $field1 = 'sl.id sid, sl.wh_id, sl.userid user_id, sl.created_time screated_time, 
+        $field1 = 'sl.id sid, sl.wh_id, sl.userid user_id, note, sl.created_time screated_time, 
         sl.distance, DATE( sl.delivery_time ) deliver_date, sl.fee, sl.period,tu.*';
         $sub1 = $D->alias('sl')
             ->field($field1)
@@ -366,6 +366,35 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->display('Index/sign-code');
     }
     
+    /**
+     * [saveNote 更新备注]
+     * @return [type] [description]
+     */
+    public function saveNote()
+    {
+        $id = I('post.id/d', 0);
+        $note = I('post.note');
+        if (empty($id) || empty($note)) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '参数错误'
+            );
+            $this->ajaxReturn($res);
+        }
+        $flag = M('tms_sign_list')->where(array('id' => $id))->save(array('note' => $note));
+        if ($flag) {
+            $res = array(
+                'status' => 0,
+                'msg'    => '更新成功'
+            );
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '更新失败'
+            );
+        }
+        $this->ajaxReturn($res);
+    }
 }
 
 

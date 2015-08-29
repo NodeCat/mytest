@@ -558,7 +558,7 @@ class StockInController extends CommonController {
     	->join('user on user.id = stock_bill_in.created_user')
     	->join('warehouse on warehouse.id = stock_bill_in.wh_id')
     	->join('left join stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
-    	->where($map)->field('stock_bill_in.id, stock_purchase.expecting_date, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')
+    	->where($map)->field('stock_bill_in.id, stock_purchase.created_time, stock_bill_in.code, stock_purchase.remark, partner.name as partner_name, user.nickname as created_user_name, warehouse.name as dest_wh_name')
     	->select();
     	unset($map);
 
@@ -574,10 +574,10 @@ class StockInController extends CommonController {
 	    	$data[$key]['remark'] = $value['remark'];
 	    	$data[$key]['print_time'] = get_time();
 	    	$data[$key]['partner_name'] = $value['partner_name'];
-	    	$data[$key]['expecting_date'] = $value['expecting_date'];
 	    	$data[$key]['created_user_name'] = $value['created_user_name'];
 	    	$data[$key]['session_user_name'] = session('user.username');
 	    	$data[$key]['dest_wh_name'] = $value['dest_wh_name'];
+	    	$data[$key]['created_time'] = $value['created_time'];
 
 	    	$bill_in_detail_list = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
 	        //如果没有对应的条码号则使用内部货号作为条码号
