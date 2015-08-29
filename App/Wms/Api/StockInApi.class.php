@@ -30,9 +30,9 @@ class StockInApi extends CommApi{
             }
 
             if ($status == '21') {
-                $status = "received";//待收货
+                $status = "unreceived";//待收货
             } elseif ($status == '31'){
-                $status = "shelves";//待上架
+                $status = "unshelved";//待上架
             } elseif($status == '33'){
                 $status = "up";//已上架
             } elseif($status == '0') {
@@ -56,7 +56,7 @@ class StockInApi extends CommApi{
     }
 
     //入库单关闭
-    public function stockInClosed(){
+    public function closeStockIn(){
          //入库单单号
         $in_code = I('json.in_code');
         $return = array('status' => 1, 'data' => '', "msg"=>"错误信息");
