@@ -98,7 +98,7 @@
   </td>
   -->
   <td>
-  <a href="#" class="collapsed" data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}">
+  <a href="#info_{$vo.refer_code}" class="collapsed" data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}">
   查看详情
   </a>
   </td>
@@ -166,6 +166,7 @@
               <td>退押金</td>
               <td>应收总计</td>
               <td>司机实收金额</td>
+              <td>退款金额</td>
             </tr>
         </thead>
         <tbody>
@@ -177,6 +178,7 @@
               <td>{$vo.deposit}</td>
               <td class="dange">{$vo.pay_for_price}</td>
               <td class="dange">{$vo.deal_price}</td>
+              <td class="dange">{$vo.reject_sum_price}</td>
             </tr>
         </tbody>
       </table>

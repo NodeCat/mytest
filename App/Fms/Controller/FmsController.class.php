@@ -69,6 +69,9 @@ class FmsController extends \Common\Controller\AuthController{
     *@param:  id 配送单id或配送单号
     */
     public function orders(){
+        $fms_list = A('Fms/List','Logic');
+        $re = $fms_list->createRefund('79457');
+        dump($re);exit;
         $id = I('id',0);
         if(!empty($id)){
             $L = A('Fms/List','Logic');
@@ -181,6 +184,12 @@ class FmsController extends \Common\Controller\AuthController{
             $model->rollback();
             $this->msgReturn('0','结算失败，未找到该配送单中的hop的订单。');
         }
+
+        //创建退款单
+        foreach ($order_ids as $d_id) {
+            $re = $fms_list->createRefund($d_id);
+        }
+
         $DistLogic = A('Tms/Dist','Logic');
         $flag = true;
         foreach ($orders as $val) {
@@ -313,7 +322,8 @@ class FmsController extends \Common\Controller\AuthController{
                             $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $sign_detail[$i]['price_unit'], 2);
                             //合计
                             $value['actual_price'] += $val['actual_sum_price'];
-
+                            //退款金额
+                            $value['reject_sum_price'] += bcmul(($val['order_qty'] - $val['real_sign_qty']), $sign_detail[$i]['price_unit'], 2);
                         }
                     }
                 }else{
@@ -325,6 +335,13 @@ class FmsController extends \Common\Controller\AuthController{
                     $val['unit_id'] = $val['measure_unit'];
                     //合计
                     $value['actual_price'] = 0;
+                    if ($value['status_cn'] == '已签收' || $value['status_cn'] == '已拒收' || $value['status_cn'] == '已完成') {
+                        //退款金额
+                        $value['reject_sum_price'] = bcmul($val['order_qty'], $val['price'], 2);
+                    } else {
+                        //退款金额
+                        $value['reject_sum_price'] = 0;
+                    }
                 }
                 $value_detail[] = $val;
             }

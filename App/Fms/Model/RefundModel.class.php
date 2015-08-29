@@ -5,13 +5,13 @@ class RefundModel extends RelationModel {
 
     protected $insertFields = array(
         'id', 'type', 'order_id' ,'suborder_id', 'reject_reason', 
-        'reject_code', 'refer_code', 'pid', 'pay_type', 'sum_reject_price', 'city', 'shop_name', 
+        'reject_code', 'refer_code', 'pid', 'pay_type', 'sum_reject_price', 'city_id', 'city_name', 'shop_name', 
         'customer_id', 'customer_name', 'customer_mobile', 'remark', 
         'created_time', 'created_user', 'update_time', 'update_user', 'status', 'is_deleted', 
     );
     protected $updateFields = array(
         'type', 'order_id' ,'suborder_id', 'reject_reason', 
-        'reject_code', 'refer_code', 'pid', 'pay_type', 'sum_reject_price', 'city', 'shop_name', 
+        'reject_code', 'refer_code', 'pid', 'pay_type', 'sum_reject_price', 'city_id', 'city_name', 'shop_name', 
         'customer_id', 'customer_name', 'customer_mobile', 'remark', 
         'created_time', 'created_user', 'update_time', 'update_user', 'status', 'is_deleted',
     );
@@ -52,7 +52,7 @@ class RefundModel extends RelationModel {
             "join"=>array(//"left join refund_detail on refund.id = refund_detail.pid",
                 "inner join warehouse on warehouse.id = refund.wh_id",
             ),
-            "field"=>"refund.*",            
+            "field"=>"refund.*,refund.status as state",            
         ),
         'latest'=>array(
             'where'=>array('refund.is_deleted'=>'0'),

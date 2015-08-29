@@ -57,7 +57,8 @@ class OrderController extends \Common\Controller\AuthController {
                             $val['actual_sum_price'] = bcmul($val['real_sign_qty'], $sign_detail[$i]['price_unit'], 2);
                             //合计
                             $bill_out['actual_price'] += $val['actual_sum_price'];
-                            
+                            //退款金额
+                            $bill_out['reject_sum_price'] += bcmul(($val['order_qty'] - $val['real_sign_qty']), $sign_detail[$i]['price_unit'], 2);
                         }
                     }
                 }else{
@@ -69,6 +70,13 @@ class OrderController extends \Common\Controller\AuthController {
                     $val['unit_id'] = $val['measure_unit'];
                     //合计
                     $bill_out['actual_price'] = 0;
+                    if ($bill_out['status_cn'] == '已签收' || $bill_out['status_cn'] == '已拒收' || $bill_out['status_cn'] == '已完成') {
+                        //退款金额
+                        $bill_out['reject_sum_price'] = bcmul($val['order_qty'], $val['price'], 2);
+                    } else {
+                        //退款金额
+                        $bill_out['reject_sum_price'] = 0;
+                    }
                 }
                 $value_detail[] = $val;
             }

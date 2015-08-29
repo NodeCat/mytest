@@ -1,4 +1,4 @@
-<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<form class="form-inline form-view" action="{:U('edit')}" method="post" id='form'>
 <input type="hidden" name="id" value="{$data['id']}">
 <div class="panel panel-default">
   <div class="panel-heading" style="padding:0px 15px;">
@@ -102,7 +102,17 @@
         </label>
         <div class="col-lg-8 col-sm-8 col-xs-8">
           <label class="control-label label-field">
-            {$data['pay_type']}
+            <switch name="data['pay_type']">
+              <case value="0" break='1'>
+                微信支付
+              </case>
+              <case value="1" break='1'>
+                银行退款
+              </case>
+              <case value="2" break='1'>
+                现场退款
+              </case>
+            </switch>
           </label>
         </div>
       </div>
@@ -131,7 +141,15 @@
     </div>
     </div>
     <br>
-
+<div class="row">
+  <div class="">
+  <div class="form-group col-md-12">
+     <label class="" for="mark">备注：</label>
+     <input type="text" class="form-control" id="mark" name="remark"  placeholder="备注" value="{$data.remark}" style="width:95%;" readonly  >
+    </div>
+  </div>
+</div>
+<br>
     <div class="table-responsive">
 
   <div class="tab-content">
@@ -190,11 +208,24 @@
     
   </div>
 <br>
+<div class="row">
+  <div class="form-group col-md-4">
+    <button class="btn btn-default  btn-ajax" id="handle" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    财务已处理</button>
+    <button class="btn btn-default  btn-ajax" id="cancel" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    关闭</button>
+  </div>
+  <div class="form-group col-md-8">
+    <input type="text" class="form-control" name="remark" id="txt-remark" style="width:80%" placeholder="请输入工作人员备注信息">
+    <button class="btn btn-default  btn-ajax" id="addremark" style="display:inline-block;" data-input="#txt-remark" data-target="#table-remarks" data-href="" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加备注</button>
+  </div>
+</div>
+<br>
 <ul class="nav nav-tabs" role="tablist">
     <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 账单动态 </a></li>
   </ul>
 <div class="row">
-<div class="col-md-6">
+<div class="col-md-12">
     <table class="data-table table table-bordered table-condensed table-hover" id="table-remarks">
       <thead>
         <tr>
@@ -202,71 +233,92 @@
         </tr>
       </thead>
       <tbody>
-      <volist name="remarks" id="vo">
-        <tr>
-          <td>{$vo.created_time}</td><td>{$vo.content}</td><td>{$vo.role_name} {$vo.author_name}</td>
-        </tr>
+      <volist name="data['log']" id="log">
+      <tr>
+        <td>
+          {$log.optime}
+        </td>
+        <td>
+          {$log.msg}
+        </td>
+        <td>
+          <if condition="$log.user eq null">无
+            <else />
+          {$log.user}
+          </if>
+        </td>
+      </tr>
       </volist>
-      </tbody>
     </table>
 </div>
 <div class="col-md-6">
 <br>
-<neq name="data.state" value="5">
-    <div class="input-group">
-        <input type="text" class="form-control" name="remark" id="txt-remark" placeholder="请输入工作人员备注信息">
-        <span class="input-group-btn">
-          <button class="btn btn-default btn-add-remark btn-ajax" data-input="#txt-remark" data-target="#table-remarks" data-href="{:U('remark')}" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加备注</button>
-        </span>
-      </div>
-</neq>
+
 </div>
 </div>
   </div>
 </div>
 </form>
 <script type="text/javascript">
-  $('body').delegate('.btn-add-remark','click',function (e) {
-      e.preventDefault();
-    var addr,params,form,target,input;
-    form = $(this).parents('form');
-    if(form != '' && form != null ){
-      params=$(form).serialize();
-    }
-
-    if(addr == null ) {
-      addr=$(this).data('href');
-    }
-    
-    target = $(this).data('target');
-    if(target == '' || target == null ){
-      target = '.content';
-    }
-
-    $.ajax({
-      url:addr,
-      type:'post',
-      cache : false,
-      async:true,
-      dataType:'json',
-      data:params,
-      success: function(msg){
-        alert(msg.msg);
-        if(msg.url != '' && msg.url != null ){
-            setTimeout(function() {document.location=msg.url}, 0);
-        }
-        $('#txt-remark').val('');
-        if(msg.data != '' && msg.data != null ){
-          var vo = msg.data;
-          $(target).find('tbody').html('');
-          for (var i = 0; i < vo.length - 1; i++) {
-            var tr = '<tr><td>'+vo[i].created_time + '</td><td>' + vo[i].content + '</td><td>' + vo[i].role_name + ' ' +vo[i].author_name + '</td></tr>';
-            $(target).find('tbody').append(tr);
-          };
-        }
-      }
-    }); 
+$(document).on('click','#addremark',function(){
+  var id = $('input[name=id]').val();
+  var txtremark = $('#txt-remark').val();
+  var url = "/Refund/addRemark";
+  if(!txtremark){
+    alert('备注不能为空！');
     return false;
+  }
+  //提交数据到后端处理
+  $.ajax({
+    url:url,
+    type:'post',
+    cache : false,
+    dataType:'json',
+    data:'id='+id+'&remark='+txtremark,
+    success: function(json){
+        alert(json.msg);
+        if (json.status == 1) {
+          location.reload();
+        }
+    }
   });
+});
 
+$(document).on('click','#handle',function(){
+  var id = $('input[name=id]').val();
+  var url = "/Refund/handle";
+  //提交数据到后端处理
+  $.ajax({
+    url:url,
+    type:'post',
+    cache : false,
+    dataType:'json',
+    data:'id='+id,
+    success: function(json){
+        alert(json.msg);
+        if (json.status == 1) {
+          location.reload();
+        }
+    }
+  });
+});
+
+$(document).on('click','#cancel',function(){
+  var id = $('input[name=id]').val();
+  var url = "/Refund/cancel";
+  //提交数据到后端处理
+  $.ajax({
+    url:url,
+    type:'post',
+    cache : false,
+    dataType:'json',
+    data:'id='+id,
+    success: function(json){
+        alert(json.msg);
+        if (json.status == 1) {
+          location.reload();
+        }
+    }
+  });
+});
 </script>

@@ -8,7 +8,7 @@ class RefundController extends \Common\Controller\CommonController {
 		'created_time'    => '生成时间',
 		'type'            => '退款单类型',
 		'status'          => '处理状态',
-		'area'            => '地区',
+		'city_name'       => '地区',
 		'order_id'        => '母订单id',
 		'suborder_id'     => '子订单id',
 		'shop_name'       => '店铺名称',
@@ -18,30 +18,39 @@ class RefundController extends \Common\Controller\CommonController {
 		'sum_reject_price'=> '退款金额',
 	);
     protected $filter = array (
-        'expire_status' => array(
-            '0' => '',
-            '1' => '逾期未付'
-        )
+        'status' => array(
+            '0' => '未处理',
+            '1' => '已处理',
+            '2' => '已关闭',
+        ),
+        'type'   => array(
+            '0' => '拒收退款单',
+            '1' => '缺货退款单',
+        ),
     );
     protected $query = array (
-    	'refund.area' => array(
-        		'title' => '地区',
-	            'query_type' => 'eq',
+    
+        'refund.type'        => array(
+        		'title'        => '退款单类型',
+	            'query_type'   => 'eq',
 	            'control_type' => 'select',
-	            'value' => '',
+	            'value' => array(
+                        '0' => '拒收退款单',
+                        '1' => '缺货退款单',
+                    ),
             ),
-        'refund.type' => array(
-        		'title' => '退款单类型',
-	            'query_type' => 'eq',
-	            'control_type' => 'select',
-	            'value' => '',
-            ),
-        'start_time' =>    array (    
-			'title' => '生成时间',     
-			'query_type' => 'between',     
-			'control_type' => 'datetime',     
-			'value' => '',   
+        'refund.created_time' =>    array (    
+                'title'        => '生成时间',     
+			    'query_type'   => 'between',     
+			    'control_type' => 'datetime',     
+			    'value' => '',   
 		  ),
+        'refund.suborder_id' => array(
+                'title'        => '子订单id',
+                'query_type'   => 'eq',
+                'control_type' => 'text',
+                'value'        => '',
+            ),
         
     );
 
@@ -67,7 +76,7 @@ class RefundController extends \Common\Controller\CommonController {
 				'2'=> array('value'=>'2','title'=>'已关闭','class'=>'danger'),
 			)
 		);
-        $this->query['refund.area'] = 
+        
     }
 	protected function before_edit(&$data) {
 
@@ -75,6 +84,74 @@ class RefundController extends \Common\Controller\CommonController {
         $map['pid']        = $data['id'];
         $map['is_deleted'] = 0;
         $data['detail'] = $detail->where($map)->select();
+        $logs = getlogs('fms_refund',$data['id']);
+        $data['log'] = $logs;
+    }
 
+    public function addRemark()
+    {
+        $id   = I('id');
+        $mark = I('remark');
+    
+        if (!$id) {
+            $this->msgReturn(0,'退款单id不合法。');
+        }
+        $map['id'] = $id;
+        $map['is_deleted'] = 0;
+        $data['remark']    = $mark;
+        $res = M('refund')->where($map)->save($data);
+        if ($res) {
+            $this->msgReturn(1,'添加备注成功！');
+        } else {
+            $this->msgReturn(0,'添加备注失败！');
+        }
+    }
+
+    public function handle()
+    {
+        $id    = I('id');
+        if (!$id) {
+            $this->msgReturn(0,'退款单id不合法。');
+        }
+        //设置状态为已处理
+        $res = $this->setRefundStatus($id,1);
+        if ($res) {
+            logs($id,'已处理','fms_refund');
+            $this->msgReturn(1,'处理成功！');
+        } else {
+            $this->msgReturn(0,'处理失败！');
+        }
+    }
+
+    public function cancel()
+    {
+        $id    = I('id');
+        if (!$id) {
+            $this->msgReturn(0,'退款单id不合法。');
+        }
+        //设置状态为已关闭
+        $res = $this->setRefundStatus($id,2);
+        if ($res) {
+            logs($id,'已关闭','fms_refund');
+            $this->msgReturn(1,'关闭成功！');
+        } else {
+            $this->msgReturn(0,'关闭失败！');
+        }
+    }
+
+    public function setRefundStatus($id=0,$status=0)
+    {
+        if (!$id) {
+            return false;
+        }   
+        $map['id'] = $id;
+        $map['is_deleted'] = 0;
+        $data['status']    = $status;
+        $res = M('refund')->where($map)->save($data);
+        if ($res) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
