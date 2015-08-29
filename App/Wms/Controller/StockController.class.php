@@ -370,10 +370,10 @@ class StockController extends CommonController {
                 $this->msgReturn(0,$mes);
             }
 
-            if (intval($assign_qty_arr[$key]*1000)!==0) {
+            /*if (intval($assign_qty_arr[$key]*1000)!==0) {
                 $mes = '序列'.$stock_key_arr[$key].'分配量非0，无法移动';
                 $this->msgReturn(0,$mes);
-            }
+            }*/
             if(bccomp($stock_qty_arr[$key], $avaliable_qty_arr[$key],2) == 1){
                 $mes = '序列'.$stock_key_arr[$key].'移动量不可大于可用量';
                 $this->msgReturn(0,$mes);
