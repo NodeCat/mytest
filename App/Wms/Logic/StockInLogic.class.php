@@ -751,8 +751,8 @@ class StockInLogic{
         foreach ($order_info_arr as $key => $value) {
             $diff = $value['qty'];
             foreach ($in_infos as $index => $val) {
-                if ($diff*1000 <= 0) {
-                    break;
+                if ((bccomp($diff, 0, 2) == -1) || (bccomp($diff, 0, 2) == 0) || ($diff*1000 <= 0)) {
+                        break;
                 }
                 if ($val['pro_code'] == $value['code']) {
                     //出库单的量是 出库量-入库量 等于这次该入库的量
