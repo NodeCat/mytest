@@ -69,9 +69,7 @@ class FmsController extends \Common\Controller\AuthController{
     *@param:  id 配送单id或配送单号
     */
     public function orders(){
-        $fms_list = A('Fms/List','Logic');
-        $re = $fms_list->createRefund('79457');
-        dump($re);exit;
+        
         $id = I('id',0);
         if(!empty($id)){
             $L = A('Fms/List','Logic');
