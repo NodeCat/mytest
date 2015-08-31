@@ -121,24 +121,35 @@ class DistributionController extends CommonController {
             }
             $stock_bill_out = M('stock_bill_out');
             $where['refer_code'] = $order_id;
+            $where['type'] = 1;
+            $where['is_deleted'] = 0;
             $bill_out_ids = $stock_bill_out->where($where)->select();
             $bill_out_id = array();
             foreach ($bill_out_ids as $value) {
                 $bill_out_id[] = $value['id'];
             }
             unset($where);
-            $where['bill_out_id'] = array('in', $bill_out_id);
+            if(empty($bill_out_id)) {
+                $where['bill_out_id'] = 0;
+            }
+            else {
+                $where['bill_out_id'] = array('in', $bill_out_id);
+            }
+            
+            $where['is_deleted'] = 0;
             $result = $M->field('pid')->where($where)->select();
             if (empty($result)) {
                 $map['stock_wave_distribution.id'] = array('eq', null);
                 unset($map['stock_wave_distribution.order_id']);
                 return;
             } 
-            $pids = array();
-            foreach ($result as $value) {
-                $pids[] = $value['pid'];
+            else {
+                $pids = array();
+                foreach ($result as $value) {
+                    $pids[] = $value['pid'];
+                }
+                $map['stock_wave_distribution.id'] = array('in', $pids);
             }
-            $map['stock_wave_distribution.id'] = array('in', $pids);
             unset($map['stock_wave_distribution.order_id']);
         }
         if (key_exists('stock_wave_distribution.order_type', $map)) {
