@@ -29,8 +29,8 @@
 <form class="form-ajax" id="form-add-invertory">
   <div class="btn-group" style="margin-bottom:15px;">
     <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" id="insert_sum">录入盘点量</button>
-    <button class="btn btn-danger hidden dropdown-toggle" data-toggle="dropdown" id="reject">取消</button>
-    <button type="button" class="btn btn-success hidden dropdown-toggle" data-toggle="dropdown" id="add_sum">保存</button>
+    <button class="btn btn-default hidden dropdown-toggle" data-toggle="dropdown" id="reject">取消</button>
+    <button type="button" class="btn btn-primary hidden dropdown-toggle" data-toggle="dropdown" id="add_sum">保存</button>
   </div>
   <div class="table-content" id="table-content">
     <include file="Table:list"/>
@@ -67,7 +67,7 @@ $(function(){
     })
 	$('#add_sum').delegate('','click',function(){
 		var form_data = $("#form-add-invertory").serialize();
-		var addr = 'InventoryDetail/upd_detail';
+		var addr = '/InventoryDetail/upd_detail';
 		$.ajax({
 			url:addr,
 			type:'post',
