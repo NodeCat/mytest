@@ -67,7 +67,7 @@ $(function(){
     })
 	$('#add_sum').delegate('','click',function(){
 		var form_data = $("#form-add-invertory").serialize();
-		var addr = 'http://wms.dachuwang.net/InventoryDetail/upd_detail';
+		var addr = 'InventoryDetail/upd_detail';
 		$.ajax({
 			url:addr,
 			type:'post',
