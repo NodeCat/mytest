@@ -69,6 +69,7 @@ class DispatchController extends \Common\Controller\AuthController{
         //子查询2，提货记录对应配送单
         $map2['d.created_time'] = array('between',$start_date.','.$end_date);
         $map2['d.type'] = 0;
+        $map2['d.status'] = '1';
         $map2['wd.is_deleted'] = 0;
         $group2 = 'd.user_id, delivery_date, deliver_time';
         $field2 = "user_id,deliver_time, DATE( d.created_time ) delivery_date, d.type, (
@@ -113,10 +114,11 @@ class DispatchController extends \Common\Controller\AuthController{
             //签到记录对应的配送详情列表
             $value['dist_ids'] = explode(',', $value['dist_ids']);
             foreach ($value['dist_ids'] as $va) {
-                $details = array_merge($details, $dist_id_detail[$va]);
+                $details_data = array_merge($details, $dist_id_detail[$va]);
             }
             //配送状态、准点率统计
-            $deliveryStatis = $A->deliveryStatis($details);
+            $deliveryStatis = $A->deliveryStatis($details_data);
+            unset($details_data);
             $value['sign_orders']   = $deliveryStatis['sign_orders'];
             $value['unsign_orders'] = $deliveryStatis['unsign_orders'];
             $value['sign_finished'] = $deliveryStatis['sign_finished'];
