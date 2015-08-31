@@ -69,7 +69,7 @@ class DeliveryController extends \Common\Controller\CommonController
 				->field('dd.pid')->where($where)->find();
 			$map['d.dist_id'] = $res['pid'];
 		}
-		elseif (empty($map['dist.deliver_date'])) {
+		elseif (empty($map['date(dist.deliver_date)'])) {
 			$map['date(dist.deliver_date)'] = array('eq',today());
 		}
         C('PAGE_SIZE',99);
