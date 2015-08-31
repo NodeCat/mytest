@@ -89,7 +89,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $field = 'a.*, b.line_name, b.dist_ids, b.type';
         $sign_lists = $D->field($field)
             ->table($sub1 . 'a')
-            ->join('inner join ' .$sub2 . ' b on a.user_id = b.user_id
+            ->join('left join ' .$sub2 . ' b on a.user_id = b.user_id
                     AND a.deliver_date = b.delivery_date
                     AND a.period = b.period')
             ->order('a.sid DESC')
