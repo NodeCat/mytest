@@ -37,46 +37,6 @@ class ListLogic{
     }
 
     /**
-     * [deliveryStatis 签到列表配送统计]
-     * @param  array  $dist_ids [配送单ID数组]
-     * @return [type]           [description]
-     */
-    public function deliveryStatis($details)
-    {
-        $statis = array(
-            'sign_orders'   => 0,
-            'unsign_orders' => 0,
-            'sign_finished' => 0,
-            'delivering'    => 0,
-            'ontime'        => 0,
-          );
-        $total = count($details);
-        foreach ($details as $value) {
-            //配送状态统计
-            switch ($value['status']) {
-                case '1'://配送中
-                    $statis['delivering'] ++;
-                    break;
-                case '2'://已签收
-                    $statis['sign_orders'] ++;
-                    break;
-                case '3'://已拒收
-                    $statis['unsign_orders'] ++;
-                    break;
-                case '4'://已完成
-                    $statis['sign_finished'] ++;
-                    break;
-            }
-            //配送准时统计
-            if ($value['delivery_ontime'] == 1) {
-                $statis['ontime'] ++;
-            }
-        }
-        $statis['ontime'] = sprintf('%.1f',$statis['ontime'] / $total * 100) . '%';
-        return $statis;
-    }
-
-    /**
      * 统计配送单的订单状态
      * @param  string  $dist_id  配送单id
      * @return array   $data     返回统计信息
