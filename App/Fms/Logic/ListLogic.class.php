@@ -299,11 +299,11 @@ class ListLogic {
         $refund_model = D('Fms/Refund');
         //如果是已完成状态并且是已付款的才创建退款单
         if ($sign_data['status'] == 4 && $sign_data['pay_status'] == 1) {
+            $data['reject_code']    = '';
             $data['suborder_id'] = $bill_out['refer_code'];
             $data['order_id']    = $order_info['order_id'];
             $data['reject_reason'] = $sign_data['reject_reason'];
             $data['refer_code']    = $bill_out['code']; //关联出库单号
-            $data['reject_code']    = $bill_out['code']; //关联出库单号
             $data['pid']           = $bill_out['id'];   //关联出库单id
             $data['pay_type']      = 0;//微信退款
             $data['city_id']            = $order_info['city_id'];
@@ -350,6 +350,14 @@ class ListLogic {
             }
             unset($data['detail']);
             unset($data['sum_reject_price']);
+            //拒收入库单号
+            unset($map);
+            $map['refer_code']      = $bill_out['code']; //关联出库单号
+            $map['is_deleted']      = 0;
+            $bill_in = M('stock_bill_in')->where($map)->find();
+            if ($bill_in) {
+                $data['reject_code']    = $bill_in['code'];
+            }
             foreach ($bill_out['detail'] as $key => $value) {
                 
                 $sign_qty = 0;

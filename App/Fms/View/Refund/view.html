@@ -210,10 +210,12 @@
 <br>
 <div class="row">
   <div class="form-group col-md-4">
+    <if condition="$data.state eq 0">
     <button class="btn btn-default  btn-ajax" id="handle" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
     财务已处理</button>
     <button class="btn btn-default  btn-ajax" id="cancel" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
     关闭</button>
+  </if>
   </div>
   <div class="form-group col-md-8">
     <input type="text" class="form-control" name="remark" id="txt-remark" style="width:80%" placeholder="请输入工作人员备注信息">
