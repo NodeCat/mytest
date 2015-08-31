@@ -76,4 +76,20 @@ class DeliveryController extends \Common\Controller\CommonController
 
 	}
 
+    public function after_lists(&$data){
+        foreach ($data as &$value) {
+            $val = explode(',', $value['line_names']);
+            if(count($val) == 1) {
+                continue;
+            } else {
+                $lines = array();
+                foreach ($val as $v) {
+                    $lines = array_merge($lines, explode('/', $v));
+                }
+                $value['line_names'] = array_unique($lines);
+            }
+
+        }
+    }
+
 }
