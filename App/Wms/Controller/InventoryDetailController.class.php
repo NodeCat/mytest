@@ -128,8 +128,8 @@ class InventoryDetailController extends CommonController {
                 $inventoryDetailInfo = M('stock_inventory_detail')->where($map)->find();
                 $inventoryCode = $inventoryDetailInfo['inventory_code'];
                 //获取盘点单
-                $where['inventory_code'] = $inventoryCode;
-                $inventoryInfoStatus = M('stock_inventory_detail')->where($where)->getField('status');
+                $where['code'] = $inventoryCode;
+                $inventoryInfoStatus = M('stock_inventory')->where($where)->getField('status');
                 if (empty($inventoryInfoStatus)) {
                     $this->msgReturn(false, '参数有误');
                 }
