@@ -86,7 +86,7 @@ class DeliveryController extends \Common\Controller\CommonController
                 foreach ($val as $v) {
                     $lines = array_merge($lines, explode('/', $v));
                 }
-                $value['line_names'] = array_unique($lines);
+                $value['line_names'] = implode(array_unique($lines), ',');
             }
 
         }
