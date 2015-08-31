@@ -368,6 +368,11 @@ class SettlementController extends CommonController
                 $code[] = $val['code'];
             }
             $code_array = array_unique($code);
+
+            if(empty($code_array)){
+                $this->ajaxReturn(array());
+            }
+
             $where['erp_settlement_detail.order_code'] = array('in',  $code_array);
             $model  = M('erp_settlement_detail');
             $join   = array('INNER JOIN erp_settlement ON erp_settlement.code=erp_settlement_detail.code AND erp_settlement.status!=11');
@@ -585,11 +590,18 @@ class SettlementController extends CommonController
             //根据采购单号 查询结算单号
             $purchase_map['order_code'] = $map['erp_settlement.purchase_code'];
 
-            $map_list = M('erp_settlement_detail')->where($purchase_map)->field('code')->find();
+            $map_list = M('erp_settlement_detail')->where($purchase_map)->field('code')->select();
             unset($map['erp_settlement.purchase_code']);
 
-            if(!empty($map_list)){
-                $map['erp_settlement.code'] = array('eq',$map_list['code']);
+            $map_list_arr = array();
+            foreach($map_list as $val){
+                $map_list_arr[] = $val['code'];
+            }
+
+            if(!empty($map_list_arr)){
+                $map['erp_settlement.code'] = array('in',$map_list_arr);
+            }else{
+                $map['erp_settlement.code'] = '-1';
             }
         }
     }
