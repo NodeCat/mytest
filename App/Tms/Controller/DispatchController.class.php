@@ -96,17 +96,17 @@ class DispatchController extends \Common\Controller\AuthController{
             ->select();
         //取出所有配送单ID
         $dist_ids = array_column($sign_lists, 'dist_ids');
-        $dist_ids = implode(',', $dist_ids);
+        $dist_ids = implode(',', array_filter($dist_ids));
         $dist_ids = explode(',', $dist_ids);
         //所有配送单详情数据
         $dist_details = A('Wms/Distribution', 'Logic')->getDistDetailsByPid($dist_ids);
         $dist_id_detail = array();
         //配送单ID对应详情列表
-        foreach ($dist_details as $key => $value) {
-            $dist_id_detail[$value['pid']][] = $value;
+        foreach ($dist_details as $key => $val) {
+            $dist_id_detail[$val['pid']][] = $val;
         }
-        $details = array();
         foreach ($sign_lists as &$value) {
+            $details_data = array();
             //仓库、车型、平台的中文名称
             $value['warehouse'] = $this->warehouse[$value['wh_id']];
             $value['car_type']  = $this->carType[$value['car_type']];
@@ -114,11 +114,10 @@ class DispatchController extends \Common\Controller\AuthController{
             //签到记录对应的配送详情列表
             $value['dist_ids'] = explode(',', $value['dist_ids']);
             foreach ($value['dist_ids'] as $va) {
-                $details_data = array_merge($details, $dist_id_detail[$va]);
+                $details_data = array_merge($details_data, $dist_id_detail[$va]);
             }
             //配送状态、准点率统计
             $deliveryStatis = $A->deliveryStatis($details_data);
-            unset($details_data);
             $value['sign_orders']   = $deliveryStatis['sign_orders'];
             $value['unsign_orders'] = $deliveryStatis['unsign_orders'];
             $value['sign_finished'] = $deliveryStatis['sign_finished'];
