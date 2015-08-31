@@ -211,7 +211,7 @@ class CommonController extends \Common\Controller\AuthController {
             'Stock',
             'StockMoveDetail',
             'Adjustment',
-            //'Purchase',
+            'Delivery',
             'LocationArea',
             'Location',
             'Distribution',
