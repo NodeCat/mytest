@@ -22,8 +22,8 @@ class InventoryDetailController extends CommonController {
         ->find();
 
         //如果不是已关闭的盘点单 可以修改实盘量
-        $this->toolbar_tr_is_edit = 0;    
-        if(isset($this->auth['edit']) && $inventory_info['status'] != 'closed' && $inventory_info != 'confirmed'){
+        $this->toolbar_tr_is_edit = 0;   
+        if(isset($this->auth['edit']) && $inventory_info['status'] != 'closed' && $inventory_info['status'] != 'confirmed'){
             $this->toolbar_tr_is_edit = 1;
         }
 
