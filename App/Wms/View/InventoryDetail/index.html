@@ -42,7 +42,7 @@ $(function(){
 		var td = $('#table-content #data-table tbody tr td');
 		var mark = false;
 		td.each(function(){
-			if(!$(this).is('.input') && $(this)[0].cellIndex == 5){
+			if($(this)[0].cellIndex == 5){
 				var value = $(this).prev().html();
 				var id = $(this).prev().prev().prev().prev().prev().find('input').attr('id');
 				if ($(this).html() > 0) {
@@ -76,7 +76,27 @@ $(function(){
 			data:form_data,
 			success: function(msg){
 		        alert(msg.msg);
-		        location.reload();
+		        var td = $('#table-content #data-table tbody tr td');
+				var mark = false;
+				td.each(function(){
+					if($(this)[0].cellIndex == 5){
+						var input = $(this).children(':input').val();
+						$(this).children(':input').remove();
+						$(this).html(input);
+					}
+				})
+				td.each(function(){
+					if($(this)[0].cellIndex == 6){
+						var now = $(this).prev().html();
+						var also = $(this).prev().prev().html();
+						var diff = now - also;
+						$(this).html(diff);
+					}
+				})
+				$('#insert_sum').removeClass('hidden');
+			    $('#add_sum').addClass('hidden');
+			    $('#reject').addClass('hidden');
+		        //location.reload(false);
 		        return false;
 			},
 		});

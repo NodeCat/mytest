@@ -104,7 +104,6 @@ class InventoryDetailController extends CommonController {
     //更新盘点单详情
     public function upd_detail(){
         $inventoryInfo = I('post.');
-        
         unset($inventoryInfo['p']);
         
         if (empty($inventoryInfo)) {
