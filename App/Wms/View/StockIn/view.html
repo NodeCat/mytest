@@ -3,8 +3,23 @@
   <div class="panel-heading" style="padding:0px 15px;">
     <h3 class="panel-title">
     <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
-  <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul hidden"><i class="glyphicon glyphicon-edit"></i> 修改</a>
-  <a href="{:U('audit',array($pk => $data[$pk]))}" data-title="审核" rel="tooltip" data-placement="bottom" class="btn btn-sm hidden"><i class="glyphicon glyphicon-ok"></i> 审核</a>
+
+      <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul hidden">
+        <i class="glyphicon glyphicon-edit"></i> 修改
+      </a>
+
+      <a href="{:U('audit',array($pk => $data[$pk]))}" data-title="审核" rel="tooltip" data-placement="bottom" class="btn btn-sm hidden">
+        <i class="glyphicon glyphicon-ok"></i> 审核
+      </a>
+
+  
+    <notempty name="auth['inall']">
+      <notempty name="data['code']">
+          <a data-href="$data[$pk]" data-key="$pk" herf='javascript:void(0)' attr='inall' data-title="一键收货" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-open"></i>一键收货</a>
+      </notempty>
+    </notempty>
+
+    
   </div>
       <include file="status-bar" />
       <div class="clearfix"></div>
@@ -159,3 +174,47 @@
   margin-bottom: 0px;
 }
 </style>
+<include file="dialog_inall" />
+<script type="text/javascript">
+
+  var alert_dialog = {
+  
+      close:function(){
+        this.hide();
+        //window.location.reload();
+      },
+      show:function(title, content){
+        title  = title?title:'提示框';
+        content = content?content:"<div class='row'>content</div>";
+        $('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').show();
+        $("#gridSystemModalLabelalert").html(title);
+        $(".lgo").html(content);
+      },
+      hide:function(){
+        $('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+        $('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+      }
+  };
+  //退货弹框
+  $(document).on('click','[attr = inall]',function(){
+      var id = $(this).attr('transfer_id');
+      var json = {};
+      json.title = "批量收货";
+      json.status = true;
+      json.successhref = "{:U('out',array($pk => $data[$pk],'flg'=>'success'))}";
+      json.errorhref = "{:U('out',array($pk => $data[$pk],'flg'=>'error'))}";
+      var callback = function(res){
+
+      };
+      var prams = {};
+      prams.id = id;
+      var url = "{:U('readBatch')}";
+      $.post(url,prams,callback);
+
+      var html = template('dialog_inall',json);
+      $('body').append(html);
+      return false;
+  });
+</script>
