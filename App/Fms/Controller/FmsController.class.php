@@ -183,11 +183,6 @@ class FmsController extends \Common\Controller\AuthController{
             $this->msgReturn('0','结算失败，未找到该配送单中的hop的订单。');
         }
 
-        //创建退款单
-        foreach ($order_ids as $d_id) {
-            $re = $fms_list->createRefund($d_id);
-        }
-
         $DistLogic = A('Tms/Dist','Logic');
         $flag = true;
         foreach ($orders as $val) {
@@ -217,7 +212,6 @@ class FmsController extends \Common\Controller\AuthController{
             
             $map['status']  = '1';//已完成
             $map['deal_price'] = $val['pay_for_price'];
-            $order_ids[] = $val['id'];
             $map['suborder_id'] = $val['id'];
             $map['cur']['name'] = '财务'.session('user.username');
             $res = $A->set_status($map);
@@ -233,6 +227,10 @@ class FmsController extends \Common\Controller\AuthController{
         if($flag){
             //提交事务
             $model->commit();
+            //创建退款单
+            foreach ($order_ids as $d_id) {
+                $re = $fms_list->createRefund($d_id);
+            }
         }else{
             //回滚事务
             $model->rollback();
