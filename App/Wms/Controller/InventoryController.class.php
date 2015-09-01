@@ -568,7 +568,7 @@ class InventoryController extends CommonController {
 			
 			//将对应盘点单置为closed
 			foreach($inventory_infos as $inventory_info){
-			    if ($inventory_info['status'] == 'confirmed' || $inventory_info['status'] == 'close') { 
+			    if ($inventory_info['status'] == 'confirmed' || $inventory_info['status'] == 'closed') { 
 			        $this->msgReturn(false, '你选择的盘点单存在已确认货已关闭状态');
 			    }
     				$map['id'] = $inventory_info['id'];
@@ -601,7 +601,7 @@ class InventoryController extends CommonController {
 
 			//检查是否存在 已经有差异的盘点单，如果有，则提示错误
 			foreach($inventory_infos as $inventory_info){
-				if($inventory_info['status'] == 'closed'){
+				if($inventory_info['status'] == 'closed' || $inventory_info['status'] == 'confirmed'){
 					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'已经经过差异确认，或者盘点单已经关闭');
 				}
 				if($inventory_info['status'] != 'confirm'){

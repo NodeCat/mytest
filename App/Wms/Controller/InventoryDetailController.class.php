@@ -7,7 +7,7 @@ class InventoryDetailController extends CommonController {
             'pro_code' => '货品标识',
             'pro_name' => '货品名称',
             'theoretical_qty' => '原数量',
-            'pro_qty' => '实盘量（点击修改）',
+            'pro_qty' => '实盘量',
             'diff_qty' => '差异量',
             'uom_name' => '计量单位',
             );
@@ -150,11 +150,17 @@ class InventoryDetailController extends CommonController {
         
         //是否有差异
         $map['inventory_code'] = $inventoryCode;
-        $inventoryDetailInfo = M('stock_inventory_detail')->field('SUM(pro_qty) as pro_qty,SUM(theoretical_qty) as theoretical_qty')->where($map)->select();
+        $inventoryDetailInfo = M('stock_inventory_detail')->field('SUM(pro_qty) as pro_qty,SUM(theoretical_qty) as theoretical_qty')->where($map)->find();
+        
+        $inventoryDetailInfoStatus = M('stock_inventory_detail')->where($map)->getField('status', true);
         
         //更新盘点单状态为待确认 如果有差异，则更新盘点单的是否有差异
         $map['code'] = $inventoryCode;
-        $data['status'] = 'confirm'; //待确认
+        if (count($inventoryDetailInfoStatus) == 1 && $inventoryDetailInfoStatus[0] == 'done') { 
+            $data['status'] = 'confirm'; //待确认
+        } else {
+            $data['status'] = 'inventorying'; //盘点中
+        }
         if($inventoryDetailInfo['pro_qty'] != $inventoryDetailInfo['theoretical_qty']){
             $data['is_diff'] = 1;
         }
