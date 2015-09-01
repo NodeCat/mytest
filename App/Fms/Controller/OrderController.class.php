@@ -13,7 +13,7 @@ class OrderController extends \Common\Controller\AuthController {
             $bill_out_id = $m->field('id')->where($map)->find();
             $bill_out_id = $bill_out_id['id'];
             if (!$bill_out_id) {
-                $this->error('未找到该订单。');exit;
+                $this->msgReturn(0,'未找到该订单。');exit;
             }
             $list_logic = A('Fms/List','Logic');
             $bill_out = $list_logic->bill_out_Info($bill_out_id);
@@ -154,21 +154,21 @@ class OrderController extends \Common\Controller\AuthController {
     //重置订单状态
     public function reset()
     {
-        $order_id = I('get.id',0);
+        $order_id = I('id',0);
         $map['refer_code'] = $order_id;
         $map['is_deleted'] = 0;
         $m = M('stock_bill_out');
         $bill_out_id = $m->field('id')->where($map)->find();
         $bill_out_id = $bill_out_id['id'];
         if (!$bill_out_id) {
-            $this->error('未找到该订单。');exit;
+            $this->msgReturn(0,'未找到该订单。');exit;
         }
         unset($map);
         $map['bill_out_id'] = $bill_out_id;
         $map['is_deleted']  = 0;
         $dist_detail_id = M('stock_wave_distribution_detail')->where($map)->find();
         if ($dist_detail_id['status'] != 2 && $dist_detail_id['status'] != 3) {
-            $this->error('此订单不是已签收或已拒收状态，不能重置订单状态。');exit;
+            $this->msgReturn(0,'此订单不是已签收或已拒收状态，不能重置订单状态。');exit;
         }
         $fms_list = A('Fms/List','Logic');
         //查询订单是否有退货，并且已创建拒收入库单
@@ -195,7 +195,7 @@ class OrderController extends \Common\Controller\AuthController {
                             $s1 = $M->where($con_map)->save($in_data);   
                         } 
                     } else {
-                        $this->error('此订单对应的拒收入库单已经上架，不能重置订单状态！');
+                        $this->msgReturn(0,'此订单对应的拒收入库单已经上架，不能重置订单状态！');
                     }
                 }
             }
@@ -239,28 +239,28 @@ class OrderController extends \Common\Controller\AuthController {
         //重置押金和抹零
         $res3 = $A->setDeposit($map);
         if ($res) {
-            $this->success('重置成功！',U('Order/index',array('id' => $order_id)),2);
+            $this->msgReturn(1,'重置成功！');
         } else {
-            $this->error('重置失败！');
+            $this->msgReturn(0,'重置失败！');
         }
     }
     //修改订单实收金额，减去抹零和押金
     public function pay()
     {
-        $order_id = I('post.order_id',0);
-        $bill_id  = I('post.bill_id',0);
-        $deposit  = I('post.deposit',0);
-        $sign_msg      = I('post.sign_msg',0);
-        $is_wipezero = I('post.wipezero',0);
+        $order_id = I('order_id',0);
+        $bill_id  = I('bill_id',0);
+        $deposit  = I('deposit',0);
+        $sign_msg      = I('sign_msg',0);
+        $is_wipezero = I('wipezero',0);
 
         if ($deposit == 0 && $is_wipezero == 0) {
-            $this->error('请选择抹零或者输入押金后，再修改。');
+            $this->msgReturn(0,'请选择抹零或者输入押金后，再修改。');
         }
         if (empty($deposit)) {
             $deposit = 0;
         }
         if (ceil($deposit) != $deposit) {
-            $this->error('押金不能为小数。');
+            $this->msgReturn(0,'押金不能为小数。');
         }
         if ($order_id && $bill_id) {
             //实例化模型
@@ -271,10 +271,10 @@ class OrderController extends \Common\Controller\AuthController {
             $map['is_deleted']  = 0;
             $dist_detail = M('stock_wave_distribution_detail')->where($map)->find();
             if (empty($dist_detail)) {
-                $this->error('未找到该订单。');exit;
+                $this->msgReturn(0,'未找到该订单。');exit;
             }
             if ($dist_detail['status'] != 4) {
-                $this->error('此订单不是已完成状态，不能修改订单实收金额。');exit;
+                $this->msgReturn(0,'此订单不是已完成状态，不能修改订单实收金额。');exit;
             }
             $deal_price = $dist_detail['real_sum'];
             if ($is_wipezero) {
@@ -282,7 +282,7 @@ class OrderController extends \Common\Controller\AuthController {
                 $deal_price = floor($deal_price);
                 $wipezero   = round($old_value - $deal_price,2);
                 if ($wipezero == 0 && $deposit == 0) {
-                    $this->error('已经没有零钱，无需再抹零。');exit;
+                    $this->msgReturn(0,'已经没有零钱，无需再抹零。');exit;
                 }
             } else {
                 $wipezero   = 0;
@@ -294,10 +294,10 @@ class OrderController extends \Common\Controller\AuthController {
             $data['wipe_zero']   = $wipe_zero_sum + $wipezero;
             $data['deposit']    = $deposit_sum + $deposit;
             if ($data['real_sum'] < 0) {
-                $this->error('修改失败，输入的押金超过了该订单的应收金额！');exit;
+                $this->msgReturn(0,'修改失败，输入的押金超过了该订单的应收金额！');exit;
             }
             if ($data['real_sum'] > $dist_detail['receivable_sum']) {
-                $this->error('修改失败，输入了非法的押金，导致该订单的实收金额超过了应收金额！');exit;
+                $this->msgReturn(0,'修改失败，输入了非法的押金，导致该订单的实收金额超过了应收金额！');exit;
             }
             $res = $model->table('stock_wave_distribution_detail')->where($map)->save($data);
             logs($bill_id,'修改订单实收金额，抹零'.$wipezero.'押金'.$deposit,'dist_detail');
@@ -327,13 +327,27 @@ class OrderController extends \Common\Controller\AuthController {
             if ($res && $cn) {
                 //提交事务
                 $model->commit();
-                $this->success('修改成功！',U('Order/index',array('id' => $order_id)),2);  
+                $this->msgReturn(1,'修改成功！');  
             } else {
                 //回滚事务
                 $model->rollback();
-                $this->error('修改失败！');
+                $this->msgReturn(0,'修改失败！');
             } 
         }
+    }
+
+    protected function msgReturn($res, $msg='', $data = '', $url='') {
+        $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
+        if(IS_AJAX) {
+            $this->ajaxReturn(array('status'=>$res,'msg'=>$msg,'data'=>$data,'url'=>$url));
+        }
+        else if($res) { 
+                $this->success($msg,$url);
+            }
+            else{
+                $this->error($msg,$url);
+            }
+        exit();
     }
 
 }
