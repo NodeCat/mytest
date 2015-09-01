@@ -112,7 +112,7 @@ class InventoryDetailController extends CommonController {
         }
         
         $inventoryCode = ''; //盘点单号
-        
+       
         foreach ($inventoryInfo as $id => $qty) {
             if (empty($id) || empty($qty)) {
                 $this->msgReturn(false, '参数有误');
@@ -126,6 +126,7 @@ class InventoryDetailController extends CommonController {
             //获取盘点单号
             if (empty($inventoryCode)) {
                 $inventoryDetailInfo = M('stock_inventory_detail')->where($map)->find();
+                
                 $inventoryCode = $inventoryDetailInfo['inventory_code'];
                 //获取盘点单
                 $where['code'] = $inventoryCode;
@@ -143,8 +144,6 @@ class InventoryDetailController extends CommonController {
             $data['status'] = 'done';
             M('stock_inventory_detail')->where($map)->save($data);
             unset($data);
-            
-            
             unset($map);
         }
         
@@ -153,6 +152,7 @@ class InventoryDetailController extends CommonController {
         $inventoryDetailInfo = M('stock_inventory_detail')->field('SUM(pro_qty) as pro_qty,SUM(theoretical_qty) as theoretical_qty')->where($map)->find();
         
         $inventoryDetailInfoStatus = M('stock_inventory_detail')->where($map)->getField('status', true);
+        $inventoryDetailInfoStatus = array_unique($inventoryDetailInfoStatus);
         
         //更新盘点单状态为待确认 如果有差异，则更新盘点单的是否有差异
         $map['code'] = $inventoryCode;
@@ -164,8 +164,8 @@ class InventoryDetailController extends CommonController {
         if($inventoryDetailInfo['pro_qty'] != $inventoryDetailInfo['theoretical_qty']){
             $data['is_diff'] = 1;
         }
-        M('stock_inventory')->where($map)->save($data);
         
+        M('stock_inventory')->where($map)->save($data);
         unset($map);
         
         $this->msgReturn(true, '录入成功');
