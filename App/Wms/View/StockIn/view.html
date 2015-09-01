@@ -188,6 +188,7 @@
   
       close:function(){
         this.hide();
+        $('body').removeClass('modal-open');
         //window.location.reload();
       },
       show:function(title, content){
@@ -224,15 +225,17 @@
       $('body').append(html);
       return false;
   });
-  //一键上架111
+  //一键上架
   $(document).on('click','[attr = onall]',function(){
 
-      var id = $(this).attr('transfer_id');
+      $('body').addClass('modal-open');
+
       var json = {};
       json.title = "一键上架";
       json.status = true;
       json.product_date = '<?php echo date('Y-m-d')?>';
-      json.data = <?php echo json_encode($pros);?>
+      json.data = <?php echo json_encode($pros);?>;
+      json.id = <?php echo I('id')?>;
       
       var html = template('dialog_onall',json);
       $('body').append(html);

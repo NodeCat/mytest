@@ -1,6 +1,6 @@
 <script type='text/html' id="dialog_onall">
 
-
+<form class="form-horizontal form-ajax" action="/StockIn/onall" method="post" id='form'>
 <div class="modal fade in bs-example-modal-lg" role="dialog" aria-labelledby="gridSystemModalLabeldialog" style="display:block;">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -10,12 +10,11 @@
       </div>
       <div class="modal-body">
 
-          <div class="table-responsive"> 
-  <form class="form-horizontal" action="onall" method="post" id='form'>
+  <div class="table-responsive">
    <div class="form-group">
       <label for="inputPassword" class="col-sm-2 control-label text-right">目的库位</label>
       <div class="col-sm-10">
-        <input type="text" class="form-control" id="location_code" placeholder="目的库位" name="dest_location_code">
+        <input type="text" class="form-control" id="dest_location_code" placeholder="目的库位" name="dest_location_code">
       </div>
     </div>
     <hr/>
@@ -100,29 +99,30 @@
         <td>{{value.pro_name}}</td>
         <td>{{value.pro_attrs}}</td>
         <td>{{value.prepare_qty}}</td>
-        <td>{{value.code}}</td>
+        <td>{{value.refer_code}}</td>
         <td><input type='text' name='done_qty[]' data-value="{{value.prepare_qty}}" class='form-control input-sm text-left' value="{{value.prepare_qty}}"></td>
-        <td><input type="txt" rel='datepicker' name="product_date" class="form-control input-sm form_datetime" data-date-format="yyyy-mm-dd" value="{{product_date}}"></td>
+        <td><input type="txt" rel='datepicker' name="product_date[]" class="form-control input-sm form_datetime" data-date-format="yyyy-mm-dd" value="{{product_date}}"></td>
 
         <input type='hidden' value='{{value.id}}' name='ids[]'/>
         <input type="hidden" name="pro_code[]" value="{{value.pro_code}}"/>
+        <input type="hidden" name="batch[]" value="{{value.refer_code}}"/>
        </tr>
     {{/each}}
 
-    <input type="hidden" name="onall" value="1"/>
+    <input type="hidden" name="id" value="{{id}}"/>
     </tbody> 
    </table> 
-  </form>
   </div> 
       </div>
       {{if status}}
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal" onclick="alert_dialog.close();">取消</button>
-        <button type="button" class="btn btn-primary">确认收货</button>
+        <button type="submit" class="btn btn-primary">确认上架</button>
       </div>
       {{/if}}
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+</form>
 
 </script>
