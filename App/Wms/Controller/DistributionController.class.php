@@ -806,7 +806,7 @@ class DistributionController extends CommonController {
                 //通知实时库存接口
                 $notice_params['wh_id'] = session('user.wh_id');
                 $notice_params['type'] = 'out';
-                $notice_params['suborder_ids'] = $bill_out_info['refer_code'];
+                $notice_params['suborder_ids'] = array($bill_out_info['refer_code']);
                 $notice_params['msg'] = '出库';
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
                 unset($notice_params);
