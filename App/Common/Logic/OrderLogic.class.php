@@ -94,6 +94,15 @@ class OrderLogic{
         return $res;
     }
 
+    //根据订单id检查该订单是否达到过某种状态
+    //参数：{"suborder_ids":["123456","1234"]}
+    public function checkDid($map = '')
+    {
+        $url = '/suborder/check_did';
+        $res = $this->get($url,$map);
+        return $res;
+    }
+
     //获取订单列表
     public function order($map=''){
         $url = '/suborder/lists';
