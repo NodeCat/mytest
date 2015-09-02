@@ -815,9 +815,7 @@ class StockInController extends CommonController {
         if($stock_bill_in_info['type'] == 2){
             $this->msgReturn(0,'加工入库单不能一键上架');
         }
-
         unset($map);
-        unset($stock_bill_in_info);
 
         //到货单详情ids
         $ids = I('ids');
@@ -829,21 +827,28 @@ class StockInController extends CommonController {
         $product_date = I('product_date');
         //sku
         $pro_code = I('pro_code');
-        //整理数据 key=id value=array('batch'=>xxx,'done_qty'=>xxx,'product_date'=>xxx)
+        //待上架量
+        $prepare_qty = I('prepare_qty');
+        //整理数据 key=stock_bill_in_detail_id value=array('batch'=>xxx,'done_qty'=>xxx,'product_date'=>xxx)
         $post_data = array();
-        foreach($ids as $k => $id){
-            $post_data[$id]['batch'] = $batch[$k];
-            $post_data[$id]['done_qty'] = $done_qty[$k];
-            $post_data[$id]['product_date'] = $product_date[$k];
-            $post_data[$id]['pro_code'] = $pro_code[$k];
+        foreach($ids as $k => $stock_bill_in_detail_id){
+            //如果待上架量大于上架量
+            if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == 1){
+                $this->msgReturn(0,'上架量必须大于等于待上架量');
+            }
+            $post_data[$stock_bill_in_detail_id]['batch'] = $batch[$k];
+            $post_data[$stock_bill_in_detail_id]['done_qty'] = $done_qty[$k];
+            $post_data[$stock_bill_in_detail_id]['product_date'] = $product_date[$k];
+            $post_data[$stock_bill_in_detail_id]['pro_code'] = $pro_code[$k];
         }
+
+        echo 123;exit;
 
         //根据id查询stock_bill_in_detail
         $map['id'] = array('in',$ids);
         $stock_bill_in_detail = M('stock_bill_in_detail')->where($map)->select();
         unset($map);
 
-dump($stock_bill_in_detail);exit;
         foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
             $refer_code = $stock_bill_in_detail_info['refer_code'];
             //liugunagping
@@ -912,7 +917,7 @@ dump($stock_bill_in_detail);exit;
         
         //更新到货单状态为已上架
         $map['wh_id'] = session('user.wh_id');
-        $map['id'] = array('in',$ids);
+        $map['id'] = $id;
         $data['status'] = 33;
         M('stock_bill_in')->where($map)->save($data);
         unset($map);
