@@ -3,8 +3,29 @@
   <div class="panel-heading" style="padding:0px 15px;">
     <h3 class="panel-title">
     <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
-  <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul hidden"><i class="glyphicon glyphicon-edit"></i> 修改</a>
-  <a href="{:U('audit',array($pk => $data[$pk]))}" data-title="审核" rel="tooltip" data-placement="bottom" class="btn btn-sm hidden"><i class="glyphicon glyphicon-ok"></i> 审核</a>
+
+      <a href="{:U('edit',array($pk => $data[$pk]))}" data-title="放弃" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul hidden">
+        <i class="glyphicon glyphicon-edit"></i> 修改
+      </a>
+
+      <a href="{:U('audit',array($pk => $data[$pk]))}" data-title="审核" rel="tooltip" data-placement="bottom" class="btn btn-sm hidden">
+        <i class="glyphicon glyphicon-ok"></i> 审核
+      </a>
+
+  
+    <notempty name="auth['inall']">
+      <notempty name="data['code']">
+          <a data-href="$data[$pk]" data-key="$pk" herf='javascript:void(0)' attr='inall' data-title="一键收货" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-open"></i>一键收货</a>
+      </notempty>
+    </notempty>
+
+    <notempty name="auth['onall']">
+      <notempty name="data['code']">
+          <a data-href="$data[$pk]" data-key="$pk" herf='javascript:void(0)' attr='onall' data-title="一键收货" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-open"></i>一键上架</a>
+      </notempty>
+    </notempty>
+
+    
   </div>
       <include file="status-bar" />
       <div class="clearfix"></div>
@@ -159,3 +180,70 @@
   margin-bottom: 0px;
 }
 </style>
+<include file="dialog_inall" />
+<include file="dialog_onall" />
+<script type="text/javascript">
+
+  var alert_dialog = {
+  
+      close:function(){
+        $('body').removeClass('modal-open');
+        this.hide();
+        $('body').removeClass('modal-open');
+        //window.location.reload();
+      },
+      show:function(title, content){
+        title  = title?title:'提示框';
+        content = content?content:"<div class='row'>content</div>";
+        $('[aria-labelledby = gridSystemModalLabeldialog]').addClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').show();
+        $("#gridSystemModalLabelalert").html(title);
+        $(".lgo").html(content);
+      },
+      hide:function(){
+        $('[aria-labelledby = gridSystemModalLabeldialog]').removeClass('in');
+        $('[aria-labelledby = gridSystemModalLabeldialog]').hide();
+        $('[aria-labelledby = gridSystemModalLabeldialog]').remove();
+      }
+  };
+  //一键收货
+  $(document).on('click','[attr = inall]',function(){
+    $('body').addClass('modal-open');
+      var json = {};
+      json.title = "批量收货";
+      json.idkey = "{$data[$pk]}";
+      json.status = true;
+      json.code = "{$data.code}";
+      json.dosubmit_url = "{:U('doInAll')}";
+      var url = "{:U('inall',array($pk => $data[$pk]))}";
+      var objs = alert_dialog;
+      var callback = function(res){
+        if (res.status === 0) {
+          alert(res.msg);
+        } else {
+          json.data = res.data;
+          var html = template('dialog_inall',json);
+          $('body').append(html);
+        }
+        
+      }
+      $.get(url,{},callback,'json');
+      return false;
+  });
+  //一键上架
+  $(document).on('click','[attr = onall]',function(){
+
+      $('body').addClass('modal-open');
+
+      var json = {};
+      json.title = "一键上架";
+      json.status = true;
+      json.product_date = '<?php echo date('Y-m-d')?>';
+      json.data = <?php echo json_encode($pros);?>;
+      json.id = <?php echo I('id')?>;
+      
+      var html = template('dialog_onall',json);
+      $('body').append(html);
+      return false;
+  });
+</script>
