@@ -11,13 +11,13 @@ class DispatchController extends \Common\Controller\AuthController{
         'car_from'     => '派车平台',
         'warehouse'    => '签到仓库',
         'created_time' => '第一次签到时间',
-        'updated_time' => '最后签到时间',
         'period'       => '时间段',
         'line_name'    => '线路',
         'sign_orders'  => '已签收',
         'unsign_orders'=> '已退货',
         'delivering'   => '配送中',
         'sign_finished'=> '已完成',
+        'ontime'       => '准点率',
         'distance'     => '总里程/km',
         'fee'          => '当天运费',
         'mark'         => '备注',
@@ -25,78 +25,123 @@ class DispatchController extends \Common\Controller\AuthController{
     );
 
 	public function index() {
+        $sign_lists = $this->getSignList();
+        $this->assign('list',$sign_lists);
+        $this->display('driverlist'); 
+    }
+
+    /**
+     * [getSignList 获取司机列表数据]
+     * @return [type] [description]
+     */
+    protected function getSignList($export = 0)
+    {
+        //车型、平台、仓库列表
         $cat = A('Common/Category','Logic');
         $this->carType = $cat->lists('car_type');
         $this->carFrom = $cat->lists('platform');
         $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         $D = D("TmsSignList");
-        $sign_date = I('post.sign_date', '' , 'trim');
+        //日期筛选
+        $sign_date = I('post.sign_date');
         $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
-        $map['created_time'] = array('between',$start_date.','.$end_date); 
+        $end_date = date('Y-m-d', strtotime($start_date . '+1 Day'));
         $this->start_date = $start_date;
-        //以仓库为单位的签到统计
-        $car_from  = I('post.car_from');
-        if ($car_from) {
-            $map1['car_from'] = $car_from;
+        //平台筛选
+        if ($car_from = I('post.car_from/d', 0)) {
+            $map1['tu.car_from'] = $car_from;
+            $this->car_from  = $car_from;
         }
-        $this->car_from  = $car_from;
-        $userId = M('TmsUser')->where($map1)->getField('id',true);
-        $map['userid'] = empty($userId) ? null : array('in',$userId); 
-        //把对应仓库的用户签到信息取出来
-        $map['wh_id'] = session('user.wh_id');
-        $map['is_deleted'] = 0;
-        $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
-        unset($map);
+        //仓库ID
+        $wh_id = session('user.wh_id');
         $A = A('Tms/List','Logic');
+        //子查询1，签到记录对应用户信息
+        $map1['sl.wh_id'] = $wh_id;
+        $map1['sl.is_deleted'] = 0;
+        $map1['sl.created_time'] = array('between',$start_date.','.$end_date);
+        $field1 = 'sl.id sid, sl.wh_id, sl.userid user_id, note, sl.created_time screated_time, 
+        sl.distance, DATE( sl.delivery_time ) deliver_date, sl.fee, sl.period,tu.*';
+        $sub1 = $D->alias('sl')
+            ->field($field1)
+            ->join('tms_user as tu on sl.userid = tu.id')
+            ->where($map1)
+            ->buildSql();
+        //子查询2，提货记录对应配送单
+        $map2['d.created_time'] = array('between',$start_date.','.$end_date);
+        $map2['d.type'] = 0;
+        $map2['d.status'] = '1';
+        $map2['wd.is_deleted'] = 0;
+        $group2 = 'd.user_id, delivery_date, deliver_time';
+        $field2 = "user_id,deliver_time, DATE( d.created_time ) delivery_date, d.type, (
+            CASE wd.deliver_time
+            WHEN 1 
+            THEN  '上午'
+            ELSE  '下午'
+            END
+            )period, GROUP_CONCAT( dist_id ) dist_ids, GROUP_CONCAT( line_name ) line_name";
+        $sub2 = M('tms_delivery')->alias('d')
+            ->field($field2)
+            ->join('stock_wave_distribution as wd on d.dist_id = wd.id')
+            ->where($map2)
+            ->group($group2)
+            ->buildSql();
+        //以仓库为单位的签到统计
+        $field = 'a.*, b.line_name, b.dist_ids, b.type';
+        $sign_lists = $D->field($field)
+            ->table($sub1 . 'a')
+            ->join('left join ' .$sub2 . ' b on a.user_id = b.user_id
+                    AND a.deliver_date = b.delivery_date
+                    AND a.period = b.period')
+            ->order('a.sid DESC')
+            ->select();
+        //取出所有配送单ID
+        $dist_ids = array_column($sign_lists, 'dist_ids');
+        $dist_ids = implode(',', array_filter($dist_ids));
+        $dist_ids = explode(',', $dist_ids);
+        //所有配送单详情数据
+        $dist_details = A('Wms/Distribution', 'Logic')->getDistDetailsByPid($dist_ids);
+        $dist_id_detail = array();
+        //配送单ID对应详情列表
+        foreach ($dist_details as $key => $val) {
+            $dist_id_detail[$val['pid']][] = $val;
+        }
         foreach ($sign_lists as &$value) {
-            $value['warehouse'] = $this->warehouse[$value['wh_id']];//把仓库id变成名字
+            $details_data = array();
+            //仓库、车型、平台的中文名称
+            $value['warehouse'] = $this->warehouse[$value['wh_id']];
             $value['car_type']  = $this->carType[$value['car_type']];
             $value['car_from']  = $this->carFrom[$value['car_from']];
-            $map['mobile']      = $value['mobile'];
-            $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);//只取得当次签到配送单的
-            $map['status'] = '1';
-            //$map['type'] = '0';
-            //获取司机配送单的线路和id信息
-            $delivery_msg = M('tms_delivery')->where($map)->getField('id,line_name,dist_id,type');
-            $value['sign_orders']   = 0;// 已签收
-            $value['unsign_orders'] = 0;// 以退货
-            $value['sign_finished'] = 0;// 已完成
-            $value['delivering']    = 0;// 配送中
-            // 把配送单线路和配送单id遍历出来
-            foreach ($delivery_msg as $val) {
-                if ($val['type'] == '0') {
-                    $delivery = $A->deliveryCount($val['dist_id']);
-                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                    $value['delivering']    += $delivery['delivery_count']['delivering'];
-                }            
-                if (empty($val['line_name'])) {// 配送路线为空就跳过
-                    continue;
-                }
-                $lines .= '［'. $val['line_name'].'］<br/>';// 把路线加在一起
+            //签到记录对应的配送详情列表
+            $value['dist_ids'] = explode(',', $value['dist_ids']);
+            foreach ($value['dist_ids'] as $va) {
+                $details_data = array_merge($details_data, $dist_id_detail[$va]);
             }
-            if($lines == NULL){
-                $lines = '无';
-            }
-            $value['line_name'] = $lines;// 保存路线
-            $lines = NULL;// 清空上一配送单路线
-            //查看是否有报错
-            unset($map);
-            $map['driver_mobile'] = $value['mobile'];
-            $map['is_deleted']    = 0;
-            $map['created_time']  = array('between',$value['created_time'].','.$value['report_error_time']);
-            $res = M('tms_report_error')->field('id')->where($map)->find();
-            if ($res) {
-                $value['report_error'] = '1';
+            //配送状态、准点率统计
+            $deliveryStatis = $A->deliveryStatis($details_data);
+            $value['sign_orders']   = $deliveryStatis['sign_orders'];
+            $value['unsign_orders'] = $deliveryStatis['unsign_orders'];
+            $value['sign_finished'] = $deliveryStatis['sign_finished'];
+            $value['delivering']    = $deliveryStatis['delivering'];
+            $value['ontime']        = $deliveryStatis['ontime'];
+            // 把配送单线路遍历出来
+            if ($value['line_name']) {
+                $lines = explode(',', $value['line_name']);
+                $lines = array_map(function($item) use (&$lines){
+                    return '[' . $item .']';
+                },$lines);
+                $spec = $export ? '' : '<br />';
+                $value['line_name'] = implode($spec, $lines);
+            } else {
+                $value['line_name'] = '无';
             }
         }
-        $this->assign('list',$sign_lists);
-        $this->display('driverlist'); 
+        return $sign_lists;
     }
-
-    // 司机轨迹页面的的输出
+    
+    /**
+     * [showLine 司机轨迹页面]
+     * @return [type] [description]
+     */
     public function showLine() {
         $id = I('get.id');
         $mobile = I('get.mobile');
@@ -121,12 +166,11 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->display('line');
     }
 
-     //导出司机信息
+    /**
+     * [export 导出司机列表数据]
+     * @return [type] [description]
+     */
     public function export() {
-        $cat = A('Common/Category','Logic');
-        $this->carType = $cat->lists('car_type');
-        $this->carFrom = $cat->lists('platform');
-        $this->warehouse = A('Wms/Warehouse','Logic')->lists();
         import("Common.Lib.PHPExcel");
         import("Common.Lib.PHPExcel.IOFactory");
         $Excel = new \PHPExcel(); 
@@ -140,62 +184,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $Sheet->getStyle($ary[$i/27].$ary[$i%27].'1')->getFont()->setBold(true);
             ++$i;
         }
-        $D = D("TmsSignList");
-        $sign_date = I('post.sign_date', '' , 'trim');
-        $start_date = $sign_date ? $sign_date : date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days', strtotime($start_date)));
-        $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->start_date = $start_date;
-        //以仓库为单位的签到统计
-        $car_from  = I('post.car_from');
-        if ($car_from) {
-            $map1['car_from'] = $car_from;
-        }
-        $this->car_from  = $car_from;
-        $userId = M('TmsUser')->where($map1)->getField('id',true);
-        $map['userid'] = empty($userId) ? null : array('in',$userId); 
-        //把对应仓库的用户签到信息取出来
-        $map['wh_id'] = session('user.wh_id');
-        $map['is_deleted'] = 0;
-        $sign_lists= $D->relation('TmsUser')->where($map)->order('created_time DESC')->select();
-        unset($map);
-        $A = A('Tms/List','Logic');
-        foreach ($sign_lists as $key => &$value) {
-            $value['warehouse'] = $this->warehouse[$value['wh_id']];//把仓库id变成名字
-            $value['car_type']  = $this->carType[$value['car_type']];
-            $value['car_from']  = $this->carFrom[$value['car_from']];            
-            $map['mobile'] = $value['mobile'];
-            $map['created_time'] = array('between',$value['created_time'].','.$value['delivery_time']);
-            $map['status'] = '1';
-            //$map['type']   = '0';
-            //获取司机配送单的线路和id信息取出来
-            $delivery_msg = M('tms_delivery')->where($map)->field('line_name,dist_id,type')->order('created_time DESC')->select();
-            $value['sign_orders']   = 0;// 已签收
-            $value['unsign_orders'] = 0;// 以退货
-            $value['sign_finished'] = 0;// 已完成
-            $value['delivering']    = 0;// 配送中  
-            // 把配送单线路和配送单id遍历出来
-            foreach ($delivery_msg as $val) {
-                 // dump($val);exit;
-                if ($val['type'] == '0') {
-                    $delivery = $A->deliveryCount($val['dist_id']);
-                    $value['sign_orders']   += $delivery['delivery_count']['sign_orders'];
-                    $value['unsign_orders'] += $delivery['delivery_count']['unsign_orders'];
-                    $value['sign_finished'] += $delivery['delivery_count']['sign_finished'];
-                    $value['delivering']    += $delivery['delivery_count']['delivering'];
-                }            
-                if(empty($val['line_name'])){// 配送路线为空就跳过
-                    continue;
-                }
-                $lines .= '［'. $val['line_name'].'］';// 把路线加在一起
-
-                }
-            if($lines == NULL){
-                $lines = '无';
-            }
-            $value['line_name'] = $lines;// 保存路线
-            $lines = NULL;// 清空上一配送单路线    
-        }
+        $sign_lists = $this->getSignList(1);
         unset($value);
         for($j  = 0;$j<count($sign_lists) ; ++$j){
             $i  = 1;
@@ -283,7 +272,10 @@ class DispatchController extends \Common\Controller\AuthController{
         }
     }
 
-    //保存运费
+    /**
+     * [saveFee 保存运费]
+     * @return [type] [description]
+     */
     public function saveFee() {
         $fees = I('post.fees');
         if(empty($fees)) {
@@ -330,6 +322,10 @@ class DispatchController extends \Common\Controller\AuthController{
         $this->ajaxReturn($re);
     }
 
+    /**
+     * [deleteSign 删除签到记录]
+     * @return [type] [description]
+     */
     public function deleteSign()
     {
         $id = I('post.id');

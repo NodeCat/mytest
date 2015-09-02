@@ -1192,12 +1192,13 @@ class StockLogic{
         $add_data['stock_qty'] = (empty($params['stock_qty'])) ? 0 : $params['stock_qty'];
         $add_data['assgin_qty'] = (empty($params['assgin_qty'])) ? 0 : $params['assgin_qty'];
         $add_data['prepare_qty'] = (empty($params['prepare_qty'])) ? 0 : $params['prepare_qty'];
+        $add_data['product_date'] =(empty($params['product_date'])) ? get_time() : $params['product_date'];
 
         //插入记录
         $stock = D('Stock');
         $add_data = $stock->create($add_data);
         $stock->data($add_data)->add();
-
+        
         //写入库存交易记录
         $stock_move_data = array(
             'wh_id' => session('user.wh_id'),

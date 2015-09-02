@@ -6,7 +6,7 @@ class InventoryController extends CommonController {
 	protected $filter = array(
 			'type' => array('fast' => '快速盘点','again' => '复盘'),
 			'is_diff' => array('0' => '无', '1' => '有'),
-			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'closed' => '已关闭'),
+			'status' => array('noinventory' => '未盘点', 'inventorying' => '盘点中', 'confirm' => '待确认', 'confirmed' => '已确认', 'closed' => '已关闭'),
 		);
 	protected $columns = array('id' => '',
             'code' => '盘点单号',
@@ -36,7 +36,7 @@ class InventoryController extends CommonController {
 		    'title' => '盘点状态',
 		    'query_type' => 'eq',
 		    'control_type' => 'select',
-		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','closed'=>'已关闭'),
+		    'value' => array('noinventory'=>'未盘点','inventorying'=>'盘点中','confirm'=>'待确认','confirmed' => '已确认','closed'=>'已关闭'),
 		),
 		'stock_inventory.is_diff' => array (
 		    'title' => '有无差异',
@@ -166,6 +166,9 @@ class InventoryController extends CommonController {
 				case 'confirm':
 					$data['status'] = '待确认';
 					break;
+				case 'confirmed':
+				    $data['status'] = '已确认';
+				    break;
 				case 'closed':
 					$data['status'] = '已关闭';
 					break;
@@ -403,7 +406,7 @@ class InventoryController extends CommonController {
 				}
 				//更新为有差异
 				$map['id'] = $inventory_info['id'];
-				M('stock_inventory')->where($map)->data(array('is_diff' => $inventory_is_diff,'status'=>'closed'))->save();
+				M('stock_inventory')->where($map)->data(array('is_diff' => $inventory_is_diff,'status'=>'confirmed'))->save();
 				unset($map);
 			}
 			$this->msgReturn(1);
@@ -565,21 +568,24 @@ class InventoryController extends CommonController {
 			
 			//将对应盘点单置为closed
 			foreach($inventory_infos as $inventory_info){
-				$map['id'] = $inventory_info['id'];
-				M('stock_inventory')->where($map)->data(array('status'=>'closed'))->save();
-				unset($map);
-
-				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
-				$map['inventory_code'] = $inventory_info['code'];
-				$inventory_details = M('stock_inventory_detail')->where($map)->select();
-				unset($map);
-				//根据stock_inventory_detail_id 更新对应的status为done
-				foreach($inventory_details as $inventory_detail){
-					$map['id'] = $inventory_detail['id'];
-					M('stock_inventory_detail')->where($map)->data(array('status'=>'done'))->save();
-					unset($map);
-				}
-			}
+			    if ($inventory_info['status'] == 'confirmed' || $inventory_info['status'] == 'closed') { 
+			        $this->msgReturn(false, '你选择的盘点单存在已确认货已关闭状态');
+			    }
+    				$map['id'] = $inventory_info['id'];
+    				M('stock_inventory')->where($map)->data(array('status'=>'closed'))->save();
+    				unset($map);
+    
+    				//根据盘点单号inventory_code 查询盘点详情信息 stock_inventory_detail
+    				$map['inventory_code'] = $inventory_info['code'];
+    				$inventory_details = M('stock_inventory_detail')->where($map)->select();
+    				unset($map);
+    				//根据stock_inventory_detail_id 更新对应的status为done
+    				foreach($inventory_details as $inventory_detail){
+    					$map['id'] = $inventory_detail['id'];
+    					M('stock_inventory_detail')->where($map)->data(array('status'=>'done'))->save();
+    					unset($map);
+    				}
+		    }
 		}
 		$this->msgReturn(1);
 	}
@@ -595,7 +601,7 @@ class InventoryController extends CommonController {
 
 			//检查是否存在 已经有差异的盘点单，如果有，则提示错误
 			foreach($inventory_infos as $inventory_info){
-				if($inventory_info['status'] == 'closed'){
+				if($inventory_info['status'] == 'closed' || $inventory_info['status'] == 'confirmed'){
 					$this->msgReturn(0,'盘点单'.$inventory_info['code'].'已经经过差异确认，或者盘点单已经关闭');
 				}
 				if($inventory_info['status'] != 'confirm'){

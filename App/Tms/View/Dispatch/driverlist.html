@@ -33,7 +33,6 @@
             <th>派车平台</th>
             <th>签到仓库</th>
             <th>第一次签到时间</th>
-            <th>最后签到时间</th>
             <th>时间段</th>
             <th>线路</th>
             <th>已签收</th>
@@ -50,15 +49,14 @@
         <tbody>
           <volist name='list' id="k">
           <tr>
-            <th scope="row">{$k.userid}</th>
+            <th scope="row">{$i}</th>
             <td>{$k.username}</td>
             <td>{$k.mobile}</td>
             <td>{$k.car_num}</td>
             <td>{$k.car_type}</td>
             <td>{$k.car_from}</td>
             <td>{$k.warehouse}</td>
-            <td>{$k.created_time}</td>
-            <td>{$k.updated_time}</td>
+            <td>{$k.screated_time}</td>
             <td>{$k.period}</td>
             <td>
                 <if condition="$k.report_error eq '1'">
@@ -73,16 +71,16 @@
             <td>{$k.sign_finished}</td>
             <td>{$k.ontime}</td>
             <td>{$k.distance}</br>
-            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['id'].'&mobile='.$k['mobile'])}">查看轨迹</a>
+            <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['sid'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
-            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.id}">{$k.fee}</td>    
-            <td data-id="{$k.id}" style="max-width:110px;">
+            <td class="delivery-fee" data-fee="{$k.fee}" data-id="{$k.sid}">{$k.fee}</td>   
+            <td data-sid="{$k.sid}" style="max-width:110px;">
                 <span>{$k.note}</span> <br>  
-                <a class="btn btn-default  btn-xs" data-toggle="modal" data-target="#remarkModal" data-id="{$k.id}" onclick="changeData(this);">编辑</a>
+                <a class="btn btn-default  btn-xs" data-toggle="modal" data-target="#remarkModal" data-id="{$k.sid}" onclick="changeData(this);">编辑</a>
             </td>
             <td>
                 <if condition="($k.line_name eq '无') AND ($k.fee eq '0')">
-                    <a data-id="{$k.id}" onclick="delete_sign(this)">删除</a>
+                    <a data-id="{$k.sid}" onclick="delete_sign(this)">删除</a>
                 </if>
             </td>
           </tr>
