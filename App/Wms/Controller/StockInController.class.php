@@ -833,7 +833,7 @@ class StockInController extends CommonController {
         $post_data = array();
         foreach($ids as $k => $stock_bill_in_detail_id){
             //如果待上架量大于上架量
-            if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == 1){
+            if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
                 $this->msgReturn(0,'上架量必须大于等于待上架量');
             }
             $post_data[$stock_bill_in_detail_id]['batch'] = $batch[$k];
@@ -841,8 +841,6 @@ class StockInController extends CommonController {
             $post_data[$stock_bill_in_detail_id]['product_date'] = $product_date[$k];
             $post_data[$stock_bill_in_detail_id]['pro_code'] = $pro_code[$k];
         }
-
-        echo 123;exit;
 
         //根据id查询stock_bill_in_detail
         $map['id'] = array('in',$ids);
