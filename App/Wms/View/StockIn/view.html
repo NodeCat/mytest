@@ -19,6 +19,12 @@
       </notempty>
     </notempty>
 
+    <notempty name="auth['onall']">
+      <notempty name="data['code']">
+          <a data-href="$data[$pk]" data-key="$pk" herf='javascript:void(0)' attr='onall' data-title="一键收货" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-open"></i>一键上架</a>
+      </notempty>
+    </notempty>
+
     
   </div>
       <include file="status-bar" />
@@ -175,6 +181,7 @@
 }
 </style>
 <include file="dialog_inall" />
+<include file="dialog_onall" />
 <script type="text/javascript">
 
   var alert_dialog = {
@@ -222,6 +229,18 @@
       $.get(url,{},callback,'json');
       return false;
   });
+  //一键上架111
+  $(document).on('click','[attr = onall]',function(){
 
-
+      var id = $(this).attr('transfer_id');
+      var json = {};
+      json.title = "一键上架";
+      json.status = true;
+      json.product_date = '<?php echo date('Y-m-d')?>';
+      json.data = <?php echo json_encode($pros);?>
+      
+      var html = template('dialog_onall',json);
+      $('body').append(html);
+      return false;
+  });
 </script>
