@@ -906,4 +906,160 @@ class StockInController extends CommonController {
 
         $this->msgReturn(1);
     }
+
+    //显示一键收货的信息
+    public function inall(){
+        
+        $stock_bill_in_m = M('stock_bill_in');       
+        $id = I($stock_bill_in_m->getPk());
+        if (!$id) {
+            $this->msgReturn(0,'请合法传参');
+        }
+
+        $map['is_deleted'] = 0;
+        $map['id'] = $id;
+        $res = $stock_bill_in_m->where($map)->find();
+        unset($map);
+        if(!empty($res)) {
+            if($res['type'] == 2){
+                $this->msgReturn(0,'加工入库单不能收货');
+            }
+            if(!empty($res['refer_code'])){
+                //如果是销售到货单，货到付款，判断结算金额是否大于0，如果大于0则证明已经收过货，不让继续收货
+                $map['code'] = $res['refer_code'];
+                $purchase_info = M('stock_purchase')->where($map)->find();
+
+                if($purchase_info['invoice_method'] == 1 && floatval($purchase_info['paid_amount']) > 0){
+                    $this->msgReturn(0,'采购单已结算，无法收货');
+                }
+            }
+            $in_array = array('21','22','31', '32', '33');
+            if(in_array($res['status'], $in_array)) {
+                $M = M('stock_bill_in_detail'); 
+                $map = array();
+                $map['pid'] = $id;
+                $map['is_deleted'] = 0;
+                $row = $M->where($map)->select();
+
+                if (!$row) {
+                    $this->msgReturn(0,'查询失败，未找到该单据。'); 
+                } else {
+                    foreach ($row as $key => $value) {
+                        $row[$key]['now_qty'] = bcsub($value['expected_qty'],$value['receipt_qty'],2);
+                    }
+                    $this->msgReturn(1,'查询结果成功',$row); 
+                }
+            }
+            if($res['status'] == '53'){
+                $this->msgReturn(0,'查询失败，该单据已完成。');
+            }
+            $this->msgReturn(0,'查询失败，该单据状态异常。');
+        } else {
+            $this->msgReturn(0,'查询失败，未找到该单据。');
+        }
+
+
+        
+    }
+
+    //一键收货提交
+    public function doInAll(){
+        $result = array();
+        $in_id = I('in_id');
+        if (!$in_id) {
+            $this->msgReturn(0,'不合法传参');
+        }
+        $result = $this->judgeQualified();
+        if ($result) {
+            //收货失败的集合
+            $unqualified = array();
+            foreach ($result as $key => $value) {
+                $res = A('StockIn','Logic')->in($value['in_id'], $value['pro_code'], $value['qty'], $value['stock_detail_id']);
+                
+                if($res['res'] == true) {
+                    //有一件商品入库 更新到货单状态为 待上架
+                    $upd_map['id'] = $in_id;
+                    $upd_map['status'] = '21';
+                    $upd_data['status'] = '31';
+                    M('stock_bill_in')->where($upd_map)->data($upd_data)->save();
+                    unset($upd_map);
+                    unset($upd_data);
+
+                } else {
+                    array_push($unqualified, '序列'.$value['id_key'].$res['msg']);
+                }
+            }
+
+            if ($unqualified) {
+                $this->msgReturn(1,'部分验收成功，错误信息：'. implode(',', $unqualified));
+            } else {
+                $success_url = U('Wms/StockIn/view',array('id'=>$in_id));
+                $this->msgReturn(1,'验收成功。','',$success_url);
+            }
+            
+        } else {
+            $this->msgReturn(0,'验收失败。');
+        }
+        
+    }
+
+    //判断合法性
+    public function judgeQualified(){
+        $params = array();
+        $result = array();
+        $params = I();
+        if (!$params) {
+            $mes = '请正常操作';
+            $this->msgReturn(0,$mes);
+        }
+        if (!$params['id']) {
+            $this->msgReturn(0,'不合法传参');
+        }
+
+        $id_key_arr             = $params['id_key'];
+        $stock_in_detail_id_arr = $params['id'];
+        $now_qty_arr            = $params['now_qty'];
+        
+        foreach ($stock_in_detail_id_arr as $key => $value) {
+
+            if (strlen(formatMoney($now_qty_arr[$key], 2, 1))>2) {
+                $mes = '序列'.$id_key_arr[$key].'本次收货量只能精确到两位小数点';
+                $this->msgReturn(0,$mes);
+            }
+
+            $map = array();
+            $map['id'] = $value;
+            $map['is_deleted'] = 0;
+            $res = M('stock_bill_in_detail')->where($map)->find();
+            if (!$res) {
+                $mes = '序列'.$id_key_arr[$key].'不能找到该条记录,请合法操作';
+                $this->msgReturn(0,$mes);
+            }
+
+            //本次收货量+已收货量>预计到货量
+            $avaliable_qty_arr = bcadd($now_qty_arr[$key], $res['receipt_qty']);
+            if(bccomp($avaliable_qty_arr, $res['expected_qty'],2) == 1){
+                $mes = '序列'.$id_key_arr[$key].'本次收货量大于可收量';
+                $this->msgReturn(0,$mes);
+            }
+
+            if (bccomp($now_qty_arr[$key], 0, 2) == 1) {
+                $tmpArr                    = array();
+                $tmpArr['in_id']           = $res['pid'];
+                $tmpArr['id_key']          = $id_key_arr[$key];
+                $tmpArr['pro_code']        = $res['pro_code'];
+                $tmpArr['qty']             = $now_qty_arr[$key];
+                $tmpArr['stock_detail_id'] = $res['id'];
+
+                array_push($result, $tmpArr);
+
+            }
+
+        }
+        if (!$result) {
+            $mes = '该入库单货单全部收货完成或本次收货量不能全为零';
+            $this->msgReturn(0,$mes);
+        } 
+        return $result;
+    }
 }
