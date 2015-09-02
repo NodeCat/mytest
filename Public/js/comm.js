@@ -109,7 +109,7 @@ $(function () {
 		return false;
 	})
 
-	$('.form-ajax button[type=submit]').on('click',function(){
+	$(document).on('click','.form-ajax button[type=submit]',function(){
 /*
 		if(!$(this).parents('form').valid()){alert('验证失败，请检查您的输入。');return false;}
 */
