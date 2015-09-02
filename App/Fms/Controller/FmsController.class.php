@@ -261,9 +261,21 @@ class FmsController extends \Common\Controller\AuthController{
         $dist['wechat_pay']       = 0;
         //账期支付金额
         $dist['account_pay']      = 0;
+
         //司机信息
-        $dist['sign_driver']  = $dist['detail'][0]['sign_driver'];
-        $dist['sign_driver_mobile'] = $dist['detail'][0]['sign_driver_mobile'];           
+        unset($map);
+        $map['dist_id']    = $dist_id;
+        $map['status']     = 1;
+        $userid = M('tms_delivery')->where($map)->getField('user_id');
+        if ($userid) {
+            unset($map);
+            $map['id']         = $userid;
+            $map['is_deleted'] = 0;
+            $user_data = M('tms_user')->where($map)->find();
+            $dist['sign_driver']  = $user_data['username'];
+            $dist['sign_driver_mobile'] = $user_data['mobile']; 
+        }
+
         $Dist_Logic = A('Tms/Dist','Logic');
         //获得所有出库单id 
         $bill_out_ids = array_column($dist['detail'],'bill_out_id');

@@ -454,8 +454,7 @@ class DistDriver extends Controller {
             'status'         => 2,//签收
             'delivery_ontime' => $A->isSignOntime($dist_id),
             'sign_time'      => get_time(),
-            'sign_driver'     => session('user.username'),
-            'sign_driver_mobile'=> session('user.mobile'),
+            'sign_driver'     => session('user.id'),
         );
         //更新订单状态
         $re = $this->set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg);
@@ -607,8 +606,7 @@ class DistDriver extends Controller {
                 'pay_type'        => $orderInfo['info']['pay_type'],
                 'delivery_ontime' => A('Tms/Dist' ,'Logic')->isSignOntime($dist_id),
                 'sign_time'       => get_time(),
-                'sign_driver'     => session('user.username'),
-                'sign_driver_mobile'=> session('user.mobile'),
+                'sign_driver'     => session('user.id'),
             );
             //向配送单详情更新拒收信息
             $datas = array(
