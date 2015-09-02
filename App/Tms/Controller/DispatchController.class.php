@@ -143,13 +143,15 @@ class DispatchController extends \Common\Controller\AuthController{
      * @return [type] [description]
      */
     public function showLine() {
-        $id = I('get.id');
-        $mobile = I('get.mobile');
-        $sign_msg = M('tms_sign_list')->find($id);
+        $id = I('get.id/d', 0);
+        if (empty($id)) {
+            $this->error('参数错误');
+        }
+        $sign_msg = D('tms_sign_list')->relation('TmsUser')->find($id);
+        $mobile = $sign_msg['mobile'];
         $map['status'] = '1';
-        //$map['type']   = '0';
         $map['created_time'] = array('between',$sign_msg['created_time'].','.$sign_msg['delivery_time']);
-        $map['mobile'] = $mobile ;
+        $map['mobile'] = $mobile;
         $line = M('tms_delivery')->where($map)->getField('line_name',true);
         $lines = implode('、',array_filter($line));
         $this->lines = $lines;
