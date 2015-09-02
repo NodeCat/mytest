@@ -97,16 +97,15 @@
 	</in>
 	<else/>
 		<eq name="tool.show" value="true"><eq name="tool.new" value="true">
-		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" target="{$tool['target']}"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" target="{$tool['target']}"><i class="glyphicon glyphicon-{$tool['icon']}"></i> {$tool['text']}</a>
 	<else/>
 		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" data-target="#modal" data-toggle="modal"  class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
 		</eq></eq>
 	</notempty>
-	</switch>			
+	</switch>		
 </volist>
 <div class="clearfix"></div>
 </div>
-
 </notempty>
 
 
