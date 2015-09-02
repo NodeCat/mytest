@@ -829,17 +829,17 @@ class StockInController extends CommonController {
         $pro_code = I('pro_code');
         //待上架量
         $prepare_qty = I('prepare_qty');
-        //整理数据 key=stock_bill_in_detail_id value=array('batch'=>xxx,'done_qty'=>xxx,'product_date'=>xxx)
+        //整理数据 key=pro_code value=array('batch'=>xxx,'done_qty'=>xxx,'product_date'=>xxx)
         $post_data = array();
         foreach($ids as $k => $stock_bill_in_detail_id){
             //如果待上架量大于上架量
             if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
                 $this->msgReturn(0,'上架量必须大于等于待上架量');
             }
-            $post_data[$stock_bill_in_detail_id]['batch'] = $batch[$k];
-            $post_data[$stock_bill_in_detail_id]['done_qty'] = $done_qty[$k];
-            $post_data[$stock_bill_in_detail_id]['product_date'] = $product_date[$k];
-            $post_data[$stock_bill_in_detail_id]['pro_code'] = $pro_code[$k];
+            $post_data[$pro_code[$k]]['batch'] = $batch[$k];
+            $post_data[$pro_code[$k]]['done_qty'] = $done_qty[$k];
+            $post_data[$pro_code[$k]]['product_date'] = $product_date[$k];
+            $post_data[$pro_code[$k]]['pro_code'] = $pro_code[$k];
         }
 
         //根据id查询stock_bill_in_detail
@@ -861,7 +861,7 @@ class StockInController extends CommonController {
                 $batch = $refer_code;
             }
             $pro_code = $stock_bill_in_detail_info['pro_code'];
-            $pro_qty = $stock_bill_in_detail_info['expected_qty'];
+            $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code']]['done_qty'];
             $pro_uom = $stock_bill_in_detail_info['pro_uom'];
             $status = 'qualified';
             $product_date = date('Y-m-d');
