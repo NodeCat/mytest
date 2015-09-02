@@ -16,7 +16,7 @@ class RefundModel extends RelationModel {
         'created_time', 'created_user', 'update_time', 'update_user', 'status', 'is_deleted',
     );
     protected $readonlyField = array('id');
-    public $tableName='refund';
+    public $tableName='fms_refund';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
             
@@ -47,15 +47,15 @@ class RefundModel extends RelationModel {
     
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('refund.is_deleted' => '0'),
-            'order'=>'refund.id DESC',
-            "join"=>array(//"left join refund_detail on refund.id = refund_detail.pid",
-                "inner join warehouse on warehouse.id = refund.wh_id",
+            'where'=>array('fms_refund.is_deleted' => '0'),
+            'order'=>'fms_refund.id DESC',
+            "join"=>array(
+                "inner join warehouse on warehouse.id = fms_refund.wh_id",
             ),
-            "field"=>"refund.*,refund.status as state",            
+            "field"=>"fms_refund.*,fms_refund.status as state",            
         ),
         'latest'=>array(
-            'where'=>array('refund.is_deleted'=>'0'),
+            'where'=>array('fms_refund.is_deleted'=>'0'),
             'order'=>'created_time DESC',
         ),
 

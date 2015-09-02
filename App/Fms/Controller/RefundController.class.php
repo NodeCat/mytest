@@ -29,7 +29,7 @@ class RefundController extends \Common\Controller\CommonController {
     );
     protected $query = array (
     
-        'refund.type'        => array(
+        'fms_refund.type'        => array(
         		'title'        => '退款单类型',
 	            'query_type'   => 'eq',
 	            'control_type' => 'select',
@@ -38,38 +38,38 @@ class RefundController extends \Common\Controller\CommonController {
                         '1' => '缺货退款单',
                     ),
             ),
-        'refund.order_id' => array(
+        'fms_refund.order_id' => array(
                 'title'        => '母订单id',
                 'query_type'   => 'eq',
                 'control_type' => 'text',
                 'value'        => '',
             ),
-        'refund.suborder_id' => array(
+        'fms_refund.suborder_id' => array(
                 'title'        => '子订单id',
                 'query_type'   => 'eq',
                 'control_type' => 'text',
                 'value'        => '',
             ),
-        'refund.shop_name' => array(
+        'fms_refund.shop_name' => array(
                 'title'        => '店铺名称',
                 'query_type'   => 'eq',
                 'control_type' => 'text',
                 'value'        => '',
             ),
-        'refund.customer_name' => array(
+        'fms_refund.customer_name' => array(
                 'title'        => '客户姓名',
                 'query_type'   => 'eq',
                 'control_type' => 'text',
                 'value'        => '',
             ),
-        'refund.customer_mobile' => array(
+        'fms_refund.customer_mobile' => array(
                 'title'        => '客户电话',
                 'query_type'   => 'eq',
                 'control_type' => 'text',
                 'value'        => '',
             ),
 
-        'refund.created_time' =>    array (    
+        'fms_refund.created_time' =>    array (    
                 'title'        => '生成时间',     
                 'query_type'   => 'between',     
                 'control_type' => 'datetime',     
@@ -101,7 +101,7 @@ class RefundController extends \Common\Controller\CommonController {
 			)
 		);
 
-        $M_refund = M('refund');
+        $M_refund = M('fms_refund');
         $map['is_deleted'] = 0;
         $map['wh_id'] = session('user.wh_id');
         
@@ -126,7 +126,7 @@ class RefundController extends \Common\Controller\CommonController {
 
 	protected function before_edit(&$data) {
 
-        $detail = M('refund_detail');
+        $detail = M('fms_refund_detail');
         $map['pid']        = $data['id'];
         $map['is_deleted'] = 0;
         $data['detail'] = $detail->where($map)->select();
@@ -145,7 +145,7 @@ class RefundController extends \Common\Controller\CommonController {
         $map['id'] = $id;
         $map['is_deleted'] = 0;
         $data['remark']    = $mark;
-        $res = M('refund')->where($map)->save($data);
+        $res = M('fms_refund')->where($map)->save($data);
         if ($res) {
             logs($id,$mark,'fms_refund');
             $this->msgReturn(1,'添加备注成功！');
@@ -195,7 +195,7 @@ class RefundController extends \Common\Controller\CommonController {
         $map['id'] = $id;
         $map['is_deleted'] = 0;
         $data['status']    = $status;
-        $res = M('refund')->where($map)->save($data);
+        $res = M('fms_refund')->where($map)->save($data);
         if ($res) {
             return true;
         } else {

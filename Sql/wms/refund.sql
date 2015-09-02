@@ -1,8 +1,8 @@
 --
--- 表的结构 `refund`
+-- 表的结构 `fms_refund`
 --
 
-CREATE TABLE IF NOT EXISTS `refund` (
+CREATE TABLE IF NOT EXISTS `fms_refund` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `type` varchar(45) NOT NULL DEFAULT '' COMMENT '退款单类型，0拒收退款单，1缺货退款单',
   `order_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '订单id',
@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS `refund` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='退款单' AUTO_INCREMENT=1 ;
 
 --
--- 表的结构 `refund_detail`
+-- 表的结构 `fms_refund_detail`
 --
 
-CREATE TABLE IF NOT EXISTS `refund_detail` (
+CREATE TABLE IF NOT EXISTS `fms_refund_detail` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `pid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '父id',
   `primary_category` tinyint(4) unsigned NOT NULL DEFAULT '0' COMMENT '一级分类id',

@@ -12,7 +12,7 @@ class RefundDetailModel extends Model {
         'is_deleted',
     );
     protected $readonlyField = array('id');
-    public $tableName = 'refund_detail';
+    public $tableName = 'fms_refund_detail';
     //array(验证字段,验证规则,错误提示,[验证条件,附加规则,验证时间])
     protected $_validate = array(
         
@@ -35,12 +35,12 @@ class RefundDetailModel extends Model {
 
     protected $_scope = array(
         'default'=>array(
-            'where'=>array('refund_detail.is_deleted'=>'0'),
+            'where'=>array('fms_refund_detail.is_deleted'=>'0'),
             'order'=>'stock_purchase_detail.id DESC',
             
         ),
         'latest'=>array(
-            'where'=>array('refund_detail.is_deleted'=>'0'),
+            'where'=>array('fms_refund_detail.is_deleted'=>'0'),
             'order'=>'update_time DESC',
         ),
 
