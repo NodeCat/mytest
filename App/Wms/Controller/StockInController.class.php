@@ -809,9 +809,6 @@ class StockInController extends CommonController {
         $map['id'] = $id;
         $stock_bill_in_info = M('stock_bill_in')->where($map)->find();
 
-        if($stock_bill_in_info['status'] == 33){
-            $this->msgReturn(0,'已上架的入库单，不能重复上架');
-        }
         if($stock_bill_in_info['type'] == 2){
             $this->msgReturn(0,'加工入库单不能一键上架');
         }
