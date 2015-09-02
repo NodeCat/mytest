@@ -1,29 +1,55 @@
 <?php
 namespace Tms\Controller;
 use Think\Controller;
-class ReportErrorController extends Controller{
+class ReportErrorController extends \Common\Controller\CommonController
+{
 	protected $columns = array(
 		'type' => '报错类型',
 		'customer_name' => '客户姓名',
 		'customer_mobile' => '客户手机号',
 		'customer_address' => '客户地址',
-		'company_name' => '系统',
 		'line_name' => '线路',
 		'shop_name' => '店铺名',
 		'current_bd' => '现属销售',
 		'driver_name' => '司机姓名',
 		'driver_mobile' => '司机手机号',
-		'report_time' => '报错时间',
+        'report_time' => '报错时间',
+		'is_deleted' => '状态',
 	);
-	public function index(){
-		$this->title = "导出位置报错信息";
-		$this->display('ReportError/export');
-	}
-	public function export(){
-		$this->title = "导出位置报错信息";
-		$this->display();
-	}
+    
+    protected $filter = array(
+        'is_deleted' => array(
+            '0' => '未处理',
+            '1'=>'已处理',
+        ),
+    );
 
+    protected $query = array (
+        'te.created_time' => array (    
+            'title' => '选择日期',     
+            'query_type' => 'between',     
+            'control_type' => 'datetime',     
+            'value' => '',   
+        ),
+    );
+    
+    //设置列表页选项
+    protected function before_index() {
+        $this->table = array(
+            'toolbar_tr'=> true
+        );
+        $this->toolbar_tr =array(
+            array(
+                'name'   => 'Dispatch/showline',
+                'show'   => true,
+                'new'    => true,
+                'target' => '_blank',
+                'icon'   => 'view',
+                'title'  => '轨迹',
+                'text'   => '查看轨迹'
+                )
+        );
+    }
 	//根据选择的日期区间导出位置报错信息到excel表格
 	public function export_excel(){
 		$start_time = I('post.start_time');

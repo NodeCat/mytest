@@ -283,6 +283,13 @@ function getlogs($model='', $id = 0) {
 function get_time(){
     return date('Y-m-d H:i:s',NOW_TIME);
 }
+function tomorrow(){
+    return date('Y-m-d',strtotime('+1 Days'));
+}
+function today() {
+    return date('Y-m-d',NOW_TIME);
+}
+
 function mkdirs($dir){       
     if(!is_dir($dir)){       
         if(!mkdirs(dirname($dir))){       
