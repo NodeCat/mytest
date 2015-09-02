@@ -921,7 +921,7 @@ class StockInController extends CommonController {
         unset($map);
         unset($data);
 
-        $this->msgReturn(1);
+        $this->msgReturn(1,'上架成功');
     }
 
     //显示一键收货的信息
