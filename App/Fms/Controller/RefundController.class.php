@@ -75,7 +75,13 @@ class RefundController extends \Common\Controller\CommonController {
                 'control_type' => 'datetime',     
                 'value' => '',   
           ),
-        
+        'fms_refund.city_id' => array(
+            'title'        => '地区',
+            'query_type'   => 'eq',
+            'control_type' => 'select',
+            'value'        => '',
+        ),
+
     );
 
 	public function before_index() {
@@ -91,6 +97,7 @@ class RefundController extends \Common\Controller\CommonController {
         //$this->search_addon = true;
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
+            array('name'=>'pass','link'=>'handle','icon'=>'ok','title'=>'处理', 'show'=>true,'new'=>true,'domain'=>'0'),
         );
 
         $pill = array(
@@ -103,7 +110,7 @@ class RefundController extends \Common\Controller\CommonController {
 
         $M_refund = M('fms_refund');
         $map['is_deleted'] = 0;
-        $map['wh_id'] = session('user.wh_id');
+        //$map['wh_id'] = session('user.wh_id');
         
         $res = $M_refund->field('status,count(status) as qty')->where($map)->group('status')->select();
 
@@ -122,6 +129,8 @@ class RefundController extends \Common\Controller\CommonController {
 
         $this->pill = $pill;
         
+        $A = A('Common/Order','Logic');
+        $this->query['fms_refund.city_id']['value'] = $A->city();
     }
 
 	protected function before_edit(&$data) {

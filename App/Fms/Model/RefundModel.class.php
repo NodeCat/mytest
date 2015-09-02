@@ -50,7 +50,7 @@ class RefundModel extends RelationModel {
             'where'=>array('fms_refund.is_deleted' => '0'),
             'order'=>'fms_refund.id DESC',
             "join"=>array(
-                "inner join warehouse on warehouse.id = fms_refund.wh_id",
+                //"inner join warehouse on warehouse.id = fms_refund.wh_id",
             ),
             "field"=>"fms_refund.*,fms_refund.status as state",            
         ),
