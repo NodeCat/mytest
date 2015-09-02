@@ -921,7 +921,8 @@ class StockInController extends CommonController {
         unset($map);
         unset($data);
 
-        $this->msgReturn(1,'上架成功');
+        $success_url = U('Wms/StockIn/view',array('id'=>$id));
+        $this->msgReturn(1,'上架成功','',$success_url);
     }
 
     //显示一键收货的信息
