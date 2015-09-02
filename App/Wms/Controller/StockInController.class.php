@@ -828,6 +828,10 @@ class StockInController extends CommonController {
         $prepare_qty = I('prepare_qty');
         //整理数据 key=pro_code value=array('batch'=>xxx,'done_qty'=>xxx,'product_date'=>xxx)
         $post_data = array();
+        //done_qty是否都是0标识
+        $done_zero_flag = true;
+        //prepare_qty是否都是0标识
+        $prepare_zero_flag = true;
         foreach($ids as $k => $stock_bill_in_detail_id){
             //如果待上架量大于上架量
             if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
@@ -837,6 +841,23 @@ class StockInController extends CommonController {
             $post_data[$pro_code[$k]]['done_qty'] = $done_qty[$k];
             $post_data[$pro_code[$k]]['product_date'] = $product_date[$k];
             $post_data[$pro_code[$k]]['pro_code'] = $pro_code[$k];
+
+            //判断上架量是否都是0
+            if(bccomp($done_qty[$k], 0.00, 2) != 0){
+                $done_zero_flag = false;
+            }
+
+            //判断待上架量是否都是0
+            if(bccomp($prepare_qty[$k], 0.00, 2) != 0){
+                $prepare_zero_flag = false;
+            }
+        }
+
+        if($prepare_zero_flag){
+            $this->msgReturn(0,'待上架量全部是0，没有可以上架的SKU');
+        }
+        if($done_zero_flag){
+            $this->msgReturn(0,'上架量全部是0，上架失败');
         }
 
         //根据id查询stock_bill_in_detail
