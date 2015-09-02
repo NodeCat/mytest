@@ -945,6 +945,9 @@ class StockInController extends CommonController {
                     $this->msgReturn(0,'查询失败，未找到该单据。'); 
                 } else {
                     foreach ($row as $key => $value) {
+                        if (!$value['batch']) {
+                            $row[$key]['batch'] = $value['refer_code'];
+                        }
                         $row[$key]['now_qty'] = bcsub($value['expected_qty'],$value['receipt_qty'],2);
                     }
                     $this->msgReturn(1,'查询结果成功',$row); 
