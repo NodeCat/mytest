@@ -166,8 +166,8 @@ class OrderController extends \Common\Controller\AuthController {
         unset($map);
         $map['bill_out_id'] = $bill_out_id;
         $map['is_deleted']  = 0;
-        $dist_detail_id = M('stock_wave_distribution_detail')->where($map)->find();
-        if ($dist_detail_id['status'] != 2 && $dist_detail_id['status'] != 3) {
+        $dist_detail = M('stock_wave_distribution_detail')->where($map)->find();
+        if ($dist_detail['status'] != 2 && $dist_detail['status'] != 3) {
             $this->msgReturn(0,'此订单不是已签收或已拒收状态，不能重置订单状态。');exit;
         }
         $fms_list = A('Fms/List','Logic');
@@ -187,12 +187,8 @@ class OrderController extends \Common\Controller\AuthController {
                 if ($rej_bill) {
                     if ($rej_bill['status'] == '21') {
                         $s = $Min->relation('detail')->where($in_map)->save($in_data);
-                        if ($s) {
-                            $M = M('stock_bill_in_container');
-                            //写入拒收入库单详情表的详情表
-                            $con_map['refer_code'] = $rej_bill['code'];
-                            $con_map['is_deleted'] = 0;
-                            $s1 = $M->where($con_map)->save($in_data);   
+                        if (!$s) {
+                            $this->msgReturn(0,'重置失败！拒收入库单删除失败。');
                         } 
                     } else {
                         $this->msgReturn(0,'此订单对应的拒收入库单已经上架，不能重置订单状态！');
@@ -202,7 +198,7 @@ class OrderController extends \Common\Controller\AuthController {
             
         }
         
-        $dist_detail_id = $dist_detail_id['id'];
+        $dist_detail_id = $dist_detail['id'];
         $data['status']     = 1; //重置为已装车状态
         $data['real_sum']   = 0; //实收金额置0
         $data['deposit']    = 0;
@@ -215,6 +211,25 @@ class OrderController extends \Common\Controller\AuthController {
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
         //写日志logs($id = 0, $msg = '', $model = '', $action = '', $module = ‘')
         logs($bill_out_id,'重置订单状态已装车','dist_detail');
+        if ($res) {
+            unset($map);
+            $map['pid']        = $dist_detail['pid'];
+            $map['is_deleted'] = 0;
+            $details = M('stock_wave_distribution_detail')->where($map)->select();
+            $flag = 1;
+            foreach ($details as $k => $val) {
+                if ($val['status'] != 1) {
+                    $flag = 0;
+                }
+            }
+            if ($flag) {
+                unset($map);
+                $map['id']           = $dist_detail['pid'];
+                $map['is_deleted']   = 0;
+                $dist_data['status'] = 2;//已发运
+                $res4 = M('stock_wave_distribution')->where($map)->save($dist_data);
+            }
+        }
 
         unset($map);
         $map['pid'] = $dist_detail_id;

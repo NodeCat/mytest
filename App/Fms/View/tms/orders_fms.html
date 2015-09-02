@@ -17,7 +17,11 @@
  </div>
  <div class="col-md-2 col-xs-6 col-md-offset-1">
 <notempty name="dist">
-<a id="pay" onclick="javascript:pay('{$dist.id}');" class="btn-sign btn btn-lg btn-success btn-block"> 结 款 </a>
+  <if condition="$dist['status'] eq 3">
+<a onclick="javascript:pay('{$dist.id}');" class="btn-sign btn btn-lg btn-success btn-block"> 结 款 </a>
+<else />
+<a onclick="javascript:pay('{$dist.id}');" class="btn-sign btn btn-lg btn-success btn-block" disabled> 结 款 </a>
+</if>
 </notempty>
  </div>
  <div class="col-md-3 col-xs-6">
@@ -321,6 +325,9 @@ form.order ul.list-group{
         data:{'id':id},
         success: function(msg){
           alert(msg.msg);
+          if (msg.status == 1) {
+            location.reload();
+          }
         }
       });
     } else {

@@ -19,6 +19,8 @@
 <notempty name="data">
   <if condition="($data['status_cn'] eq '已签收') OR ($data['status_cn'] eq '已拒收')">
 <a onclick="javascript:reset('{$data.refer_code}')" class="btn-sign btn btn-lg btn-success btn-block">重置订单状态</a>
+<else />
+<a onclick="javascript:reset('{$data.refer_code}')" class="btn-sign btn btn-lg btn-success btn-block" disabled>重置订单状态</a>
   </if>
 </notempty>
  </div>
@@ -274,6 +276,9 @@ form.order ul.list-group{
         data:{'id':id},
         success: function(msg){
           alert(msg.msg);
+          if (msg.status == 1) {
+            location.reload();
+          }
         }
       });
     } else {
