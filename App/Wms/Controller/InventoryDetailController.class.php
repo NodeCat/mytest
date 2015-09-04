@@ -113,7 +113,7 @@ class InventoryDetailController extends CommonController {
         $inventoryCode = ''; //盘点单号
        
         foreach ($inventoryInfo as $id => $qty) {
-            if (empty($id) || empty($qty)) {
+            if (empty($id)) {
                 $this->msgReturn(false, '参数有误');
             }
             if (strlen(formatMoney($qty, 2, 1)) > 2) {
