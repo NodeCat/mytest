@@ -47,7 +47,7 @@ $(function(){
 			if($(this)[0].cellIndex == 5){
 				var value = $(this).prev().html();
 				var id = $(this).prev().prev().prev().prev().prev().find('input').attr('id');
-				if ($(this).html() > 0) {
+				if ($(this).html() >= 0 && $(this).html()) {
 					value = $(this).html();
 				}
 				var _toolbar_tr_is_edit = {$toolbar_tr_is_edit};
