@@ -263,7 +263,7 @@
 </div>
 </form>
 <script type="text/javascript">
-$(document).on('click','#addremark',function(){
+$('#addremark').on('click',function(){
   var id = $('input[name=id]').val();
   var url = "/Refund/addRemark";
   var txtremark = prompt("请输入备注：","");
@@ -287,7 +287,7 @@ $(document).on('click','#addremark',function(){
   }
 });
 
-$(document).on('click','#handle',function(){
+$('#handle').on('click',function(){
   var id = $('input[name=id]').val();
   var url = "/Refund/handle";
   var is_confirm = confirm("确定进行此操作吗？");
@@ -311,7 +311,7 @@ $(document).on('click','#handle',function(){
   }
 });
 
-$(document).on('click','#cancel',function(){
+$('#cancel').on('click',function(){
   var id = $('input[name=id]').val();
   var url = "/Refund/cancel";
   var reason = prompt("请输入关闭此退款单的理由：","");
