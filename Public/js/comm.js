@@ -304,6 +304,12 @@ $('.modal').on('shown.bs.modal', function (e) {
 	});
 
 	$('.content').on('click','.btn-op,.btn-status a',function(){
+		if($(this).hasClass('should-confirm')) {
+			var yes = confirm('确认要'+$(this).data('title')+'该记录？');
+			if(!yes) {
+				return false;
+			}
+		}
 		var addr=$(this).data('href');
 		if(!addr) {
 			addr = $(this).attr('href');
@@ -317,9 +323,9 @@ $('.modal').on('shown.bs.modal', function (e) {
 			async:true,
 			data:{id:id},
 			dataType:'json',
-			success: function(msg){
-				alert(msg.msg);
-				if(msg.status=='1'){
+			success: function(res){
+				alert(res.msg);
+				if(res.status=='1'){
 					refresh_list();
 				}
 			}
