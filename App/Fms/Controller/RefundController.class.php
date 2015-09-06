@@ -97,7 +97,7 @@ class RefundController extends \Common\Controller\CommonController {
         //$this->search_addon = true;
         $this->toolbar_tr =array(
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'),
-            array('name'=>'handle','link'=>'handle','class'=>'btn-op should-confirm','icon'=>'ok','title'=>'处理', 'show'=>true,'new'=>'true','domain'=>'0'),
+            array('name'=>'handle','link'=>'handle','class'=>'btn-op should-confirm','icon'=>'ok','title'=>'处理', 'show'=> isset($auth['handle']),'new'=>'true','domain'=>'0'),
         );
 
         $pill = array(
