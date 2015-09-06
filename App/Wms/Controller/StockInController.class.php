@@ -842,15 +842,16 @@ class StockInController extends CommonController {
         $done_zero_flag = true;
         //prepare_qty是否都是0标识
         $prepare_zero_flag = true;
+
         foreach($ids as $k => $stock_bill_in_detail_id){
             //如果待上架量大于上架量
             if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
                 $this->msgReturn(0,'上架量必须大于等于待上架量');
             }
-            $post_data[$pro_code[$k]]['batch'] = $batch[$k];
-            $post_data[$pro_code[$k]]['done_qty'] = $done_qty[$k];
-            $post_data[$pro_code[$k]]['product_date'] = $product_date[$k];
-            $post_data[$pro_code[$k]]['pro_code'] = $pro_code[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['batch'] = $batch[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['done_qty'] = $done_qty[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['product_date'] = $product_date[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['pro_code'] = $pro_code[$k];
 
             //判断上架量是否都是0
             if(bccomp($done_qty[$k], 0.00, 2) != 0){
@@ -889,7 +890,7 @@ class StockInController extends CommonController {
                 $batch = $refer_code;
             }
             $pro_code = $stock_bill_in_detail_info['pro_code'];
-            $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code']]['done_qty'];
+            $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code'].$stock_bill_in_detail_info['batch']]['done_qty'];
             $pro_uom = $stock_bill_in_detail_info['pro_uom'];
             $status = 'qualified';
             $product_date = date('Y-m-d');
