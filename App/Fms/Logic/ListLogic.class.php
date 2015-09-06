@@ -345,8 +345,16 @@ class ListLogic {
                 $data['detail'][] = $det;
             }
             if (!empty($data['detail'][0])) {
-                $res1 = $refund_model->relation('detail')->add($data);
-                logs($res1,'未处理，创建退款单','fms_refund');
+                //判断是否创建过退款单
+                unset($map);
+                $map['refer_code'] = $data['refer_code'];
+                $map['type']       = '1';
+                $map['is_deleted'] = 0;
+                $ishave = $refund_model->where($map)->find();
+                if (!$ishave) {
+                    $res1 = $refund_model->relation('detail')->add($data);
+                    logs($res1,'未处理，创建退款单','fms_refund');
+                }
             }
             unset($data['detail']);
             unset($data['sum_reject_price']);
@@ -394,8 +402,16 @@ class ListLogic {
                 $data['detail'][] = $det;
             }
             if (!empty($data['detail'][0])) {
-                $res2 = $refund_model->relation('detail')->add($data);
-                logs($res2,'未处理，创建退款单','fms_refund');
+                //判断是否创建过退款单
+                unset($map);
+                $map['refer_code'] = $data['refer_code'];
+                $map['type']       = '0';
+                $map['is_deleted'] = 0;
+                $ishave = $refund_model->where($map)->find();
+                if (!$ishave) {
+                    $res2 = $refund_model->relation('detail')->add($data);
+                    logs($res2,'未处理，创建退款单','fms_refund');
+                }
             }
 
             if ($res1 || $res2) {
