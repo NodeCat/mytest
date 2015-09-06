@@ -536,14 +536,7 @@ class PurchaseController extends CommonController {
 
         $res = $Min->relation('detail')->add($bill);
 
-        //如果是预付款 更新结算金额为采购总金额
         $map['id'] = $id;
-        $purchase_info = M('stock_purchase')->where($map)->find();
-
-        if($purchase_info['invoice_method'] == 0){
-            $data['paid_amount'] = $purchase_info['price_total'];
-            M('stock_purchase')->where($map)->save($data);
-        }
 
         if($res == true){
             $purchase['status'] = '13';
