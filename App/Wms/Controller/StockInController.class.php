@@ -199,11 +199,11 @@ class StockInController extends CommonController {
                         $data['pro_status'] = $status;
                         $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info['price_unit'] * 100 * $qty) / 100,2);
 
-                        if($bill_in_detail_info['invoice_method'] == 0){
-                            $data['status'] = 'paid';
-                        }else{
+                        //if($bill_in_detail_info['invoice_method'] == 0){
+                            //$data['status'] = 'paid';
+                        //}else{
                             $data['status'] = 'nopaid';
-                        }
+                        //}
 
                         $purchase_in_detail = D('PurchaseInDetail');
                         $data = $purchase_in_detail->create($data);
@@ -871,11 +871,11 @@ class StockInController extends CommonController {
                     $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                     $data['pro_status'] = $status;
                     $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
-                    if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
-                        $data['status'] = 'paid';
-                    }else{
+                    //if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
+                        //$data['status'] = 'paid';
+                    //}else{
                         $data['status'] = 'nopaid';
-                    }
+                    //}
                     $purchase_in_detail = D('PurchaseInDetail');
                     $data = $purchase_in_detail->create($data);
                     $purchase_in_detail->data($data)->add();

@@ -506,6 +506,13 @@ class SettlementController extends CommonController
             M('stock_purchase')->where($map)->data($data)->save();
             unset($map);
             unset($data);
+
+            //更新对应的出库单状态为已支付
+            $map['purchase_code'] = array('in', $purchase);
+            $data['status'] = 'paid';
+            M('erp_purchase_in_detail')->where($map)->data($data)->save();
+            unset($map);
+            unset($data);
         }
 
         //更新入库单为已支付状态，更新采购单为已结算状态
