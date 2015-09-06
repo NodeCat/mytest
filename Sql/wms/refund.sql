@@ -62,3 +62,8 @@ INSERT INTO `menu` (`id`, `name`, `icon`, `link`, `pid`, `level`, `queue`, `show
 (241, '退款单结算', NULL, 'Refund/index', 155, 1, 1, 1, '_self', 'left', '1', 0, NULL, 'Fms'),
 (242, '退款单列表', NULL, 'Refund/index', 241, 2, 1, 1, '_self', '', '1', 0, NULL, 'Fms'),
 (243, '退款单详情', NULL, 'Refund/view', 241, 2, 1, 0, '_self', '', '1', 0, NULL, 'Fms');
+
+INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `log`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES
+(584, 'handle', '4', 'Wms', 'Fms', 'Refund', 'handle', 'Fms/Refund/handle', '', '', '处理', 0, 1, 581, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
+(585, 'cancel', '4', 'Wms', 'Fms', 'Refund', 'cancel', 'Fms/Refund/cancel', '', '', '关闭', 0, 1, 581, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
+(586, 'addRemark', '4', 'Wms', 'Fms', 'Refund', 'addRemark', 'Fms/Refund/addRemark', '', '', '添加备注', 0, 1, 581, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);

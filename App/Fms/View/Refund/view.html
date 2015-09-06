@@ -209,16 +209,16 @@
 <div class="row">
   <div class="form-group col-md-6">
     <if condition="$data.state eq 0">
-    <notempty name="$auth['handle']">
+    <notempty name="auth['handle']">
     <button class="btn btn-default  btn-ajax" id="handle" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
     财务已处理</button>
     </notempty>
-    <notempty name="$auth['cancel']">
+    <notempty name="auth['cancel']">
     <button class="btn btn-default  btn-ajax" id="cancel" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
     关闭</button>
     </notempty>
   </if>
-    <notempty name="$auth['addRemark']">
+    <notempty name="auth['addRemark']">
     <button class="btn btn-default  btn-ajax" id="addremark" style="display:inline-block;" data-input="#txt-remark" data-target="#table-remarks" data-href="" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加备注</button>
     </notempty>
   </div>
