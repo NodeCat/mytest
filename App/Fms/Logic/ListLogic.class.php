@@ -367,7 +367,7 @@ class ListLogic {
                     }
                 }
                 $rej_qty = $value['delivery_qty'] - $sign_qty;
-                if ($rej_qty < 0) {
+                if ($rej_qty <= 0) {
                     continue;
                 }
                 unset($det);
