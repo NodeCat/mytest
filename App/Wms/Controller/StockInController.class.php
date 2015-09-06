@@ -426,9 +426,19 @@ class StockInController extends CommonController {
         
         $this->pros = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
         //已上架量
-        foreach($this->pros as $pro){
+        $tmp_pros = array();
+        foreach($this->pros as $k => $pro){
             $data['qtyForIn'] += $pro['done_qty'];
+
+            //如果batch为空，则将refer_code赋值给batch
+            if(empty($pro['batch'])){
+                $tmp_pros[$k] = $pro;
+                $tmp_pros[$k]['batch'] = $pro['refer_code'];
+            }else{
+                $tmp_pros[$k] = $pro;
+            }
         }
+        $this->pros = $tmp_pros;
         //$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
 
         $data['qtyForPrepare'] = $qtyForPrepare;
@@ -809,9 +819,6 @@ class StockInController extends CommonController {
         $map['id'] = $id;
         $stock_bill_in_info = M('stock_bill_in')->where($map)->find();
 
-        if($stock_bill_in_info['status'] == 33){
-            $this->msgReturn(0,'已上架的入库单，不能重复上架');
-        }
         if($stock_bill_in_info['type'] == 2){
             $this->msgReturn(0,'加工入库单不能一键上架');
         }
@@ -831,15 +838,37 @@ class StockInController extends CommonController {
         $prepare_qty = I('prepare_qty');
         //整理数据 key=pro_code value=array('batch'=>xxx,'done_qty'=>xxx,'product_date'=>xxx)
         $post_data = array();
+        //done_qty是否都是0标识
+        $done_zero_flag = true;
+        //prepare_qty是否都是0标识
+        $prepare_zero_flag = true;
+
         foreach($ids as $k => $stock_bill_in_detail_id){
             //如果待上架量大于上架量
             if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
                 $this->msgReturn(0,'上架量必须大于等于待上架量');
             }
-            $post_data[$pro_code[$k]]['batch'] = $batch[$k];
-            $post_data[$pro_code[$k]]['done_qty'] = $done_qty[$k];
-            $post_data[$pro_code[$k]]['product_date'] = $product_date[$k];
-            $post_data[$pro_code[$k]]['pro_code'] = $pro_code[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['batch'] = $batch[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['done_qty'] = $done_qty[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['product_date'] = $product_date[$k];
+            $post_data[$pro_code[$k].$batch[$k]]['pro_code'] = $pro_code[$k];
+
+            //判断上架量是否都是0
+            if(bccomp($done_qty[$k], 0.00, 2) != 0){
+                $done_zero_flag = false;
+            }
+
+            //判断待上架量是否都是0
+            if(bccomp($prepare_qty[$k], 0.00, 2) != 0){
+                $prepare_zero_flag = false;
+            }
+        }
+
+        if($prepare_zero_flag){
+            $this->msgReturn(0,'待上架量全部是0，没有可以上架的SKU');
+        }
+        if($done_zero_flag){
+            $this->msgReturn(0,'上架量全部是0，上架失败');
         }
 
         //根据id查询stock_bill_in_detail
@@ -861,7 +890,7 @@ class StockInController extends CommonController {
                 $batch = $refer_code;
             }
             $pro_code = $stock_bill_in_detail_info['pro_code'];
-            $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code']]['done_qty'];
+            $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code'].$stock_bill_in_detail_info['batch']]['done_qty'];
             $pro_uom = $stock_bill_in_detail_info['pro_uom'];
             $status = 'qualified';
             $product_date = date('Y-m-d');
@@ -921,7 +950,8 @@ class StockInController extends CommonController {
         unset($map);
         unset($data);
 
-        $this->msgReturn(1,'上架成功');
+        $success_url = U('Wms/StockIn/view',array('id'=>$id));
+        $this->msgReturn(1,'上架成功','',$success_url);
     }
 
     //显示一键收货的信息
