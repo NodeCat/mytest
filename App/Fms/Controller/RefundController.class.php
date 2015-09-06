@@ -23,8 +23,8 @@ class RefundController extends \Common\Controller\CommonController {
             '2' => '已关闭',
         ),
         'type'   => array(
-            '0' => '拒收退款单',
-            '1' => '缺货退款单',
+            '1' => '拒收退款单',
+            '2' => '缺货退款单',
         ),
     );
     protected $query = array (
@@ -34,8 +34,8 @@ class RefundController extends \Common\Controller\CommonController {
 	            'query_type'   => 'eq',
 	            'control_type' => 'select',
 	            'value' => array(
-                        '0' => '拒收退款单',
-                        '1' => '缺货退款单',
+                        '1' => '拒收退款单',
+                        '2' => '缺货退款单',
                     ),
             ),
         'fms_refund.order_id' => array(
@@ -196,7 +196,7 @@ class RefundController extends \Common\Controller\CommonController {
         }
     }
 
-    public function setRefundStatus($id=0,$status=0)
+    protected function setRefundStatus($id=0,$status=0)
     {
         if (!$id) {
             return false;

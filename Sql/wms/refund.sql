@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS `fms_refund` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `type` varchar(45) NOT NULL DEFAULT '' COMMENT '退款单类型，0拒收退款单，1缺货退款单',
+  `type` varchar(45) NOT NULL DEFAULT '' COMMENT '退款单类型，1拒收退款单，2缺货退款单',
   `order_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '订单id',
   `suborder_id` int(11) unsigned NOT NULL DEFAULT '0' COMMENT '子订单id',
   `reject_reason` varchar(200) NOT NULL DEFAULT '' COMMENT '拒收原因',

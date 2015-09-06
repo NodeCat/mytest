@@ -321,13 +321,14 @@ class ListLogic {
             foreach ($bill_out['detail'] as $key => $value) {
                 $lack = $value['order_qty'] - $value['delivery_qty'];
                 if ($lack > 0) {
+                    unset($det);
                     unset($map);
                     $map['where'] = array (
                         'sku_number' => $value['pro_code'],
                     );
                     $category = $A->getCategoryBySku($map);
                     $catename = explode('-->',$category['cate_name']);
-                    $data['type'] = '1';
+                    $data['type'] = '2';    //缺货退款单
                     $det['pid'] = $data['id'];
                     $det['primary_category']    = $category['path'][0];
                     $det['primary_category_cn'] = $catename[0];
@@ -341,14 +342,14 @@ class ListLogic {
                     $det['created_time']    = get_time();
                     $det['update_user']     = session('user.uid');
                     $det['update_time']     = get_time();
+                    $data['detail'][] = $det;
                 }
-                $data['detail'][] = $det;
             }
-            if (!empty($data['detail'][0])) {
+            if (!empty($data['detail'])) {
                 //判断是否创建过退款单
                 unset($map);
                 $map['refer_code'] = $data['refer_code'];
-                $map['type']       = '1';
+                $map['type']       = '2';//缺货退款单
                 $map['is_deleted'] = 0;
                 $ishave = $refund_model->where($map)->find();
                 if (!$ishave) {
@@ -362,6 +363,7 @@ class ListLogic {
             unset($map);
             $map['refer_code']      = $bill_out['code']; //关联出库单号
             $map['is_deleted']      = 0;
+            $map['type']            = '7';//拒收入库单
             $bill_in = M('stock_bill_in')->where($map)->find();
             if ($bill_in) {
                 $data['reject_code']    = $bill_in['code'];
@@ -385,7 +387,7 @@ class ListLogic {
                 );
                 $category = $A->getCategoryBySku($map);
                 $catename = explode('-->',$category['cate_name']);
-                $data['type'] = '0';    //拒收退款单
+                $data['type'] = '1';    //拒收退款单
                 $det['pid'] = $data['id'];
                 $det['primary_category']    = $category['path'][0];
                 $det['primary_category_cn'] = $catename[0];
@@ -401,11 +403,11 @@ class ListLogic {
                 $det['update_time']     = get_time();
                 $data['detail'][] = $det;
             }
-            if (!empty($data['detail'][0])) {
+            if (!empty($data['detail'])) {
                 //判断是否创建过退款单
                 unset($map);
                 $map['refer_code'] = $data['refer_code'];
-                $map['type']       = '0';
+                $map['type']       = '1';//拒收退款单
                 $map['is_deleted'] = 0;
                 $ishave = $refund_model->where($map)->find();
                 if (!$ishave) {
