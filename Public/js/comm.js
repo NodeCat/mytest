@@ -305,6 +305,9 @@ $('.modal').on('shown.bs.modal', function (e) {
 
 	$('.content').on('click','.btn-op,.btn-status a',function(){
 		var addr=$(this).data('href');
+		if(!addr) {
+			addr = $(this).attr('href');
+		}
 		var id = $(this).data('value');
 		if(!addr)return false;
 		$.ajax({
