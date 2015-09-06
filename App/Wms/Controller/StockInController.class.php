@@ -426,9 +426,19 @@ class StockInController extends CommonController {
         
         $this->pros = A('Pms','Logic')->add_fields($bill_in_detail_list,'pro_name');
         //已上架量
-        foreach($this->pros as $pro){
+        $tmp_pros = array();
+        foreach($this->pros as $k => $pro){
             $data['qtyForIn'] += $pro['done_qty'];
+
+            //如果batch为空，则将refer_code赋值给batch
+            if(empty($pro['batch'])){
+                $tmp_pros[$k] = $pro;
+                $tmp_pros[$k]['batch'] = $pro['refer_code'];
+            }else{
+                $tmp_pros[$k] = $pro;
+            }
         }
+        $this->pros = $tmp_pros;
         //$data['qtyForIn'] = $expected_qty_total - $moved_qty_total;
 
         $data['qtyForPrepare'] = $qtyForPrepare;
