@@ -488,6 +488,7 @@ class SettlementController extends CommonController
         foreach($settlement_detail as $key => $val){
             if( $val['order_type'] == 1 ){
                 $purchase[]       = $val['order_code'];
+                $purchase_sql[]   = '\''.$val['order_code'].'\'';
             } else if ( $val['order_type'] == 2 ){
                 $stock[]          = $val['stock_id'];               //入库单ID，入库单有多个，可选择性的去对某个入库单付款，需记录入库单ID
                 $stock_purchase[] = $val['order_code'];             //采购单code
@@ -513,6 +514,11 @@ class SettlementController extends CommonController
             M('erp_purchase_in_detail')->where($map)->data($data)->save();
             unset($map);
             unset($data);
+
+            //更新采购单的已结算金额paid_amount 为 总金额price_total
+            $purchase_sql = implode(',', $purchase_sql);
+            $sql = "update stock_purchase set paid_amount = price_total where code in ({$purchase_sql})";
+            M()->execute($sql);
         }
 
         //更新入库单为已支付状态，更新采购单为已结算状态
