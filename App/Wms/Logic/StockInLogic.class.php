@@ -752,7 +752,8 @@ class StockInLogic{
         $map['b.code'] = array('in', $order_code);
         $map['b.is_deleted'] = 0;
         $map['a.is_deleted'] = 0;
-        $in_infos = $out_m->field('b.wh_id,b.code,b.code as order_code,a.batch,a.pro_code,a.qty')->join(' as a left join stock_bill_out as b on b.code = a.refer_code')->where($map)->order('a.created_time asc')->select();
+        //联查入库单批次关联 按照 入库单 === 批次 先进入的批次先退回
+        $in_infos = $out_m->field('b.wh_id,b.code,b.code as order_code,a.batch,a.pro_code,a.qty')->join(' as a left join stock_bill_out as b on b.code = a.refer_code join stock_bill_in as c on a.batch = c.code')->where($map)->order('c.created_time asc,a.created_time asc')->select();
         if (!$in_infos) {
             return false;
         }
