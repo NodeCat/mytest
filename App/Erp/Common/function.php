@@ -394,4 +394,3 @@ function arraySum($pArray,$pKey=''){
 
     return $result;
 }
-

@@ -181,11 +181,8 @@ class DistDriver extends Controller {
                 $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
                 $map['driver_name'] = session('user.username');
                 $map['driver_mobile'] = session('user.mobile');
-                foreach ($orders as $val) {
-                    //$order_ids[] = $val['refer_code'];
-                    $map['suborder_id'] = $val['refer_code'];
-                    $res = $cA->set_status($map);
-                }
+                $map['suborder_id'] = array_column($orders,'refer_code');
+                $res = $cA->set_status($map);
                 unset($map);
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status(array('status' => '1','dist_id' => $id));
                 if ($res) {
