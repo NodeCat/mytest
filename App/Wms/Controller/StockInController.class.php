@@ -199,7 +199,7 @@ class StockInController extends CommonController {
                         $data['pro_status'] = $status;
                         $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info['price_unit'] * 100 * $qty) / 100,2);
 
-                        if($bill_in_detail_info['stock_purchase.status'] == 43){
+                        if($bill_in_detail_info['status'] == 43){
                             $data['status'] = 'paid';
                         }else{
                             $data['status'] = 'nopaid';
@@ -871,7 +871,7 @@ class StockInController extends CommonController {
                     $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                     $data['pro_status'] = $status;
                     $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
-                    if($bill_in_detail_info_from_purchase['stock_purchase.status'] == 43){
+                    if($bill_in_detail_info_from_purchase['status'] == 43){
                         $data['status'] = 'paid';
                     }else{
                         $data['status'] = 'nopaid';
