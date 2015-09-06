@@ -48,9 +48,19 @@ class IndexDriver extends Controller {
                 exit;
             }
             $mobile = I('post.code',0);
-            if(!preg_match('/^0?1[34587]{1}\d{9}$/',$mobile)){
+            if(empty($mobile)) {
+                $this->error = "请输入您的手机号！";
+            }
+            if(empty($this->error) && !preg_match('/^0?1[34587]{1}\d{9}$/',$mobile)){
                 $this->error = "您输入的手机号码格式不正确！";
-                $this->display('Index:login');
+            }
+            if(!empty($this->error)) {
+                if(IS_AJAX) {
+                    $this->ajaxReturn(array('status'=>0,'msg'=>$this->error));
+                }
+                else {
+                    $this->display('Index:login');
+                }
                 exit;
             }
             else {
