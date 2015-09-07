@@ -58,7 +58,7 @@ class DistDriver extends Controller {
             unset($map);
             if (!empty($delivery)) {//若该配送单已被认领
                 if($delivery['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
-                    //$this->error = '提货失败，该单据您已提货';
+                    $this->error = '提货失败，该单据您已提货';
                 }
                 else {
                     //如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
@@ -104,7 +104,7 @@ class DistDriver extends Controller {
                 $this->error = '提货失败，未找到该单据';
             } elseif ($dist['wh_id'] != $sign['wh_id']) {
                 //只能提取签到仓库的配送单
-                //$this->error = '提货失败，不能提取其他仓库单据';
+                $this->error = '提货失败，不能提取其他仓库单据';
             } elseif ($dist['status'] == '1') {
                 // 未发运的单据不能被认领
                 $this->error = '提货失败，未发运的配送单不能提货';
@@ -196,7 +196,7 @@ class DistDriver extends Controller {
                     }
 
                     foreach ($orders as $key => $val) {
-                        if(empty($cRes['res'])) {
+                        if(empty($cRes['res']) && $cRes['status'] == 0) {
                             break;
                         }
                         if(in_array($val['refer_code'], $cRes['res'])) {
@@ -530,7 +530,7 @@ class DistDriver extends Controller {
                 $status = $s['status'];
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
-            if (empty($cRes['res'])) {
+            if (empty($cRes['res']) && $cRes['status'] == 0) {
                 //给母账户发送短信
                 $sA = A('Tms/SignIn', 'Logic');
                 $sres = $sA->sendParentAccountMsg($orderInfo['info']);
@@ -678,7 +678,7 @@ class DistDriver extends Controller {
                 );
             }
             //发送短信
-            if ($reasons && empty($cRes['res'])) {
+            if ($reasons && empty($cRes['res']) && $cRes['status'] == 0) {
                 $sres = $sA->sendRejectMsg($orderInfo['info'], $bill_details, $reasons);
             }
         }
