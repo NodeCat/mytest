@@ -846,7 +846,7 @@ class StockInController extends CommonController {
         foreach($ids as $k => $stock_bill_in_detail_id){
             //如果待上架量大于上架量
             if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
-                $this->msgReturn(0,'上架量必须大于等于待上架量');
+                $this->msgReturn(0,'上架量不能大于等于待上架量');
             }
             $post_data[$pro_code[$k].$batch[$k]]['batch'] = $batch[$k];
             $post_data[$pro_code[$k].$batch[$k]]['done_qty'] = $done_qty[$k];
