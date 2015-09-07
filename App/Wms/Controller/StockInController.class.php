@@ -875,12 +875,15 @@ class StockInController extends CommonController {
         }
 
         //根据id查询stock_bill_in_detail
-        $map['id'] = array('in',$ids);
-        $stock_bill_in_detail = M('stock_bill_in_detail')->where($map)->select();
+        $map['stock_bill_in_detail.id'] = array('in',$ids);
+        $stock_bill_in_detail = M('stock_bill_in_detail')
+        ->field('stock_bill_in_detail.*,stock_bill_in.code')
+        ->join('INNER JOIN stock_bill_in ON stock_bill_in.id=stock_bill_in_detail.pid')
+        ->where($map)->select();
         unset($map);
 
         foreach($stock_bill_in_detail as $stock_bill_in_detail_info){
-            $refer_code = $stock_bill_in_detail_info['refer_code'];
+            $refer_code = $stock_bill_in_detail_info['code'];
             //liugunagping
             //扣库存操作
             //有批次走分批次走，没有则按照原来的走
@@ -940,7 +943,7 @@ class StockInController extends CommonController {
                 //加入调拨类型liuguangping
                 //收货=》erp_到货量调拨入库单详细待入库量和实际收货量 erp状态 待上架状态@因需求变更这步取消
                 //@refer_code 入库单code $pro_code 产品编码 $batch 批次 $pro_qty 出库量
-                A('Erp/TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch, $pro_qty);
+                //A('Erp/TransferIn','Logic')->updateStockInQty($refer_code, $pro_code, $batch, $pro_qty);
                 //A('TransferIn','Logic')->updateTransferInStatus($refer_code);
                 //上架=》待入库量减去 已上架量增加
                 //$is_up = up 上架量 waiting 待上架
