@@ -820,7 +820,7 @@ class StockInController extends CommonController {
         $stock_bill_in_info = M('stock_bill_in')->where($map)->find();
 
         if($stock_bill_in_info['type'] == 2){
-            $this->msgReturn(0,'加工入库单不能一键上架');
+            $this->msgReturn(0,'加工入库单不能批量上架');
         }
         unset($map);
 
