@@ -403,7 +403,7 @@ function arraySum($pArray,$pKey=''){
  * @author liuguangping@dachuwang.com
  * @since 2015-07-17
  */
-function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
+/*function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
 {   
     $pos            = strrpos($number, '.');
     $enstr          = substr($number,$pos+1);
@@ -423,5 +423,5 @@ function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
     }
     return $return_str;
 
-}
+}*/
 

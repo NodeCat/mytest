@@ -1,0 +1,337 @@
+<form class="form-inline form-view" action="{:U('edit')}" method="post" id='form'>
+<input type="hidden" name="id" value="{$data['id']}">
+<div class="panel panel-default">
+  <div class="panel-heading" style="padding:0px 15px;">
+    <h3 class="panel-title">
+      <include file="status-bar" />
+
+      <div class="clearfix">
+      </div>
+    </h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+      <div class="col-lg-6">
+        <h3>
+          退款单 {$data['id']}
+        </h3>
+      </div>
+      <div class="col-lg-6">
+      
+      </div>
+    </div>
+    <hr/>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          店铺名称
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['shop_name']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          客户姓名
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_name']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          客户电话
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['customer_mobile']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          生成时间
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['created_time']} 
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group  col-lg-3">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          母订单id
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['order_id']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3">
+      <div class="row">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          子订单id
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['suborder_id']}
+          </label>
+        </div>
+      </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          拒收入库单
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['reject_code']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          退款方式
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            <switch name="data['pay_type']">
+              <case value="0" break='1'>
+                微信支付
+              </case>
+              <case value="1" break='1'>
+                银行退款
+              </case>
+              <case value="2" break='1'>
+                现场退款
+              </case>
+            </switch>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          退款金额
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['sum_reject_price']}
+          </label>
+        </div>
+      </div>
+      <div class="form-group  col-lg-3  ">
+        <label class="control-label col-lg-4 col-sm-4 col-xs-4" for="partner_id">
+          退款单类型
+        </label>
+        <div class="col-lg-8 col-sm-8 col-xs-8">
+          <label class="control-label label-field">
+            {$data['type']}
+          </label>
+        </div>
+      </div>
+    </div>
+    </div>
+    <br>
+
+    <div class="table-responsive">
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 
+      <if condition="$data['type'] eq '缺货退款单'">缺货
+        <else />拒收
+      </if>
+      详情 </a></li>
+  </ul>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" >
+      <table class="data-table table table-bordered table-striped table-condensed table-hover">
+        <thead>
+          <tr>
+            <td>
+                一级分类
+            </td>
+            <td>
+                商品编号
+            </td>
+            <td>
+                商品名称
+            </td>
+            <td>
+                商品单价
+            </td>
+            
+            <td>
+                商品数量
+            </td>
+            <td>
+                退款金额
+            </td>
+          </tr>
+        </thead>
+        <tbody>
+          <volist name="data['detail']" id="vo">
+            <tr>
+              <td>
+                {$vo.primary_category_cn}
+              </td>
+              <td>
+                {$vo.pro_code}
+              </td>
+              <td>
+                {$vo.pro_name}
+              </td>
+              <td>
+                {$vo.price}
+              </td>
+              <td>
+                {$vo.reject_qty}
+              </td>
+              <td>
+                {$vo.reject_price}
+              </td>
+              
+            </tr>
+          </volist>
+        </tbody>
+      </table>
+    </div>
+    
+  </div>
+<br>
+<div class="row">
+  <div class="form-group col-md-6">
+    <if condition="$data.state eq 0">
+    <notempty name="auth['handle']">
+    <button class="btn btn-default  btn-ajax" id="handle" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    财务已处理</button>
+    </notempty>
+    <notempty name="auth['cancel']">
+    <button class="btn btn-default  btn-ajax" id="cancel" data-input="#" data-target="#" data-href="" type="button"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    关闭</button>
+    </notempty>
+  </if>
+    <notempty name="auth['addRemark']">
+    <button class="btn btn-default  btn-ajax" id="addremark" style="display:inline-block;" data-input="#txt-remark" data-target="#table-remarks" data-href="" type="button"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 添加备注</button>
+    </notempty>
+  </div>
+</div>
+<br>
+<ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;"> 退款单动态 </a></li>
+  </ul>
+<div class="row">
+<div class="col-md-12">
+    <table class="data-table table table-bordered table-condensed table-hover" id="table-remarks">
+      <thead>
+        <tr>
+        <th>日期</th><th>操作</th><th>人员</th>
+        </tr>
+      </thead>
+      <tbody>
+      <volist name="data['log']" id="log">
+      <tr>
+        <td>
+          {$log.optime}
+        </td>
+        <td>
+          {$log.msg}
+        </td>
+        <td>
+          <if condition="$log.user eq null">无
+            <else />
+          {$log.user}
+          </if>
+        </td>
+      </tr>
+      </volist>
+    </table>
+</div>
+<div class="col-md-6">
+<br>
+
+</div>
+</div>
+  </div>
+</div>
+</form>
+<script type="text/javascript">
+$('#addremark').on('click',function(){
+  var id = $('input[name=id]').val();
+  var url = "/Refund/addRemark";
+  var txtremark = prompt("请输入备注：","");
+  if (txtremark != null && $.trim(txtremark) != "") {
+    //提交数据到后端处理
+    $.ajax({
+      url:url,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:'id='+id+'&remark='+txtremark,
+      success: function(json){
+          alert(json.msg);
+          if (json.status == 1) {
+            location.reload();
+          }
+      }
+    });
+  } else {
+    return false;
+  }
+});
+
+$('#handle').on('click',function(){
+  var id = $('input[name=id]').val();
+  var url = "/Refund/handle";
+  var is_confirm = confirm("确定进行此操作吗？");
+  if (is_confirm) {
+    //提交数据到后端处理
+    $.ajax({
+      url:url,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:'id='+id,
+      success: function(json){
+          alert(json.msg);
+          if (json.status == 1) {
+            location.reload();
+          }
+      }
+    });
+  } else {
+    return false;
+  }
+});
+
+$('#cancel').on('click',function(){
+  var id = $('input[name=id]').val();
+  var url = "/Refund/cancel";
+  var reason = prompt("请输入关闭此退款单的理由：","");
+  if (reason != null && reason != "") {
+    //提交数据到后端处理
+    $.ajax({
+      url:url,
+      type:'post',
+      cache : false,
+      dataType:'json',
+      data:'id='+id+'&reason='+reason,
+      success: function(json){
+          alert(json.msg);
+          if (json.status == 1) {
+            location.reload();
+          }
+      }
+    });
+  } else {
+    return false;
+  }
+});
+</script>

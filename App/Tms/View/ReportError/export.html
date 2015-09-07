@@ -1,57 +1,61 @@
-<div class="row">
-<div class="col-xs-12">
-<form action="{:U('ReportError/export_excel')}" method="post">
-<table class="table">
-	<tr>
-		<td>
-		<input type="text" class="form-control date form_date " name="start_time"  rel="datepicker" data-date-format="yyyy-mm-dd" placeholder="开始日期">
-		</td>
-		<td>
-		<input type="text" class="form-control date form_date" name="end_time" rel="datepicker" data-date-format="yyyy-mm-dd" placeholder="结束日期">
-		</td>
-		<td>
-		<button class="btn btn-primary" name="export" type="submit">导出报错信息</button>
-		</td>
-		<td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
-	</tr>
-</table>
-</form>
-</div>
-</div>
+<div class="table-responsive" >
+    <form action="{:U('ReportError/export_excel')}" method="post" class="form-inline">
+        <span class="input-group-addon form-control" style="line-height:1.4;">选择开始日期</span>
+        <input type="text" class="form-control date form_date " name="start_time"  rel="datepicker" data-date-format="yyyy-mm-dd" placeholder="开始日期">
+      <div class="form-group">
+          <span class="input-group-addon form-control" style="line-height:1.4;">选择结束日期</span>
+          <input type="text" class="form-control date form_date" name="end_time" rel="datepicker" data-date-format="yyyy-mm-dd" placeholder="结束日期">
+          </td>
+      </div>
+      <button class="btn btn-primary" name="export" type="submit">导出报错信息</button> 
+  </form>
+  <br>
+  <table class="table table-bordered" style="text-align:center">
+      <!--<thead align="center">-->
+        <tr style="text-align:center;">
+          <th>ID</th>
+          <th>司机姓名</th>
+          <th>联系电话</th>
+          <th>查看轨迹</th>
+          <th>报错类型</th>
+          <th>状态</th>
+          <th>删除</th>
+        </tr>
+      <!--</thead>-->
+      <tbody>
+        <volist name='list' id="k">
+        <tr>
+          <th scope="row">{$i}</th>
+          <td>{$k.username}</td>
+          <td>{$k.mobile}</td>
+          <td>{$k.car_num}</td>
+          <td>{$k.car_type}</td>
+          <td>{$k.car_from}</td>
+          <td>{$k.warehouse}</td>
+          <td>
+          <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['sid'].'&mobile='.$k['mobile'])}">查看轨迹</a>
+          </td>    
+        </tr>
+      </volist>
+      </tbody>
+    </table>
+      <!-- 备注模态框 -->
+      <div class="modal fade" id="remarkModal" tabindex="-1" role="dialog" aria-labelledby="remarkModal">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title text-center" id="remarkModal">编辑备注信息</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default js-cancle" data-dismiss="modal">取消</button>
+              <button type="button" class="btn btn-primary pull-left js-save">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 <script>
-$(document).ready(function(){
-$('.form_datetime').datepicker({
-        language:  'zh-CN',
-        weekStart: 1,
-        todayBtn:  1,
-		autoclose: 1,
-		todayHighlight: 1,
-		startView: 0,
-		forceParse: 0,
-        showMeridian: 1,
-        format:'yyyy-mm-dd',
-    });
-	$('.form_date').datepicker({
-        language:  'zh-CN',
-        weekStart: 1,
-        todayBtn:  1,
-		autoclose: 1,
-		todayHighlight: 1,
-		startView: 0,
-		minView: 2,
-		forceParse: 0,
-		format:'yyyy-mm-dd',
-    });
-	$('.form_time').datepicker({
-        language:  'zh-CN',
-        weekStart: 1,
-        todayBtn:  1,
-		autoclose: 1,
-		todayHighlight: 1,
-		startView: 1,
-		minView: 0,
-		maxView: 1,
-		forceParse: 0
-    });
-    });
 </script>

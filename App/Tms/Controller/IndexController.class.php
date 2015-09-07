@@ -27,7 +27,8 @@ class IndexController extends \Common\Controller\AuthController{
         $data['driver_fee']['title'] = '近7天数据统计';
         $data['driver_fee']['data'] = M()->query('
                     select a.*,b.name,b.driver_qty,b.notpaid_qty,b.fee,ROUND(b.fee / a.total_price * 100,2) fee_precent,
-                    c.order_qty,c.ontime_qty,c.order_qty-c.ontime_qty overtime_qty,c.ontime_percent
+                    c.order_qty,c.ontime_qty,c.order_qty-c.ontime_qty overtime_qty,c.ontime_percent,
+                    ROUND(a.dist_ontime_qty / a.dist_qty * 100,2) dist_ontime_percent
                      from(
                     SELECT 
                         d.wh_id,
@@ -38,7 +39,23 @@ class IndexController extends \Common\Controller\AuthController{
                         ROUND(SUM(total_price) / COUNT(*), 2) dist_price_average,
                         ROUND(SUM(total_price) / SUM(order_count), 2) decim_price_average,
                         ROUND(300 / (SUM(total_price) / COUNT(*)) * 100, 2) dist_price_percent,
-                        ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average
+                        ROUND(SUM(order_count) / COUNT(*), 2) dist_order_average,
+                        SUM(CASE
+                                WHEN
+                                    deliver_time = 1
+                                THEN
+                                    CASE end_time < DATE_ADD(deliver_date, INTERVAL 6 HOUR)
+                                        WHEN 1 THEN 1
+                                        ELSE 0
+                                    END
+                                WHEN
+                                    deliver_time = 2
+                                THEN
+                                    CASE end_time < DATE_ADD(deliver_date, INTERVAL 12 HOUR)
+                                        WHEN 1 THEN 1
+                                        ELSE 0
+                                    END
+                            END) dist_ontime_qty
                     FROM
                         stock_wave_distribution d
                     WHERE
@@ -65,8 +82,8 @@ class IndexController extends \Common\Controller\AuthController{
                         warehouse wh ON wh.id = u.warehouse
                     WHERE
                         sl.is_deleted = 0 and DATE(sl.created_time) > "'.$date_week.'" and wh.id = '.session('user.wh_id').'
-                    GROUP BY u.warehouse , deliver_date #, period
-                    ORDER BY u.warehouse , deliver_date DESC #, period
+                    GROUP BY u.warehouse , deliver_date
+                    ORDER BY u.warehouse , deliver_date DESC
                     ) b 
                     on a.wh_id = b.wh_id and a.deliver_date = b.deliver_date
                     INNER JOIN
@@ -82,8 +99,9 @@ class IndexController extends \Common\Controller\AuthController{
                     WHERE
                         d.is_deleted = 0 and dd.is_deleted = 0 and  DATE(d.deliver_date) > "'.$date_week.'" and d.wh_id = '.session('user.wh_id').'
                     GROUP BY d.deliver_date , d.wh_id
-                    ORDER BY d.deliver_date DESC) c ON a.wh_id = c.wh_id
-                        AND a.deliver_date = c.deliver_date
+                    ORDER BY d.deliver_date DESC
+                    ) c 
+                    ON a.wh_id = c.wh_id AND a.deliver_date = c.deliver_date
                     '
             );
 /*
@@ -191,7 +209,8 @@ class IndexController extends \Common\Controller\AuthController{
             'dist_qty' => '配送单数量',
             'order_qty' => '出库单数量',
             'overtime_qty' => '晚点配送数',
-            'ontime_percent' => '准点率',
+            'dist_ontime_percent' => '发运准点率',
+            'ontime_percent' => '配送准点率',
             'dist_order_average' => '平均出库单数/每配送单',
             'dist_price_percent' => '预计运费比',
             'fee_precent' => '实际运费占比'

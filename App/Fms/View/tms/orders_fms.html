@@ -17,7 +17,11 @@
  </div>
  <div class="col-md-2 col-xs-6 col-md-offset-1">
 <notempty name="dist">
-<a href="{:U('pay','id='.$dist['id'])}" class="btn-sign btn btn-lg btn-success btn-block"> 结 款 </a>
+  <if condition="$dist['status'] eq 3">
+<a onclick="javascript:pay('{$dist.id}');" class="btn-sign btn btn-lg btn-success btn-block"> 结 款 </a>
+<else />
+<a onclick="javascript:pay('{$dist.id}');" class="btn-sign btn btn-lg btn-success btn-block" disabled> 结 款 </a>
+</if>
 </notempty>
  </div>
  <div class="col-md-3 col-xs-6">
@@ -55,9 +59,68 @@
   </div>
   </div>
 
+<div class="row-fluid" >
+  <table class="data-table table table-bordered table-striped table-condensed " style="">
+    <thead>
+      <tr>
+        <th>货到付款金额</th>
+        <th>微信支付金额</th>
+        <th>账期支付金额</th>
+        <th>司机姓名</th>
+        <th>司机手机号</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{$dist['cash_on_delivery']}</td>
+        <td>{$dist['wechat_pay']}</td>
+        <td>{$dist['account_pay']}</td>
+        <td>{$dist['sign_driver']}</td>
+        <td>{$dist['sign_driver_mobile']}</td>
+        <td><a href="#" class="collapsed" data-toggle="collapse" data-target="#info_{$dist.id}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$dist.id}">
+  查看拒收详情
+  </a></td>
+      </tr>
+      <tr class="panel-collapse collapse" aria-expanded="true"  id="info_{$dist.id}">
+        <td colspan="6">
+          <div >
+          <form class="order">
+            <input type="hidden" name="id" value="{$vo.refer_code}" />
+            <div class="table-responsive">
+              <table id="data-table" class="data-table table table-bordered table-striped table-condensed table-hover" style="">
+              <caption><span class="panel-info"><div class="panel-heading info">拒收详情</div></span></caption>
+                <thead>
+                  <tr >
+                    <th>货品编号</th>
+                    <th>货品名称</th>
+                    <th>拒收数量</th>
+                    <th>货品单价</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <volist name="dist['reject_info']" id='lists'>
+                    <tr>
+                      <td>{$key}</td>
+                      <td>{$lists['name']}</td>
+                      <td>{$lists['quantity']} {$lists['unit_id']}</td>
+                      <td>{$lists['price']}</td>
+                    </tr>
+                  </volist>
+                </tbody>
+              </table>
+            </div>
+          </form>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <div class="row-fluid" id="orders">
-<table class="data-table table table-bordered table-striped table-condensed " style="">
+<div class="panel-info"><div class="panel-heading info">订单信息</div></div>
+<table class="data-table table table-bordered table-striped table-condensed ">
 <thead>
   <tr>
     <th>订单id</th>
@@ -98,7 +161,7 @@
   </td>
   -->
   <td>
-  <a href="#" class="collapsed" data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}">
+  <a href="#info_{$vo.refer_code}" class="collapsed" data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="false" data-parent="#orders" aria-controls="info_{$vo.refer_code}">
   查看详情
   </a>
   </td>
@@ -115,7 +178,7 @@
           <tr class="text-center">
             <th>货品</th>
             <th>下单数量</th>
-            <!--<th>送货数量</th>-->
+            <th>送货数量</th>
             <th>实收数量</th>
             <!--<th>送货重量</th>
             <th>实收重量</th>-->
@@ -128,7 +191,7 @@
         <tfoot>
           <tr>
             <td>{:count($vo['detail'])}行</td>
-            <td colspan="3">合计</td>
+            <td colspan="4">合计</td>
             <td class="dange">{$vo.actual_price}</td>
           </tr>
         </tfoot>
@@ -137,10 +200,8 @@
           <td>{$v.pro_code} {$v.pro_name}
           <!-- <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach>-->
           </td>
+          <td>{$v.order_qty}{$v.unit_id}</td>
           <td>{$v.delivery_qty}{$v.unit_id}</td>
-          <!--
-          <td class="warnin">{$v.quantity}{$v.unit_id}</td>
-          -->
 
           <td class="dange">{$v.real_sign_qty}{$v.unit_id}</td>
           <!--
@@ -166,6 +227,7 @@
               <td>退押金</td>
               <td>应收总计</td>
               <td>司机实收金额</td>
+              <td>退款金额</td>
             </tr>
         </thead>
         <tbody>
@@ -177,6 +239,7 @@
               <td>{$vo.deposit}</td>
               <td class="dange">{$vo.pay_for_price}</td>
               <td class="dange">{$vo.deal_price}</td>
+              <td class="dange">{$vo.reject_sum_price}</td>
             </tr>
         </tbody>
       </table>
@@ -251,4 +314,26 @@ form.order ul.list-group{
 }
 
 </style>
-
+<script type="text/javascript">
+  function pay(id) {
+    var addr = "{:U('pay')}";
+    var is_confirm = confirm("确定要结款吗？");
+    if (is_confirm) {
+      $.ajax({
+        url:addr,
+        type:'post',
+        cache:false,
+        dataType:'json',
+        data:{'id':id},
+        success: function(msg){
+          alert(msg.msg);
+          if (msg.status == 1) {
+            location.reload();
+          }
+        }
+      });
+    } else {
+      return false;
+    }
+  }
+</script>

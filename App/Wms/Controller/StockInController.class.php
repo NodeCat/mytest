@@ -187,7 +187,7 @@ class StockInController extends CommonController {
                         ->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
                         ->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
                         ->where($map)
-                        ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
+                        ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method,stock_purchase.status')
                         ->find();
                         unset($map);
 
@@ -199,7 +199,7 @@ class StockInController extends CommonController {
                         $data['pro_status'] = $status;
                         $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info['price_unit'] * 100 * $qty) / 100,2);
 
-                        if($bill_in_detail_info['invoice_method'] == 0){
+                        if($bill_in_detail_info['status'] == 43){
                             $data['status'] = 'paid';
                         }else{
                             $data['status'] = 'nopaid';
@@ -861,7 +861,7 @@ class StockInController extends CommonController {
                     ->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid' )
                     ->join('stock_purchase on stock_purchase.code = stock_bill_in.refer_code')
                     ->where($map)
-                    ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method')
+                    ->field('stock_bill_in.code,stock_bill_in.refer_code,stock_bill_in_detail.price_unit,stock_purchase.invoice_method,stock_purchase.status')
                     ->find();
                     unset($map);
                     $data['price_unit'] = $bill_in_detail_info_from_purchase['price_unit'];
@@ -871,7 +871,7 @@ class StockInController extends CommonController {
                     $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                     $data['pro_status'] = $status;
                     $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
-                    if($bill_in_detail_info_from_purchase['invoice_method'] == 0){
+                    if($bill_in_detail_info_from_purchase['status'] == 43){
                         $data['status'] = 'paid';
                     }else{
                         $data['status'] = 'nopaid';

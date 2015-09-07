@@ -278,9 +278,9 @@ class StockLogic{
 
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
-                    $notice_params['pro_code'] = $params['pro_code'];
-                    $notice_params['type'] = '';
-                    $notice_params['qty'] = $stock['stock_qty'];
+                    $notice_params['pro_code'] = array($params['pro_code']);
+                    $notice_params['type'] = 'change';
+                    $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -337,9 +337,9 @@ class StockLogic{
 
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
-                    $notice_params['pro_code'] = $params['pro_code'];
-                    $notice_params['type'] = '';
-                    $notice_params['qty'] = $stock['stock_qty'];
+                    $notice_params['pro_code'] = array($params['pro_code']);
+                    $notice_params['type'] = 'change';
+                    $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -403,9 +403,9 @@ class StockLogic{
 
                     //通知实时库存接口
                     $notice_params['wh_id'] = $params['wh_id'];
-                    $notice_params['pro_code'] = $params['pro_code'];
-                    $notice_params['type'] = '';
-                    $notice_params['qty'] = $diff_qty;
+                    $notice_params['pro_code'] = array($params['pro_code']);
+                    $notice_params['type'] = 'change';
+                    $notice_params['msg'] = 'outStockBySkuFIFO';
                     A('Dachuwang','Logic')->notice_stock_update($notice_params);
                     unset($notice_params);
 
@@ -538,9 +538,9 @@ class StockLogic{
 
         //通知实时库存接口
         $notice_params['wh_id'] = $wh_id;
-        $notice_params['pro_code'] = $pro_code;
-        $notice_params['type'] = '';
-        $notice_params['qty'] = $pro_qty;
+        $notice_params['pro_code'] = array($pro_code);
+        $notice_params['type'] = 'change';
+        $notice_params['msg'] = 'adjustStockByShelves';
         A('Dachuwang','Logic')->notice_stock_update($notice_params);
         unset($notice_params);
 
@@ -836,12 +836,12 @@ class StockLogic{
         }
         
         //如果源库存状态由合格状态改为不合格，库存量发生变化，需要通知实时库存接口
-        if($src_stock['status'] == 'qualified' && $dest_location_info['status'] != 'qualified'){
+        if($src_stock['status'] != $dest_location_info['status']){
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
-            $notice_params['pro_code'] = $param['pro_code'];
-            $notice_params['type'] = '';
-            $notice_params['qty'] = $param['variable_qty'];
+            $notice_params['pro_code'] = array($param['pro_code']);
+            $notice_params['type'] = 'change';
+            $notice_params['msg'] = 'incDestStockDecSrcStock';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
             unset($notice_params);
         }
@@ -1049,13 +1049,13 @@ class StockLogic{
             }
         }
 
-        //如果源库存状态由合格状态改为不合格，库存量发生变化，需要通知实时库存接口
-        if($src_stock_info['status'] == 'qualified' && $dest_stock_info['status'] != 'qualified'){
+        //如果源库存状态与目标库存状态不一致，库存量发生变化，需要通知实时库存接口
+        if($src_stock_info['status'] != $dest_stock_info['status']){
             //通知实时库存接口
             $notice_params['wh_id'] = $param['wh_id'];
-            $notice_params['pro_code'] = $param['pro_code'];
-            $notice_params['type'] = '';
-            $notice_params['qty'] = $param['variable_qty'];
+            $notice_params['pro_code'] = array($param['pro_code']);
+            $notice_params['type'] = 'change';
+            $notice_params['msg'] = 'adjustStockByMove';
             A('Dachuwang','Logic')->notice_stock_update($notice_params);
             unset($notice_params);
         }
@@ -1192,12 +1192,13 @@ class StockLogic{
         $add_data['stock_qty'] = (empty($params['stock_qty'])) ? 0 : $params['stock_qty'];
         $add_data['assgin_qty'] = (empty($params['assgin_qty'])) ? 0 : $params['assgin_qty'];
         $add_data['prepare_qty'] = (empty($params['prepare_qty'])) ? 0 : $params['prepare_qty'];
+        $add_data['product_date'] =(empty($params['product_date'])) ? get_time() : $params['product_date'];
 
         //插入记录
         $stock = D('Stock');
         $add_data = $stock->create($add_data);
         $stock->data($add_data)->add();
-
+        
         //写入库存交易记录
         $stock_move_data = array(
             'wh_id' => session('user.wh_id'),
@@ -1422,12 +1423,12 @@ class StockLogic{
             $stock_adjustment_detail->data($stock_adjustment_detail_data)->add();
         
             //如果源库存状态由合格状态改为不合格，库存量发生变化，需要通知实时库存接口
-            if($stock_info['status'] == 'qualified' && $dest_stock_info['status'] != 'qualified'){
+            if($stock_info['status'] != $dest_stock_info['status']){
                 //通知实时库存接口
                 $notice_params['wh_id'] = $params['wh_id'];
-                $notice_params['pro_code'] = $params['pro_code'];
-                $notice_params['type'] = '';
-                $notice_params['qty'] = $stock_info['stock_qty'];
+                $notice_params['pro_code'] = array($params['pro_code']);
+                $notice_params['type'] = 'change';
+                $notice_params['msg'] = 'adjustStockStatus';
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
                 unset($notice_params);
             }

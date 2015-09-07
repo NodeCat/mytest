@@ -50,7 +50,7 @@ class DistDriver extends Controller {
             //签到记录
             $smap['userid'] = session('user.id');
             $smap['is_deleted'] = 0;
-            $sign = M('tms_sign_list')->field('delivery_time,created_time,wh_id')->order('created_time DESC')->where($smap)->find();
+            $sign = M('tms_sign_list')->field('id,delivery_time,created_time,wh_id')->order('created_time DESC')->where($smap)->find();
             //本次签到所有提货记录
             $map['mobile'] = session('user.mobile');
             $map['created_time'] = array('between',$sign['created_time'].','.$sign['delivery_time']);
@@ -120,6 +120,7 @@ class DistDriver extends Controller {
             }
             //添加提货数据
             if (empty($this->error)) {
+                $data['sid']          = $sign['id'];
                 $data['dist_id']      = $dist['id'];
                 $data['dist_code']    = $dist['dist_code'];
                 $data['mobile']       = session('user.mobile');
@@ -461,7 +462,7 @@ class DistDriver extends Controller {
             'status'         => 2,//签收
             'delivery_ontime' => $A->isSignOntime($dist_id),
             'sign_time'      => get_time(),
-            'sign_driver'    => session('user.mobile'),
+            'sign_driver'     => session('user.id'),
         );
         //更新订单状态
         $cRes = $cA->checkDid(array('suborder_ids' => array($refer_code)));
@@ -618,7 +619,7 @@ class DistDriver extends Controller {
                 'pay_type'        => $orderInfo['info']['pay_type'],
                 'delivery_ontime' => A('Tms/Dist' ,'Logic')->isSignOntime($dist_id),
                 'sign_time'       => get_time(),
-                'sign_driver'     => session('user.mobile'),
+                'sign_driver'     => session('user.id'),
             );
             //向配送单详情更新拒收信息
             $datas = array(
