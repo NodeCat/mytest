@@ -926,7 +926,7 @@ class StockInController extends CommonController {
                 $data['stock_in_code'] = $bill_in_detail_info_from_purchase['code'];
                 $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                 $data['pro_status'] = $status;
-                $data['price_subtotal'] = formatMoney(intval($bill_in_detail_info_from_purchase['price_unit'] * 100 * $stock_bill_in_detail_info['expected_qty']) / 100,2);
+                $data['price_subtotal'] = bcmul($bill_in_detail_info_from_purchase['price_unit'], $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['done_qty'], 2);
                 if($bill_in_detail_info_from_purchase['status'] == 43){
                     $data['status'] = 'paid';
                 }else{
