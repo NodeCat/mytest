@@ -4,16 +4,15 @@ use Think\Model\RelationModel;
 
 class DistDetailModel extends RelationModel
 {
-    public $tableName = 'tms_sign_list';
+    public $tableName = 'stock_wave_distribution_detail';
     protected $_link=array(
-        'TmsUser'=>array(
+        'StockOut'=>array(
         'mapping_type'=>self::BELONGS_TO,
-        'foreign_key'=>'userid',
-        'mapping_fields'=>'username,mobile,car_num,car_type,car_from,warehouse',
-        'as_fields'=>'username,mobile,car_num,car_type,car_from,warehouse',
+        'foreign_key'=>'bill_out_id',
+        'mapping_fields'=>'refer_code,notes,customer_realname,customer_phone,customer_id,delivery_address,total_amount,total_qty,act_delivery_date',
+        'as_fields'=>'refer_code,notes,customer_realname,customer_phone,customer_id,delivery_address,total_amount,total_qty,act_delivery_date',
         
         ),
-
     );
     
 }
