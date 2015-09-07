@@ -109,6 +109,308 @@ class PurchasesLogic{
         
         return $result;
     }
+    
+    /**
+     * 采购价格修改
+     * @param $purchaseId
+     * @param $purchasePrice
+     */
+    public function updatePurchasePrice($purchaseId = 0, $purchasePrice = array()) 
+    {
+        $return = array();
+        
+        if (empty($purchasePrice)) {
+            return $return;
+        }
+        
+        //获取所有详情
+        $idArr = array_column($purchasePrice, 'id');
+        
+        $map['id']         = array('in', $idArr);
+        $map['is_deleted'] = 0;
+        
+        $purchaseDetailInfo = M('stock_purchase_detail')->where($map)->getField('id, price_unit, pro_qty');
+        unset($map);
+        
+        //更新价格
+        $price_total = 0;
+        foreach ($purchasePrice as $info) {
+            if ($info['price_unit'] != $purchaseDetailInfo[$info['id']]['price_unit']) {
+                //记录修改日志
+                $this->createUpdatePriceLog($purchaseId, $info);
+                
+                $map['id'] = $info['id'];
+                $update['price_unit']     = $info['price_unit'];
+                $update['price_subtotal'] = bcmul($info['price_unit'], $purchaseDetailInfo[$info['id']]['pro_qty']);
+                M('stock_purchase_detail')->where($map)->save($update);
+        
+                $price_total = bcadd($price_total, $update['price_subtotal']);
+                unset($map);
+                unset($update);
+                $return[] = $info;
+            } else {
+                $price_total = bcadd($price_total, bcmul($purchaseDetailInfo[$info['id']]['price_unit'], $purchaseDetailInfo[$info['id']]['pro_qty'], 2), 2);
+            }
+        }
+        
+        //更新总金额
+        $map['id'] = $purchaseId;
+        $updateMain['price_total'] = $price_total;
+        M('stock_purchase')->where($map)->save($updateMain);
+        
+        //如果存在冲红单则更新冲红单总金额
+        $where['stock_purchase.id'] = $purchaseId;
+        $purchaseRefund = M('erp_purchase_refund')
+            ->field('erp_purchase_refund.*')
+            ->join('stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code')
+            ->where($where)
+            ->find();
+        unset($map);
+        if (!empty($purchaseRefund)) {
+            $map['id'] = $purchaseRefund['id'];
+            $data['erp_purchase_refund.price_total'] = $price_total;
+            M('erp_purchase_refund')->where($where)->save($data);
+        }   
+        
+        return $return;
+    }
+    
+    /**
+     * 根据采购单号更新到货单价格
+     * @param $purchaseID
+     * @param $purchasePrice
+     */
+    public function updateStockBillInDetailPrice($purchaseID = 0, $purchasePrice = array())
+    {
+        $return = false;
+        
+        if (empty($purchaseID) || empty($purchasePrice)) {
+            return $return;
+        }
+        
+        foreach ($purchasePrice as $value) {
+            $map['stock_purchase.id'] = $purchaseID;
+            $map['stock_purchase_detail.id'] = $value['id'];
+            $update['stock_bill_in_detail.price_unit'] = $value['price_unit'];
+            $result = M('stock_bill_in_detail')
+                ->field('stock_bill_in_detail.*')
+                ->join('stock_bill_in ON stock_bill_in.id=stock_bill_in_detail.pid')
+                ->join('stock_purchase ON stock_purchase.code=stock_bill_in.refer_code')
+                ->join('stock_purchase_detail ON stock_purchase_detail.pro_code=stock_bill_in_detail.pro_code')
+                ->where($map)
+                ->find();
+            if (empty($result)) {
+                continue;
+            }
+            
+            $where['id'] = $result['id'];
+            $update['price_unit'] = $value['price_unit'];
+            $affected = M('stock_bill_in_detail')->where($where)->save($update);
+            
+            if (!$affected) {
+                return $return;
+            }
+            
+            unset($map);
+            unset($update);
+        }
+        
+        $return = true;
+        return $return;
+    }
+    
+    /**
+     * 更新采购入库单价格
+     */
+    public function updateErpPurchaseInDetail($purchaseID = 0, $purchasePrice = array())
+    {
+        $return = false;
+        
+        if (empty($purchaseID) || empty($purchasePrice)) {
+            return $return;
+        }
+        
+        foreach ($purchasePrice as $value) {
+            $map['stock_purchase.id'] = $purchaseID;
+            $map['stock_purchase_detail.id'] = $value['id'];
+            
+            $M = M('erp_purchase_in_detail');
+            $info = $M
+                ->field('erp_purchase_in_detail.*')
+                ->join('stock_purchase ON stock_purchase.code=erp_purchase_in_detail.purchase_code')
+                ->join('stock_purchase_detail ON stock_purchase_detail.pro_code=erp_purchase_in_detail.pro_code')
+                ->where($map)
+                ->find();
+            if (empty($info)) {
+                return $return;
+            }
+            unset($map);
+            //小计
+            $map['id'] = $info['id'];
+            $update['price_unit'] = $value['price_unit'];
+            $update['price_subtotal'] = bcmul($info['pro_qty'], $value['price_unit'], 2);
+            
+            $M->where($map)->save($update);
+            unset($map);
+            unset($update);
+        }
+        
+        $return = true;
+        return $return;
+    }
+    
+    /**
+     * 更新冲红单价格
+     */
+    public function updateErpPurchaseRefund($purchaseID = 0, $purchasePrice = array())
+    {
+        $return = false;
+        
+        if (empty($purchaseID) || empty($purchasePrice)) {
+            return $return;
+        }
+        
+        //冲红单ID
+        $refundId = 0;
+        foreach ($purchasePrice as $value) {
+            $map['stock_purchase.id'] = $purchaseID;
+            $map['stock_purchase_detail.id'] = $value['id'];
+            
+            $purchaseRefund = M('erp_purchase_refund_detail')
+                ->field('erp_purchase_refund_detail.*')
+                ->join('erp_purchase_refund ON erp_purchase_refund.id=erp_purchase_refund_detail.pid')
+                ->join('stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code')
+                ->join('stock_purchase_detail ON stock_purchase_detail.pro_code=erp_purchase_refund_detail.pro_code')
+                ->where($map)
+                ->find();
+            unset($map);
+            if (empty($purchaseRefund)) {
+                continue;
+            }
+            if ($refundId <= 0) {
+                $refundId = $purchaseRefund['pid'];
+            }
+            //更新价格
+            $map['id'] = $purchaseRefund['id'];
+            $update['price_unit'] = $value['price_unit'];
+            M('erp_purchase_refund_detail')->where($map)->save($update);
+            unset($map);
+            unset($update);
+        }
+        
+        if ($refundId > 0) {
+            //获取修改后的详情
+            $where['pid'] = $refundId;
+            $purchaseRefundDetail = M('erp_purchase_refund_detail')->where($where)->select();
+            
+            //计算待退价格
+            $tmp = 0;
+            foreach($purchaseRefundDetail as $val){
+                $tmp = bcadd($tmp, bcmul($val['qualified_qty'], $val['price_unit'], 2), 2);
+            }
+            
+            unset($where);
+            
+            $where['id'] = $refundId;
+            $purchaseRefundInfo = D('erp_purchase_refund')->where($where)->find();
+            
+            unset($where);
+            $where['id'] = $purchaseRefund['id'];
+            $data['price_total'] = bcsub($purchaseRefundInfo['price_total'], $tmp, 2);
+            D('erp_purchase_refund')->where($where)->save($data);
+            
+        }
+        $return = true;
+        
+        return $return;
+    }
+    
+    /**
+     * 更新采购退货单
+     */
+    public function updatePurchaseOut($purchaseID = 0, $purchasePrice = array())
+    {
+        $return = false;
+        
+        if (empty($purchaseID) || empty($purchasePrice)) {
+            return $return;
+        }
+        
+        foreach ($purchasePrice as $value) {
+            $map['stock_purchase.id'] = $purchaseID;
+            $map['stock_purchase_detail.id'] = $value['id'];
+            
+            $M = M('stock_purchase_out_detail');
+            $info = $M
+                ->field('stock_purchase_out_detail.*')
+                ->join('stock_purchase_out ON stock_purchase_out.id=stock_purchase_out_detail.pid')
+                ->join('stock_purchase ON stock_purchase.code=stock_purchase_out.refer_code')
+                ->join('stock_purchase_detail ON stock_purchase_detail.pro_code=stock_purchase_out_detail.pro_code')
+                ->where($map)
+                ->find();
+            
+            unset($map);
+            if (empty($info)) {
+                continue;
+            }
+            
+            $map['id'] = $info['id'];
+            $update['price_unit'] = $value['price_unit'];
+        
+            $M->where($map)->save($update);
+            unset($map);
+            unset($update);
+        }
+        
+        $return = true;
+        return $return;
+        
+    }
+    
+    /**
+     * 创建价格修改记录
+     */
+    public function createUpdatePriceLog($purchaseID = 0, $purchasePrice = array())
+    {
+        $return = false;
+        
+        if (empty($purchaseID) || empty($purchasePrice)) {
+            return $return;
+        }
+        
+        //获取采购单号
+        $map['id'] = $purchaseID;
+        $purchaseCode = M('stock_purchase')->where($map)->getField('code');
+        unset($map);
+        
+        //获取SKU信息
+        $map['id'] = $purchasePrice['id'];
+        $skuInfo = M('stock_purchase_detail')->where($map)->find();
+        
+        $data = array(
+        	    'refer_code' => $purchaseCode,
+            'pro_code'   => $skuInfo['pro_code'],
+            'purchase_user' => $skuInfo['created_user'],
+            'purchase_time' => $skuInfo['created_time'],
+            'old_price'     => $skuInfo['price_unit'],
+            'new_price'     => $purchasePrice['price_unit'],
+            'created_user'  => session('user.uid'),
+            'created_time'  => get_time(),
+            'updated_user'  => session('user.uid'),
+            'updated_time'  => get_time(),
+            'is_deleted'    => 0,
+        );
+        if (M('erp_purchase_price_log')->create($data)) {
+            $affected = M('erp_purchase_price_log')->add();
+            if (!$affected) {
+                return $return;
+            }
+        }
+        
+        $return = true;
+        return $return;
+    }
+    
 }
 /* End of file InsalesLogic.class.php */
 /* Location: ./Application/Logic/InsalesLogic.class.php */

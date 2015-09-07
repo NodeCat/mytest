@@ -136,7 +136,7 @@ class PurchaseController extends CommonController {
             'reject'=>array('name'=>'reject' ,'show' => false,'new'=>'true'),
             'close'=>array('name'=>'close' ,'show' => false,'new'=>'true'),
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => false,'new'=>'true'),
-            'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank')
+            'print'=>array('name'=>'print','link'=>'printpage','icon'=>'print','title'=>'打印', 'show'=>isset($this->auth['printpage']),'new'=>'true','target'=>'_blank'),
         );
 
         $this->toolbar =array(
@@ -307,7 +307,8 @@ class PurchaseController extends CommonController {
             'close'=>array('name'=>'close' ,'show' => isset($this->auth['close']),'new'=>'true','domain'=>"0,11,13"),
             'refund'=>array('name'=>'refund' ,'icon'=>'repeat','title'=>'生成红冲单', 'show' => isset($this->auth['refund']),'new'=>'true','domain'=>"13"),
             'out'=>array('name'=>'out' ,'show' => isset($this->auth['out']),'new'=>'true','domain'=>'13,43'),//退货已经生效或已结算的采购单，并且采购单已经上架的
-        );
+	        'price'=>array('name'=>'price','link'=>'updatePrice','icon'=>'price','title'=>'编辑价格', 'show'=>true,'new'=>'true','target'=>'_blank','domain'=>'13'),
+		);
 
     }
     protected function before_lists(){
@@ -435,8 +436,13 @@ class PurchaseController extends CommonController {
     public function refund() {
         //通过采购id获取采购单，复制一份改变编号后存到红冲单
         $id = I($pk);
+        $confirm = I('confirm');
         $map['id'] = $id['id'];
         $purchase_info = M('stock_purchase')->where($map)->find();
+        
+        if ($purchase_info['price_total'] <= 0) {
+            $this->msgReturn(false, '总金额为0不能生成冲红单');
+        }
         unset($map);
 
         //根据采购单号查询是否已经建立了冲红采购单 冲红单的状态不是已作废
@@ -472,10 +478,15 @@ class PurchaseController extends CommonController {
         $stock_bill_in_detail = M('stock_bill_in_detail')->where($map)->select();
         unset($map);
         $sum = 0;
+        $notPrice = array();
         foreach ($stock_bill_in_detail as $key => $val) {
             //如果sku已经全部收到，则不计入冲红单中
             if($val['expected_qty'] - $val['done_qty'] == 0){
                 continue;
+            }
+            //如果价格为0弹出提示框
+            if ($val['price_unit'] <= 0) {
+                $notPrice[] = $val;
             }
             $v = $val;
             unset($v['id']);
@@ -485,11 +496,16 @@ class PurchaseController extends CommonController {
             $sum +=  (intval($val['price_unit'] * 100) * $val['qualified_qty'] / 100);
         }
         if(empty($refund_purchase_data['detail'])){
-            $this->msgReturn(0,'已经全部收货成功，没有差异，不能生成冲红单');
+            $this->msgReturn(0,'已经全部收货成功或者价格为0，没有差异，不能生成冲红单');
+        }
+        if (!empty($notPrice) && $confirm != 'confirm') {
+            //有价格为0的SKU 弹出提示
+            $msg['detail'] = $notPrice;
+            $msg['id']     = $id['id'];
+            $this->msgReturn(true, '', $msg);
         }
         //精确两位 liuguangping
         $refund_purchase_data['for_paid_amount'] = formatMoney($refund_purchase_data['price_total'] - $sum, 2);
-
         $res = $M_rep_purchase_refund->relation(true)->add($refund_purchase_data);
 
         $this->msgReturn(1,'','',U('view','id='.$id['id']));
@@ -949,5 +965,115 @@ class PurchaseController extends CommonController {
         header("Content-Length: ");
         $objWriter  =  \PHPExcel_IOFactory::createWriter($Excel, 'Excel2007'); 
         $objWriter->save('php://output');
+    }
+    
+    /**
+     * 采购价格编辑
+     */
+    public function updatePrice()
+    {
+        if (IS_GET) {
+            $purchaseId = I('get.id');
+            if (empty($purchaseId)) {
+                $this->msgReturn(false, '参数有误');
+            }
+            
+            //获取采购单
+            $map['stock_purchase.id'] = $purchaseId;
+            $purchaseInfo = D('Purchase')->scope('default')->where($map)->find();
+            if (empty($purchaseInfo)) {
+                $this->msgReturn(false, '参数有误');
+            }
+            unset($map);
+            
+            //验证状态
+            if ($purchaseInfo['state'] != '13') {
+                $this->msgReturn(false, '非已生效采购单不可编辑价格');
+            }
+            switch ($purchaseInfo['invoice_method']) {
+            	    case '0':
+            	        $purchaseInfo['invoice_name'] = '预付款';
+            	        break;
+            	    case '1':
+            	        $purchaseInfo['invoice_name'] = '货到付款';
+            	        break;
+            	    default :
+            	        $purchaseInfo['invoice_name'] = '无';
+            }
+            //获取详情
+            $map['pid']         = $purchaseId;
+            $map['is_deleted']  = 0;
+            $purchaseDetailInfo = M('stock_purchase_detail')->where($map)->select();
+            
+            if (empty($purchaseDetailInfo)) {
+                $this->msgReturn(false, '参数有误');
+            }
+            
+            $this->assign('data', $purchaseInfo);
+            $this->assign('pros', $purchaseDetailInfo);
+            $this->display('edit-price');
+            
+        } elseif (IS_POST) {
+            
+            $purchasePrice = I('post.pros');
+            $purchaseId    = I('post.id');
+            
+            if (empty($purchasePrice) || empty($purchaseId)) {
+                $this->msgReturn(false, '参数有误');
+            }
+            
+            $map['id'] = $purchaseId;
+            //获取状态
+            $status = M('stock_purchase')->where($map)->getField('status');
+            unset($map);
+                
+            if ($status != 13) {
+                $this->msgReturn(false, '非已生效采购单不可编辑价格');
+            }
+            
+            //已经生成结算单的不可编辑价格
+            
+            //验证价格
+            foreach ($purchasePrice as $value) {
+                if ($value['price_unit'] < 0) {
+                    $this->msgReturn(fasle, '价格不可小于0');
+                }
+            }
+            
+            //修改价格 小计 总金额
+            $changePrice = D('Purchases', 'Logic')->updatePurchasePrice($purchaseId, $purchasePrice);
+             
+            if (empty($changePrice)) {
+                $this->msgReturn(false, '没有修改价格');
+            }
+            //修改到货单价格
+            $billIn = D('Purchases', 'Logic')->updateStockBillInDetailPrice($purchaseId, $changePrice);
+            
+            if (!$billIn) {
+                $this->msgReturn(false, '修改到货单价格失败');
+            }
+            //修改采购入库单价格
+            $purchaseIn = D('Purchases', 'Logic')->updateErpPurchaseInDetail($purchaseId, $changePrice);
+            
+            if (!$purchaseIn) {
+                $this->msgReturn(false, '修改采购入库单价格失败');
+            }
+            
+            //修改冲红单价格
+            $refund = D('Purchases', 'Logic')->updateErpPurchaseRefund($purchaseId, $changePrice);
+            
+            if (!$refund) {
+                $this->msgReturn(false, '修改冲红单价格失败');
+            }
+            
+            //修改采购退货单
+            $purchaseOut = D('Purchases', 'Logic')->updatePurchaseOut($purchaseId, $changePrice);
+            
+            if (!$purchaseOut) {
+                $this->msgReturn(false, '修改采购退货单价格失败');
+            }
+            
+            $this->msgReturn(true, '修改成功', '', U('Purchase/view?id=' . $purchaseId));
+        }
     }
 }
