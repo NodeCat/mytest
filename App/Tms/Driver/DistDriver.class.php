@@ -182,6 +182,7 @@ class DistDriver extends Controller {
                 $map['driver_name'] = session('user.username');
                 $map['driver_mobile'] = session('user.mobile');
                 $map['suborder_id'] = array_column($orders,'refer_code');
+                $cRes = $cA->checkDid(array('suborder_ids' => $map['suborder_id']));
                 $res = $cA->set_status($map);
                 unset($map);
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status(array('status' => '1','dist_id' => $id));
@@ -194,6 +195,15 @@ class DistDriver extends Controller {
                     foreach ($bill_out_ids as $value) {
                         logs($value,'已装车'.'[司机]'.session('user.username').session('user.mobile'),'dist_detail');
                     }
+
+                    foreach ($orders as $key => $val) {
+                        if(empty($cRes['res']) && $cRes['status'] == 0) {
+                            break;
+                        }
+                        if(in_array($val['refer_code'], $cRes['res'])) {
+                            unset($orders[$key]);
+                        }
+                    }
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
@@ -202,7 +212,7 @@ class DistDriver extends Controller {
                         $map['updated_time'] = $data['updated_time'];
                         $map['created_time'] = $data['created_time'];
                         $map['userid']       = session('user.id');
-                        $map['wh_id']       = session('user.wh_id');
+                        $map['wh_id']        = session('user.wh_id');
                         M('TmsSignList')->add($map);
                         unset($map);
                         unset($status);
@@ -230,7 +240,7 @@ class DistDriver extends Controller {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);
         }
-        $this->ajaxReturn($res);     
+        $this->ajaxReturn($res);
     }
 
     //出库单列表
@@ -455,6 +465,7 @@ class DistDriver extends Controller {
             'sign_driver'     => session('user.id'),
         );
         //更新订单状态
+        $cRes = $cA->checkDid(array('suborder_ids' => array($refer_code)));
         $re = $this->set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg);
         if($re['status'] === 0) {
             unset($map);
@@ -520,11 +531,13 @@ class DistDriver extends Controller {
                 $status = $s['status'];
                 $msg = ($status === -1) ? '签收成功,配送单状态更新失败' : '签收成功';
             }
-            //给母账户发送短信
-            $sA = A('Tms/SignIn', 'Logic');
-            $sres = $sA->sendParentAccountMsg($orderInfo['info']);
-            if (!empty($reject_detail)) {
-                $rres = $sA->sendRejectMsg($orderInfo['info'], $reject_detail);
+            if (empty($cRes['res']) && $cRes['status'] == 0) {
+                //给母账户发送短信
+                $sA = A('Tms/SignIn', 'Logic');
+                $sres = $sA->sendParentAccountMsg($orderInfo['info']);
+                if (!empty($reject_detail)) {
+                    $rres = $sA->sendRejectMsg($orderInfo['info'], $reject_detail);
+                }
             }
             $json = array('status' => $status, 'msg' => $msg);
             //status:－1(更新失败或未执行更新);0(更新成功);
@@ -557,7 +570,8 @@ class DistDriver extends Controller {
 
     //客户退货
     public function reject() {
-        $map['suborder_id'] = I('post.id/d',0);
+        $refer_code = I('post.id/d',0);
+        $map['suborder_id'] = $refer_code;
         $map['status'] = '7';
         $map['sign_msg'] = I('post.sign_msg');
         $map['cur']['name'] = '司机'.session('user.username').session('user.mobile');
@@ -571,6 +585,7 @@ class DistDriver extends Controller {
             $this->ajaxReturn($res);
         }
         $cA = A('Common/Order','Logic');
+        $cRes = $cA->checkDid(array('suborder_ids' => array($refer_code)));
         $res = $cA->set_status($map);
         if($res['status'] === 0) {
             $orderInfo = $cA->getOrderInfoByOrderId($map['suborder_id']);
@@ -664,7 +679,7 @@ class DistDriver extends Controller {
                 );
             }
             //发送短信
-            if ($reasons) {
+            if ($reasons && empty($cRes['res']) && $cRes['status'] == 0) {
                 $sres = $sA->sendRejectMsg($orderInfo['info'], $bill_details, $reasons);
             }
         }
