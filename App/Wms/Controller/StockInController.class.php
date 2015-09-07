@@ -889,6 +889,7 @@ class StockInController extends CommonController {
                 $has_source_batch=false;
                 $batch = $refer_code;
             }
+            
             $pro_code = $stock_bill_in_detail_info['pro_code'];
             $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['done_qty'];
             $pro_uom = $stock_bill_in_detail_info['pro_uom'];
