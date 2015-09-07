@@ -848,6 +848,9 @@ class StockInController extends CommonController {
             if(bccomp($prepare_qty[$k], $done_qty[$k], 2) == -1){
                 $this->msgReturn(0,'上架量不能大于等于待上架量');
             }
+            if(bccomp($done_qty[$k], 0, 2) == -1){
+                $this->msgReturn(0,'上架量不能小于零');
+            }
             $post_data[$pro_code[$k].$batch[$k]]['batch'] = $batch[$k];
             $post_data[$pro_code[$k].$batch[$k]]['done_qty'] = $done_qty[$k];
             $post_data[$pro_code[$k].$batch[$k]]['product_date'] = $product_date[$k];
@@ -890,11 +893,16 @@ class StockInController extends CommonController {
                 $batch = $refer_code;
             }
             
+            //如果上架量为0 continue
+            if(bccomp($post_data[$stock_bill_in_detail_info['pro_code'].$batch]['done_qty'], 0, 2) == 0){
+                continue;
+            }
+            
             $pro_code = $stock_bill_in_detail_info['pro_code'];
             $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['done_qty'];
             $pro_uom = $stock_bill_in_detail_info['pro_uom'];
             $status = 'qualified';
-            $product_date = date('Y-m-d');
+            $product_date = $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['product_date'];
             $wh_id = session('user.wh_id');
             $location_id = $rev_location_info['id'];
             //直接上架
@@ -914,7 +922,7 @@ class StockInController extends CommonController {
                 unset($map);
                 $data['price_unit'] = $bill_in_detail_info_from_purchase['price_unit'];
                 $data['pro_code'] = $stock_bill_in_detail_info['pro_code'];
-                $data['pro_qty'] = $stock_bill_in_detail_info['expected_qty'];
+                $data['pro_qty'] = $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['done_qty'];
                 $data['stock_in_code'] = $bill_in_detail_info_from_purchase['code'];
                 $data['purchase_code'] = $bill_in_detail_info_from_purchase['refer_code'];
                 $data['pro_status'] = $status;
