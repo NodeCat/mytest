@@ -5,7 +5,7 @@
     <h3 class="panel-title">
     <div class="col-lg-4 col-sm-4 col-md-4 col-xs-12">
   <button type="submit" data-title="保存" rel="tooltip"  data-placement="bottom" class="btn btn-sm btn-primary" data-id=""><i class="glyphicon glyphicon-pencil"></i> 保存</button>
-  <a href="{:U('view',array($pk => $data[$pk]))}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
+  <a href="{:U('view',array('id' => $data['id']))}" data-title="放弃更改" rel="tooltip" data-placement="bottom" class="btn btn-sm btn-defaul"><i class="glyphicon glyphicon-repeat"></i> 放弃</a>
   </div>
     
       <include file="status-bar" />
