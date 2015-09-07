@@ -748,6 +748,21 @@ class StockInLogic{
             return false;
         }
         $bill_out_m = M('stock_bill_out');
+        //满足拒收入库单stock_bill_in pid 字段加入 pid===配送单id
+        $dist_id = 0;
+        if ($in_type == 7) {
+            $bill_out_id = $bill_out_m->where(array('code'=>$order_code))->getField('id');
+            if (!$bill_out_id) {
+                return false;
+            }
+            $dist_map['is_deleted'] = 0;
+            $dist_map['bill_out_id'] = $bill_out_id;
+            $dist_id_res = M('stock_wave_distribution_detail')->filed('pid')->where($dist_map)->find();
+            if (!$dist_id_res) {
+                return false;
+            }
+            $dist_id = $dist_id_res['pid'];
+        }
         $out_m = M('stock_bill_out_container');
         $map['b.code'] = array('in', $order_code);
         $map['b.is_deleted'] = 0;
@@ -799,6 +814,7 @@ class StockInLogic{
                         $parent['wh_id']     = $val['wh_id'];
                         $parent['refer_code']= $val['order_code'];
                         $parent['type']      = $in_type;
+                        $parent['pid']       = $dist_id;
                         $tmp_result[$val['order_code']]['parent'] = $parent;
                         if (!isset($tmp_result[$val['order_code']]['sub'])) {
                             $tmp_result[$val['order_code']]['sub'] = array();
@@ -817,6 +833,7 @@ class StockInLogic{
                         $parent['wh_id']     = $val['wh_id'];
                         $parent['refer_code']= $val['order_code'];
                         $parent['type']      = $in_type;
+                        $parent['pid']       = $dist_id;
                         $tmp_result[$val['order_code']]['parent'] = $parent;
                         if (!isset($tmp_result[$val['order_code']]['sub'])) {
                             $tmp_result[$val['order_code']]['sub'] = array();
@@ -865,7 +882,8 @@ class StockInLogic{
             $bill_in['created_user'] = 2;
             $bill_in['updated_user'] = 2;
             $bill_in['created_time'] = date('Y-m-d H:i:s');
-            $bill_in['status'] = 21; //状态 21待入库
+            $bill_in['status']       = 21; //状态 21待入库
+            $bill_in['pid']          = $vos['parent']['pid'];//关联的配送单id
             if($pid = $bill_in_m->add($bill_in)){
                 $process_logic = A('Wms/Process', 'Logic');
                 //插入出库单详细表
