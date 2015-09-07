@@ -66,7 +66,16 @@ class IndexDriver extends Controller {
             else {
                 $user = M('TmsUser')->field('id,username,mobile')->where(array('mobile' => $mobile))->order('created_time DESC')->find();          
                 if ($user) {
-                    $this->redirect('checkSign', array('id' => $user['id']));
+                    //如果当天签到过，跳过验证
+                    $sign = $this->getSign($user['id']);
+                    if ($sign) {
+                        M('tms_sign_list')->save(array('id' => $sign['id'],'updated_time' => get_time()));
+                        $user['wh_id'] = $sign['wh_id'];
+                        session('user',$user);
+                        $this->redirect('delivery');
+                    } else {
+                        $this->redirect('checkSign', array('id' => $user['id']));
+                    }
                 } else {
                     $this->redirect('register',array('mobile' => $mobile));
                 }
@@ -118,6 +127,23 @@ class IndexDriver extends Controller {
         }  
     }
 
+    /**
+     * [getSign 当天签到记录]
+     * @param  [type] $userid [description]
+     * @return [type]         [description]
+     */
+    protected function getSign($userid)
+    {
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['userid'] = $userid;
+        $map['is_deleted'] = '0';
+        $M = M('TmsSignList');
+        //当天签到记录
+        $sign = $M->field('id,wh_id')->order('created_time DESC')->where($map)->find();
+        return $sign;
+    }
     // 个人信息
     public function person(){
         $map['mobile'] = session('user.mobile');
@@ -144,7 +170,8 @@ class IndexDriver extends Controller {
         //验证前先判断用户信息
         $userid = I('param.id/d', 0);
         $user = M('TmsUser')->field('id,username,mobile')->order('created_time DESC')->find($userid);
-        if (empty($userid) || empty($user)) {
+        $sign = $this->getSign($userid);
+        if (empty($userid) || empty($user) || $sign) {
             $this->redirect('login');
         }
         //post请求执行验证过程
@@ -168,22 +195,6 @@ class IndexDriver extends Controller {
                 $this->redirect('delivery');
             } else {
                 $this->error = '签到码错误，请重新输入';
-            }
-        } else {
-            //如果当天签到过，跳过验证
-            $start_date = date('Y-m-d',NOW_TIME);
-            $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
-            $map['userid'] = $userid;
-            $map['is_deleted'] = '0';
-            $M = M('TmsSignList');
-            //当天签到记录
-            $sign = $M->field('id,wh_id')->order('created_time DESC')->where($map)->find();
-            if ($sign) {
-                $M->save(array('id' => $sign['id'],'updated_time' => get_time()));
-                $user['wh_id'] = $sign['wh_id'];
-                session('user',$user); //把用户id、姓名、手机号写入session
-                $this->redirect('delivery');
             }
         }
         $this->id = $userid;
