@@ -137,12 +137,18 @@ class PurchasesLogic{
         foreach ($purchasePrice as $info) {
             if ($info['price_unit'] != $purchaseDetailInfo[$info['id']]['price_unit']) {
                 //记录修改日志
-                $this->createUpdatePriceLog($purchaseId, $info);
+                $back = $this->createUpdatePriceLog($purchaseId, $info);
+                if (!$back) {
+                    return $return;
+                }
                 
                 $map['id'] = $info['id'];
                 $update['price_unit']     = $info['price_unit'];
                 $update['price_subtotal'] = bcmul($info['price_unit'], $purchaseDetailInfo[$info['id']]['pro_qty']);
-                M('stock_purchase_detail')->where($map)->save($update);
+                $affected = M('stock_purchase_detail')->where($map)->save($update);
+                if (!$affected) {
+                    return $return;
+                }
         
                 $price_total = bcadd($price_total, $update['price_subtotal']);
                 unset($map);
@@ -156,7 +162,10 @@ class PurchasesLogic{
         //更新总金额
         $map['id'] = $purchaseId;
         $updateMain['price_total'] = $price_total;
-        M('stock_purchase')->where($map)->save($updateMain);
+        $affectedRow = M('stock_purchase')->where($map)->save($updateMain);
+        if (!$affectedRow) {
+            return $return;
+        }
         
         //如果存在冲红单则更新冲红单总金额
         $where['stock_purchase.id'] = $purchaseId;
@@ -169,7 +178,10 @@ class PurchasesLogic{
         if (!empty($purchaseRefund)) {
             $map['id'] = $purchaseRefund['id'];
             $data['erp_purchase_refund.price_total'] = $price_total;
-            M('erp_purchase_refund')->where($where)->save($data);
+            $updateLine = M('erp_purchase_refund')->where($where)->save($data);
+            if (!$updateLine) {
+                return $return;
+            }
         }   
         
         return $return;
@@ -250,7 +262,10 @@ class PurchasesLogic{
             $update['price_unit'] = $value['price_unit'];
             $update['price_subtotal'] = bcmul($info['pro_qty'], $value['price_unit'], 2);
             
-            $M->where($map)->save($update);
+            $affected = $M->where($map)->save($update);
+            if (!$affected) {
+                return $return;
+            }
             unset($map);
             unset($update);
         }
@@ -293,7 +308,10 @@ class PurchasesLogic{
             //更新价格
             $map['id'] = $purchaseRefund['id'];
             $update['price_unit'] = $value['price_unit'];
-            M('erp_purchase_refund_detail')->where($map)->save($update);
+            $affected = M('erp_purchase_refund_detail')->where($map)->save($update);
+            if (!$affected) {
+                return $return;
+            }
             unset($map);
             unset($update);
         }
@@ -313,11 +331,16 @@ class PurchasesLogic{
             
             $where['id'] = $refundId;
             $purchaseRefundInfo = D('erp_purchase_refund')->where($where)->find();
-            
+            if (empty($purchaseRefundInfo)) {
+                return $return;
+            }
             unset($where);
             $where['id'] = $purchaseRefund['id'];
             $data['price_total'] = bcsub($purchaseRefundInfo['price_total'], $tmp, 2);
-            D('erp_purchase_refund')->where($where)->save($data);
+            $updateLine = D('erp_purchase_refund')->where($where)->save($data);
+            if (!$updateLine) {
+                return $return;
+            }
             
         }
         $return = true;
@@ -357,7 +380,10 @@ class PurchasesLogic{
             $map['id'] = $info['id'];
             $update['price_unit'] = $value['price_unit'];
         
-            $M->where($map)->save($update);
+            $affected = $M->where($map)->save($update);
+            if (!$affected) {
+                return $return;
+            }
             unset($map);
             unset($update);
         }
