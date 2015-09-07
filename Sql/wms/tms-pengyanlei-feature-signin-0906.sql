@@ -1,0 +1,2 @@
+ALTER TABLE  `stock_bill_out_detail` ADD  `unit_id` VARCHAR( 45 ) NOT NULL DEFAULT  '' COMMENT  '计量单位' AFTER  `price` ;
+ALTER TABLE  `stock_bill_out_detail` ADD  `close_unit` VARCHAR( 45 ) NOT NULL DEFAULT  '' COMMENT  '计价单位' AFTER `unit_id` ;
