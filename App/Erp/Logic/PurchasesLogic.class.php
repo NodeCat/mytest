@@ -457,7 +457,7 @@ class PurchasesLogic{
         $M = M('erp_settlement');
         $map['stock_purchase.id'] = $purchaseId;
         //采购单
-        $settlement = M('erp_settlement')
+        $settlement = $M
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
             ->join('stock_purchase ON stock_purchase.code=erp_settlement_detail.order_code')
             ->where($map)
@@ -481,10 +481,11 @@ class PurchasesLogic{
         //入库单
         $purchaseIn = $M
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
-            ->join('erp_purchase_in_detail ON erp_purchase_in_detail.code=erp_settlement_detail.order_code')
-            ->join('stock_purchase ON stock_purchase.code=erp_purchase_in.refer_code')
+            ->join('erp_purchase_in_detail ON erp_purchase_in_detail.stock_in_code=erp_settlement_detail.order_code')
+            ->join('stock_purchase ON stock_purchase.code=erp_purchase_in_detail.purchase_code')
             ->where($map)
         ->find();
+        
         if (!empty($purchaseIn) && $purchaseIn['status'] != 11) {
             $return = true;
             return $return;
@@ -497,6 +498,7 @@ class PurchasesLogic{
             ->join('stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code')
             ->where($map)
             ->find();
+        
         if (!empty($refund) && $refund['status'] != 11) {
             $return = true;
             return $return;
@@ -505,8 +507,8 @@ class PurchasesLogic{
         //退货单
         $purchaseOut = $M
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
-            ->join('erp_purchase_out ON erp_purchase_out.code=erp_settlement_detail.order_code')
-            ->join('stock_purchase ON stock_purchase.code=erp_purchase_out.refer_code')
+            ->join('stock_purchase_out ON stock_purchase_out.code=erp_settlement_detail.order_code')
+            ->join('stock_purchase ON stock_purchase.code=stock_purchase_out.refer_code')
             ->where($map)
             ->find();
         if (!empty($purchaseOut) && $purchaseOut['status'] != 11) {
