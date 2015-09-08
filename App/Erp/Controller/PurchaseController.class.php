@@ -1032,13 +1032,9 @@ class PurchaseController extends CommonController {
             }
             
             //已经生成结算单的不可编辑价格
-            $map['stock_purchase.id'] = $purchaseId; 
-            $settlementStatus = M('erp_settlement')
-                ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
-                ->join('stock_purchase ON stock_purchase.code=erp_settlement_detail.order_code')
-                ->where($map)
-                ->find();
-            if (!empty($settlementStatus) && $settlementStatus['status'] != 11) {
+            $isCreatedSettlment = D('Purchases', 'Logic')->checkoutIsCreatedSettment($purchaseId);
+            
+            if ($isCreatedSettlment) {
                 $this->msgReturn(false, '此采购单已生成结算单，如果需要修改价格请先作废结算单');
             }
             //验证价格
