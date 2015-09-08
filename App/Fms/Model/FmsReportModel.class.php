@@ -19,7 +19,7 @@ class FmsReportModel extends Model
                 "inner join stock_bill_out bill on bill.id = detail.bill_out_id and bill.is_deleted = 0",
             ),
             "field"=>"concat(stock_wave_distribution.payment_user, ',',date(stock_wave_distribution.payment_time)) as id,
-                      count(stock_wave_distribution.id) as dist_count, stock_wave_distribution.payment_user, date(stock_wave_distribution.payment_time) payment_date,
+                      count(distinct stock_wave_distribution.id) as dist_count, stock_wave_distribution.payment_user, date(stock_wave_distribution.payment_time) payment_date,
                       count(detail.id) as order_count, sum(detail.wipe_zero) as wipezero_sum, sum(detail.deposit) as deposit_sum, 
                      sum(detail.receivable_sum) as receivable_sum, 
                      sum(case

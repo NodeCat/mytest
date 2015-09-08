@@ -62,7 +62,7 @@ class FmsReportController extends \Common\Controller\CommonController
                                     "date(payment_time) = '".$para[1]."'",
                                     'stock_wave_distribution.is_deleted = 0',
                                     ))
-                        ->join(array('left join stock_wave_distribution_detail detail on detail.pid = stock_wave_distribution.id and detail.is_deleted = 0',
+                        ->join(array('inner join stock_wave_distribution_detail detail on detail.pid = stock_wave_distribution.id and detail.is_deleted = 0',
                                      'inner join stock_bill_out bill on bill.id = detail.bill_out_id and bill.is_deleted = 0',))
                         ->group('bill.refer_code,stock_wave_distribution.id, detail.pay_type')
                         ->getField('bill.refer_code, stock_wave_distribution.id, detail.pay_type, sum(bill.total_amount) as final_price, sum(detail.real_sum) as deal_price');
