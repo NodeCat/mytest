@@ -419,7 +419,6 @@ function f_div($left,$right,$scale = 2){
     return $resutl;
 }
 
-
 /**
  * formatMoney 小数点保留几位后面抹掉
  * @param Float $number 处理的数据
@@ -449,5 +448,3 @@ function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
     return $return_str;
 
 }
-
-

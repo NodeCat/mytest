@@ -280,7 +280,8 @@ class StockInLogic{
 
     }
 
-    public function in($inId,$code,$qty) {
+    //$inId 入库到货单id $code 商品编号 $qty 收货量 $has_stock_detail_id 入库单详细表id
+    public function in($inId, $code, $qty, $has_stock_detail_id = false) {
         if(empty($inId) || empty($code) || $qty =='') {
             return array('res'=>false,'msg'=>'必填字段不能为空。');
         }
@@ -289,8 +290,11 @@ class StockInLogic{
         }
         $map['pid'] = $inId;
         $map['pro_code'] = $code;
+        if ($has_stock_detail_id) {
+            $map['id'] = $has_stock_detail_id;
+        }
 
-        //出库详细表中加入批次条件，有能一个sku_code对应两个批次
+        //出库详细表中加入批次条件，一个sku_code对应两个批次
         //首先判断用户要收货的数量是否大于总可验收数量；
         $bill_in_detail_m = M('stock_bill_in_detail');
         $cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(receipt_qty)) as qtyForCanInC')->where($map)->select();
@@ -298,6 +302,7 @@ class StockInLogic{
         if ($cate_qty_r) {
             $cate_qty = $cate_qty_r['0']['qtyforcaninc'];
         }
+
         if (empty($cate_qty) || $cate_qty < $qty) {
                 return array('res'=>false,'msg'=>'验收数量不能大于可验收数量。');
         }
@@ -337,6 +342,7 @@ class StockInLogic{
             // $ined == 2 不可以验收 待上架 等于1时候 可以验收
             if($ined == 2) { //
                 $data['status'] = '31';
+                $map = array();
                 $map['id'] = $inId;
                 $map['status'] = '21';
                 $map['is_deleted'] = 0;
