@@ -109,7 +109,7 @@ class DispatchController extends \Common\Controller\AuthController{
         $lines = implode('、',array_filter($line));
         $this->lines = $lines;
         $key = $id.$mobile;
-        $location = S(md5($key));
+        $location = S($key);
         $A = A('Tms/List','Logic');
         $customerAddress = $A->getCustomerAddress($mobile,$id);
         // dump($customerAddress);exit;
