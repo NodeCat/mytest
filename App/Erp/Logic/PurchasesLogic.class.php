@@ -254,7 +254,7 @@ class PurchasesLogic{
                 ->where($map)
                 ->find();
             if (empty($info)) {
-                return $return;
+                continue;
             }
             unset($map);
             //小计
