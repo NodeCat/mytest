@@ -66,7 +66,16 @@ class IndexDriver extends Controller {
             else {
                 $user = M('TmsUser')->field('id,username,mobile')->where(array('mobile' => $mobile))->order('created_time DESC')->find();          
                 if ($user) {
-                    $this->redirect('checkSign', array('id' => $user['id']));
+                    //如果当天签到过，跳过验证
+                    $sign = $this->getSign($user['id']);
+                    if ($sign) {
+                        M('tms_sign_list')->save(array('id' => $sign['id'],'updated_time' => get_time()));
+                        $user['wh_id'] = $sign['wh_id'];
+                        session('user',$user);
+                        $this->redirect('delivery');
+                    } else {
+                        $this->redirect('checkSign', array('id' => $user['id']));
+                    }
                 } else {
                     $this->redirect('register',array('mobile' => $mobile));
                 }
@@ -118,6 +127,23 @@ class IndexDriver extends Controller {
         }  
     }
 
+    /**
+     * [getSign 当天签到记录]
+     * @param  [type] $userid [description]
+     * @return [type]         [description]
+     */
+    protected function getSign($userid)
+    {
+        $start_date = date('Y-m-d',NOW_TIME);
+        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $map['created_time'] = array('between',$start_date.','.$end_date);
+        $map['userid'] = $userid;
+        $map['is_deleted'] = '0';
+        $M = M('TmsSignList');
+        //当天签到记录
+        $sign = $M->field('id,wh_id')->order('created_time DESC')->where($map)->find();
+        return $sign;
+    }
     // 个人信息
     public function person(){
         $map['mobile'] = session('user.mobile');
@@ -144,7 +170,8 @@ class IndexDriver extends Controller {
         //验证前先判断用户信息
         $userid = I('param.id/d', 0);
         $user = M('TmsUser')->field('id,username,mobile')->order('created_time DESC')->find($userid);
-        if (empty($userid) || empty($user)) {
+        $sign = $this->getSign($userid);
+        if (empty($userid) || empty($user) || $sign) {
             $this->redirect('login');
         }
         //post请求执行验证过程
@@ -168,22 +195,6 @@ class IndexDriver extends Controller {
                 $this->redirect('delivery');
             } else {
                 $this->error = '签到码错误，请重新输入';
-            }
-        } else {
-            //如果当天签到过，跳过验证
-            $start_date = date('Y-m-d',NOW_TIME);
-            $end_date = date('Y-m-d',strtotime('+1 Days'));
-            $map['created_time'] = array('between',$start_date.','.$end_date);
-            $map['userid'] = $userid;
-            $map['is_deleted'] = '0';
-            $M = M('TmsSignList');
-            //当天签到记录
-            $sign = $M->field('id,wh_id')->order('created_time DESC')->where($map)->find();
-            if ($sign) {
-                $M->save(array('id' => $sign['id'],'updated_time' => get_time()));
-                $user['wh_id'] = $sign['wh_id'];
-                session('user',$user); //把用户id、姓名、手机号写入session
-                $this->redirect('delivery');
             }
         }
         $this->id = $userid;
@@ -289,39 +300,28 @@ class IndexDriver extends Controller {
                 }
             }
         }
-        
         //若查出的出库单信息非空
         if(!empty($stock_bill_out)){
+
             $Min = D('Wms/StockIn');    //实例化Ｗms的入库单模型
             for($n = 0; $n < count($stock_bill_out); $n++){
+                $order_infos = array();
                 //若已经创建过拒收入库单
                 unset($map);
                 $map['refer_code'] = $stock_bill_out[$n]['code'];
                 $map['is_deleted'] = 0;
-                $bill_in = M('stock_bill_in')->where($map)->find();
+                $bill_in = M('stock_bill_in')->where($map)->find();                
                 if ($bill_in) {
                     continue;
                 }
-                //创建拒收入库单
-                unset($bill);
-                $bill['pid'] = $dist_id;
-                $bill['refer_code'] = $stock_bill_out[$n]['code'];//关联单据为出库单号
-                $bill['code'] = get_sn('rejo');   //生成拒收入库单号
-                $bill['status'] = '21';     //待收货状态
-                $bill['batch_code'] = '';//get_batch($bill['code']); //获得批次
-                $bill['wh_id'] = $stock_bill_out[$n]['wh_id'];  //仓库id
-                $bill['company_id'] = $stock_bill_out[$n]['company_id'];   
-                $bill['partner_id'] = '';   //供应商
-                $bill['type'] = 7;  //入库类型为拒收入库单
-                $bill['created_user'] = 2;   //uid默认为2
-                $bill['created_time'] = get_time();
-                $bill['updated_user'] = 2;   //uid默认为2
-                $bill['updated_time'] = get_time();
+                $order_infos['order_number'] = $stock_bill_out[$n]['code'];
+                $order_infos['sku_info'] = array();
                 unset($map);
                 $map['pid'] = $stock_bill_out[$n]['id'];
                 $map['is_deleted'] = 0;
                 //根据出库单id查询出所有出库单详情信息
                 $bill_out_detail = $stock_bill_out[$n]['detail'];
+
                 if(!empty($bill_out_detail)){
                     $A = A('Tms/List','Logic');
                     foreach ($bill_out_detail as $key => $val) {
@@ -339,15 +339,11 @@ class IndexDriver extends Controller {
                                 if(!empty($sign_data)) {
                                     $real_sign_qty = $sign_data[0]['real_sign_qty']; //签收数量
                                 }
-                                //获得最久远的批次
-                                $batch = $A->get_long_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
 
                             case '3':
                                 //若已经拒收
                                 $real_sign_qty = 0;
-                                //获得最近的批次
-                                $batch = $A->get_lasted_batch($stock_bill_out[$n]['code'],$val['pro_code']);
                                 break;
                         
                             default:
@@ -359,39 +355,14 @@ class IndexDriver extends Controller {
                         if(($val['delivery_qty'] - $real_sign_qty) <= 0){
                             continue;
                         }
-                        $v['pro_code'] = $val['pro_code'];
-                        $v['pro_name'] = $val['pro_name'];
-                        $v['pro_attrs'] = $val['pro_attrs'];
-                        $v['pro_uom'] = isset($val['measure_unit']) ? $val['measure_unit'] : '';     //计量单位
-                        $v['expected_qty'] = $val['delivery_qty'] - $real_sign_qty; //写入预期入库数量
-                        $v['prepare_qty'] = 0;
-                        $v['done_qty'] = 0;
-                        $v['wh_id'] = $bill['wh_id'];
-                        $v['refer_code'] = $bill['refer_code']; //写入相关联的出库单号
-                        $v['pid'] = $bill['id'];
-                        $v['price_unit'] = isset($val['price']) ? $val['price'] : 0;  //单价
-                        $v['created_time'] = get_time();
-                        $v['updated_time'] = get_time();
-                        $v['created_user'] = 2;   //uid默认为2
-                        $v['updated_user'] = 2;   //uid默认为2
-                        $v['batch'] = isset($batch) ? $batch : '';
-                        $bill['detail'][] = $v;
-                        
-                        $container['refer_code'] = $bill['code'];   //关联拒收入库单号
-                        $container['pro_code'] = $val['pro_code'];
-                        $container['batch'] = isset($batch) ? $batch : '';
-                        $container['wh_id'] = $bill['wh_id'];
-                        $container['location_id'] = '';
-                        $container['qty'] = $v['expected_qty'];
-                        $container['created_time'] = get_time();
-                        $container['updated_time'] = get_time();
-                        $container['created_user'] = 2;   //uid默认为2
-                        $container['updated_user'] = 2;   //uid默认为2
-                        $M = M('stock_bill_in_container');
-                        $s = $M->add($container);    //写入拒收入库单详情表的详情表
-                    }  
-                    if(!empty($bill['detail'])){
-                        $res = $Min->relation('detail')->add($bill); //写入拒收入库单 
+                        $pro_code_info = array();
+                        $pro_code_info['code'] = $val['pro_code'];
+                        $pro_code_info['qty'] = $val['delivery_qty'] - $real_sign_qty; //写入预期入库数量
+                        array_push($order_infos['sku_info'], $pro_code_info);
+                    }
+                    //调取wms生产拒收入库单代码
+                    if(!empty($order_infos['sku_info'])){
+                        $res = A('Wms/StockIn', 'Logic')->unBackStockIn($order_infos);//写入拒收入库单 
                     }  
                 }       
             }
