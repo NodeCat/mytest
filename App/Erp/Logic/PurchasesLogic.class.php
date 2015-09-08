@@ -320,11 +320,15 @@ class PurchasesLogic{
             $where['pid'] = $refundId;
             $purchaseRefundDetail = M('erp_purchase_refund_detail')->where($where)->select();
             
+            //计算总价格
+            $totalPrice = 0;
             //计算待退价格
-            $tmp = 0;
+            $backPrice  = 0;
             foreach($purchaseRefundDetail as $val){
-                $tmp = bcadd($tmp, bcmul($val['qualified_qty'], $val['price_unit'], 2), 2);
+                $totalPrice = bcadd($totalPrice, bcmul($val['qualified_qty'], $val['price_unit'], 2), 2);
+                $backPrice  = bcadd($backPrice, bcmul(bcsub($val['expected_qty'], $val['qualified_qty'], 2), $val['price_unit'], 2));
             }
+            
             
             unset($where);
             
@@ -336,7 +340,8 @@ class PurchasesLogic{
             
             unset($where);
             $where['id'] = $refundId;
-            $data['price_total'] = bcsub($purchaseRefundInfo['price_total'], $tmp, 2);
+            $data['price_total']     = $totalPrice;
+            $data['for_paid_amount'] = $backPrice;
             
             $updateLine = D('erp_purchase_refund')->where($where)->save($data);
             if (!$updateLine) {
