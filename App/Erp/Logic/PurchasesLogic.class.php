@@ -458,6 +458,7 @@ class PurchasesLogic{
         $map['stock_purchase.id'] = $purchaseId;
         //采购单
         $settlement = $M
+            ->field('erp_settlement.*')
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
             ->join('stock_purchase ON stock_purchase.code=erp_settlement_detail.order_code')
             ->where($map)
@@ -468,6 +469,7 @@ class PurchasesLogic{
         }
         //到货单
         $stockBillIn = $M
+            ->field('erp_settlement.*')
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
             ->join('stock_bill_in ON stock_bill_in.code=erp_settlement_detail.order_code')
             ->join('stock_purchase ON stock_purchase.code=stock_bill_in.refer_code')
@@ -477,15 +479,14 @@ class PurchasesLogic{
             $return = true;
             return $return;
         }
-        
         //入库单
         $purchaseIn = $M
+            ->field('erp_settlement.*')
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
             ->join('erp_purchase_in_detail ON erp_purchase_in_detail.stock_in_code=erp_settlement_detail.order_code')
             ->join('stock_purchase ON stock_purchase.code=erp_purchase_in_detail.purchase_code')
             ->where($map)
         ->find();
-        
         if (!empty($purchaseIn) && $purchaseIn['status'] != 11) {
             $return = true;
             return $return;
@@ -493,12 +494,12 @@ class PurchasesLogic{
         
         //冲红单
         $refund = $M
+            ->field('erp_settlement.*')
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
             ->join('erp_purchase_refund ON erp_purchase_refund.code=erp_settlement_detail.order_code')
             ->join('stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code')
             ->where($map)
             ->find();
-        
         if (!empty($refund) && $refund['status'] != 11) {
             $return = true;
             return $return;
@@ -506,8 +507,9 @@ class PurchasesLogic{
         
         //退货单
         $purchaseOut = $M
+            ->field('erp_settlement.*')
             ->join('erp_settlement_detail ON erp_settlement_detail.code=erp_settlement.code')
-            ->join('stock_purchase_out ON stock_purchase_out.code=erp_settlement_detail.order_code')
+            ->join('stock_purchase_out ON stock_purchase_out.rtsg_code=erp_settlement_detail.order_code')
             ->join('stock_purchase ON stock_purchase.code=stock_purchase_out.refer_code')
             ->where($map)
             ->find();
