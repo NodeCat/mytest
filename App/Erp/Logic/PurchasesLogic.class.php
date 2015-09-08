@@ -315,7 +315,6 @@ class PurchasesLogic{
             unset($map);
             unset($update);
         }
-        
         if ($refundId > 0) {
             //获取修改后的详情
             $where['pid'] = $refundId;
@@ -334,9 +333,11 @@ class PurchasesLogic{
             if (empty($purchaseRefundInfo)) {
                 return $return;
             }
+            
             unset($where);
-            $where['id'] = $purchaseRefund['id'];
+            $where['id'] = $refundId;
             $data['price_total'] = bcsub($purchaseRefundInfo['price_total'], $tmp, 2);
+            
             $updateLine = D('erp_purchase_refund')->where($where)->save($data);
             if (!$updateLine) {
                 return $return;
