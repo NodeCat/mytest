@@ -266,45 +266,30 @@ class DistDriver extends Controller {
             $map['dist_id'] = $res['dist_id'];
             $map['order'] = 'created_time DESC';
             $A = A('Tms/Dist','Logic');
-            $bills = $A->billOut($map);
-            if($bills) {
-                $orders = $bills['orders'];
-                $this->orderCount = $bills['orderCount'];
+            $orders = $A->bill_list($res['dist_id']);
+            dump($orders);
+            if($orders) {
+                $this->orderCount = count($orders);
                 foreach ($orders as &$val) {
-                    dump($val);die();
-                    //押金
-                    $val['deposit']    = $val['order_info']['deposit'];
                     //获取支付状态的中文
-                    $s = $A->getPayStatusByCode($val['order_info']['pay_status']);
-                    $val['pay_status'] = $s;
-                    $val['pay_type']   = $val['order_info']['pay_type'];
-                    $val['order_info']['pay_status'] = $s;
+                    $val['pay_status_cn'] = $A->getPayStatusByCode($val['pay_status']);
                     //从订单获取字段到出库单
-                    $val['shop_name']       = $val['order_info']['shop_name'];
-                    $val['mobile']          = $val['order_info']['mobile'];
-                    $val['remarks']         = $val['order_info']['remarks'];
-                    // $val['status_cn']    = '已装车';
-                    $val['status_cn']       = $val['order_info']['status_cn'];
-                    $val['total_price']     = $val['order_info']['total_price'];
-                    $val['minus_amount']    = $val['order_info']['minus_amount'];
-                    $val['pay_reduce']      = $val['order_info']['pay_reduce'];
-                    $val['deliver_fee']     = $val['order_info']['deliver_fee'];
-                    $val['final_price']     = $val['order_info']['final_price'];
-                    $val['receivable_sum']  = $val['order_info']['final_price'];
-                    if ($val['pay_status'] == '已付款' || $val['pay_type'] == 2) {
-                        $val['real_sum']   = $val['order_info']['final_price'];
+                    $val['status_cn']       = $A->getOrderStatusByCode($val['status']);
+                    $val['final_price']     = $val['total_amount'] - $val['minus_amount'] - $val['pay_reduce'] - $val['deposit'] + $val['deliver_fee'];
+                    $val['receivable_sum']  = $val['final_price'];
+                    if ($val['pay_status'] == '1' || $val['pay_type'] == 2) {
+                        $val['real_sum']   = $val['final_price'];
                     } else {
-                       $val['real_sum']    = $A->wipeZero($val['order_info']['final_price']);
+                       $val['real_sum']    = $A->wipeZero($val['final_price']);
                     }
-                    $val['sign_msg']        = $val['order_info']['sign_msg'];
-                    $val['user_id']         = $val['order_info']['user_id'];
+                    $val['user_id']         = $val['customer_id'];
                     //收获地址坐标
-                    $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
+                    $val['geo'] = json_decode($val['customer_info']['geo'],TRUE);
                     $sign_in = $M->table('stock_wave_distribution_detail')
-                        ->where(array('bill_out_id' => $val['id']))
+                        ->where(array('bill_out_id' => $val['bid']))
                         ->find();
-                    foreach ($val['detail'] as &$v) {
-                        if($val['status_cn'] == '已签收' || $val['status_cn'] == '已完成' || $val['status_cn'] == '已回款') {
+                    foreach ($val['bill_details'] as &$v) {
+                        if($val['status'] == '2' || $val['status'] == '3') {
                             //该出库单详情对应的签收数据
                             $dmap['bill_out_detail_id'] = $v['id'];
                             $dmap['is_deleted'] = 0;

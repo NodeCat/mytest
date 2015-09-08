@@ -45,7 +45,7 @@
         <div class="list-group-item list-group-item-inf">
           <h4 class="list-group-item-heading">
             <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
-              【{$vo.shop_name}】{$vo.delivery_address}
+              【{$vo.customer_info.shop_name}】{$vo.delivery_address}
               <i class="glyphicon glyphicon-map-marker">
               </i>
               <span>
@@ -173,7 +173,7 @@
                 <span class="input-group-addon">
                   订单 ¥
                   <span class="p_total">
-                    {$vo.total_price}
+                    {$vo.total_amount}
                   </span>
                   元
                 </span>

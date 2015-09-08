@@ -38,6 +38,31 @@ class DistLogic {
         return false;
     }
 
+    public function bill_list($dist_id)
+    {
+        if (empty($dist_id)) {
+            return false;
+        }
+        if (is_array($dist_id)) {
+            $map['pid'] = array('in', $dist_id);
+        } else {
+            $map['pid'] = $dist_id;
+        }
+        $map['is_deleted'] = 0;
+        $list = D('DistDetail')->relation('StockOut')->where($map)->select();
+        $res = array();
+        $cA = A('Common/Order', 'Logic');
+        $dmap['is_deleted'] = 0;
+        foreach ($list as $value) {
+            if ($value['bid']) {
+                $dmap['pid'] = $value['bid'];
+                $value['bill_details'] = M('stock_bill_out_detail')->where($dmap)->select();
+                $value['customer_info'] = $cA->customer(array('id' => $value['customer_id']));
+                $res[] = $value;
+            }
+        }
+        return $res;
+    }
     /**
      * [getPayStatusByCode 根据支付状态码获取中文状态]
      * @param  [type] $code [description]
@@ -54,6 +79,39 @@ class DistLogic {
                 break;
             case 1:
                 $s = '已付款';
+                break;
+            default:
+                $s = '';
+                break;
+        }
+        return $s;
+    }
+
+    /**
+     * [getPayStatusByCode 根据状态码获取订单配送状态]
+     * @param  [type] $code [description]
+     * @return [type]       [description]
+     */
+    public function getOrderStatusByCode($code)
+    {
+        switch ($code) {
+            case '0':
+                $s = '已分拨';
+                break;
+            case '1':
+                $s = '已装车';
+                break;
+            case '2':
+                $s = '已签收';
+                break;
+            case '3':
+                $s = '已拒收';
+                break;
+            case '4':
+                $s = '已完成';
+                break;
+            case '5':
+                $s = '已发运';
                 break;
             default:
                 $s = '';
