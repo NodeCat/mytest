@@ -1,0 +1,45 @@
+<form class="form-horizontal form-view" action="{:U('edit')}" method="post" id='form'>
+<div class="panel panel-default">
+  <div class="panel-body">
+  	<div class="row">
+		<div class="col-lg-10"><h3>结算明细： {$payment_date}</h3></div>
+    </div>
+
+  	<hr/>
+  	
+<div class="row">
+    <div class="col-lg-12">
+<table class="data-table table table-bordered table-striped table-condensed table-hover">
+    <caption>{$payment_date} 结算明细</caption>
+    <thead>
+        <tr>
+            <th>订单id</th><th>提货码</th><th>支付方式</th><th>订单金额</th><th>实际成交金额</th>
+        </tr>
+    </thead>
+    <tbody>
+        <volist name="data" id="vo">
+        <tr>
+            <td><a href="{:U('Order/index',array('id'=>$vo['refer_code']))}" target="_blank">{$vo.refer_code}</a></td>
+            <td><a href="{:U('Fms/orders',array('id'=>$vo['id']))}" target="_blank">{$vo.id}</a></td>
+            <td><switch name="vo.pay_type">
+                <case value="0" break="1">货到付款</case>
+                <case value="1" break="1">微信支付</case>
+                <case value="2" break="1">账期支付</case>
+                </switch>
+            </td>
+            <td>{$vo.final_price}</td>
+            <td>{$vo.deal_price}</td>
+        </tr>
+        </volist>
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3" align="center">合计</td><td>{$final_price_total}</td><td>{$deal_price_total}</td>
+        </tr>
+    </tfoot>
+</table>
+    </div>
+</div>
+</div>
+</div>
+</form>
