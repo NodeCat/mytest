@@ -456,6 +456,7 @@ class PurchasesLogic{
         
         $M = M('erp_settlement');
         $map['stock_purchase.id'] = $purchaseId;
+        $map['erp_settlement.status'] = array('neq', 11);
         //采购单
         $settlement = $M
             ->field('erp_settlement.*')
@@ -463,7 +464,7 @@ class PurchasesLogic{
             ->join('stock_purchase ON stock_purchase.code=erp_settlement_detail.order_code')
             ->where($map)
             ->find();
-        if (!empty($settlement) && $settlement['status'] != 11) {
+        if (!empty($settlement)) {
             $return = true;
             return $return;
         }
@@ -475,7 +476,7 @@ class PurchasesLogic{
             ->join('stock_purchase ON stock_purchase.code=stock_bill_in.refer_code')
             ->where($map)
             ->find();
-        if (!empty($stockBillIn) && $stockBillIn['status'] != 11) {
+        if (!empty($stockBillIn)) {
             $return = true;
             return $return;
         }
@@ -487,7 +488,7 @@ class PurchasesLogic{
             ->join('stock_purchase ON stock_purchase.code=erp_purchase_in_detail.purchase_code')
             ->where($map)
         ->find();
-        if (!empty($purchaseIn) && $purchaseIn['status'] != 11) {
+        if (!empty($purchaseIn)) {
             $return = true;
             return $return;
         }
@@ -500,7 +501,7 @@ class PurchasesLogic{
             ->join('stock_purchase ON stock_purchase.code=erp_purchase_refund.refer_code')
             ->where($map)
             ->find();
-        if (!empty($refund) && $refund['status'] != 11) {
+        if (!empty($refund)) {
             $return = true;
             return $return;
         }
@@ -513,7 +514,8 @@ class PurchasesLogic{
             ->join('stock_purchase ON stock_purchase.code=stock_purchase_out.refer_code')
             ->where($map)
             ->find();
-        if (!empty($purchaseOut) && $purchaseOut['status'] != 11) {
+        
+        if (!empty($purchaseOut)) {
             $return = true;
             return $return;
         }
