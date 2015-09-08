@@ -145,7 +145,7 @@ class DispatchtaskController extends \Common\Controller\AuthController
                 $M = M('tms_dispatch_task');
                 $id = $M->add($data);
                 if ($id) {
-                    $cdata = array('code' => 'D' . $id);
+                    $cdata = array('code' => 'T' . $id);
                     $M->where(array('id'=>$id))->save($cdata);
                     //任务节点数据
                     $task_node = $rdata['nodes'][$key];
