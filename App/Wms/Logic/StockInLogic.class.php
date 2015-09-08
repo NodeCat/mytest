@@ -757,7 +757,7 @@ class StockInLogic{
             }
             $dist_map['is_deleted'] = 0;
             $dist_map['bill_out_id'] = $bill_out_id;
-            $dist_id_res = M('stock_wave_distribution_detail')->filed('pid')->where($dist_map)->find();
+            $dist_id_res = M('stock_wave_distribution_detail')->field('pid')->where($dist_map)->find();
             if (!$dist_id_res) {
                 return false;
             }
