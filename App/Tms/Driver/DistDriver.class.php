@@ -271,6 +271,7 @@ class DistDriver extends Controller {
                 $orders = $bills['orders'];
                 $this->orderCount = $bills['orderCount'];
                 foreach ($orders as &$val) {
+                    dump($val);die();
                     //押金
                     $val['deposit']    = $val['order_info']['deposit'];
                     //获取支付状态的中文
