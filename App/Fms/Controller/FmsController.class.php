@@ -168,6 +168,8 @@ class FmsController extends \Common\Controller\AuthController{
         $map['is_deleted'] = 0;
         $data['status'] = 4; //已结算
         $data['deal_price'] = $dist['pay_for_price_total'];
+        $data['payment_user'] = session('user.uid');
+        $data['payment_time'] = get_time();
         $res = $model->table('stock_wave_distribution')->where($map)->save($data);
 
         //回写订单状态
