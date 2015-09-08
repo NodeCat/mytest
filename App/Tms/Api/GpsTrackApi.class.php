@@ -31,7 +31,7 @@ class GpsTrackApi extends CommApi {
             ->field('B.mobile,A.id,A.distance')
             ->where(array('A.id' => $data['id']))
             ->find();
-            $key = $sign_mg['id'].$sign_mg['mobile'];// 键名
+            $key = $sign_mg['id'];// 键名
         }
         if (floatval($sign_mg['distance']) > 0 || floatval($task['distance']) > 0) {
             $data_old = S($key);
