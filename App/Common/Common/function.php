@@ -418,3 +418,33 @@ function f_div($left,$right,$scale = 2){
     $resutl = bcdiv($left, $right, $scale);
     return $resutl;
 }
+
+/**
+ * formatMoney 小数点保留几位后面抹掉
+ * @param Float $number 处理的数据
+ * @param Int $dat 保留几位
+ * @param Int $is_end_str null 返回格式化的数据 不等于null 返回小数点后面的数
+ * @author liuguangping@dachuwang.com
+ * @since 2015-07-17
+ */
+function formatMoney($number = 0, $dot = 2 ,$is_end_str = null)
+{   
+    $pos            = strrpos($number, '.');
+    $enstr          = substr($number,$pos+1);
+    if ($is_end_str !== null) {
+        if ($pos === FALSE) {
+            // 末尾没有小数点
+            return '';
+        }
+        return $enstr;
+    }
+    $return_str     = 0;
+    if (strrpos($number,'.') !== FALSE) {
+      $end_str      = str_pad($enstr,$dot,'0');
+      $return_str   = intval($number) . '.' . substr_replace($end_str, '', $dot);
+    } else {
+      $return_str   = intval($number) . '.' . str_pad('0',$dot,'0');
+    }
+    return $return_str;
+
+}

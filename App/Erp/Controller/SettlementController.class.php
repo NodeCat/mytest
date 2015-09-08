@@ -368,6 +368,11 @@ class SettlementController extends CommonController
                 $code[] = $val['code'];
             }
             $code_array = array_unique($code);
+
+            if(empty($code_array)){
+                $this->ajaxReturn(array());
+            }
+
             $where['erp_settlement_detail.order_code'] = array('in',  $code_array);
             $model  = M('erp_settlement_detail');
             $join   = array('INNER JOIN erp_settlement ON erp_settlement.code=erp_settlement_detail.code AND erp_settlement.status!=11');
@@ -483,6 +488,7 @@ class SettlementController extends CommonController
         foreach($settlement_detail as $key => $val){
             if( $val['order_type'] == 1 ){
                 $purchase[]       = $val['order_code'];
+                $purchase_sql[]   = '\''.$val['order_code'].'\'';
             } else if ( $val['order_type'] == 2 ){
                 $stock[]          = $val['stock_id'];               //入库单ID，入库单有多个，可选择性的去对某个入库单付款，需记录入库单ID
                 $stock_purchase[] = $val['order_code'];             //采购单code
@@ -501,6 +507,18 @@ class SettlementController extends CommonController
             M('stock_purchase')->where($map)->data($data)->save();
             unset($map);
             unset($data);
+
+            //更新对应的出库单状态为已支付
+            $map['purchase_code'] = array('in', $purchase);
+            $data['status'] = 'paid';
+            M('erp_purchase_in_detail')->where($map)->data($data)->save();
+            unset($map);
+            unset($data);
+
+            //更新采购单的已结算金额paid_amount 为 总金额price_total
+            $purchase_sql = implode(',', $purchase_sql);
+            $sql = "update stock_purchase set paid_amount = price_total where code in ({$purchase_sql})";
+            M()->execute($sql);
         }
 
         //更新入库单为已支付状态，更新采购单为已结算状态
@@ -585,11 +603,18 @@ class SettlementController extends CommonController
             //根据采购单号 查询结算单号
             $purchase_map['order_code'] = $map['erp_settlement.purchase_code'];
 
-            $map_list = M('erp_settlement_detail')->where($purchase_map)->field('code')->find();
+            $map_list = M('erp_settlement_detail')->where($purchase_map)->field('code')->select();
             unset($map['erp_settlement.purchase_code']);
 
-            if(!empty($map_list)){
-                $map['erp_settlement.code'] = array('eq',$map_list['code']);
+            $map_list_arr = array();
+            foreach($map_list as $val){
+                $map_list_arr[] = $val['code'];
+            }
+
+            if(!empty($map_list_arr)){
+                $map['erp_settlement.code'] = array('in',$map_list_arr);
+            }else{
+                $map['erp_settlement.code'] = '-1';
             }
         }
     }

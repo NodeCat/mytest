@@ -109,7 +109,7 @@ $(function () {
 		return false;
 	})
 
-	$('.form-ajax button[type=submit]').on('click',function(){
+	$(document).on('click','.form-ajax button[type=submit]',function(){
 /*
 		if(!$(this).parents('form').valid()){alert('验证失败，请检查您的输入。');return false;}
 */
@@ -304,7 +304,16 @@ $('.modal').on('shown.bs.modal', function (e) {
 	});
 
 	$('.content').on('click','.btn-op,.btn-status a',function(){
+		if($(this).hasClass('should-confirm')) {
+			var yes = confirm('确认要'+$(this).data('title')+'该记录？');
+			if(!yes) {
+				return false;
+			}
+		}
 		var addr=$(this).data('href');
+		if(!addr) {
+			addr = $(this).attr('href');
+		}
 		var id = $(this).data('value');
 		if(!addr)return false;
 		$.ajax({
@@ -314,9 +323,9 @@ $('.modal').on('shown.bs.modal', function (e) {
 			async:true,
 			data:{id:id},
 			dataType:'json',
-			success: function(msg){
-				alert(msg.msg);
-				if(msg.status=='1'){
+			success: function(res){
+				alert(res.msg);
+				if(res.status=='1'){
 					refresh_list();
 				}
 			}

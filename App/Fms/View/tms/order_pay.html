@@ -18,7 +18,9 @@
  <div class="col-md-2 col-xs-6 col-md-offset-1">
 <notempty name="data">
   <if condition="($data['status_cn'] eq '已签收') OR ($data['status_cn'] eq '已拒收')">
-<a href="{:U('reset','id='.$data['refer_code'])}" class="btn-sign btn btn-lg btn-success btn-block">重置订单状态</a>
+<a onclick="javascript:reset('{$data.refer_code}')" class="btn-sign btn btn-lg btn-success btn-block">重置订单状态</a>
+<else />
+<a onclick="javascript:reset('{$data.refer_code}')" class="btn-sign btn btn-lg btn-success btn-block" disabled>重置订单状态</a>
   </if>
 </notempty>
  </div>
@@ -105,7 +107,7 @@
           <tr class="text-center">
             <th>货品</th>
             <th>下单数量</th>
-            <!--<th>送货数量</th>-->
+            <th>送货数量</th>
             <th>实收数量</th>
             <!--<th>送货重量</th>
             <th>实收重量</th>-->
@@ -118,7 +120,7 @@
         <tfoot>
           <tr>
             <td>{:count($data['detail'])}行</td>
-            <td colspan="3">合计</td>
+            <td colspan="4">合计</td>
             <td class="dange">{$data.actual_price}</td>
           </tr>
         </tfoot>
@@ -127,11 +129,9 @@
           <td>{$v.pro_code} {$v.pro_name}
           <!-- <foreach name="v['spec']" item="spec">{$spec['name']}:{$spec['val']};</foreach>-->
           </td>
+          <td>{$v.order_qty}{$v.unit_id}</td>
           <td>{$v.delivery_qty}{$v.unit_id}</td>
-          <!--
-          <td class="warnin">{$v.quantity}{$v.unit_id}</td>
-          -->
-
+          
           <td class="dange">{$v.real_sign_qty}{$v.unit_id}</td>
           <!--
           <td>{$v.actual_quantity}</td>
@@ -156,6 +156,7 @@
               <td>退押金</td>
               <td>应收总计</td>
               <td>司机实收金额</td>
+              <td>退款金额</td>
             </tr>
         </thead>
         <tbody>
@@ -167,6 +168,7 @@
               <td>{$data.deposit}</td>
               <td class="dange">{$data.pay_for_price}</td>
               <td class="dange">{$data.deal_price}</td>
+              <td class="dange">{$data.reject_sum_price}</td>
             </tr>
         </tbody>
       </table>
@@ -178,7 +180,7 @@
   </form>
   <if condition="($data.status_cn eq '已完成') AND ($data.pay_for_price gt 0)">
     <div class="panel-footer ">
-    <form class="form-inline" action="{:U('Order/pay')}" method="POST">
+    <form class="form-inline"  id="frm" action="{:U('Order/pay')}" method="POST">
       <input type="hidden" name="order_id" value="{$data.refer_code}" />
       <input type="hidden" name="bill_id" value="{$data.id}" />
       <div class="row">
@@ -199,7 +201,7 @@
             <input class="form-control" type="text" id="deposit" name="deposit" value="" placeholder="押金">
           </div>
           <div class="form-group">
-            <button type="submit" class="btn-sign btn btn-md btn-success btn-block"> 修 改 </button>
+            <button type="button" onclick="javascript:edit();" class="btn btn-md btn-success btn-block"> 修 改 </button>
           </div>
         </div>
       </div>
@@ -263,3 +265,50 @@ form.order ul.list-group{
 }
 
 </style>
+<script type="text/javascript">
+  function reset(id) {
+    var addr = "{:U('reset')}";
+    var is_confirm = confirm("确定要重置订单状态吗？");
+    if (is_confirm) {
+      $.ajax({
+        url:addr,
+        type:'post',
+        cache:false,
+        dataType:'json',
+        data:{'id':id},
+        success: function(msg){
+          alert(msg.msg);
+          if (msg.status == 1) {
+            location.reload();
+          }
+        }
+      });
+    } else {
+      return false;
+    }
+  }
+
+  function edit() {
+    var form,params;
+    var addr = "{:U('Order/pay')}";
+    var params = $("#frm").serialize();
+    var is_sure = confirm("确定要修改吗？");
+    if (is_sure) {
+      $.ajax({
+        url:addr,
+        type:'post',
+        cache:false,
+        dataType:'json',
+        data:params,
+        success: function(msg){
+          alert(msg.msg);
+          if (msg.status == 1) {
+            location.reload();
+          }
+        }
+      });
+    } else {
+      return false;
+    }
+  }
+</script>

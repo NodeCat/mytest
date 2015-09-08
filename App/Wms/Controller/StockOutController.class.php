@@ -34,14 +34,14 @@ class StockOutController extends CommonController {
         );
     protected $columns = array (  
         'code' => '出库单号',
-        'type_name' => '出库单类型',
+        'type_name' => '类型',
         'wave_id' => '波次号',
         'packing_code' => '装车号',
         'total_qty' => '总件数',
         'line_id' => '线路片区',
         'shop_name'=>'店铺名称',
         'customer_phone'=>'客户电话',
-        'status' => '出库单状态',
+        'status' => '状态',
         'process_type' => '处理类型',
         'refused_type' => '拒绝标识',
         'delivery_date' => '送货时间',
@@ -79,14 +79,14 @@ class StockOutController extends CommonController {
                 'value' => '',
         ),
         'stock_bill_out.type' =>    array (     
-            'title' => '出库单类型',     
+            'title' => '类型',     
             'query_type' => 'eq',     
             'control_type' => 'getField',     
             'value' => 'stock_bill_out_type.id,name'
                             
         ),
         'stock_bill_out.status' =>    array (
-                'title' => '出库单状态',
+                'title' => '状态',
                 'query_type' => 'eq',
                 'control_type' => 'select',
                 'value' => array(

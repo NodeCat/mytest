@@ -123,6 +123,10 @@ function checkForm(){
         dataType : 'json',
         data : 'partner='+partner+'&partner_id='+partner_id+'&wh_id='+wh_id+'&code_type='+code_type,
         success : function(data){
+            if(data.length == 0){
+                alert('没有查询到相关单据');
+            }
+
             var html  = '';
             var href  = '';
             var i     = 1;

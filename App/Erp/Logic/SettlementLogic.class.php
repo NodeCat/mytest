@@ -25,7 +25,7 @@ class SettlementLogic
             "inner join partner on stock_purchase.partner_id=partner.id ",
             "inner join user on stock_purchase.created_user = user.id ",
         );
-        $field = "stock_purchase.id,stock_purchase.code,stock_purchase.paid_amount,stock_purchase.invoice_method as invoice_method_code,stock_purchase.status as state, warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname";
+        $field = "stock_purchase.id,stock_purchase.code,stock_purchase.price_total as paid_amount,stock_purchase.invoice_method as invoice_method_code,stock_purchase.status as state, warehouse.name as warehouse_name,partner.name as partner_name,user.nickname as user_nickname";
 
         foreach($map as $key => $val){
             $where['stock_purchase.'.$key] = $val;

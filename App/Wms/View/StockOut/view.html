@@ -23,6 +23,10 @@
             </notempty>
             </if>
             <input type="hidden" id="stock_out_id" value="{$data.id}">
+            <a href="#" data-toggle="dropdown" data-table="table-pro" data-title="筛选" rel="tooltip" data-placement="bottom" class=" btn btn-sm light-table-filter"><i class="glyphicon glyphicon-filter" placeholder="Filtrer" autofocus=""></i> 筛选</a>
+              <ul class="dropdown-menu">
+                  <li><input type="search" class="light-table-filter input-sm form-control" data-table="data-table" placeholder="筛选" autofocus /></li>
+              </ul>
             </div>
             <include file="status-bar" />
           
@@ -135,6 +139,15 @@
       </div>
     </div>
 </form>
+<script src="__PUBLIC__/js/light-table-filter.min.js"></script>
+<script type="text/javascript">
+$(function(){
+  $('.dropdown-menu input, .dropdown-menu label').click(function(e) {
+        e.stopPropagation();
+    });
+    refresh_page();
+});
+</script>
 <script type="text/javascript">
 $(function(){
 	$('#stock_out').on('click',function(){

@@ -195,6 +195,7 @@ class ListLogic {
         }
               
     }
+
     //获取此数字的中文大写
     public function cny($ns) 
     { 
@@ -218,5 +219,229 @@ class ListLogic {
             array_unshift($xs,$n); 
         } 
         return $xs; 
+    }
+    /**
+     * [createRefund    创建退款单]
+     * @param  [int]    $suborder_id [子订单id]
+     * @return [int]    [成功返回status=0,失败返回status=－1]
+     */
+    public function createRefund($suborder_id = 0)
+    {
+        if ($suborder_id == 0) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '请提供有效的子订单id。',
+            );
+            return $res;
+        }
+        
+        $map['refer_code'] = $suborder_id;
+        $map['is_deleted'] = 0;
+        $map['type']       = 1;//销售出库单
+        $bill_out = M('stock_bill_out')->where($map)->find();
+        if ($bill_out) {
+            unset($map);
+            $map['pid']        = $bill_out['id'];
+            $map['is_deleted'] = 0;
+            $detail = M('stock_bill_out_detail')->where($map)->select();
+            if ($detail) {
+                $bill_out['detail'] = $detail;
+            } else {
+                $res = array(
+                    'status' => -1,
+                    'msg'    => '找不到该订单对应的出库单详情。',
+                );
+                return $res;
+            }
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '找不到该订单对应的出库单。',
+            );
+            return $res;
+        }
+        $A = A('Common/Order','Logic');
+        unset($map);
+        $map['suborder_id'] = $suborder_id;
+        $order_info = $A->oneOrder($map);
+        if (!$order_info) {
+            $res = array(
+                'status' => -1,
+                'msg'    => '找不到该订单。',
+            );
+            return $res;
+        }
+        unset($map);
+        $map['bill_out_id'] = $bill_out['id'];
+        $map['is_deleted']  = 0;
+        $sign_data = M('stock_wave_distribution_detail')->where($map)->find();
+        if ($sign_data) {
+            unset($map);
+            $map['pid'] = $sign_data['id'];
+            $map['is_deleted'] = 0;
+            $sign_detail = M('tms_sign_in_detail')->where($map)->select();
+            if ($sign_detail) {
+                $sign_data['detail'] = $sign_detail;
+            } else {
+                $res = array(
+                    'status' => -1,
+                    'msg'    => '找不到该订单对应的签收详情。',
+                );
+                return $res;
+            }
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '找不到该订单对应的签收信息。',
+            );
+            return $res;
+        }
+        $refund_model = D('Fms/Refund');
+        //如果是已完成状态并且是已付款的才创建退款单
+        if ($sign_data['status'] == 4 && $sign_data['pay_status'] == 1) {
+            $data['reject_code']    = '';
+            $data['suborder_id'] = $bill_out['refer_code'];
+            $data['order_id']    = $order_info['order_id'];
+            $data['reject_reason'] = $sign_data['reject_reason'];
+            $data['refer_code']    = $bill_out['code']; //关联出库单号
+            $data['pid']           = $bill_out['id'];   //关联出库单id
+            $data['pay_type']      = 0;//微信退款
+            $data['city_id']            = $order_info['city_id'];
+            $data['city_name']          = $order_info['city_name'];
+            $data['shop_name']     = $order_info['shop_name'];
+            $data['customer_id']   = $order_info['user_id'];
+            $data['customer_name'] = $order_info['username'];
+            $data['customer_mobile'] = $order_info['mobile'];
+            $data['created_user']    = session('user.uid');
+            $data['created_time']    = get_time();
+            $data['update_user']     = session('user.uid');
+            $data['update_time']     = get_time();
+            $data['wh_id']           = $bill_out['wh_id'];
+
+            foreach ($bill_out['detail'] as $key => $value) {
+                $lack = $value['order_qty'] - $value['delivery_qty'];
+                if ($lack > 0) {
+                    unset($det);
+                    unset($map);
+                    $map['where'] = array (
+                        'sku_number' => $value['pro_code'],
+                    );
+                    $category = $A->getCategoryBySku($map);
+                    $catename = explode('-->',$category['cate_name']);
+                    $data['type'] = '2';    //缺货退款单
+                    $det['pid'] = $data['id'];
+                    $det['primary_category']    = $category['path'][0];
+                    $det['primary_category_cn'] = $catename[0];
+                    $det['pro_code']            = $value['pro_code'];
+                    $det['pro_name']            = $value['pro_name'];
+                    $det['price']               = $value['price'];
+                    $det['reject_qty']          = $lack;
+                    $det['reject_price']        = bcmul($value['price'],$lack,2);
+                    $data['sum_reject_price']  += $det['reject_price'];
+                    $det['created_user']    = session('user.uid');
+                    $det['created_time']    = get_time();
+                    $det['update_user']     = session('user.uid');
+                    $det['update_time']     = get_time();
+                    $data['detail'][] = $det;
+                }
+            }
+            if (!empty($data['detail'])) {
+                //判断是否创建过退款单
+                unset($map);
+                $map['refer_code'] = $data['refer_code'];
+                $map['type']       = '2';//缺货退款单
+                $map['is_deleted'] = 0;
+                $ishave = $refund_model->where($map)->find();
+                if (!$ishave) {
+                    $res1 = $refund_model->relation('detail')->add($data);
+                    logs($res1,'未处理，创建退款单','fms_refund');
+                }
+            }
+            unset($data['detail']);
+            unset($data['sum_reject_price']);
+            //拒收入库单号
+            unset($map);
+            $map['refer_code']      = $bill_out['code']; //关联出库单号
+            $map['is_deleted']      = 0;
+            $map['type']            = '7';//拒收入库单
+            $bill_in = M('stock_bill_in')->where($map)->find();
+            if ($bill_in) {
+                $data['reject_code']    = $bill_in['code'];
+            }
+            foreach ($bill_out['detail'] as $key => $value) {
+                
+                $sign_qty = 0;
+                foreach ($sign_data['detail'] as $k => $val) {
+                    if ($val['bill_out_detail_id'] == $value['id']) {
+                        $sign_qty = $val['real_sign_qty'];
+                    }
+                }
+                $rej_qty = $value['delivery_qty'] - $sign_qty;
+                if ($rej_qty <= 0) {
+                    continue;
+                }
+                unset($det);
+                unset($map);
+                $map['where'] = array (
+                    'sku_number' => $value['pro_code'],
+                );
+                $category = $A->getCategoryBySku($map);
+                $catename = explode('-->',$category['cate_name']);
+                $data['type'] = '1';    //拒收退款单
+                $det['pid'] = $data['id'];
+                $det['primary_category']    = $category['path'][0];
+                $det['primary_category_cn'] = $catename[0];
+                $det['pro_code']            = $value['pro_code'];
+                $det['pro_name']            = $value['pro_name'];
+                $det['price']               = $value['price'];
+                $det['reject_qty']          = $rej_qty;
+                $det['reject_price']        = bcmul($value['price'],$rej_qty,2);
+                $data['sum_reject_price']  += $det['reject_price'];
+                $det['created_user']    = session('user.uid');
+                $det['created_time']    = get_time();
+                $det['update_user']     = session('user.uid');
+                $det['update_time']     = get_time();
+                $data['detail'][] = $det;
+            }
+            if (!empty($data['detail'])) {
+                //判断是否创建过退款单
+                unset($map);
+                $map['refer_code'] = $data['refer_code'];
+                $map['type']       = '1';//拒收退款单
+                $map['is_deleted'] = 0;
+                $ishave = $refund_model->where($map)->find();
+                if (!$ishave) {
+                    $res2 = $refund_model->relation('detail')->add($data);
+                    logs($res2,'未处理，创建退款单','fms_refund');
+                }
+            }
+
+            if ($res1 || $res2) {
+                $res = array(
+                    'status' => 0,
+                    'msg'    => '创建退款单成功。',
+                );
+                return $res;
+            } else {
+                $res = array(
+                    'status' => -1,
+                    'msg'    => '创建退款单失败。',
+                );
+                return $res;
+            }
+
+            $res = array(
+                'status' => -1,
+                'msg'    => '没有退货，无需创建退款单。',
+            );
+            return $res;
+        } else {
+            $res = array(
+                'status' => -1,
+                'msg'    => '该订单不是已完成状态或者不是已付款的订单。',
+            );
+            return $res;
+        }
+        
     }
 }

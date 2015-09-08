@@ -280,7 +280,8 @@ class StockInLogic{
 
     }
 
-    public function in($inId,$code,$qty) {
+    //$inId 入库到货单id $code 商品编号 $qty 收货量 $has_stock_detail_id 入库单详细表id
+    public function in($inId, $code, $qty, $has_stock_detail_id = false) {
         if(empty($inId) || empty($code) || $qty =='') {
             return array('res'=>false,'msg'=>'必填字段不能为空。');
         }
@@ -289,8 +290,11 @@ class StockInLogic{
         }
         $map['pid'] = $inId;
         $map['pro_code'] = $code;
+        if ($has_stock_detail_id) {
+            $map['id'] = $has_stock_detail_id;
+        }
 
-        //出库详细表中加入批次条件，有能一个sku_code对应两个批次
+        //出库详细表中加入批次条件，一个sku_code对应两个批次
         //首先判断用户要收货的数量是否大于总可验收数量；
         $bill_in_detail_m = M('stock_bill_in_detail');
         $cate_qty_r = $bill_in_detail_m->field('(sum(expected_qty) - sum(receipt_qty)) as qtyForCanInC')->where($map)->select();
@@ -298,6 +302,7 @@ class StockInLogic{
         if ($cate_qty_r) {
             $cate_qty = $cate_qty_r['0']['qtyforcaninc'];
         }
+
         if (empty($cate_qty) || $cate_qty < $qty) {
                 return array('res'=>false,'msg'=>'验收数量不能大于可验收数量。');
         }
@@ -337,6 +342,7 @@ class StockInLogic{
             // $ined == 2 不可以验收 待上架 等于1时候 可以验收
             if($ined == 2) { //
                 $data['status'] = '31';
+                $map = array();
                 $map['id'] = $inId;
                 $map['status'] = '21';
                 $map['is_deleted'] = 0;
@@ -703,17 +709,72 @@ class StockInLogic{
     }
 
     //客退加入入库单 @order_info_arr 客退信息 $order_code 订单号===出库单 liuguangping @todoliuguangping
-    public function addWmsInOfGuestBack($order_info_arr = array(), $order_code = '')
-    {
+    public function addWmsInOfBack($order_info_arr = array(), $order_code = '',$in_type = 3)
+    {   
+        if (empty($order_info_arr)) {
+            return false;
+        }
+        if (!$order_code) {
+            return false;
+        }
+        //系统分配批次
+        $tmp_result = $this->systemDisBatch($order_info_arr, $order_code,$in_type);
+        if (!$tmp_result) {
+            return false;
+        }
+        $pro_code_arr = array_column($order_info_arr, 'code');
+        //获取商品信息
+        $pro_code_w = array();
+        $pro_code_info_arr = array();
+        $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
+        $pro_code_w['b.code'] = array('in', $order_code);
+        $pro_code_w['a.is_deleted'] = 0;
+        $pro_code_w['b.is_deleted'] = 0;
+        $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
+        foreach ($pro_code_infos as $info_val) {
+            $pro_code_info_arr[$info_val['pro_code']]= $info_val;
+        }
+        if (!$pro_code_info_arr) {
+            return false;
+        }
+        //创建入库单
+        $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
+        if ($in_code) {
+            $return = array("order_number"=>$order_code,"in_code"=>$in_code);
+        } else {
+            $return = false;
+        }
+        return $return;    
+    }
+
+    //$in_type 入库单类型 3客退入库 7拒收入库
+    public function systemDisBatch($order_info_arr = array(), $order_code = '',$in_type = 3){
+
         if (empty($order_info_arr)) {
             return false;
         }
         $bill_out_m = M('stock_bill_out');
+        //满足拒收入库单stock_bill_in pid 字段加入 pid===配送单id
+        $dist_id = 0;
+        if ($in_type == 7) {
+            $bill_out_id = $bill_out_m->where(array('code'=>$order_code))->getField('id');
+            if (!$bill_out_id) {
+                return false;
+            }
+            $dist_map['is_deleted'] = 0;
+            $dist_map['bill_out_id'] = $bill_out_id;
+            $dist_id_res = M('stock_wave_distribution_detail')->field('pid')->where($dist_map)->find();
+            if (!$dist_id_res) {
+                return false;
+            }
+            $dist_id = $dist_id_res['pid'];
+        }
         $out_m = M('stock_bill_out_container');
         $map['b.code'] = array('in', $order_code);
         $map['b.is_deleted'] = 0;
         $map['a.is_deleted'] = 0;
-        $in_infos = $out_m->field('b.wh_id,b.code,b.code as order_code,a.batch,a.pro_code,a.qty')->join(' as a left join stock_bill_out as b on b.code = a.refer_code')->where($map)->order('a.created_time asc')->select();
+        //联查入库单批次关联 按照 入库单 === 批次 先进入的批次先退回
+        $in_infos = $out_m->field('b.wh_id,b.code,b.code as order_code,a.batch,a.pro_code,a.qty')->join(' as a left join stock_bill_out as b on b.code = a.refer_code join stock_bill_in as c on a.batch = c.code')->where($map)->order('c.created_time asc,a.created_time asc')->select();
         if (!$in_infos) {
             return false;
         }
@@ -733,20 +794,7 @@ class StockInLogic{
         foreach ($bill_in_res  as $vals) {
             $expected_qty_arr[$vals['order_code'].'_qty_'.$vals['pro_code'].'_'.$vals['batch']] = $vals['qty'];
         }
-        //获取商品信息
-        $pro_code_w = array();
-        $pro_code_info_arr = array();
-        $pro_code_w['a.pro_code'] = array('in', $pro_code_arr);
-        $pro_code_w['b.code'] = array('in', $order_code);
-        $pro_code_w['a.is_deleted'] = 0;
-        $pro_code_w['b.is_deleted'] = 0;
-        $pro_code_infos = M('stock_bill_out_detail')->field('a.pro_name,a.pro_code,a.pro_attrs,a.measure_unit')->join('as a join stock_bill_out as b on a.pid=b.id')->where($pro_code_w)->group('a.pro_code')->select();
-        foreach ($pro_code_infos as $info_val) {
-            $pro_code_info_arr[$info_val['pro_code']]= $info_val;
-        }
-        if (!$pro_code_info_arr) {
-            return false;
-        }
+        
         $tmp_result = array();
         foreach ($order_info_arr as $key => $value) {
             $diff = $value['qty'];
@@ -771,6 +819,8 @@ class StockInLogic{
                         $parent = array();
                         $parent['wh_id']     = $val['wh_id'];
                         $parent['refer_code']= $val['order_code'];
+                        $parent['type']      = $in_type;
+                        $parent['pid']       = $dist_id;
                         $tmp_result[$val['order_code']]['parent'] = $parent;
                         if (!isset($tmp_result[$val['order_code']]['sub'])) {
                             $tmp_result[$val['order_code']]['sub'] = array();
@@ -788,6 +838,8 @@ class StockInLogic{
                         $parent = array();
                         $parent['wh_id']     = $val['wh_id'];
                         $parent['refer_code']= $val['order_code'];
+                        $parent['type']      = $in_type;
+                        $parent['pid']       = $dist_id;
                         $tmp_result[$val['order_code']]['parent'] = $parent;
                         if (!isset($tmp_result[$val['order_code']]['sub'])) {
                             $tmp_result[$val['order_code']]['sub'] = array();
@@ -803,18 +855,13 @@ class StockInLogic{
         if (!$tmp_result) {
             return false;
         }
-        //创建入库单
-        $in_code = $this->insertWmsIn($tmp_result, $pro_code_info_arr);
-        if ($in_code) {
-            $return = array("order_number"=>$order_code,"in_code"=>$in_code);
-        } else {
-            $return = false;
-        }
-        return $return;    
+
+        return $tmp_result;
     }
 
     public function insertWmsIn($tmp_result = array(), $pro_code_info_arr = array())
     {   
+        $arrayType =  array('3'=>'客退入库','7'=>'拒收入库');
         $return = false;
         if (!$tmp_result || !$pro_code_info_arr) {
             $return = false;
@@ -822,27 +869,29 @@ class StockInLogic{
         $bill_in_m = M('stock_bill_in');
         $bill_in_detail_m = M('stock_bill_in_detail');
         $stock_type = M('stock_bill_in_type');
-        $type_name = $stock_type->field('type')->where(array('id' => 3))->find();
-        $numbs = M('numbs');
-        $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
+        
         foreach ($tmp_result as $vos) {
             //加入入库单
             $bill_in['wh_id']        = $vos['parent']['wh_id']?$vos['parent']['wh_id']:'';//入库仓库@todo
-            $bill_in['type']         = 3;
+            $type_name = $stock_type->field('type')->where(array('id' => $vos['parent']['type']))->find();
+            $numbs = M('numbs');
+            $name = $numbs->field('name')->where(array('prefix' => $type_name['type']))->find();
+            $bill_in['type']         = $vos['parent']['type'];
             $bill_in['company_id']   = 1;
             $bill_in['refer_code']   = $vos['parent']['refer_code'];//订单号
             $bill_in['pid']          = 0;
-            $bill_in['code']         = get_sn($name['name']); //入库单号
+            $bill_in['code']         = get_sn($name['name'],$bill_in['wh_id']); //入库单号
             $bill_in['batch_code']   = get_batch();
             $bill_in['partner_id']   = '';//供应商；@todoliuguangping
-            $bill_in['remark']       = '客退入库单';
+            $bill_in['remark']       = $arrayType[$vos['parent']['type']];
             $bill_in['updated_time'] = date('Y-m-d H:i:s');
             $bill_in['created_user'] = 2;
             $bill_in['updated_user'] = 2;
             $bill_in['created_time'] = date('Y-m-d H:i:s');
-            $bill_in['status'] = 21; //状态 21待入库
+            $bill_in['status']       = 21; //状态 21待入库
+            $bill_in['pid']          = $vos['parent']['pid'];//关联的配送单id
             if($pid = $bill_in_m->add($bill_in)){
-                $process_logic = A('Process', 'Logic');
+                $process_logic = A('Wms/Process', 'Logic');
                 //插入出库单详细表
                 $detail = array();
                 $i = 0;
@@ -873,5 +922,105 @@ class StockInLogic{
 
         return $bill_in['code'];
     }
+
+    //拒收入库接口
+    /*
+        $order_infos = 
+            array(
+                "order_number"=>"订单号",
+                "sku_info"=>array(
+
+                    array(
+                        "code"=>"xxxxxx",
+                        "qty"=>'12'
+                    ),
+                    array(
+                        "code"=>"xxxxxx",
+                        "qty"=>'12'
+                    )
+                )
+            );
+
+    */
+    public function unBackStockIn($order_infos = array()){
+
+        $return = array();
+        if (!is_array($order_infos) || empty($order_infos)) {
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = '请合法传参';
+            return $return;
+        }
+
+        $order_number = $order_infos['order_number'];
+        $sku_info   = $order_infos['sku_info'];
+        $pro_code_arr = array_column($sku_info, 'code');
+
+        if (!$order_number || !$sku_info) {
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = '请合法传参';
+            return $return;
+        }
+
+        //判断同一次退货退相同的商品
+        if (count($pro_code_arr) != count(array_unique($pro_code_arr))) {
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = '请不要退相同的商品！';
+            return $return;
+        }
+        //判断商品是否属于这个订单
+        $order_logic = A('Wms/Order','Logic');
+        $is_set = $order_logic->judgeCode($pro_code_arr, $order_number);
+        if ($is_set['status'] === -1) {
+            $intersection = $is_set['data'];
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = '该订单' . $order_number . '的'.implode(',', $intersection).'商品没有出库量，不能退货';
+            return $return;
+        }
+
+        //该订单是否存在对应的出库单并且状态为出库
+        $bill_out = M('stock_bill_out');
+        $map = array();
+        $map['code'] = array('in',$order_number);
+        $map['status'] = 2;
+        $map['is_deleted'] = 0;
+        $bill_out_code_res = $bill_out->where($map)->field('code,refer_code')->find();
+        if (!$bill_out_code_res) {
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = '该订单' . $order_number . '没有出库或不正常单';
+            return $return;
+        }
+
+        $order_code = $bill_out_code_res['code'];
+        //判断订单退货量是否合法（退货量是否大于出库量）
+        $order_code_qty = $order_logic->judgeOutQty($sku_info, $order_code);
+        if ($order_code_qty['status'] === -1) {
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = $order_code_qty['msg'];
+            return $return;
+        }
+
+        //创建客退入库单
+        //加入wms入库单 liuguangping
+        //$stockin_logic = A('Wms/StockIn','Logic');    
+        $is_created = $this->addWmsInOfBack($sku_info, $order_code, 7);
+        if ($is_created) {
+            $return['status'] = 0;
+            $return['data']   = $is_created;
+            $return['msg']    = '创建客退入库单成功';
+            return $return;
+        } else {
+            $return['status'] = 1;
+            $return['data']   = '';
+            $return['msg']    = '创建客退入库单失败';
+            return $return;
+        } 
+    }
+    
 
 }

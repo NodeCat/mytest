@@ -232,10 +232,16 @@
 	page-break-after:always
 }
 .printpage .table-bordered>thead>tr>td {
-	border-bottom-width:1px
+	border-bottom-width:1px;
+	border:1px solid #000;
 }
 .printpage .table-bordered {
-	border-collapse:collapse
+	border-collapse:collapse;
+	border:1px solid #000;
+}
+.printpage .table-bordered>tbody>tr>td {
+	border-collapse:collapse;
+	border:1px solid #000;
 }
 .orderinfo,.mapimg {
 	page-break-before:avoid;

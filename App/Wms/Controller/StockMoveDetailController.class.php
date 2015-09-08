@@ -115,14 +115,32 @@ class StockMoveDetailController extends CommonController {
         $query = I('query');
         $start_time = $query['stock_move.created_time'];
         $end_time = $query['stock_move.created_time_1'];
-
         if(!$start_time || !$end_time) {
             $this->msgReturn(false,'选择时间范围才能导出数据');
         }
         $map['stock_move.wh_id'] = session('user.wh_id');
         $M->where($map);
     }
+    protected function before_search(&$map){
+        //根据库位code location.code 查询对应库位id location.id
+        if (IS_GET) {
+            if(!empty($map['stock_move.location_code'])){
+                //根据location.code 查询对应的库位id
+                $location_map['code'] = array($map['stock_move.location_code'][0], $map['stock_move.location_code'][1]);
+                $location_ids_by_code = M('Location')->where($location_map)->getField('id',true);
+                if(empty($location_ids_by_code)){
+                    $location_ids_by_code = array(-1);
+                }
+                unset($map['stock_move.location_code']);
+            }
 
+            //添加map
+            if(!empty($location_ids_by_code)){
+                $map['stock_move.location_id'] = array('in',$location_ids_by_code);
+            }
+
+        }
+    }
     //serach方法执行后，执行该方法
     protected function after_search(&$map){
         if(IS_AJAX){

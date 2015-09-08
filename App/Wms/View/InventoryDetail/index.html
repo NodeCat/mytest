@@ -1,5 +1,7 @@
 <eq name="table.toolbar" value="true">
+<notempty name="toolbar_tr_is_edit">
   <include file="Table:toolbar"/>
+</notempty>
 </eq>
 
 <form class="form-inline well well-small ajax" >
@@ -26,63 +28,86 @@
 
 </div>
 </form>
-
-<div class="table-content" id="table-content">
-  <include file="Table:list"/>
-</div>
-
+<form class="form-ajax" id="form-add-invertory">
+  <div class="btn-group" style="margin-bottom:15px;">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" id="insert_sum">录入盘点量</button>
+    <button style="width:60px;border-radius:5px;" class="btn btn-default hidden dropdown-toggle" data-toggle="dropdown" id="reject">取消</button>
+    <button style="width:60px;border-radius:5px;margin-left:15px;" type="button" class="btn btn-primary hidden dropdown-toggle" data-toggle="dropdown" id="add_sum">保存</button>
+  </div>
+  <div class="table-content" id="table-content">
+    <include file="Table:list"/>
+  </div>
+</form>
 <script type="text/javascript">
 $(function(){
-	$('#table-content').delegate('#data-table tbody tr td','click',function(){
-		if(!$(this).is('.input') && $(this)[0].cellIndex == 5){
-			var _toolbar_tr_is_edit = {$toolbar_tr_is_edit};
-			if(!_toolbar_tr_is_edit){
-				alert('权限不足，或者盘点单已经关闭');
-				return false
+	$('#insert_sum').delegate('','click',function(){
+		var td = $('#table-content #data-table tbody tr td');
+		var mark = false;
+		td.each(function(){
+			if($(this)[0].cellIndex == 5){
+				var value = $(this).prev().html();
+				var id = $(this).prev().prev().prev().prev().prev().find('input').attr('id');
+				if ($(this).html() >= 0 && $(this).html()) {
+					value = $(this).html();
+				}
+				var _toolbar_tr_is_edit = {$toolbar_tr_is_edit};
+				if(!_toolbar_tr_is_edit){
+					alert('权限不足，或者盘点单已经关闭');
+				    mark = true;
+					return false
+				}
+				$(this).addClass('input').html('<input type="text" name="" style="width:67px">');
+				$(this).children(':input').val(value);
+				$(this).children(':input').attr('name', id);
 			}
-			$(this).addClass('input').html('<input type="text" style="width:67px">').find('input').focus().blur(function(){
-				//盘点详情id
-				var _inventory_detail_id = $(this).parent().prev().prev().prev().prev().prev().find('input').attr('id');
-				//计算差异量
-				//当前填写实盘量的值
-				var _pro_qty = parseFloat($(this).val());
-				var reg = /^[0-9]*(\.[0-9]{1,2})?$/;
-			    if (!reg.test(_pro_qty)){
-			      alert('退货量只能精确到小数点两位');
-			      $(this).val('0.00');
-			      return false;
-			    }
-				//原数量
-				var _theoretical_qty = $(this).parent().prev().text();
-
-				//差异量
-				var _diff_qty = (parseFloat(_pro_qty)-parseFloat(_theoretical_qty)).toFixed(2);  
-								
-				//更变差异量
-				$(this).parent().next().text(_diff_qty);
-
-				$(this).parent().removeClass('input').html($(this).val() || 0);
-
-				//变更对应的盘点详情
-				$.ajax({
-					url:'/InventoryDetail/upd_detail',
-					type:'post',
-					cache : false,
-					dataType:'json',
-					data:'id='+_inventory_detail_id+'&pro_qty='+_pro_qty+'&theoretical_qty='+_theoretical_qty,
-					success: function(json){
-						if(json.status=='1'){
-							alert('操作成功');
-							//refresh_list();
-						}
-						if(json.status=='0'){
-							alert(json.msg);
-						}
-					}
-				});
-			});
+		})
+		if (!mark) {
+			$(this).addClass('hidden');
+			$('#add_sum').removeClass('hidden');
+			$('#reject').removeClass('hidden');
 		}
+    })
+	$('#add_sum').delegate('','click',function(){
+		var form_data = $("#form-add-invertory").serialize();
+		var addr = '/InventoryDetail/upd_detail';
+		$.ajax({
+			url:addr,
+			type:'post',
+			cache : false,
+			async:true,
+			data:form_data,
+			success: function(msg){
+		        alert(msg.msg);
+		        /*var href = $('#jump-link').attr('href');
+		        var td = $('#table-content #data-table tbody tr td');
+				var mark = false;
+				td.each(function(){
+					if($(this)[0].cellIndex == 5){
+						var input = $(this).children(':input').val();
+						$(this).children(':input').remove();
+						$(this).html(input);
+					}
+				})
+				td.each(function(){
+					if($(this)[0].cellIndex == 6){
+						var now = $(this).prev().html();
+						var also = $(this).prev().prev().html();
+						var diff = now - also;
+						$(this).html(diff);
+					}
+				})
+				$('#insert_sum').removeClass('hidden');
+			    $('#add_sum').addClass('hidden');
+			    $('#reject').addClass('hidden');*/
+		        location.reload(false);
+		        return false;
+			},
+		});
+		return false;
 	})
-
+	$('#reject').delegate('','click',function(){
+		location.reload();
+		return false;
+	})
 });
 </script>

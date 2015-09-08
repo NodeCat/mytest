@@ -21,7 +21,7 @@
 	</eq></eq>
 	</case> 
 	<case value="edit" break="1">
-	<notempty name="tool['domain']">
+	<present name="tool['domain']">
 	<in name="vo['state']" value="$tool['domain']">
 		<eq name="tool.show" value="true"><eq name="tool.new" value="true">
 		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-edit"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> </a>
@@ -38,15 +38,15 @@
 		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-edit" data-target="#modal" data-toggle="modal"  data-title="编辑" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-edit"></i> </a>
 	</eq>
 	</eq>
-	</notempty>
+	</present>
 	</case> 
 	<case value="pass" break="1">
 	<in name="vo['state']" value="$tool['domain']">
 	<eq name="tool.show" value="true">
 	<eq name="tool.new" value="true">
-		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit"  data-title="批准" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" data-value="{$vo[$pk]}" class="btn btn-xs btn-audit {$tool['class']}"  data-title="批准" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
 	<else/>
-		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit" data-target="#modal" data-toggle="modal"  data-title="批准" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
+		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-audit {$tool['class']}" data-target="#modal" data-toggle="modal" data-value="{$vo[$pk]}" data-title="批准" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-ok"></i> </a>
 	</eq></eq></in>
 	</case>
 	<case value="reject" break="1">
@@ -69,7 +69,7 @@
 	</case>
 	
 	<case value="delete" break="1">
-	<notempty name="tool['domain']">
+	<present name="tool['domain']">
 	<in name="vo['state']" value="$tool['domain']">
 		<eq name="tool.show" value="true">
 		<a data-href="{:U($link)}" data-value="{$vo[$pk]}" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-remove"></i> </a>
@@ -79,7 +79,7 @@
 	<eq name="tool.show" value="true">
 		<a data-href="{:U($link)}" data-value="{$vo[$pk]}" class="btn btn-xs btn-delete" data-title="删除" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-remove"></i> </a>
 	</eq>
-	</notempty>
+	</present>
 	</case> 
 	<case value="refer" break="1">
 	<eq name="tool.show" value="true">
@@ -87,26 +87,25 @@
 	</eq>
 	</case> 
 	<default />
-	<notempty name="tool['domain']">
+	<present name="tool['domain']">
 	<in name="vo['state']" value="$tool['domain']">
 		<eq name="tool.show" value="true"><eq name="tool.new" value="true">
-		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" target="{$tool['target']}"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" data-value="{$vo[$pk]}" class="btn btn-xs btn-view {$tool['class']}" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" target="{$tool['target']}"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
 	<else/>
-		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" data-target="#modal" data-toggle="modal"  class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
+		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" data-value="{$vo[$pk]}" data-target="#modal" data-toggle="modal"  class="btn btn-xs btn-view {$tool['class']}" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
 	</eq></eq>
 	</in>
 	<else/>
 		<eq name="tool.show" value="true"><eq name="tool.new" value="true">
-		<a href="{:U($link, $pk.'='.$vo[$pk])}" class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" target="{$tool['target']}"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
+		<a href="{:U($link, $pk.'='.$vo[$pk])}" data-value="{$vo[$pk]}" class="btn btn-xs btn-view {$tool['class']}" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom" target="{$tool['target']}"><i class="glyphicon glyphicon-{$tool['icon']}"></i> {$tool['text']}</a>
 	<else/>
-		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" data-target="#modal" data-toggle="modal"  class="btn btn-xs btn-view" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
+		<a data-href="{:U($link, $pk.'='.$vo[$pk])}" data-value="{$vo[$pk]}" data-target="#modal" data-toggle="modal"  class="btn btn-xs btn-view {$tool['class']}" data-title="{$tool['title']}" rel="tooltip" data-toggle="tooltip" data-trigger="hover" data-placement="bottom"><i class="glyphicon glyphicon-{$tool['icon']}"></i> </a>
 		</eq></eq>
-	</notempty>
-	</switch>			
+	</present>
+	</switch>		
 </volist>
 <div class="clearfix"></div>
 </div>
-
 </notempty>
 
 

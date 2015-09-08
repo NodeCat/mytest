@@ -48,7 +48,7 @@ return array(
     'ERROR_MESSAGE'      => '页面错误！请稍后再试～',
     'URL_404_REDIRECT'   => '',
 
-    'DACHUWANG_API_PATH'  => 'http://api.dachuwang.com',
+    'DACHUWANG_API_PATH'  => 'http://s.dachuwang.com',
     'TMS_API_PATH'        => 'http://api.tms.dachuwang.com',
     'BARCODE_PATH'        => 'http://api.pda.dachuwang.com/barcode/get?text=',
     'IMG_UPLOAD_PATH'     => 'http://img.dachuwang.com/'

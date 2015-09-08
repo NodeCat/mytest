@@ -802,35 +802,28 @@ class DistributionController extends CommonController {
         }
 
         //通知实时库存接口 需要遍历出库单详情
-        $synch_hop_bill_out_ids = array();
         $pass_reduce_ids = array_merge($pass_ids,$reduce_ids);
         $map['id'] = array('in', $pass_reduce_ids);
         $bill_out_infos = M('stock_bill_out')->where($map)->select();
         foreach($bill_out_infos as $bill_out_info){
             if(is_numeric($bill_out_info['refer_code']) && $bill_out_info['refer_code'] > 0){
-                $synch_hop_bill_out_ids[] = $bill_out_info['id'];
                 //通知hop更改订单状态
                 $order_map['suborder_id'] = $bill_out_info['refer_code'];
                 $order_map['status'] = '5';
                 $order_map['cur']['name'] = session('user.username');
                 A('Common/Order','Logic')->set_status($order_map);
                 unset($order_map);
-            }
-        }
-        unset($map);
-        if (!empty($synch_hop_bill_out_ids)) {
-            $map['pid'] = array('in', $synch_hop_bill_out_ids);
-            $bill_out_detail_infos = M('stock_bill_out_detail')->where($map)->select();
-            foreach($bill_out_detail_infos as $bill_out_detail_info){
+
+                //通知实时库存接口
                 $notice_params['wh_id'] = session('user.wh_id');
-                $notice_params['pro_code'] = $bill_out_detail_info['pro_code'];
-                $notice_params['type'] = 'outgoing';
-                $notice_params['qty'] = $bill_out_detail_info['delivery_qty'];
+                $notice_params['type'] = 'out';
+                $notice_params['suborder_ids'] = array($bill_out_info['refer_code']);
+                $notice_params['msg'] = '出库';
                 A('Dachuwang','Logic')->notice_stock_update($notice_params);
                 unset($notice_params);
             }
-            unset($map);
         }
+        unset($map);
 
         
         //查询采购正品退货单或erp调拨单

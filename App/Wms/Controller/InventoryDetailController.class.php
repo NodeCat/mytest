@@ -7,7 +7,7 @@ class InventoryDetailController extends CommonController {
             'pro_code' => '货品标识',
             'pro_name' => '货品名称',
             'theoretical_qty' => '原数量',
-            'pro_qty' => '实盘量（点击修改）',
+            'pro_qty' => '实盘量',
             'diff_qty' => '差异量',
             'uom_name' => '计量单位',
             );
@@ -22,8 +22,8 @@ class InventoryDetailController extends CommonController {
         ->find();
 
         //如果不是已关闭的盘点单 可以修改实盘量
-        $this->toolbar_tr_is_edit = 0;    
-        if(isset($this->auth['edit']) && $inventory_info['status'] != 'closed'){
+        $this->toolbar_tr_is_edit = 0;   
+        if(isset($this->auth['edit']) && $inventory_info['status'] != 'closed' && $inventory_info['status'] != 'confirmed'){
             $this->toolbar_tr_is_edit = 1;
         }
 
@@ -101,75 +101,72 @@ class InventoryDetailController extends CommonController {
         $this->inventory_info = $inventory_info;
 
     }
-
     //更新盘点单详情
     public function upd_detail(){
-        $id = I('post.id');
-        if(empty($id)){
-            $this->ajaxReturn(array('status'=>0,'msg'=>'id is empty'));
-        }
-        //判断实盘数是否合法 liuguangping
-        $mes = '';
-        if (I('post.pro_qty') && strlen(formatMoney(I('post.pro_qty'), 2, 1))>2) {
-            $mes = '实盘量只能精确到两位小数点';
-            $this->msgReturn(0,$mes);
-        }
-        $pro_qty = formatMoney(I('post.pro_qty'), 2);
-        $theoretical_qty = formatMoney(I('post.theoretical_qty'), 2);
-
-        //变更盘点详情状态
-        $map['id'] = $id;
-        $data['pro_qty'] = $pro_qty;
-        $data['theoretical_qty'] = $theoretical_qty;
-
-        $data['status'] = 'done';
-        M('stock_inventory_detail')->where($map)->save($data);
-        unset($data);
-        //unset($map);
-
-        //根据inventory_code 查询盘点单信息
-        $inventory_detail_info = M('stock_inventory_detail')->where($map)->find();
-        $inventory_code = $inventory_detail_info['inventory_code'];
-        unset($map);
-        //更新盘点单状态为盘点中 如果有差异，则更新盘点单的是否有差异
-        $map['code'] = $inventory_code;
-        $data['status'] = 'inventorying';
-        if($inventory_detail_info['pro_qty'] != $inventory_detail_info['theoretical_qty']){
-            $data['is_diff'] = 1;
-        }
-        M('stock_inventory')->where($map)->save($data);
+        $inventoryInfo = I('post.');
+        unset($inventoryInfo['p']);
         
-        $inventory_info = M('stock_inventory')->where($map)->find();
-        unset($map);
-
-        //更新对应盘点单状态
-        //获得所有盘点详情的状态
-        $map['inventory_code'] = $inventory_code;
-        $inventory_detail = M('stock_inventory_detail')->where($map)->group('status')->getField('status',true);
-        unset($map);
-
-        //如果所有盘点详情状态都为done，则更新盘点单为待确认
-        if(count($inventory_detail) == 1 && $inventory_detail[0] == 'done'){
-            $map['code'] = $inventory_code;
-            $data['status'] = 'confirm';
-            M('stock_inventory')->where($map)->save($data);
-            unset($data);
-
-            //遍历所有盘点详情，如果所有盘点没有差异，则更新盘点单为没有差异
-            $map['inventory_code'] = $inventory_code;
-            $inventory_detail_infos = M('stock_inventory_detail')->where($map)->select();
-            unset($map);
-            $is_diff = 0;
-            foreach($inventory_detail_infos as $inventory_detail_info){
-                if($inventory_detail_info['pro_qty'] != $inventory_detail_info['theoretical_qty']){
-                    $is_diff = 1;
+        if (empty($inventoryInfo)) {
+            $this->msgReturn(false, '请先录入盘点量');
+        }
+        
+        $inventoryCode = ''; //盘点单号
+       
+        foreach ($inventoryInfo as $id => $qty) {
+            if (empty($id)) {
+                $this->msgReturn(false, '参数有误');
+            }
+            if (strlen(formatMoney($qty, 2, 1)) > 2) {
+                $this->msgReturn(0,'实盘量只能精确到两位小数点');
+            }
+            $proQty = formatMoney($qty, 2);
+            
+            $map['id'] = $id;
+            //获取盘点单号
+            if (empty($inventoryCode)) {
+                $inventoryDetailInfo = M('stock_inventory_detail')->where($map)->find();
+                
+                $inventoryCode = $inventoryDetailInfo['inventory_code'];
+                //获取盘点单
+                $where['code'] = $inventoryCode;
+                $inventoryInfoStatus = M('stock_inventory')->where($where)->getField('status');
+                if (empty($inventoryInfoStatus)) {
+                    $this->msgReturn(false, '参数有误');
+                }
+                if ($inventoryInfoStatus == 'confirmed' || $inventoryInfoStatus == 'close') {
+                    $this->msgReturn(false, '已经确认或者关闭的盘点单');
                 }
             }
-            $map['code'] = $inventory_code;
-            M('stock_inventory')->where($map)->save(array('is_diff'=>$is_diff));
+            
+            //变更盘点详情状态
+            $data['pro_qty'] = $proQty;
+            $data['status'] = 'done';
+            M('stock_inventory_detail')->where($map)->save($data);
+            unset($data);
             unset($map);
         }
-
-        $this->ajaxReturn(array('status'=>1));
+        
+        //是否有差异
+        $map['inventory_code'] = $inventoryCode;
+        $inventoryDetailInfo = M('stock_inventory_detail')->field('SUM(pro_qty) as pro_qty,SUM(theoretical_qty) as theoretical_qty')->where($map)->find();
+        
+        $inventoryDetailInfoStatus = M('stock_inventory_detail')->where($map)->getField('status', true);
+        $inventoryDetailInfoStatus = array_unique($inventoryDetailInfoStatus);
+        
+        //更新盘点单状态为待确认 如果有差异，则更新盘点单的是否有差异
+        $map['code'] = $inventoryCode;
+        if (count($inventoryDetailInfoStatus) == 1 && $inventoryDetailInfoStatus[0] == 'done') { 
+            $data['status'] = 'confirm'; //待确认
+        } else {
+            $data['status'] = 'inventorying'; //盘点中
+        }
+        if($inventoryDetailInfo['pro_qty'] != $inventoryDetailInfo['theoretical_qty']){
+            $data['is_diff'] = 1;
+        }
+        
+        M('stock_inventory')->where($map)->save($data);
+        unset($map);
+        
+        $this->msgReturn(true, '录入成功');
     }
 }
