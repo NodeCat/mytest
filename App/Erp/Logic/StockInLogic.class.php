@@ -603,7 +603,7 @@ class StockInLogic{
 			return 0;
 		}
 		else {
-			return $res['receipt_qty'];
+			return bcadd($res['prepare_qty'], $res['done_qty'], 2);
 		}
 	}
 	public function getLine($inId,$code,$batch = ''){
