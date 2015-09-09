@@ -45,7 +45,7 @@
         <div class="list-group-item list-group-item-inf">
           <h4 class="list-group-item-heading">
             <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
-              【{$vo.customer_info.shop_name}】{$vo.delivery_address}
+              【{$vo.order_info.shop_name}】{$vo.delivery_address}
               <i class="glyphicon glyphicon-map-marker">
               </i>
               <span>
@@ -110,11 +110,11 @@
         -->
         <i class="glyphicon glyphicon-yen">
         </i>
-        {$vo.final_price} 元 &nbsp;&nbsp;
+        {$vo.final_price_order} 元 &nbsp;&nbsp;
         <if condition="$vo.pay_type eq 2">
           账期支付
           <else/>
-        {$vo.pay_status}
+        {$vo.pay_status_cn}
         </if>
         &nbsp;
         <switch name="vo['status_cn']">
@@ -137,10 +137,10 @@
         <div class="panel-collapse collapse" aria-expanded="true" id="info_{$vo.refer_code}">
           <form class="order">
             <input type="hidden" name="id" value="{$vo.refer_code}" />
-            <input type="hidden" name="bid" value="{$vo.id}" />
+            <input type="hidden" name="bid" value="{$vo.bid}" />
 
             <ul class="list-group">
-              <volist name="vo['detail']" id="v">
+              <volist name="vo['bill_details']" id="v">
                   <li class="list-group-item">
                     {$v.pro_code} {$v.pro_name} {$vo.pro_attrs} <label class="label label-info">请在下面录入实际收货数量：</label>
                   </li>
@@ -148,9 +148,9 @@
                     <div class="input-group row">
                     <input type="hidden" name="order_detail_id[{$v.id}]" value="{$v.order_detail_id}" />
                     
-                      <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.single_price}" />
+                      <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.price}" />
                       
-                      <span class="input-group-addon">¥{$v.single_price}元/{$v.close_unit}</span>
+                      <span class="input-group-addon">¥{$v.price}元/{$v.close_unit}</span>
                        
                       <input type="number" name="quantity[{$v.id}]" min="0" class="real form-control p_qty" placeholder="{$v.quantity}" value="{$v.quantity}" data-val="{$v.quantity}" onkeyup="this.value=this.value.replace(/[^\\d\.]/g,'')" >
                       <span class="input-group-addon">{$v.unit_id}</span>
@@ -213,11 +213,11 @@
                 <span class="input-group-addon">
                   应收 ¥
                   <span class="p_final">
-                    {$vo.receivable_sum}
+                    {$vo.final_price}
                   </span>
                   元
                 </span>
-                <input type="hidden" name="final_price" class="form-control p_final" paystatus="{$vo.pay_status}" placeholder="{$vo.receivable_sum}" value="{$vo.receivable_sum}" readonly>
+                <input type="hidden" name="final_price" class="form-control p_final" paystatus="{$vo.pay_status}" placeholder="{$vo.final_price}" value="{$vo.final_price}" readonly>
                 <span class="input-group-addon">
                   实收
                 </span>
@@ -225,21 +225,21 @@
                   <case value="已签收" break="0">
                   </case>
                   <case value="已完成" break="1">
-                    <if condition="$vo.pay_status eq '已付款'">
+                    <if condition="$vo.pay_status eq '1'">
                       <span class="form-control p_deal">
                         该订单已网上付款
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
+                    value="{$vo.deal_price}" readonly>
                     <elseif condition="$vo.pay_type eq 2" />
                       <span class="form-control p_deal">
                         该订单是账期支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
+                    value="{$vo.deal_price}" readonly>
                     <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
+                    value="{$vo.deal_price}" readonly>
                     </if>
                   </case>
                   <case value="已退货" break="1">
@@ -247,21 +247,21 @@
                     value="0" readonly>
                   </case>
                   <default />
-                    <if condition="$vo.pay_status eq '已付款'">
+                    <if condition="$vo.pay_status eq '1'">
                       <span class="form-control p_deal">
                         该订单已网上付款
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
+                    value="{$vo.deal_price}" readonly>
                     <elseif condition="$vo.pay_type eq 2" />
                       <span class="form-control p_deal">
                         该订单是账期支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
+                    value="{$vo.deal_price}" readonly>
                     <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.real_sum}" readonly>
+                    value="{$vo.deal_price}" readonly>
                     </if>
                 </switch>
               </div>

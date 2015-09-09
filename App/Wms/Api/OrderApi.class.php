@@ -86,6 +86,7 @@ class OrderApi extends CommApi{
                     'spec' => $order_detail['spec'],
                     'unit_id' => $order_detail['unit_id'],
                     'close_unit' => $order_detail['close_unit'],
+                    'net_weight' => $order_detail['net_weight'],
                     );
             }
 

@@ -63,6 +63,7 @@ class StockOutLogic{
             $detail['price'] = $val['price'];
             $detail['unit_id'] = $val['unit_id'];
             $detail['close_unit'] = $val['close_unit'];
+            $detail['net_weight'] = $val['net_weight'];
             //如果是加工出库单 采购出库单，则默认的实际发货量为0，其余类型出库单默认发货量等于订单量
             if(in_array($stock_out_type , array('MNO','SO')) ) {
                 $detail['delivery_qty'] = 0;

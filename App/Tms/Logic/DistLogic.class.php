@@ -38,31 +38,50 @@ class DistLogic {
         return false;
     }
 
-    public function bill_list($dist_id)
+    /**
+     * [bill_list 获取配送单详情和出库单关联数据]
+     * @param  array  $param [数字或数组形式的配送单ID或详情ID或出库单ID]
+     * @return [type]        [description]
+     */
+    public function bill_list($param = array())
     {
-        if (empty($dist_id)) {
+        if (empty($param['pid']) && empty($param['id']) && empty($param['bill_out_id'])) {
             return false;
         }
-        if (is_array($dist_id)) {
-            $map['pid'] = array('in', $dist_id);
-        } else {
-            $map['pid'] = $dist_id;
+        //组合条件
+        foreach ($param as $key => $val) {
+            if (is_array($val)) {
+                $map[$key] = array('in', $val);
+            } else {
+                $map[$key] = $val;
+            }
         }
         $map['is_deleted'] = 0;
         $list = D('DistDetail')->relation('StockOut')->where($map)->select();
-        $res = array();
+        //订单数据
         $cA = A('Common/Order', 'Logic');
+        $order_ids = array_column($list, 'refer_code');
+        $param['order_ids'] = $order_ids;
+        $param['itemsPerPage'] = count($order_ids);
+        $orders = $cA->order($param);
         $dmap['is_deleted'] = 0;
+        $res = array();
+        //出库单关联详情和订单数据
         foreach ($list as $value) {
             if ($value['bid']) {
                 $dmap['pid'] = $value['bid'];
                 $value['bill_details'] = M('stock_bill_out_detail')->where($dmap)->select();
-                $value['customer_info'] = $cA->customer(array('id' => $value['customer_id']));
+                foreach ($orders as $order) {
+                    if ($order['id'] == $value['refer_code']) {
+                        $value['order_info'] = $order;
+                    }
+                }
                 $res[] = $value;
             }
         }
         return $res;
     }
+
     /**
      * [getPayStatusByCode 根据支付状态码获取中文状态]
      * @param  [type] $code [description]
@@ -105,7 +124,7 @@ class DistLogic {
                 $s = '已签收';
                 break;
             case '3':
-                $s = '已拒收';
+                $s = '已退货';
                 break;
             case '4':
                 $s = '已完成';
