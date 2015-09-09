@@ -112,10 +112,12 @@ $(function () {
 	$(document).on('click','.form-ajax button[type=submit]',function(){
 /*
 		if(!$(this).parents('form').valid()){alert('验证失败，请检查您的输入。');return false;}
-*/
+*/		
+		$(this).addClass('disabled');
 		var addr,params;
 		params=$(this).parents('form').serialize();
 		addr=$(this).parents('form').attr('action');
+		_this = this;
 		$.ajax({
 			url:addr,
 			type:'post',
@@ -124,6 +126,7 @@ $(function () {
 			dataType:'json',
 			data:params,
 			success: function(msg){
+				$(_this).removeClass('disabled');
 				alert(msg.msg);
 				if(msg.url != '' && msg.url != null ){
 		          setTimeout(function() {document.location=msg.url}, 0);
