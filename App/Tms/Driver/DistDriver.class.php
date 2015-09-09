@@ -1101,4 +1101,29 @@ class DistDriver extends Controller {
         }
         $this->ajaxReturn($return);
     }
+
+    // 线路过滤
+    public function lineFilter()
+    {
+        $sign_id  = I('post.id', 0);
+        $data = S($sign_id);
+        $A = A('Tms/Kalman', 'Logic');
+        $A->ponitFilter($data['points'], 'lat');
+        $A->ponitFilter($data['points'], 'lng');
+        $distance = A('Tms/Gps', 'Logic')->getDistance($data['points']);
+        $res = M('tms_sign_list')->save(array('id' => $sign_id, 'distance' => $distance));// 把路程和时间写入签到表
+        if ($res) {
+            S($sign_id, $data, 0);
+            $return = array(
+                'status' => 1,
+                'msg'    => '过滤成功',
+            );
+        } else {
+            $return = array(
+                'status' => 0,
+                'msg'    => '过滤失败',
+            );
+        }
+        $this->ajaxReturn($return);
+    }
 }
