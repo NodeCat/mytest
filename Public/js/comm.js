@@ -126,10 +126,12 @@ $(function () {
 			dataType:'json',
 			data:params,
 			success: function(msg){
-				$(_this).removeClass('disabled');
 				alert(msg.msg);
 				if(msg.url != '' && msg.url != null ){
 		          setTimeout(function() {document.location=msg.url}, 0);
+		        }
+		        if (msg.url == '' || msg.url == null) {
+		        	$(_this).removeClass('disabled');
 		        }
 		        if(msg.data != '' && msg.data != null ){
 		            $('.content').html(msg.data);
