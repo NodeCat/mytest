@@ -142,7 +142,7 @@
 <tbody>
 <volist name="data" id="vo">
 <tr>
-  <td>{$vo.refer_code}</td>
+  <td><a href="{:U('Order/index',array('id'=>$vo['refer_code']))}" target="_blank">{$vo.refer_code}</a></td>
   <td>{$vo.status_cn}</td>
   <td>
    <if condition="$vo.pay_type eq 2">账期支付

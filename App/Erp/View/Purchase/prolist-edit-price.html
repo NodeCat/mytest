@@ -1,0 +1,83 @@
+<div role="tabpanel">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">产品列表</a></li>
+    <li role="presentation" class="hidden"><a href="#home" aria-controls="home" role="tab" data-toggle="tab" style="padding: 5px 10px;">批量添加</a></li>
+  </ul>
+  <div class="tab-content">
+    <div role="tabpanel" class="tab-pane active" id="home">
+    	<table id="table-pro" class="data-table table table-condensed table-hover" style="">
+  		<thead>
+  			<th>产品名称</th><th>采购数量</th><th>计量单位</th><th>采购单价</th><th>总价</th>
+  		</thead>
+  		<tbody>
+      <volist name="pros" id="vo">
+        
+      <tr class="tr-cur">
+        <td style="width:50%;">
+          <input class="pro-id-only" type="hidden" value="{$vo.id}" name="pros[0][id]" />
+          <input type="text" value="{$vo.pro_code}{$vo.pro_name}{$vo.pro_attrs}"  placeholder="编号" class="pro_names typeahead form-control input-sm" autocomplete="off" readonly></td>
+        <td  style="width:10%;">
+          <input type="text" value="{$vo.pro_qty}" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" readonly>
+        </td>
+        <td style="width:10%;">
+          <input type="text" placeholder="单位"  value="件" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" readonly>
+        </td>
+        <td style="width:10%;">
+          <input type="text" name="pros[0][price_unit]" placeholder="单价"  value="{$vo.price_unit}" class="pro-price-only form-control input-sm text-left p_price">
+        </td>
+        <td style="width:10%;"  class="text-left">
+          <input type="text"  value="{$vo.price_subtotal}" class="pro_qty form-control input-sm text-left p_qty" autocomplete="off" readonly>
+        </td>
+      </tr>
+        
+      </volist>
+
+  		</tbody>
+  		</table>
+    </div>
+  </div>
+
+</div>
+
+  </div>
+</div>
+</form>
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 1px 10px;
+  font-size: 13px;
+}
+
+</style>
+<script type="text/javascript">
+
+$(function(){
+	var pro_id = $('.pro-id-only');
+	var pro_price = $('.pro-price-only');
+	pro_id.each(function(i){
+		var old_name = $(this).attr('name');
+		var new_name = old_name.replace('0', i);
+		$(this).attr('name', new_name);
+	})
+	pro_price.each(function(i){
+		var old_name = $(this).attr('name');
+		var new_name = old_name.replace('0', i);
+		$(this).attr('name', new_name);
+	})
+})
+   
+</script>
+
+
+<style type="text/css">
+#table-pro input[type=text]{
+  padding: 0px 10px;
+  font-size: 13px;
+}
+#table-pro input[type=text],#table-pro select{
+  border: none;
+  box-shadow:none;
+  height: 24px;
+}
+</style>

@@ -30,8 +30,11 @@
 
   <in name="data['state']" value="$toolbar_tr['refund']['domain']">
     <eq name='data.invoice_method_code' value='0'>
-  <a href="{:U('refund',array($pk => $data[$pk]))}" data-title="生成冲红单" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-repeat"></i> 生成冲红单</a>
+  <a href="javascript:void(0)" id="created_refund" data-title="生成冲红单" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-repeat"></i> 生成冲红单</a>
     </eq>
+  </in>
+  <in name="data['state']" value="$toolbar_tr['price']['domain']">
+    <a href="{:U('updatePrice',array($pk => $data[$pk]))}" data-title="编辑价格" rel="tooltip" data-placement="bottom" class="btn btn-sm"><i class="glyphicon glyphicon-edit"></i> 编辑价格</a>
   </in>
 
 
@@ -164,6 +167,7 @@
 </div>
 </form>
 <include file="dialog_out" />
+<include file="refund" />
 <script type="text/javascript">
 
   var alert_dialog = {
@@ -186,6 +190,44 @@
         $('[aria-labelledby = gridSystemModalLabeldialog]').remove();
       }
   };
+  //冲红提示
+  $(document).on('click', '#created_refund', function(){
+	   var url = "/purchase/refund";
+	   $.ajax({
+			url:url,
+			type:'get',
+			cache : false,
+			async:true,
+			data:"id="+{$data[$pk]},
+			success: function(msg){
+				if (msg.data == '') {
+					alert(msg.msg);
+					return false;
+				}
+				msg.data.title = '冲红提示';
+				var html = template('create_refund_hint', msg.data);
+				$('body').append(html);
+				return false;
+			}
+		});
+  })
+   $(document).on('click', '#confirm', function(){
+	   var url = "/purchase/refund";
+	   var form_ajax = $('#form-refund').serialize();
+	   alert_dialog.hide();
+	   $.ajax({
+			url:url,
+			type:'get',
+			cache : false,
+			async:true,
+			data:form_ajax,
+			success: function(msg){
+				alert(msg.msg);
+				return false;
+			}
+		});
+  })
+
   //退货弹框
   $(document).on('click','[attr = out]',function(){
       var id = $(this).attr('transfer_id');
