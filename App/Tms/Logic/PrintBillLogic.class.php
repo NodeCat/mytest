@@ -15,14 +15,9 @@ class PrintBillLogic {
      * @param  [integer] $ver  [WMS版本]
      * @return [json]          [打印指令与数据组合的json串]
      */
-    public function printBill($bill, $ver = 1) {
+    public function printBill($bill) {
         //获取有效的打印数据
-        if($ver === 1){
-            $pdata = $this->getPrintDataByOrder($bill);
-        }
-        else {
-           $pdata = $this->getPrintDataByBill($bill); 
-        }
+        $pdata = $this->getPrintDataByBill($bill); 
         $head = $this->getHead($pdata);
         $list = $this->getList($pdata);
         $foot = $this->getFoot($pdata);
@@ -35,7 +30,7 @@ class PrintBillLogic {
      * @param  [type] $order [description]
      * @return [type]        [description]
      */
-    public function getPrintDataByOrder($order) {
+    public function getPrintDataByBill($order) {
         //订单描述
         $data = array(
             'shop_name'    => $order['shop_name'],
@@ -80,51 +75,6 @@ class PrintBillLogic {
         $data['refuse'] = $refuse;
         return $data;
 
-    }
-
-    /**
-     * [getPrintDataByBill 根据出库单组合一组打印数据]
-     * @param  [type] $bill [description]
-     * @return [type]       [description]
-     */
-    public function getPrintDataByBill($bill) {
-        //订单描述
-        $data = array(
-            'shop_name'    => $bill['shop_name'],
-            'order_id'     => $bill['refer_code'],
-            'created_time' => $bill['order_info']['created_time'],
-            'pay_status'   => $bill['pay_status'],
-            'final_price'  => $bill['order_info']['final_price'],
-            'minus_amount' => $bill['minus_amount'],
-            'deliver_fee'  => $bill['deliver_fee'],
-            'deal_price'   => $bill['deal_price'],
-        );
-        //签收列表
-        foreach($bill['detail'] as $val) {
-            //一个签收商品数据
-            $tmp_sign = array(
-                'name'             => $val['pro_name'],
-                'actual_price'     => $val['single_price'],
-                'actual_quantity'  => $val['quantity'],
-                'actual_sum_price' => $val['sum_price'],
-            );
-            $sign[] = $tmp_sign;
-        }
-        //退货列表
-        if(is_array($bill['refuse_bill'])) {
-            foreach($bill['refuse_bill'] as $v) {
-                $tmp_refuse = array(
-                    'name'      => $v['pro_name'],
-                    'price'     => $v['price_unit'],
-                    'quantity'  => $v['expected_qty'],
-                    'sum_price' => 0,
-                );
-                $refuse[] = $tmp_refuse;
-            }
-        }
-        $data['sign'] = $sign;
-        $data['refuse'] = $refuse;
-        return $data;
     }
 
     /**

@@ -58,6 +58,7 @@ class StockOutLogic{
             $detail = array();
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['pro_code'];
+            $detail['od_id'] = $val['od_id'];
             $detail['order_qty'] = $val['order_qty'];
             $detail['former_qty'] = $val['order_qty'];
             $detail['price'] = $val['price'];

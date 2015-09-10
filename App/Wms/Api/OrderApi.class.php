@@ -79,6 +79,7 @@ class OrderApi extends CommApi{
 
             foreach($order_info['info']['detail'] as $order_detail){
                 $detail[] = array(
+                    'od_id' => $order_detail['od_id'],
                     'pro_code' => $order_detail['sku_number'],
                     'order_qty' => $order_detail['quantity'],
                     'price' => $order_detail['price'],

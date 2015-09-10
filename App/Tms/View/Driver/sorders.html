@@ -45,7 +45,7 @@
         <div class="list-group-item list-group-item-inf">
           <h4 class="list-group-item-heading">
             <a data-lat="'{$vo.geo.lat}'" data-lng="'{$vo.geo.lng}'" class="navigation-map">
-              【{$vo.order_info.shop_name}】{$vo.delivery_address}
+              【{$vo.customer_info.shop_name}】{$vo.customer_info.address}
               <i class="glyphicon glyphicon-map-marker">
               </i>
               <span>
@@ -64,10 +64,10 @@
           </a>
           <hr/>
           <i class="glyphicon glyphicon-user"></i>
-          {$vo.customer_realname} &nbsp;&nbsp;
+          {$vo.customer_info.name} &nbsp;&nbsp;
           <i class="glyphicon glyphicon-phone"></i>
           <a href="tel:{$vo.customer_phone}" class="user-mobile">
-            {$vo.customer_phone} &nbsp;
+            {$vo.customer_info.mobile} &nbsp;
             <i class="glyphicon glyphicon-earphone"></i>
             <small>拨号</small>
           </a>
@@ -146,7 +146,7 @@
                   </li>
                   <li class="list-group-item">
                     <div class="input-group row">
-                    <input type="hidden" name="order_detail_id[{$v.id}]" value="{$v.order_detail_id}" />
+                    <input type="hidden" name="order_detail_id[{$v.id}]" value="{$v.od_id}" />
                     
                       <input type="hidden" name="price_unit[{$v.id}]" class="p_price" value="{$v.price}" />
                       

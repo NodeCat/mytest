@@ -5,8 +5,12 @@ use Think\Controller;
 
 class DistDriver extends Controller {
 
-    //司机提货
-    public function delivery() {
+    /**
+     * 司机提货
+     * @return [type] [description]
+     */
+    public function delivery()
+    {
         $id = I('post.code',0);
         if (IS_GET) {
             //只显示当天的记录
@@ -59,20 +63,16 @@ class DistDriver extends Controller {
             if (!empty($delivery)) {//若该配送单已被认领
                 if($delivery['mobile'] == session('user.mobile')) {//如果认领的司机是同一个人
                     $this->error = '提货失败，该单据您已提货';
-                }
-                else {
+                } else {
                     //如果是另外一个司机认领的，则逻辑删除掉之前的认领纪录
-                    $map['dist_id'] = $id;
-                    $map['order'] = 'created_time DESC';
-                    $bills = A('Tms/Dist', 'Logic')->billOut($map);
-                    $orders = $bills['orders'];
+                    $map['pid'] = $id;
+                    $orders = A('Tms/Dist', 'Logic')->bill_list($map);
                     unset($map);
                     foreach ($orders as $key => $value) {
-                        if($value['order_info']['status_cn'] != "已装车") {
-                            $status = '1';//只要一单不是以装车,就停止
+                        if($value['status'] != '1') {
+                            $status = '1';//只要一单不是已装车,就停止
                             break;
-                        }
-                        else {
+                        } else {
                             $status = '2';
                         }
                     }
@@ -81,8 +81,7 @@ class DistDriver extends Controller {
                         $map['id'] =$delivery['id'];
                         $data['status'] = '0';
                         $M->where($map)->save($data);
-                    }
-                    else {
+                    } else {
                         // 如果别人提了，并且只要一单不是以装车，就不能提了
                         $this->error="该配送单已被他人提走并且在配送中,不能被认领";
                     }
@@ -112,7 +111,7 @@ class DistDriver extends Controller {
                 //已配送或已结算的配送单不能认领
                 $this->error = '提货失败，完成配送或结算的配送单不能再次提货';
             } elseif (
-                !empty($deliver_date) &&(strtotime($deliver_date) < strtotime($yestoday) || strtotime($deliver_date) > strtotime($end_date))
+                !empty($deliver_date) && (strtotime($deliver_date) < strtotime($yestoday) || strtotime($deliver_date) > strtotime($end_date))
                 || empty($deliver_date) && (strtotime($dist['created_time']) < strtotime($yestoday) || strtotime($dist['created_time']) > strtotime($end_date))
             ) {
                 //配送日期不为空，则判断配送日期是否在两天以内；配送日期为空，则判断创建日期是否在两天以内
@@ -136,10 +135,8 @@ class DistDriver extends Controller {
                 //实例化Common下的OrderLogic
                 $cA = A('Common/Order','Logic');
                 if (!isset($orders) || empty($orders)) {
-                    $map['dist_id'] = $dist['id'];
-                    $map['order'] = 'created_time DESC';
-                    $bills = A('Tms/Dist', 'Logic')->billOut($map);
-                    $orders = $bills['orders'];
+                    $map['pid'] = $dist['id'];
+                    $orders = A('Tms/Dist', 'Logic')->bill_list($map);
                     unset($map);
                 }
                 //取出订单路线id
@@ -158,12 +155,10 @@ class DistDriver extends Controller {
                 foreach ($delivery_all as $va) {
                     if($va['type'] == '0') {//提货
                         unset($map);
-                        $map['dist_id'] = $va['dist_id'];
-                        $map['order'] = 'created_time DESC';
-                        $bill_outs = A('Tms/Dist', 'Logic')->billOut($map);
-                        $ords = $bill_outs['orders'];
+                        $map['pid'] = $va['dist_id'];
+                        $ords = A('Tms/Dist', 'Logic')->bill_list($map);
                         foreach ($ords as $v) {
-                            if($v['order_info']['status_cn'] != "已完成") {
+                            if($v['status'] != '4') {
                                 $status = '3';//只要有一个订单不是已完成，
                                 break 2;
                             }
@@ -188,7 +183,7 @@ class DistDriver extends Controller {
                 A('Wms/Distribution', 'Logic')->set_dist_detail_status(array('status' => '1','dist_id' => $id));
                 if ($res) {
                     unset($map);
-                    $map['pid']        = $id;
+                    $map['pid'] = $id;
                     $map['is_deleted'] = 0;
                     $detail = M('stock_wave_distribution_detail')->where($map)->select();
                     $bill_out_ids = array_column($detail,'bill_out_id');
@@ -207,7 +202,7 @@ class DistDriver extends Controller {
                     $sres = A('Tms/SignIn', 'Logic')->sendDeliveryMsg($orders, $id);
                     $this->msg = "提货成功";
                     // 如果现有的配送单全部结款已完成，就再次签到，生成新的签到记录
-                    if ($status=='4') {
+                    if ($status == '4') {
                         unset($map);
                         $map['updated_time'] = $data['updated_time'];
                         $map['created_time'] = $data['created_time'];
@@ -226,8 +221,7 @@ class DistDriver extends Controller {
                     $map['delivery_time'] = $data['created_time'];//加入提货时间
                     $map['id']            = $sign['id'];
                     M('TmsSignList')->save($map);
-                }
-                else {
+                } else {
                     $this->error = "提货失败,请重新提货";
                 }
             }
@@ -243,8 +237,12 @@ class DistDriver extends Controller {
         $this->ajaxReturn($res);
     }
 
-    //出库单列表
-    public function orders() {
+    /**
+     * [orders 配送单对应订单列表]
+     * @return [type] [description]
+     */
+    public function orders()
+    {
         $id = I('get.id',0);
         if(!empty($id)) {
             $oid = I('get.oid/d',0);
@@ -282,7 +280,7 @@ class DistDriver extends Controller {
                     }
                     $val['user_id'] = $val['customer_id'];
                     //收获地址坐标
-                    $val['geo'] = json_decode($val['order_info']['geo'],TRUE);
+                    $val['geo'] = array('lat' => $val['customer_info']['lat'], 'lng' => $val['customer_info']['lng']);
                     $sign_in = $M->table('stock_wave_distribution_detail')
                         ->where(array('bill_out_id' => $val['bid']))
                         ->find();
@@ -304,15 +302,9 @@ class DistDriver extends Controller {
                                 $v['sum_price']     = bcmul($sign_in_detail['real_sign_wgt'], $sign_in_detail['price_unit'],2);
                             }
                         }
-                        //获取订单详情ID
-                        foreach ($val['order_info']['detail'] as $od) {
-                            if ($v['pro_code'] == $od['sku_number']) {
-                                $v['order_detail_id'] = $od['id'];
-                            }
-                        }
                     }
                     //获取打印小票要用的数据
-                    $val['printStr'] = A('Tms/PrintBill', 'Logic')->printBill($val['order_info']);
+                    $val['printStr'] = A('Tms/PrintBill', 'Logic')->printBill($val);
                     $lists[$val['user_id']][] = $val;
                 }
                 $this->dist_id = $res['dist_id'];
@@ -330,8 +322,12 @@ class DistDriver extends Controller {
         $this->display('Driver/sorders');
     }
 
-    //司机签收
-    public function sign() {
+    /**
+     * 司机签收
+     * @return [type] [description]
+     */
+    public function sign()
+    {
         //实收数量或重量
         $quantity    = I('post.quantity');
         $weight      = I('post.weight', 0);
@@ -508,8 +504,17 @@ class DistDriver extends Controller {
         $this->ajaxReturn($re);
     }
 
-    //司机签收后订单回调
-    protected function set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg) {
+    /**
+     * 司机签收后订单回调
+     * @param [type] $refer_code [description]
+     * @param [type] $deal_price [description]
+     * @param [type] $quantity   [description]
+     * @param [type] $weight     [description]
+     * @param [type] $price_unit [description]
+     * @param [type] $sign_msg   [description]
+     */
+    protected function set_order_status($refer_code, $deal_price, $quantity, $weight, $price_unit, $sign_msg)
+    {
         $map['suborder_id'] = $refer_code;
         $map['status']   = '6';
         $map['deal_price'] = $deal_price;
@@ -530,8 +535,12 @@ class DistDriver extends Controller {
         return  $res;
     }
 
-    //客户退货
-    public function reject() {
+    /**
+     * 客户拒收
+     * @return [type] [description]
+     */
+    public function reject()
+    {
         $refer_code = I('post.id/d',0);
         $map['suborder_id'] = $refer_code;
         $map['status'] = '7';
@@ -639,8 +648,12 @@ class DistDriver extends Controller {
         $this->ajaxReturn($res);
     }
 
-    //司机当日收货统计
-    public function report() {
+    /**
+     * 司机当日收货统计
+     * @return [type] [description]
+     */
+    public function report()
+    {
         $sign = M('TmsSignList')->field('id')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
         $map['mobile'] = session('user.mobile');
         $map['status'] = '1';
@@ -654,8 +667,12 @@ class DistDriver extends Controller {
         $this->display('Driver/report');
     }
 
-    // 车单纬度统计
-    public function orderList() {
+    /**
+     * 车单纬度统计
+     * @return [type] [description]
+     */
+    public function orderList()
+    {
 
         $id = I('get.id',0);
         if(empty($id)){
@@ -776,7 +793,14 @@ class DistDriver extends Controller {
         $this->display('Driver/orderlist');
     }
 
-    //统一的返回方法
+    /**
+     * 统一的返回方法
+     * @param  [type] $res  [description]
+     * @param  string $msg  [description]
+     * @param  string $data [description]
+     * @param  string $url  [description]
+     * @return [type]       [description]
+     */
     protected function msgReturn($res, $msg='', $data = '', $url=''){
         $msg = empty($msg)?($res > 0 ?'操作成功':'操作失败'):$msg;
         if(IS_AJAX){
@@ -791,7 +815,10 @@ class DistDriver extends Controller {
         exit();
     }
 
-    //任务提货
+    /**
+     * 任务提货
+     * @return [type] [description]
+     */
     private function taskDelivery()
     {   
         $dist_code = $this->dist_code;
@@ -908,7 +935,10 @@ class DistDriver extends Controller {
         $this->ajaxReturn($res);
     }
 
-    //配送任务列表
+    /**
+     * 配送任务列表
+     * @return [type] [description]
+     */
     public function taskOrders()
     {
         $id = I('get.id',0);
@@ -954,7 +984,10 @@ class DistDriver extends Controller {
         $this->display('Driver/taskorders');
     }
 
-    //任务签到
+    /**
+     * 任务签到
+     * @return [type] [description]
+     */
     public function taskSign()
     {
         $id    = I('post.id');
@@ -996,7 +1029,10 @@ class DistDriver extends Controller {
     }
 
 
-    //任务结束
+    /**
+     * 任务结束
+     * @return [type] [description]
+     */
     public function signFinished()
     {
         $dist_id = I('post.id');
@@ -1030,7 +1066,10 @@ class DistDriver extends Controller {
         $this->ajaxReturn($return);
     }
 
-    // 司机任务签到收集点
+    /**
+     * 司机任务签到收集点
+     * @return [type] [description]
+     */
     public function getPoint()
     {
     //"{'id':2,'lng':'12112','lat':'1213','time':'2015-08-09'}"

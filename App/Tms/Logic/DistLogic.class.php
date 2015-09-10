@@ -60,10 +60,10 @@ class DistLogic {
         $list = D('DistDetail')->relation('StockOut')->where($map)->select();
         //订单数据
         $cA = A('Common/Order', 'Logic');
-        $order_ids = array_column($list, 'refer_code');
-        $param['order_ids'] = $order_ids;
+        $order_ids = array_column($list, 'customer_id');
+        $param['customer_ids'] = $order_ids;
         $param['itemsPerPage'] = count($order_ids);
-        $orders = $cA->order($param);
+        $customers = $cA->getCustomerList($param);
         $dmap['is_deleted'] = 0;
         $res = array();
         //出库单关联详情和订单数据
@@ -71,9 +71,9 @@ class DistLogic {
             if ($value['bid']) {
                 $dmap['pid'] = $value['bid'];
                 $value['bill_details'] = M('stock_bill_out_detail')->where($dmap)->select();
-                foreach ($orders as $order) {
-                    if ($order['id'] == $value['refer_code']) {
-                        $value['order_info'] = $order;
+                foreach ($customers as $customer) {
+                    if ($customer['id'] == $value['customer_id']) {
+                        $value['customer_info'] = $customer;
                     }
                 }
                 $res[] = $value;
