@@ -387,12 +387,6 @@
     });
 
     function getPoint(str) {
-      $.post("{:U('getPoint')}",str,function(res) {
-        HostApp.toast(res.msg);
-      });
-    }
-
-    function getPoint(str) {
       var geo = str;
       if (geo.id.indexOf('A') != -1) {
         $.post("{:U('checkPoint')}",str,function(res) {

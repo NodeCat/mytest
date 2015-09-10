@@ -90,7 +90,7 @@
             data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
             aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
           </case>
-          <case value="已退货" break="1">
+          <case value="已拒收" break="1">
             <a onclick="check(this)" class="list-group-item list-group-item-danger collapsed"
             data-toggle="collapse" data-target="#info_{$vo.refer_code}" aria-expanded="true"
             aria-controls="info_{$vo.refer_code}" data-oid="{$vo.refer_code}" >
@@ -125,7 +125,7 @@
               {$vo.status_cn}
             </label>
           </case>
-          <case value="已退货" break="1">
+          <case value="已拒收" break="1">
             <label class="label label-danger">
               {$vo.status_cn}
             </label>
@@ -242,7 +242,7 @@
                     value="{$vo.real_sum}" readonly>
                     </if>
                   </case>
-                  <case value="已退货" break="1">
+                  <case value="已拒收" break="1">
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="0" readonly>
                   </case>
@@ -291,7 +291,7 @@
                     </div>
                 </div>
               </case>
-              <case value="已退货" break="0">
+              <case value="已拒收" break="0">
               </case>
               <case value="已发运" break="0">
               </case>
