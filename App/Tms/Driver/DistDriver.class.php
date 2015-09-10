@@ -264,6 +264,7 @@ class DistDriver extends Controller {
             $bmap['pid'] = $res['dist_id'];
             $A = A('Tms/Dist','Logic');
             $orders = $A->bill_list($bmap);
+            dump($orders);
             if($orders) {
                 $this->orderCount = count($orders);
                 foreach ($orders as &$val) {
@@ -492,9 +493,9 @@ class DistDriver extends Controller {
             if (empty($cRes['res']) && $cRes['status'] == 0) {
                 //给母账户发送短信
                 $sA = A('Tms/SignIn', 'Logic');
-                $sres = $sA->sendParentAccountMsg($bill['order_info']);
+                $sres = $sA->sendParentAccountMsg($bill);
                 if (!empty($reject_detail)) {
-                    $rres = $sA->sendRejectMsg($bill['order_info'], $reject_detail);
+                    $rres = $sA->sendRejectMsg($bill, $reject_detail);
                 }
             }
             $json = array('status' => $status, 'msg' => $msg);
@@ -642,7 +643,7 @@ class DistDriver extends Controller {
             }
             //发送拒收短信
             if ($reasons && empty($cRes['res']) && $cRes['status'] == 0) {
-                $sres = $sA->sendRejectMsg($bill['order_info'], $bill_details, $reasons);
+                $sres = $sA->sendRejectMsg($bill, $bill_details, $reasons);
             }
         }
         $this->ajaxReturn($res);
