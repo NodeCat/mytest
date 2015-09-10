@@ -286,7 +286,7 @@ class DistDriver extends Controller {
                         ->find();
                     foreach ($val['bill_details'] as &$v) {
                         $v['quantity'] = $v['delivery_qty'];
-                        $v['sum_price'] = bcmul($v['price'], $v['order_qty'], 2);
+                        $v['sum_price'] = bcmul($v['price'], $v['delivery_qty'], 2);
                         if($val['status'] == '2' || $val['status'] == '4') {
                             //该出库单详情对应的签收数据
                             $dmap['bill_out_detail_id'] = $v['id'];

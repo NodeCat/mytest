@@ -26,39 +26,40 @@ class PrintBillLogic {
     }
 
     /**
-     * [getPrintDataByOrder 根据订单组合一组打印数据]
-     * @param  [type] $order [description]
+     * [getPrintDataByBill 根据订单组合一组打印数据]
+     * @param  [type] $bill [description]
      * @return [type]        [description]
      */
-    public function getPrintDataByBill($order) {
+    public function getPrintDataByBill($bill) {
         //订单描述
         $data = array(
-            'shop_name'    => $order['shop_name'],
-            'order_id'     => $order['id'],
-            'created_time' => $order['created_time'],
-            'pay_status'   => $order['pay_status'],
-            'final_price'  => $order['final_price'],
-            'minus_amount' => $order['minus_amount'],
-            'deliver_fee'  => $order['deliver_fee'],
-            'deal_price'   => $order['deal_price'],
+            'shop_name'    => $bill['customer_info']['shop_name'],
+            'order_id'     => $bill['refer_code'],
+            'created_time' => get_time(),
+            'pay_status'   => $bill['pay_status_cn'],
+            'final_price'  => $bill['final_price_order'],
+            'minus_amount' => $bill['minus_amount'],
+            'deliver_fee'  => $bill['deliver_fee'],
+            'deal_price'   => $bill['deal_price'],
+            'deposit'      => $bill['deposit'],
         );
         //获取签收商品列表和拒收商品列表
-        foreach($order['detail'] as $val) {
+        foreach($bill['bill_details'] as $val) {
             //一个签收商品数据
-            if ($val['actual_quantity'] > 0) {
+            if ($val['quantity'] > 0) {
                 $tmp_sign = array(
-                    'name'             => $val['name'],
-                    'actual_price'     => $val['single_price'],
-                    'actual_quantity'  => $val['actual_quantity'],
-                    'actual_sum_price' => $val['actual_sum_price'],
+                    'name'             => $val['pro_name'],
+                    'actual_price'     => $val['price'],
+                    'actual_quantity'  => $val['quantity'],
+                    'actual_sum_price' => $val['sum_price'],
                 );
             }
             //一个拒收商品数据
-            if($val['actual_quantity'] < $val['delivery_quantity']) {
+            if($val['quantity'] < $val['delivery_qty']) {
                 $tmp_refuse = array(
-                    'name'      => $val['name'],
+                    'name'      => $val['pro_name'],
                     'price'     => $val['price'],
-                    'quantity'  => $val['delivery_quantity'] - $val['actual_quantity'],
+                    'quantity'  => $val['delivery_qty'] - $val['quantity'],
                     'sum_price' => 0,
                 );
             }
@@ -127,8 +128,8 @@ class PrintBillLogic {
         $tmp[] = $this->getPrintCommand('print');
         $tmp[] = $this->getUnderLine();
         $tmp[] = $this->getPrintCommand('print');
-        //下单时间：
-        $created_time = '下单时间：' . $bill['created_time'];
+        //配送时间：
+        $created_time = '配送时间：' . $bill['created_time'];
         $tmp[] = $created_time;
         $tmp[] = $this->getPrintCommand('print');
         //支付方式
@@ -198,12 +199,12 @@ class PrintBillLogic {
      */
     public function getFoot($bill) {
         $tmp = array();
-        //优惠
         $tmp[] = $this->getPrintCommand('left');
-        $tmp[] = $this->formateLine('活动优惠', '-' . $this->formatePrice($bill['minus_amount']));
-        $tmp[] = $this->getPrintCommand('print');
         //运费
         $tmp[] = $this->formateLine('运费', '+' . $this->formatePrice($bill['deliver_fee']));
+        $tmp[] = $this->getPrintCommand('print');
+        //优惠
+        $tmp[] = $this->formateLine('活动优惠', '-' . $this->formatePrice($bill['minus_amount']));
         $tmp[] = $this->getPrintCommand('print');
         //退押金
         $tmp[] = $this->formateLine('退押金', '－' . $this->formatePrice($bill['deposit']));
