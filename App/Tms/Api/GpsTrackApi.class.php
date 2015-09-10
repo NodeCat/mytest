@@ -14,8 +14,6 @@ class GpsTrackApi extends CommApi {
         $data = htmlspecialchars_decode($data);
         //$data = '{"id":"3","points":[{"time":"afdsf","lng":116.382122,"lat":39.901176},{"time":"nsdfb","lng":116.387271,"lat":39.912501},{"time":"2015-07-18 01:58:28","lng":116.398258,"lat":39.904600}]}';
         $data = json_decode($data,true); 
-        $start_date = date('Y-m-d',NOW_TIME);
-        $end_date   = date('Y-m-d',strtotime('+1 Days'));
         $data['id'] = strtoupper($data['id']);
         if(stripos($data['id'],'D')===0) {//单个任务轨迹
             $type = 1;
@@ -27,19 +25,21 @@ class GpsTrackApi extends CommApi {
             $task = M('tms_dispatch_task')->field('id,code,distance')->find($data['id']);
             $key = $task['code'];// 任务号
         } else {//提货或提任务总里程
-            $sign_mg = M('tms_user')
+            $sign_mg = M('tms_sign_list')
             ->alias('A')
-            ->join('tms_sign_list B ON A.id = B.userid')
-            ->field('A.mobile,B.id,B.distance')
-            ->where(array('A.id' => $data['id'],'B.created_time' => array('between',$start_date.','.$end_date)))
-            ->order(array('B.created_time' => 'DESC'))
+            ->join('tms_user B ON B.id = A.userid')
+            ->field('B.mobile,A.id,A.distance')
+            ->where(array('A.id' => $data['id']))
             ->find();
-            $key = $sign_mg['id'].$sign_mg['mobile'];// 键名
+            $key = $sign_mg['id'];// 键名
         }
         if (floatval($sign_mg['distance']) > 0 || floatval($task['distance']) > 0) {
-            $data_old = S(md5($key));
-            $data['points'] = array_merge($data_old['points'],$data['points']);
+            $data_old = S($key);
+            if (!empty($data_old)) {
+                $data['points'] = array_merge($data_old['points'],$data['points']);
+            }
         }
+        $this->pointSort($data['points']);
         $A = A('Tms/Gps','Logic'); 
         $i = 0;
         $distance = 0;
@@ -68,12 +68,26 @@ class GpsTrackApi extends CommApi {
         }
 
         if ($res) {
-            S(md5($key),$data,3600*24*5);
+            S($key,$data,0);
             $return = array('status' =>'1', 'message' => '成功');
             $this->ajaxReturn($return);
         } else {
             $return = array('status' => '0', 'message' => '路线获取失败' );
             $this->ajaxReturn($return);
         }
+    }
+
+    //按时间排序轨迹点
+    private function pointSort(&$data)
+    {
+       return usort($data,function($a,$b){
+            $at = strtotime($a['time']);
+            $bt = strtotime($b['time']);
+            if ($at == $bt) {
+                return 0;
+            }
+            return ($at > $bt) ? 1 : -1;
+        });
+
     }
 }

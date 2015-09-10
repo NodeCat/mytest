@@ -155,8 +155,8 @@ class DispatchController extends \Common\Controller\AuthController{
         $line = M('tms_delivery')->where($map)->getField('line_name',true);
         $lines = implode('、',array_filter($line));
         $this->lines = $lines;
-        $key = $id.$mobile;
-        $location = S(md5($key));
+        $key = $id;
+        $location = S($key);
         $A = A('Tms/List','Logic');
         $customerAddress = $A->getCustomerAddress($mobile,$id);
         // dump($customerAddress);exit;

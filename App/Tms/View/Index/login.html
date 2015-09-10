@@ -33,7 +33,7 @@ $(function(){
     $(this).select();
   });
   $('#code').focus();
-  $('.form-pda button[type=submit]').on('click',function(){
+  $('.form-scan button[type=submit]').on('click',function(){
     $(this).prop('disabled', true);
     var addr,params;
     params=$(this).parents('form').serialize();
@@ -45,18 +45,22 @@ $(function(){
       dataType:'json',
       data:params,
       success: function(msg){
-        $('.form-pda button[type=submit]').prop('disabled', false);
-        
+        $('.form-scan button[type=submit]').prop('disabled', false);
         if(msg.status == 0){
-            alert_error(msg.msg);
-            $('.input-pda').focus();
+          alert_error(msg.msg);
+          $('.input-pda').focus();
         }
+        else if (msg.status == 1) {
+          location.href ="{:U('checkSign')}" + "?id" + "=" + msg.id;
+        } 
+        else if (msg.status == 2) {
+          location.href ="{:U('register')}" + "?mobile" + "=" + msg.mobile;
+        } 
+        else if (msg.status == 3) {
+          location.href ="{:U('delivery')}";
+        } 
         else {
-          alert_success(msg.msg);
-        }
-        if(msg.data != '' && msg.data != null ){
-            $('.content').html(msg.data);
-
+          location.reload();
         }
       }
     }); 

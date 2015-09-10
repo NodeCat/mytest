@@ -418,15 +418,19 @@ class InventoryController extends CommonController {
 		//盘盈批次：有库存记录的用最早批次，没库存的用最近批次
 		if(empty($stock_info)){
 			//没库存的 查询所有采购单 再查询最近的到货单 当做批次 最近批次
-			$map['pro_code'] = $inventory_detail['pro_code'];
-			$batch = M('stock_purchase_detail')
-			->join(' stock_purchase on stock_purchase.id = stock_purchase_detail.pid')
-			->join(' stock_bill_in on stock_bill_in.refer_code = stock_purchase.code')
+			$map['stock_bill_in_detail.pro_code'] = $inventory_detail['pro_code'];
+			$map['stock_bill_in.wh_id'] = session('user.wh_id');
+			$batch = M('stock_bill_in_detail')
+			->join('stock_bill_in on stock_bill_in.id = stock_bill_in_detail.pid')
 			->where($map)
-			->order('stock_purchase.created_time desc')
+			->order('stock_bill_in.created_time desc')
 			->field('stock_bill_in.code as batch')
 			->find();
 			unset($map);
+
+			if(empty($batch['batch'])){
+				$batch['batch'] = $inventory_detail['inventory_code'];
+			}
 
 			if(!empty($batch['batch'])){
 				$data['location_id'] = $inventory_detail['location_id'];

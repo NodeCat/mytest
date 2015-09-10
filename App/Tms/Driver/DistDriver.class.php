@@ -31,8 +31,8 @@ class DistDriver extends Controller {
             $this->display('Driver/delivery');
             exit;
         } elseif (IS_POST && !empty($id)) {
-            if (stripos($id,'D')===0) {
-                $this->dist_id = strtoupper($id);
+            if (stripos($id,'T')===0) {
+                $this->dist_code = strtoupper($id);
                 $this->taskDelivery();
                 exit;
             }
@@ -235,7 +235,7 @@ class DistDriver extends Controller {
             $this->error = '提货失败,提货码不能为空';
         }
         if (empty($this->error)) {
-            $res = array('status' =>'1', 'message' => '提货成功','code' => session('user.id'));
+            $res = array('status' =>'1', 'message' => '提货成功','code' => $sign['id']);
         } else {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);
@@ -641,16 +641,16 @@ class DistDriver extends Controller {
 
     //司机当日收货统计
     public function report() {
-
+        $sign = M('TmsSignList')->field('id')->order('created_time DESC')->where(array('userid' => session('user.id')))->find();
         $map['mobile'] = session('user.mobile');
         $map['status'] = '1';
         $map['type']   = '0';
         $start_date = date('Y-m-d',NOW_TIME);
-        $end_date = date('Y-m-d',strtotime('+1 Days'));
+        $end_date   = date('Y-m-d',strtotime('+1 Days'));
         $map['created_time'] = array('between',$start_date.','.$end_date);
-        $this->userid = session('user.id');
-        $this->data = M('tms_delivery')->where($map)->select();
-        $this->title = '今日订单总汇';
+        $this->data    = M('tms_delivery')->where($map)->select();
+        $this->sign_id = $sign['id'];
+        $this->title   = '今日订单总汇';
         $this->display('Driver/report');
     }
 
@@ -794,8 +794,8 @@ class DistDriver extends Controller {
     //任务提货
     private function taskDelivery()
     {   
-        $id = $this->dist_id;
-        $map['dist_code'] = $id;
+        $dist_code = $this->dist_code;
+        $map['dist_code'] = $dist_code;
         $map['status']  = '1';
         $start_date     = date('Y-m-d',NOW_TIME);
         $end_date       = date('Y-m-d',strtotime('+1 Days'));
@@ -828,7 +828,7 @@ class DistDriver extends Controller {
                 unset($status);
             }
         }
-        $task = M('tms_dispatch_task')->where(array('code' => $id))->find();
+        $task = M('tms_dispatch_task')->where(array('code' => $dist_code))->find();
         $ctime = strtotime($task['created_time']);
         $start_date1 = date('Y-m-d',strtotime('-1 Days'));
         $end_date1 = date('Y-m-d',strtotime('+1 Days'));
@@ -900,10 +900,7 @@ class DistDriver extends Controller {
             }
         }
         if (empty($this->error)) {
-            unset($map);
-            $map['mobile'] = session('user.mobile');
-            $userid  = M('tms_user')->field('id')->where($map)->find();
-            $res = array('status' =>'1', 'message' => '提货成功','code' => $userid['id']);
+            $res = array('status' =>'1', 'message' => '提货成功','code' => $sign['id']);
         } else {
             $msg = $this->error;
             $res = array('status' =>'0', 'message' =>$msg);

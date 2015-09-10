@@ -44,8 +44,7 @@ class IndexDriver extends Controller {
         }
         if (IS_POST) {
             if(session('?user')) {
-                $this->redirect('delivery');
-                exit;
+                $this->ajaxReturn(array('status' => 3,'msg' => '签到成功'));
             }
             $mobile = I('post.code',0);
             if(empty($mobile)) {
@@ -55,32 +54,24 @@ class IndexDriver extends Controller {
                 $this->error = "您输入的手机号码格式不正确！";
             }
             if(!empty($this->error)) {
-                if(IS_AJAX) {
-                    $this->ajaxReturn(array('status'=>0,'msg'=>$this->error));
-                }
-                else {
-                    $this->display('Index:login');
-                }
-                exit;
+                $this->ajaxReturn(array('status' => 0,'msg' => $this->error));
             }
-            else {
-                $user = M('TmsUser')->field('id,username,mobile')->where(array('mobile' => $mobile))->order('created_time DESC')->find();          
-                if ($user) {
-                    //如果当天签到过，跳过验证
-                    $sign = $this->getSign($user['id']);
-                    if ($sign) {
-                        M('tms_sign_list')->save(array('id' => $sign['id'],'updated_time' => get_time()));
-                        $user['wh_id'] = $sign['wh_id'];
-                        session('user',$user);
-                        $this->redirect('delivery');
-                    } else {
-                        $this->redirect('checkSign', array('id' => $user['id']));
-                    }
+            $user = M('TmsUser')->field('id,username,mobile')->where(array('mobile' => $mobile))->order('created_time DESC')->find();          
+            if ($user) {
+                //如果当天签到过，跳过验证
+                $sign = $this->getSign($user['id']);
+                if ($sign) {
+                    M('tms_sign_list')->save(array('id' => $sign['id'],'updated_time' => get_time()));
+                    $user['wh_id'] = $sign['wh_id'];
+                    session('user',$user);
+                    $this->ajaxReturn(array('status' => 3,'msg' => '签到成功'));
                 } else {
-                    $this->redirect('register',array('mobile' => $mobile));
+                    $this->ajaxReturn(array('status' => 1,'id' => $user['id']));
                 }
-                    
-            }
+            } else {
+                $this->ajaxReturn(array('status' => 2,'mobile' => $mobile));
+            }        
+            
         }
     }
 
@@ -221,7 +212,7 @@ class IndexDriver extends Controller {
             }   
         }
         if (IS_POST) {
-            $mobile = I('post.mobile/d',0) ? I('post.mobile/d',0) : $this->mobile;
+            $mobile = I('post.mobile/d',0);
             $name   = I('post.username');
             $num    = I('post.car_num');
             $car_type = I('post.car_type');
@@ -495,11 +486,6 @@ class IndexDriver extends Controller {
                 }
             }
         }
-    }
-    //根据系统id获得系统名字
-    public function getCompany($id){
-        $name = M('company')->field('name')->find($id);
-        return $name['name'];
     }
 
 }
