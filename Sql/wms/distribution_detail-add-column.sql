@@ -12,3 +12,6 @@ INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `a
 (587, 'index', '3', 'Wms', 'Fms', 'FmsReport', 'index', 'Fms/FmsReport/index', '', '', '结算报表', 0, 1, 380, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
 (588, 'index', '4', 'Wms', 'Fms', 'FmsReport', 'index', 'Fms/FmsReport/index', '', '', '结算列表', 0, 1, 587, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0),
 (589, 'view', '4', 'Wms', 'Fms', 'FmsReport', 'view', 'Fms/FmsReport/view', '', '', '结算详情', 0, 1, 587, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);
+
+INSERT INTO `auth_authority` (`id`, `name`, `type`, `app`, `group`, `module`, `action`, `url`, `condition`, `description`, `title`, `log`, `show`, `pid`, `mpid`, `level`, `queue`, `target`, `location`, `status`, `updated_user`, `updated_time`, `created_user`, `created_time`, `is_deleted`) VALUES
+(593, 'view_all', '4', 'Wms', 'Fms', 'FmsReport', 'view_all', 'Fms/FmsReport/view_all', '', '', '查看所有报表', 0, 1, 590, 0, 0, 0, '', '', '1', 0, '0000-00-00 00:00:00', 0, '0000-00-00 00:00:00', 0);
