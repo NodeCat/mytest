@@ -86,7 +86,7 @@ class OrderApi extends CommApi{
                 //按照pms定义的净重和这个成品SKU的价格，计算出按重量的单价
                 $one_sku['price_bw'] = 0;
                 if(!empty($order_detail['net_weight'])){
-                    $one_sku['price_bw'] = f_div($one_sku['price'],$one_sku['net_weight']);
+                    $one_sku['price_bw'] = f_div($order_detail['price'],$order_detail['net_weight']);
                 }
                 $detail[] = $one_sku;
             }
