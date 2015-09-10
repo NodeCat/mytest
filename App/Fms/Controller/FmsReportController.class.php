@@ -22,10 +22,10 @@ class FmsReportController extends \Common\Controller\CommonController
     
     protected $query = array (
         
-        'date(stock_wave_distribution.payment_time)' => array (
+        'stock_wave_distribution.payment_time' => array (
             'title'         => '结算时间',
             'query_type'    => 'between',
-            'control_type'  => 'date',
+            'control_type'  => 'datetime',
             'value'         => '',
         )
     );
@@ -98,6 +98,7 @@ class FmsReportController extends \Common\Controller\CommonController
         if (empty($map)) {
             $map = array('date(stock_wave_distribution.payment_time) > date_sub(curdate(),interval 7 day)');
         }
+        dump($map);
     }
     
 }
