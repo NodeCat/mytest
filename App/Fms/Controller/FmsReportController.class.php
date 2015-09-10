@@ -98,7 +98,6 @@ class FmsReportController extends \Common\Controller\CommonController
         if (empty($map)) {
             $map = array('date(stock_wave_distribution.payment_time) > date_sub(curdate(),interval 7 day)');
         }
-        dump($map);
     }
     
 }
