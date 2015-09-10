@@ -76,13 +76,19 @@ class OrderApi extends CommApi{
             $params['customer_phone'] = $order_info['info']['mobile'];
 
             foreach($order_info['info']['detail'] as $order_detail){
-                $detail[] = array(
+                $one_sku = array(
                     'pro_code' => $order_detail['sku_number'],
                     'order_qty' => $order_detail['quantity'],
                     'price' => $order_detail['price'],
                     'name' => $order_detail['name'],
                     'spec' => $order_detail['spec'],
                     );
+                //按照pms定义的净重和这个成品SKU的价格，计算出按重量的单价
+                $one_sku['price_bw'] = 0;
+                if(!empty($order_detail['net_weight'])){
+                    $one_sku['price_bw'] = f_div($order_detail['price'],$order_detail['net_weight']);
+                }
+                $detail[] = $one_sku;
             }
 
             $params['detail'] = $detail;

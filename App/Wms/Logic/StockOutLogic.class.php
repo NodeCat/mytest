@@ -59,6 +59,11 @@ class StockOutLogic{
             $detail['order_qty'] = $val['order_qty'];
             $detail['former_qty'] = $val['order_qty'];
             $detail['price'] = $val['price'];
+            //按重量的单价
+            $detail['price_bw'] = 0;
+            if(!empty($val['price_bw'])){
+                $detail['price_bw'] = $val['price_bw'];
+            }
             //如果是加工出库单 采购出库单，则默认的实际发货量为0，其余类型出库单默认发货量等于订单量
             if(in_array($stock_out_type , array('MNO','SO')) ) {
                 $detail['delivery_qty'] = 0;
