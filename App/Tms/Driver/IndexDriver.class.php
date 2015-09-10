@@ -17,7 +17,7 @@ class IndexDriver extends Controller {
 
         if(defined('VERSION')) {
             $this->ver = '2.0';
-            $action = array('delivery','orders','sign','reject','orderlist','report','taskorders','tasksign','signfinished','getpoint','linefilter');
+            $action = array('delivery','orders','sign','reject','orderlist','report','taskorders','tasksign','signfinished','getpoint','linefilter','checkpoint');
             if(in_array(ACTION_NAME, $action)) {
                 $actionName = ACTION_NAME;
                 A('Dist','Driver')->$actionName();

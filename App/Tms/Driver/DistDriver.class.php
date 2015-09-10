@@ -1126,4 +1126,36 @@ class DistDriver extends Controller {
         }
         $this->ajaxReturn($return);
     }
+
+    public function checkPoint()
+    {
+        $point = I('post.');
+        $bill_out_id = substr($point['id'],1);
+        $bill = M('stock_bill_out')->field('customer_id')->find($bill_out_id);
+        /*$map = array(
+            'searchKey'    => 'mobile',
+            'searchValue'  => $bill['customer_phone'],
+            'fields'       => 'lng,lat',
+            'currentPage'  => 0,
+            'itemsPerPage' => 1
+        );
+        $geo = A('Common/Order', 'Logic')->getCustomerList($map);
+        */
+        $geo = A('Common/Order', 'Logic')->customer(array('id' => $bill['customer_id']));
+        //dump($geo);exit;
+        $A = A('Tms/Gps','Logic');
+        if ($geo['lng']!='' && $geo['lat']!='' && $point['lng'] !='' &&  $point['lng']!='') {
+            $data = array(array('lng' => $geo['lng'], 'lat' => $geo['lat']), array('lng' => $point['lng'], 'lat' => $point['lat']));
+            $distance = $A->getDistance($data);//km
+            if (floatval($distance) >1) {
+                $res = M('stock_wave_distribution_detail')->where(array('bill_out_id' => $bill_out_id))->save(array('sign_status' => 1));
+            }
+        }
+        if ($res) {
+            $re =array('status' => 1, 'msg' => '保存成功');
+        } else {
+            $re =array('status' => 0, 'msg' => '保存失败');
+        }
+        $this->ajaxReturn($re);
+    }
 }
