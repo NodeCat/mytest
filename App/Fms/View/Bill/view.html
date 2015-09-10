@@ -14,7 +14,7 @@
       <div class="col-lg-6">
         <h3>
           账单 {$data['billing_info']['billing_num']}
-          <neq name="data['billing_info']['status_code']" value="5">
+          <neq name="data['billing_info']['status']" value="5">
           <eq name="data['billing_info']['expire_status']" value="1">
         <small>
         <span class="label label-danger">
@@ -25,7 +25,7 @@
         </h3>
       </div>
       <div class="col-lg-6">
-      <switch name="data['billing_info']['status_code']" >
+      <switch name="data['billing_info']['status']" >
       
       <case value="2" break="0"></case>
       <case value="3" break="1">
@@ -57,7 +57,7 @@
             </div>
           </a>
           <img id="img_evidence" class="hidden" src="{$data['billing_info']['payment_evidence']}">
-          <in name="data['billing_info']['status_code']" value="4,5">
+          <in name="data['billing_info']['status']" value="4,5">
           <notempty name="data['billing_info']['payment_evidence']">
           <a href="{$data['billing_info']['payment_evidence']}" class="list-group-item" target="_blank">
             <div class="media-left">

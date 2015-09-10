@@ -220,7 +220,7 @@ class BillController extends \Wms\Controller\CommonController
     	$map['id'] = I('id');
     	$data = $A->billDetail($map);
         $store = $A->billStore($map);
-        $data['state'] = $data['billing_info']['status_code'];
+        $data['state'] = $data['billing_info']['status'];
     	$this->data = $data;
         $this->store = $store;
     	$remarks = $A->billRemarkList($map);
