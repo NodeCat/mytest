@@ -1113,7 +1113,7 @@ class DistDriver extends Controller {
         $distance = A('Tms/Gps', 'Logic')->getDistance($data['points']);
         $res = M('tms_sign_list')->save(array('id' => $sign_id, 'distance' => $distance));// 把路程和时间写入签到表
         if ($res) {
-            S($sign_id, $data, 0);
+            S($sign_id,$data,0);
             $return = array(
                 'status' => 1,
                 'msg'    => '过滤成功',
@@ -1142,7 +1142,6 @@ class DistDriver extends Controller {
         $geo = A('Common/Order', 'Logic')->getCustomerList($map);
         */
         $geo = A('Common/Order', 'Logic')->customer(array('id' => $bill['customer_id']));
-        //dump($geo);exit;
         $A = A('Tms/Gps','Logic');
         if ($geo['lng']!='' && $geo['lat']!='' && $point['lng'] !='' &&  $point['lng']!='') {
             $data = array(array('lng' => $geo['lng'], 'lat' => $geo['lat']), array('lng' => $point['lng'], 'lat' => $point['lat']));

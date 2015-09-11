@@ -387,13 +387,16 @@
     });
 
     function getPoint(str) {
-      var geo = str;
+      $(document).ajaxStart(function() {
+      finish();
+      });
+      var geo = JSON.parse(str);
       if (geo.id.indexOf('A') != -1) {
-        $.post("{:U('checkPoint')}",str,function(res) {
+        $.post("{:U('checkPoint')}",geo,function(res) {
           HostApp.toast(res.msg);
         });
       } else {
-        $.post("{:U('getPoint')}",str,function(res) {
+        $.post("{:U('getPoint')}",geo,function(res) {
           HostApp.toast(res.msg);
         });
       }
