@@ -78,7 +78,7 @@ class OrderApi extends CommApi{
             $params['pay_status'] = $order_info['info']['pay_status'];
 
             foreach($order_info['info']['detail'] as $order_detail){
-                $detail[] = array(
+                $one_sku = array(
                     'od_id' => $order_detail['id'],
                     'pro_code' => $order_detail['sku_number'],
                     'order_qty' => $order_detail['quantity'],
@@ -89,6 +89,12 @@ class OrderApi extends CommApi{
                     'close_unit' => $order_detail['close_unit'],
                     'net_weight' => $order_detail['net_weight'],
                     );
+                //按照pms定义的净重和这个成品SKU的价格，计算出按重量的单价
+                $one_sku['price_bw'] = 0;
+                if(!empty($order_detail['net_weight'])){
+                    $one_sku['price_bw'] = f_div($order_detail['price'],$order_detail['net_weight']);
+                }
+                $detail[] = $one_sku;
             }
 
             $params['detail'] = $detail;

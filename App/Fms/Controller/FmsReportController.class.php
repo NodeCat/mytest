@@ -22,10 +22,10 @@ class FmsReportController extends \Common\Controller\CommonController
     
     protected $query = array (
         
-        'date(stock_wave_distribution.payment_time)' => array (
+        'stock_wave_distribution.payment_time' => array (
             'title'         => '结算时间',
             'query_type'    => 'between',
-            'control_type'  => 'date',
+            'control_type'  => 'datetime',
             'value'         => '',
         )
     );
@@ -79,15 +79,17 @@ class FmsReportController extends \Common\Controller\CommonController
 
     protected function after_lists(&$data)
     {
-        //过滤数据，只显示当前用户的数据
-        $userid = session('user.uid');
-        $data_array = array();
-        foreach ($data as $key => $value) {
-            if ($value['payment_user'] == $userid) {
-                $data_array[] = $value;
+        if (!$this->auth['view_all']) {
+            //过滤数据，只显示当前用户的数据
+            $userid = session('user.uid');
+            $data_array = array();
+            foreach ($data as $key => $value) {
+                if ($value['payment_user'] == $userid) {
+                    $data_array[] = $value;
+                }
             }
+            $data = $data_array;
         }
-        $data = $data_array;
     }
 
     //在search方法执行后 执行该方法
