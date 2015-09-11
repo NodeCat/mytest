@@ -72,7 +72,6 @@ class SignInLogic
         $content .= "客户姓名：{$data['customer_info']['name']}，{$reject_reason}，电话：{$data['customer_info']['mobile']} 。";
         $content .= "请在方便的时候给客户打个电话，了解具体情况，便于各部门改进工作，如果需要请联系在线部做进一步客情维护。";
         $content .= "退订请回复TD";
-        dump($content);die();
         $map = array(
             'mobile'   => $mobiles,
             'content'  => $content,
