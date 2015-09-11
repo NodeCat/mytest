@@ -264,7 +264,6 @@ class DistDriver extends Controller {
             $bmap['pid'] = $res['dist_id'];
             $A = A('Tms/Dist','Logic');
             $orders = $A->bill_list($bmap);
-            dump($orders);
             if($orders) {
                 $this->orderCount = count($orders);
                 foreach ($orders as &$val) {
@@ -274,7 +273,7 @@ class DistDriver extends Controller {
                     $val['status_cn'] = $A->getOrderStatusByCode($val['status']);
                     $val['final_price'] = $val['total_amount'] - $val['minus_amount'] - $val['pay_reduce'] - $val['deposit'] + $val['deliver_fee'];
                     $val['final_price_order'] = $val['final_price'];
-                    if ($val['pay_status'] == '1' || $val['pay_type'] == 2) {
+                    if ($val['pay_status'] == '1' || $val['pay_type'] == '2') {
                         $val['deal_price'] = $val['final_price'];
                     } else {
                        $val['deal_price'] = $A->wipeZero($val['final_price']);
@@ -405,11 +404,11 @@ class DistDriver extends Controller {
             $this->ajaxReturn($res);
         }
         //抹零，付款状态为已付款和账期支付的不进行抹零处理
-        if (!($bill['pay_status'] == 1 || $bill['pay_type'] == 2)) {
+        if ($bill['pay_status'] == 1 || $bill['pay_type'] == 2) {
+            $deal_price = $receivable_sum;
+        } else {
             $deal_price = $A->wipeZero($receivable_sum);
             $wipe_zero  = round($receivable_sum - $deal_price,2);
-        } else {
-            $deal_price = $receivable_sum;
         }
         $sign_msg = I('post.sign_msg');
         //签收表主表数据

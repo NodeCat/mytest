@@ -230,13 +230,13 @@
                         该订单已网上付款
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.deal_price}" readonly>
-                    <elseif condition="$vo.pay_type eq 2" />
+                    value="{$vo.final_price}" readonly>
+                    <elseif condition="$vo.pay_type eq '2'" />
                       <span class="form-control p_deal">
                         该订单是账期支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.deal_price}" readonly>
+                    value="{$vo.final_price}" readonly>
                     <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.deal_price}" readonly>
@@ -252,13 +252,13 @@
                         该订单已网上付款
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.deal_price}" readonly>
-                    <elseif condition="$vo.pay_type eq 2" />
+                    value="{$vo.final_price}" readonly>
+                    <elseif condition="$vo.pay_type eq '2'" />
                       <span class="form-control p_deal">
                         该订单是账期支付
                       </span>
                       <input type="hidden" name="deal_price" class="form-control p_deal" placeholder=""
-                    value="{$vo.deal_price}" readonly>
+                    value="{$vo.final_price}" readonly>
                     <else/>
                     <input type="text" name="deal_price" class="form-control p_deal" placeholder=""
                     value="{$vo.deal_price}" readonly>
