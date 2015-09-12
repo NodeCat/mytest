@@ -19,11 +19,26 @@
 <br/>
 </div>
 <script type="text/javascript">
-$('#finished').click(function(){
-  if(typeof HostApp == "undefined") {
-    alert('配送完成');
-    return false;
-  }
-  HostApp.stopLocate('T'+"{$sign_id}");
+  $('#finished').click(function(){
+    if(typeof HostApp == "undefined") {
+      alert('配送完成');
+      return false;
+    }
+    HostApp.stopLocate('T'+"{$sign_id}");
+    lineFilter();
   });
+
+  function lineFilter() {
+    var id = {$sign_id};
+    var addr = "{:U('lineFilter')}";
+    $.ajax({
+      url: addr,
+      type: 'post',
+      cache: false,
+      dataType: 'json',
+      data:{'id':id},
+      success: function(msg) {
+      }  
+    });
+  }
 </script>

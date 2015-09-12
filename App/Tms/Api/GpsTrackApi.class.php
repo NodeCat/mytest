@@ -41,22 +41,7 @@ class GpsTrackApi extends CommApi {
         }
         $this->pointSort($data['points']);
         $A = A('Tms/Gps','Logic'); 
-        $i = 0;
-        $distance = 0;
-        static $wgs_pre;
-        // 计算路程
-        foreach ($data['points'] as $value) {
-            $wgs = $A->gcj_decrypt($value['lat'],$value['lng']);
-            if($i == 0){
-                $wgs_pre = $wgs;
-                $i++;
-                continue;
-                }
-            $distance_sub = $A->distance($wgs_pre['lat'],$wgs_pre['lng'],$wgs['lat'],$wgs['lng']);
-            $wgs_pre      = $wgs;
-            $distance    += $distance_sub;
-        }
-        $distance = sprintf('%.3f',$distance/1000);
+        $distance = $A->getDistance($data['points']);
         // 写入路程和时间
         if ($type == 1) {//单个任务轨迹
             $time = A('Tms/List','Logic')->timediff($data['points'][0]['time'],$value['time']);
@@ -80,7 +65,7 @@ class GpsTrackApi extends CommApi {
     //按时间排序轨迹点
     private function pointSort(&$data)
     {
-       return usort($data,function($a,$b){
+        usort($data,function($a,$b){
             $at = strtotime($a['time']);
             $bt = strtotime($b['time']);
             if ($at == $bt) {

@@ -173,6 +173,7 @@
         if (i == 1 && flag) {
           var params = $(this).closest('form.order').serialize();
           var addr = "{:U('sign')}";
+          var bid  =  $(this).parents('.order').find('input[name=bid]').val();
           var oid = $(this).parents('.order').find('input[name=id]').val();
           $.ajax({
             url: addr,
@@ -185,6 +186,7 @@
                 alert(msg.msg);
               } else {
                 HostApp.toast(msg.msg);
+                checkPoint(bid);
               }
               if (msg.status == '0') {
                 var url = action + "/id/{$id}/oid/"+oid;
@@ -235,7 +237,8 @@
         },
         subReject : function(obj) {
           var params = obj.closest('form.order').serialize();
-          var addr = "{:U('reject')}";
+          var bid    = obj.parents('.order').find('input[name=bid]').val();
+          var addr   = "{:U('reject')}";
           $.ajax({
             url: addr,
             type: 'post',
@@ -247,6 +250,7 @@
                 alert(msg.msg);
               } else {
                 HostApp.toast(msg.msg);
+                checkPoint(bid);
               }
               if (msg.status == '0') {
                 location.reload();
@@ -383,9 +387,17 @@
     });
 
     function getPoint(str) {
-      $.post("{:U('getPoint')}",str,function(res) {
-        HostApp.toast(res.msg);
+      $(document).ajaxStart(function() {
+      finish();
       });
+      var geo = JSON.parse(str);
+      if (geo.id.indexOf('A') != -1) {
+        $.post("{:U('checkPoint')}",geo,function(res) {
+        });
+      } else {
+        $.post("{:U('getPoint')}",geo,function(res) {
+        });
+      }
     }
 
     function last(id) {
@@ -417,5 +429,11 @@
       HostApp.toast('开始');
       HostApp.startLocate('D'+id);
     }
+  }
+
+    //查看签到点是否正常
+  function checkPoint(bid) {
+    var id = 'A'+bid;
+    HostApp.collectPoint(id);
   }
   </script>

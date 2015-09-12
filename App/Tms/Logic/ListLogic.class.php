@@ -49,6 +49,7 @@ class ListLogic{
             'sign_finished' => 0,
             'delivering'    => 0,
             'ontime'        => 0,
+            'sign_status'   => '正常',
           );
         $total = count($details);
         foreach ($details as $value) {
@@ -71,6 +72,12 @@ class ListLogic{
             if ($value['delivery_ontime'] == 1) {
                 $statis['ontime'] ++;
             }
+            if ($value['sign_status'] == 1) {
+                $statis['sign_status'] = '异常';
+            }
+        }
+        if ($statis['sign_orders'] == 0 && $statis['unsign_orders'] == 0 && $statis['sign_finished'] == 0) {
+            $statis['sign_status'] = '无';
         }
         $statis['ontime'] = sprintf('%.1f',$statis['ontime'] / $total * 100) . '%';
         return $statis;
@@ -194,7 +201,7 @@ class ListLogic{
                     $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
                     $geo['sign_time']= $this->getSignTime($values['user_id'],$value['dist_id']);
                     // 只要有一单还没送完颜色就是0
-                    if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                    if($values['status_cn']=='已签收' || $values['status_cn']=='已拒收' || $values['status_cn']=='已完成' ) {
                         if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
                             $geo['color_type'] = 3;
                         }

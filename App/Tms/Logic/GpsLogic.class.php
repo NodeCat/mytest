@@ -6,8 +6,29 @@ namespace Tms\Logic;
 class GpsLogic{
     private $PI = 3.14159265358979324;
 
+    // 根据坐标计算路程
+    public function getDistance($arr) {
+        $i = 0;
+        $distance = 0;
+        static $wgs_pre;
+        // 计算路程
+        foreach ($arr as $value) {
+            $wgs = $this->gcj_decrypt($value['lat'],$value['lng']);
+            if($i == 0){
+                $wgs_pre = $wgs;
+                $i++;
+                continue;
+            }
+            $distance_sub = $this->distance($wgs_pre['lat'],$wgs_pre['lng'],$wgs['lat'],$wgs['lng']);
+            $wgs_pre      = $wgs;
+            $distance    += $distance_sub;
+        }
+        $distance = sprintf('%.3f',$distance/1000);
+        return $distance;
+    }
+
     //计算两经纬度之间的距离
-    public function distance($latA, $lngA, $latB, $lngB) {
+    private function distance($latA, $lngA, $latB, $lngB) {
         $earthR = 6371000.;
         $x = cos($latA * $this->PI / 180.) * cos($latB * $this->PI / 180.) * cos(($lngA - $lngB) * $this->PI / 180);
         $y = sin($latA * $this->PI / 180.) * sin($latB * $this->PI / 180.);
