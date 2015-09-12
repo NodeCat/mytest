@@ -71,6 +71,9 @@ function set_session($uid){
     
     if(!empty($rules)) {
         $wh = current($rules);
+        if(in_array(7, $rules)) {
+            $wh = 7 ; //默认仓库为北京一号仓
+        }
         $rules = implode($rules, ',');
     }
     if(empty($wh)) {
