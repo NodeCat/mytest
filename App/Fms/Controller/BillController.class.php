@@ -60,15 +60,6 @@ class BillController extends \Wms\Controller\CommonController
             array('name'=>'view', 'show' => !isset($auth['view']),'new'=>'true'), 
         );
 
-        $this->pill = array(
-			'status'=> array(
-				'11'=>array('value'=>'2','title'=>'未打款','class'=>'warning'),
-				'13'=> array('value'=>'3','title'=>'对账中','class'=>'info'),//已审核
-				'14'=> array('value'=>'4','title'=>'已打款','class'=>'danger'),
-				'04'=> array('value'=>'5','title'=>'已收款','class'=>'success')
-			)
-		);
-
         //查询条件
         $A = A('Common/Order', 'Logic');
         $query = $A->billQuery();
@@ -124,6 +115,32 @@ class BillController extends \Wms\Controller\CommonController
 
             ),
         );
+    }
+
+    protected function after_lists(&$data)
+    {
+        $pill = array(
+            'status'=> array(
+                '2'=>array('value'=>'2','title'=>'未打款','class'=>'warning'),
+                '3'=> array('value'=>'3','title'=>'对账中','class'=>'info'),//已审核
+                '4'=> array('value'=>'4','title'=>'已打款','class'=>'danger'),
+                '5'=> array('value'=>'5','title'=>'已收款','class'=>'success')
+            )
+        );
+        
+        foreach ($data['list'] as $key => $value) {
+            if (array_key_exists($value['status_code'],$pill['status'])) {
+                $pill['status'][$value['status_code']]['count'] += 1;
+                $pill['status']['total'] += 1; 
+            }
+        }
+        foreach ($pill['status'] as $key => $value) {
+            if (empty($value['count'])) {
+                $pill['status'][$key]['count'] = 0;
+            }
+        }
+
+        $this->pill = $pill;
     }
 
     protected function search($query = '') {
@@ -203,7 +220,7 @@ class BillController extends \Wms\Controller\CommonController
     	$map['id'] = I('id');
     	$data = $A->billDetail($map);
         $store = $A->billStore($map);
-        $data['state'] = $data['billing_info']['status_code'];
+        $data['state'] = $data['billing_info']['status'];
     	$this->data = $data;
         $this->store = $store;
     	$remarks = $A->billRemarkList($map);
@@ -243,6 +260,17 @@ class BillController extends \Wms\Controller\CommonController
                 $vo['juW'] = $vo['juW'] ? $vo['juW'] : '/';
                 $vo['pricePerW']  = $vo['pricePerW'] ? $vo['pricePerW'] : '/';
                 $deal_price += $vo['actual_sum_price'];
+            }
+            foreach ($order['rejected_info'] as &$info) {
+                foreach ($info['rejected_details'] as &$dtl) {
+                    if(empty($dtl['net_weight'])) {
+                        $dtl['new_weight'] = 0;
+                    }
+                    $dtl['pricePerW'] = bcdiv($dtl['price'], $dtl['net_weight'], 2);
+                    $dtl['juW'] = bcmul($dtl['quantity'], $dtl['net_weight'], 2);
+                    $dtl['juW'] = $dtl['juW'] ? $dtl['juW'] : '/';
+                    $dtl['pricePerW']  = $dtl['pricePerW'] ? $dtl['pricePerW'] : '/';
+                } 
             }
             if($deal_price > 0) {
                 $order['actual_price'] = $deal_price + $order['deliver_fee'] - $order['minus_amount'] - $order['pay_reduce'] - $order['deposit'];
@@ -350,8 +378,7 @@ class BillController extends \Wms\Controller\CommonController
         $this->before($M,'lists');//列表显示前的业务处理
 
         $M2 = clone $M;//深度拷贝，M2用来统计数量, M 用来select数据。
-        $this->after($data,'lists');//查询后的业务处理，传入了结果集
-        $this->filter_list($data);//对结果集进行过滤转换
+        
         $A = A('Common/Order', 'Logic');
         if(isset($map['start_time'])) {
             $map['start_time'] = strtotime($map['start_time']);
@@ -367,6 +394,8 @@ class BillController extends \Wms\Controller\CommonController
                 $val['expire_time'] = $val['expire_time'] . ' <span class="label label-danger">逾期未付</span>';
             }
         }
+        $this->after($data,'lists');//查询后的业务处理，传入了结果集
+        $this->filter_list($data);//对结果集进行过滤转换
         $this->pk = 'id';
         $this->assign('data', $data['list']); 
         $maps = $this->condition;

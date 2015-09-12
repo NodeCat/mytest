@@ -8,7 +8,8 @@
                 <td colspan="15">
                    <span class="mr-10"><notempty name="t">{$order.deliver_date}</notempty> 订单编号：{$order.order_number} </span>
                    <span class="mr-10">店铺名称：{$order.shop_name} </span>
-                                      <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
+                      <small><span class="label label-danger">{$order.pay_type_cn}</span></small>
+                        <button class="btn ml-10 mr-10 btn-info">{$order.status_cn} </button>
                    <img id="sign_img{$vo.id}" class="hidden" src="{$order.sign_img_url}">
                    <notempty name="order['sign_img_url']">
                    <a href="#" data-toggle="modal" data-target="#modal-refer" data-content="#sign_img{$vo.id}">签收凭证</a>
@@ -57,6 +58,7 @@
                 
               </tr>
             </volist>
+
               <tr>
                 <td class="text-center" colspan="8"></td>
                 <td class="text-center"  colspan="7">
@@ -83,5 +85,46 @@
 
             </tbody>
           </table>
+          <notempty name="order['rejected_info']">
+            <volist name="order['rejected_info']" id="rf">
+              <table class="table table-bordered table-striped table-hover">
+                <thead>
+                  <tr>
+                    <td colspan="8"><span style="color:red;">退货退款单编号:{$rf.id}</span></td>
+                  </tr>
+                  <tr>
+                    <td><h5>序号</h5></td>
+                    <td><h5>商品货号</h5></td>
+                    <td><h5>商品名称</h5></td>
+                    <td><h5>单价/斤</h5></td>
+                    <td><h5>单价/件</h5></td>
+                    <td><h5>退货斤数</h5></td>
+                    <td><h5>退货件数</h5></td>
+                    <td><h5>退货金额</h5></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <volist name="rf['rejected_details']" id="rfd">
+                  <tr>
+                    <td>{$rfd.id}</td>
+                    <td>{$rfd.sku_number}</td>
+                    <td>{$rfd.name}</td>
+                    <td>{$rfd.pricePerW}</td>
+                    <td>{$rfd.price}</td>
+                    <td>{$rfd.juW}</td>
+                    <td>{$rfd.quantity}</td>
+                    <td>{$rfd.sum_price}</td>
+                  </tr>
+                  </volist>
+                  <tr>
+                    <td class="text-center" colspan="7"></td>
+                    <td class="text-center" >
+                      <span>退货退款金额总计：¥{$rf.rejected_sum_price} </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              </volist>
+            </notempty>
           </volist>
       </div>
