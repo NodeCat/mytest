@@ -22,7 +22,7 @@ class IndexController extends \Common\Controller\AuthController{
         ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
 
-        $date_week = date('Y-m-d',strtotime('-2 week'));
+        $date_week = date('Y-m-d',strtotime('-15 day'));
 
         $data['driver_fee']['title'] = '近14天数据统计';
         $data['driver_fee']['data'] = M()->query('
