@@ -40,6 +40,8 @@ class StockOutLogic{
         $data['customer_id'] = $params['customer_id'];
         $data['customer_phone'] = $params['customer_phone'];
         $data['delivery_address'] = $params['delivery_address'];
+        $data['pay_type'] = $params['pay_type'];
+        $data['pay_status'] = $params['pay_status'];
         $data['op_date'] = $params['op_date'];
         $data['order_type'] = $params['order_type'];
         $data['created_time'] = date('Y-m-d H:i:s');
@@ -56,9 +58,13 @@ class StockOutLogic{
             $detail = array();
             $detail['pid'] = $stock_out_id;
             $detail['pro_code'] = $val['pro_code'];
+            $detail['od_id'] = $val['od_id'];
             $detail['order_qty'] = $val['order_qty'];
             $detail['former_qty'] = $val['order_qty'];
             $detail['price'] = $val['price'];
+            $detail['unit_id'] = $val['unit_id'];
+            $detail['close_unit'] = $val['close_unit'];
+            $detail['net_weight'] = $val['net_weight'];
             //按重量的单价
             $detail['price_bw'] = 0;
             if(!empty($val['price_bw'])){

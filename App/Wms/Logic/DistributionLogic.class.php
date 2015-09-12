@@ -417,7 +417,7 @@ class DistributionLogic {
         foreach ($ids['ids'] as $values) {
             $nid[] = explode(',', $values);
         }
-        $D = D('Common/Order', 'Logic');
+        $cA = A('Common/Order', 'Logic');
         $dis = D('Distribution'); 
         $det = M('stock_wave_distribution_detail');
         $M = M('stock_bill_out');
@@ -430,6 +430,12 @@ class DistributionLogic {
                 $return['msg'] = '不存在的出库单';
                 return $return;
             }
+            //对应订单列表
+            $order_ids = array_column($stock_out, 'refer_code');
+            $omap['order_ids'] = $order_ids;
+            $omap['itemsPerPage'] = count($order_ids);
+            $order_list = $cA->order($omap);
+            $stock_id_orders = array();
             $send_date = array();
             $send_type = array();
             $break = false;
@@ -448,6 +454,11 @@ class DistributionLogic {
                 }
                 //获取类型 判断类型是否为统一
                 $send_type[] = $con['type'];
+                foreach ($order_list as $o) {
+                    if ($con['refer_code'] == $o['id']) {
+                        $stock_id_orders[$con['id']] = $o;
+                    }
+                }
             }
             $prm_type = array_unique($send_type);
             if (count($prm_type) > 1) {
@@ -516,6 +527,13 @@ class DistributionLogic {
             foreach ($value as $vv) {
                 $detail['bill_out_id'] = $vv;
                 $detail['pid'] = $pid;
+                //订单优惠、减免、运费、支付方式、支付状态、押金
+                $detail['minus_amount'] = $stock_id_orders[$vv]['minus_amount'];
+                $detail['pay_reduce'] = $stock_id_orders[$vv]['pay_reduce'];
+                $detail['deliver_fee'] = $stock_id_orders[$vv]['deliver_fee'];
+                $detail['pay_type'] = $stock_id_orders[$vv]['pay_type'];
+                $detail['pay_status'] = $stock_id_orders[$vv]['pay_status'];
+                $detail['deposit'] = $stock_id_orders[$vv]['deposit'];
                 if ($det->create($detail)) {
                     //写入操作
                     $det->add();

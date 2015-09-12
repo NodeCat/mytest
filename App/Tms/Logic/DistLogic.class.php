@@ -39,6 +39,50 @@ class DistLogic {
     }
 
     /**
+     * [bill_list 获取配送单详情和出库单关联数据]
+     * @param  array  $param [数字或数组形式的配送单ID或详情ID或出库单ID]
+     * @return [type]        [description]
+     */
+    public function bill_list($param = array())
+    {
+        if (empty($param['pid']) && empty($param['id']) && empty($param['bill_out_id'])) {
+            return false;
+        }
+        //组合条件
+        foreach ($param as $key => $val) {
+            if (is_array($val)) {
+                $map[$key] = array('in', $val);
+            } else {
+                $map[$key] = $val;
+            }
+        }
+        $map['is_deleted'] = 0;
+        $list = D('DistDetail')->relation('StockOut')->where($map)->select();
+        //订单数据
+        $cA = A('Common/Order', 'Logic');
+        $order_ids = array_column($list, 'customer_id');
+        $param['customer_ids'] = $order_ids;
+        $param['itemsPerPage'] = count($order_ids);
+        $customers = $cA->getCustomerList($param);
+        $dmap['is_deleted'] = 0;
+        $res = array();
+        //出库单关联详情和订单数据
+        foreach ($list as $value) {
+            if ($value['bid']) {
+                $dmap['pid'] = $value['bid'];
+                $value['bill_details'] = M('stock_bill_out_detail')->where($dmap)->select();
+                foreach ($customers as $customer) {
+                    if ($customer['id'] == $value['customer_id']) {
+                        $value['customer_info'] = $customer;
+                    }
+                }
+                $res[] = $value;
+            }
+        }
+        return $res;
+    }
+
+    /**
      * [getPayStatusByCode 根据支付状态码获取中文状态]
      * @param  [type] $code [description]
      * @return [type]       [description]
@@ -54,6 +98,39 @@ class DistLogic {
                 break;
             case 1:
                 $s = '已付款';
+                break;
+            default:
+                $s = '';
+                break;
+        }
+        return $s;
+    }
+
+    /**
+     * [getPayStatusByCode 根据状态码获取订单配送状态]
+     * @param  [type] $code [description]
+     * @return [type]       [description]
+     */
+    public function getOrderStatusByCode($code)
+    {
+        switch ($code) {
+            case '0':
+                $s = '已分拨';
+                break;
+            case '1':
+                $s = '已装车';
+                break;
+            case '2':
+                $s = '已签收';
+                break;
+            case '3':
+                $s = '已退货';
+                break;
+            case '4':
+                $s = '已完成';
+                break;
+            case '5':
+                $s = '已发运';
                 break;
             default:
                 $s = '';

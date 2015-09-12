@@ -207,15 +207,11 @@ class OrderController extends \Common\Controller\AuthController {
         }
         
         $dist_detail_id = $dist_detail['id'];
-        $data['status']     = 1; //重置为已装车状态
-        $data['real_sum']   = 0; //实收金额置0
-        $data['deposit']    = 0;
-        $data['wipe_zero']  = 0;
-        $data['minus_amount'] = 0;
-        $data['pay_reduce'] = 0;
-        $data['deliver_fee'] = 0;
-        //$data['sign_msg']   = '';
-        //$data['reject_reason'] = '';
+        $data['status'] = 1; //重置为已装车状态
+        $data['real_sum'] = 0; //实收金额置0
+        $data['receivable_sum'] = 0; //应收金额置0
+        $data['deposit'] = 0;
+        $data['wipe_zero'] = 0;
         $res = M('stock_wave_distribution_detail')->where($map)->save($data);
         //写日志logs($id = 0, $msg = '', $model = '', $action = '', $module = ‘')
         logs($bill_out_id,'重置订单状态已装车','dist_detail');

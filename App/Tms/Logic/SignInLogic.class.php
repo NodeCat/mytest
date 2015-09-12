@@ -52,8 +52,8 @@ class SignInLogic
             '13601269285',
             '13701010714',
         );
-        if ($data['bd']['mobile']) {
-            $mobiles[] = $data['bd']['mobile'];
+        if ($data['customer_info']['sale']['mobile']) {
+            $mobiles[] = $data['customer_info']['sale']['mobile'];
         }
         //产品列表
         $pro_name = array_column($sku, 'pro_name');
@@ -68,8 +68,8 @@ class SignInLogic
         }
         
         //组合内容
-        $content = "伙伴们，订单号：{$data['id']}，商圈：{$data['line']}，店铺名称：{$data['shop_name']}，";
-        $content .= "客户姓名：{$data['realname']}，{$reject_reason}，电话：{$data['mobile']} 。";
+        $content = "伙伴们，订单号：{$data['refer_code']}，商圈：{$data['customer_info']['line_name']}，店铺名称：{$data['customer_info']['shop_name']}，";
+        $content .= "客户姓名：{$data['customer_info']['name']}，{$reject_reason}，电话：{$data['customer_info']['mobile']} 。";
         $content .= "请在方便的时候给客户打个电话，了解具体情况，便于各部门改进工作，如果需要请联系在线部做进一步客情维护。";
         $content .= "退订请回复TD";
         $map = array(
@@ -99,7 +99,7 @@ class SignInLogic
         //要发送的手机号
         $mobiles = array();
         foreach ($data as $value) {
-            $mobiles[] = $value['order_info']['mobile'];
+            $mobiles[] = $value['customer_info']['mobile'];
         }
         $mobiles = array_unique($mobiles);
         //司机信息
@@ -142,7 +142,7 @@ class SignInLogic
         }
         $cA = A('Common/Order', 'Logic');
        //请求母账户信息
-       $umap = array('customer_id' => $data['user_id']);
+       $umap = array('customer_id' => $data['customer_id']);
        $parent = $cA->getParentAccountByCoustomerId($umap);
        if (is_array($parent)) {
             //要发送的母账户手机号
@@ -153,7 +153,7 @@ class SignInLogic
                 $mobile = $parent['data']['parent_mobile'];
             }
             //组合信息内容
-            $content = "亲爱的老板，分店“{$data['shop_name']}”的产品已成功送达，完成签收，请您放心，";
+            $content = "亲爱的老板，分店“{$data['customer_info']['shop_name']}”的产品已成功送达，完成签收，请您放心，";
             $content .= "更多产品及订单信息请登陆大厨网“个人中心”查询。客服电话：4008199491。";
             $content .= "退订请回复TD";
             $map = array(

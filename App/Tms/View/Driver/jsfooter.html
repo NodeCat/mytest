@@ -103,11 +103,11 @@
             final_price = accAdd(final_price, accMul(line_price,line_qty));
           });
           //减去优惠金额
-          var minus = obj.parents('.order').find('.p_minus').text();
+          var minus = $.trim(obj.parents('.order').find('.p_minus').text());
           var sum = accSub(final_price, minus);
 
           //加上运费
-          var delivery_fee = obj.parents('.order').find('.p_drive').text();
+          var delivery_fee = $.trim(obj.parents('.order').find('.p_drive').text());
           sum = accAdd(sum, delivery_fee);
           //减去押金
           var deposit = obj.parents('.order').find('.p_deposit').val();
