@@ -44,12 +44,12 @@ class GpsTrackApi extends CommApi {
         $distance = $A->getDistance($data['points']);
         // 写入路程和时间
         if ($type == 1) {//单个任务轨迹
-            $time = A('Tms/List','Logic')->timediff($data['points'][0]['time'],$value['time']);
+            $time = A('Tms/List','Logic')->timediff($data['points'][0]['time'],get_time());
             $time = json_encode($time);
             $res = M('tms_dispatch_task')->save(array('id' => $task['id'],'distance' => $distance,'take_time' => $time));
 
         } else {//总里程轨迹
-            $res = M('tms_sign_list')->save(array('id' => $sign_mg['id'],'distance' => $distance,'delivery_end_time' => $value['time']));// 把路程和时间写入签到表
+            $res = M('tms_sign_list')->save(array('id' => $sign_mg['id'],'distance' => $distance,'delivery_end_time' => get_time()));// 把路程和时间写入签到表
         }
 
         if ($res) {
