@@ -49,6 +49,7 @@ class ListLogic{
             'sign_finished' => 0,
             'delivering'    => 0,
             'ontime'        => 0,
+            'sign_status'   => '正常',
           );
         $total = count($details);
         foreach ($details as $value) {
@@ -70,6 +71,9 @@ class ListLogic{
             //配送准时统计
             if ($value['delivery_ontime'] == 1) {
                 $statis['ontime'] ++;
+            }
+            if ($value['sign_status'] == 1) {
+                $statis['sign_status'] = '异常';
             }
         }
         $statis['ontime'] = sprintf('%.1f',$statis['ontime'] / $total * 100) . '%';

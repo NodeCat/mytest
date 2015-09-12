@@ -18,6 +18,7 @@ class DispatchController extends \Common\Controller\AuthController{
         'delivering'   => '配送中',
         'sign_finished'=> '已完成',
         'ontime'       => '准点率',
+        'sign_status'  => '签收状态',
         'distance'     => '总里程/km',
         'fee'          => '当天运费',
         'mark'         => '备注',
@@ -123,6 +124,7 @@ class DispatchController extends \Common\Controller\AuthController{
             $value['sign_finished'] = $deliveryStatis['sign_finished'];
             $value['delivering']    = $deliveryStatis['delivering'];
             $value['ontime']        = $deliveryStatis['ontime'];
+            $value['sign_status']   = $deliveryStatis['sign_status'];
             // 把配送单线路遍历出来
             if ($value['line_name']) {
                 $lines = explode(',', $value['line_name']);

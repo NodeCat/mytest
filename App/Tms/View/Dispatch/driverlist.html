@@ -40,6 +40,7 @@
             <th>配送中</th>
             <th>已完成</th>
             <th>准点率</th>
+            <th>签收状态</th>
             <th>总里程/km</th>
             <th>当次运费(元)</th>
             <th>备注</th>
@@ -70,6 +71,7 @@
             <td>{$k.delivering}</td>
             <td>{$k.sign_finished}</td>
             <td>{$k.ontime}</td>
+            <td>{$k.sign_status}</td>
             <td>{$k.distance}</br>
             <a target="_blank" href="{:U('Dispatch/showLine?id='.$k['sid'].'&mobile='.$k['mobile'])}">查看轨迹</a>
             </td>    
