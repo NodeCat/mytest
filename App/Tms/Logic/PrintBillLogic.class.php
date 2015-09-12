@@ -43,6 +43,7 @@ class PrintBillLogic {
             'deal_price'   => $bill['deal_price'],
             'deposit'      => $bill['deposit'],
         );
+        $data['pay_status'] = ($bill['pay_type'] == 2) ? '账期支付' : $data['pay_status'];
         //获取签收商品列表和拒收商品列表
         foreach($bill['bill_details'] as $val) {
             //一个签收商品数据
