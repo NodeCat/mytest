@@ -22,9 +22,9 @@ class IndexController extends \Common\Controller\AuthController{
         ->order('d.wh_id,d.deliver_time,d.status')
         ->select();
 
-        $date_week = date('Y-m-d',strtotime('-1 week'));
+        $date_week = date('Y-m-d',strtotime('-2 week'));
 
-        $data['driver_fee']['title'] = '近7天数据统计';
+        $data['driver_fee']['title'] = '近14天数据统计';
         $data['driver_fee']['data'] = M()->query('
                     select a.*,b.name,b.driver_qty,b.notpaid_qty,b.fee,ROUND(b.fee / a.total_price * 100,2) fee_precent,
                     c.order_qty,c.ontime_qty,c.order_qty-c.ontime_qty overtime_qty,c.ontime_percent,
