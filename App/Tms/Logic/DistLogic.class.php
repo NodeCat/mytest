@@ -124,7 +124,7 @@ class DistLogic {
                 $s = '已签收';
                 break;
             case '3':
-                $s = '已退货';
+                $s = '已拒收';
                 break;
             case '4':
                 $s = '已完成';
