@@ -408,7 +408,7 @@ class IndexDriver extends Controller {
                 $geo['user_id']  = $values['user_id'];
                 $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
                 // 只要有一单还没送完颜色就是0
-                if($values['status_cn']=='已签收' || $values['status_cn']=='已退货' || $values['status_cn']=='已完成' ) {
+                if($values['status_cn']=='已签收' || $values['status_cn']=='已拒收' || $values['status_cn']=='已完成' ) {
                     if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
                         $geo['color_type'] = 3;
                     }

@@ -393,11 +393,9 @@
       var geo = JSON.parse(str);
       if (geo.id.indexOf('A') != -1) {
         $.post("{:U('checkPoint')}",geo,function(res) {
-          HostApp.toast(res.msg);
         });
       } else {
         $.post("{:U('getPoint')}",geo,function(res) {
-          HostApp.toast(res.msg);
         });
       }
     }
