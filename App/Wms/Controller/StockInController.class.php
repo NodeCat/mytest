@@ -808,11 +808,12 @@ class StockInController extends CommonController {
         }
         $map['code'] = $location_code;
         $map['wh_id'] = session('user.wh_id');
+        $map['is_deleted'] = 0;
         $rev_location_info = M('location')->where($map)->find();
         unset($map);
 
         if(empty($rev_location_info['id'])){
-            $this->msgReturn(0,'请添加库位'.$location_code);
+            $this->msgReturn(0,'请添加库位'.$location_code.'，或将货位设置为正常状态');
         }
 
         //查询到货单信息
@@ -904,7 +905,7 @@ class StockInController extends CommonController {
             $pro_code = $stock_bill_in_detail_info['pro_code'];
             $pro_qty = $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['done_qty'];
             $pro_uom = $stock_bill_in_detail_info['pro_uom'];
-            $status = 'qualified';
+            $status = $rev_location_info['status'];
             $product_date = $post_data[$stock_bill_in_detail_info['pro_code'].$batch]['product_date'];
             $wh_id = session('user.wh_id');
             $location_id = $rev_location_info['id'];
