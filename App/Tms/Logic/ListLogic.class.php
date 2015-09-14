@@ -177,49 +177,45 @@ class ListLogic{
         $data = M('tms_delivery')->where($map)->select();
         unset($map);
         $geo_array = array();
-        $customer  = array();
+        $customers  = array();
         foreach ($data as $key => $value) {
             if ($value['type'] == '0') {
             // dump($value['dist_id']);
-                $map['dist_id'] = $value['dist_id'];
-                $map['order_by'] = array('created_time' => 'DESC');
+                $map['pid'] = $value['dist_id'];
                 $A = A('Tms/Dist','Logic');
-                $bills  = $A->billOut($map);
-                $orders = $bills['orders'];
-                foreach ($orders as $keys => $values) {
-                    $values = $values['order_info'];
-                    $values['geo'] = json_decode($values['geo'],TRUE);
-                    $customer[$values['user_id']] = 1;//统计商家数量
+                $orders  = $A->bill_list($map);
+                foreach ($orders as $val) {
+                    $customer  = $val['customer_info'];
+                    $customers[$customer['id']] = 1;//客户统计
                     //如果地址为空的话跳过
-                    if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
+                    if($customer['lng'] == '' || $customer['lat'] == '' ) {
                         continue;
                     }
-
-                    $geo = $values['geo'];
+                    $geo = array();
+                    $geo['lng'] = $customer['lng'];
+                    $geo['lat'] = $customer['lat'];
                     $geo['order_id'] = $value['id'];
-                    $geo['user_id']  = $values['user_id'];
-                    $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
-                    $geo['sign_time']= $this->getSignTime($values['user_id'],$value['dist_id']);
+                    $geo['user_id']  = $customer['id'];
+                    $geo['sign_time']= $this->getSignTime($customer['id'],$value['dist_id']);
+                    $geo['address']  = '['.$customer['shop_name'].']'.$customer['address'];
                     // 只要有一单还没送完颜色就是0
-                    if($values['status_cn']=='已签收' || $values['status_cn']=='已拒收' || $values['status_cn']=='已完成' ) {
-                        if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                    if($val['status'] == '2' || $val['status'] == '3' || $val['status'] == '4') {
+                        if($geo_array[$customer['id']]['color_type'] == NULL || $geo_array[$customer['id']]['color_type'] != 0 ) {
                             $geo['color_type'] = 3;
                         }
                         else{
                             $geo['color_type'] = 0;
-                        }      
-                    } else {
+                        }
+                    }
+                    else{
                         $geo['color_type'] = 0;
                     }
-                    unset($map);
-                    $map['is_deleted']  = '0';
-                    $map['customer_id'] = $values['user_id'];
-                    $res = M('tms_report_error')->field('id')->where($map)->find();
-                    unset($map);
+
+                    $res = M('tms_report_error')->field('id')->where(array('is_deleted' => 0 ,'customer_id' => $customer['id']))->find();
                     if ($res) {
                         $geo['color_type'] = 2;
                     }
-                    $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
+                    $geo_array[$customer['id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖
                 }            
             } else {
                 $nodes = M('tms_task_node')->where(array('pid' => $value['dist_id']))->select();
@@ -242,7 +238,7 @@ class ListLogic{
                 }
             }
         }
-        $customer_count = count($customer) + $cus_count;
+        $customer_count = count($customers) + $cus_count;
         $geo_arrays     = array_values($geo_array);
         unset($data);
         $data['customer_count'] = $customer_count;

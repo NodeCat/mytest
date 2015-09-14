@@ -381,35 +381,26 @@ class IndexDriver extends Controller {
         $M = M('tms_delivery');
         $data = $M ->where($map)->select();
         unset($map);
-        $map['order_by'] = array('user_id'=>'ASC','created_time' => 'DESC');
-        $A = A('Common/Order','Logic');
         $geo_array=array();
+        $A = A('Tms/Dist','Logic');
         foreach ($data as $key => $value) {
-            $map['dist_id'] = $value['dist_id'];
-            if (defined('VERSION')) {
-                $A = A('Tms/Dist','Logic');
-                $bills = $A->billOut($map);
-                $orders = $bills['orders'];
-            } else { 
-                $map['itemsPerPage'] = $value['order_count'];
-                $orders = $A->order($map);
-            }
-            foreach ($orders as $keys => $values) {
-                if (defined('VERSION')) {
-                    $values = $values['order_info'];
-                }
-                $values['geo'] = json_decode($values['geo'],TRUE);
+            $map['pid'] = $value['dist_id'];
+            $orders = $A->bill_list($map);
+            foreach ($orders as $val) {
+                $customer = $val['customer_info'];
                 //如果地址为空的话跳过
-                if($values['geo']['lng'] == '' || $values['geo']['lat'] == '' ) {
+                if($customer['lng'] == '' || $customer['lat'] == '' ) {
                     continue;
                 }
-                $geo = $values['geo'];
+                $geo = array();
+                $geo['lng'] = $customer['lng'];
+                $geo['lat'] = $customer['lat'];
                 $geo['order_id'] = $value['id'];
-                $geo['user_id']  = $values['user_id'];
-                $geo['address']  = '['.$values['shop_name'].']'.$values['deliver_addr'];
+                $geo['user_id']  = $customer['id'];
+                $geo['address']  = '['.$customer['shop_name'].']'.$customer['address'];
                 // 只要有一单还没送完颜色就是0
-                if($values['status_cn']=='已签收' || $values['status_cn']=='已拒收' || $values['status_cn']=='已完成' ) {
-                    if($geo_array[$values['user_id']]['color_type'] == NULL || $geo_array[$values['user_id']]['color_type'] != 0 ) {
+                if($val['status'] == '2' || $val['status'] == '3' || $val['status'] == '4') {
+                    if($geo_array[$customer['id']]['color_type'] == NULL || $geo_array[$customer['id']]['color_type'] != 0 ) {
                         $geo['color_type'] = 3;
                     }
                     else{
@@ -419,7 +410,7 @@ class IndexDriver extends Controller {
                 else{
                     $geo['color_type'] = 0;
                 }   
-                $geo_array[$values['user_id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖               
+                $geo_array[$customer['id']] = $geo;//把地图位置和信息按用户id存储，重复的覆盖
             }            
         }
         $geo_array  = array_values($geo_array);
