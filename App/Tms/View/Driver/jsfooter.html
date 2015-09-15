@@ -57,11 +57,18 @@
       function() {
         var search = $(this).val();
         $('.order-id').each(function() {
+          var sib = $(this).parent().siblings('a[show=true]').length;
           if ($(this).text().indexOf(search) == -1) {
-            $(this).parents('.panel').hide();
-
+            if (sib == 0) {
+              $(this).parents('.panel').hide();
+            } else {
+              $(this).parent().hide();
+            }
+            $(this).parent().attr('show',false);
           } else {
             $(this).parents('.panel').show();
+            $(this).parent().show();
+            $(this).parent().attr('show',true);
           }
         })
       });
