@@ -1,0 +1,67 @@
+box目录文件清单
+package.box Vagrantfile Visualbox.dmg vagrant.dmg mysqlworkbench.dmg 使用说明.txt
+
+1、将虚拟机文件夹box放到个人目录下
+安装Visualbox
+安装vagrant
+安装mysql workbench
+
+2、设置共享目录(可选)
+对于希望在mac下使用IDE开发项目的童鞋，可以配置虚拟机共享目录：
+更改box文件夹中的Vagrantfile 47行
+其中“~/project/erp”为你的mac上的项目目录，并赋予775权限
+这样启动虚拟机以后，设置的mac上的项目目录就自动加载为/data/web/erp(nginx网站根目录)。 
+
+3、设置Runtime目录
+ThinkPHP框架需要写缓存目录，在index.php中配置:
+define('RUNTIME_PATH','../Runtime/‘);
+//绝对路径在/data/web/Runtime/,该目录已配置777权限。不要忘记最后的斜杠(/)。
+//设置路径的原因是共享目录php不能创建文件，因此需要将Runtime指定为虚拟机的其它路径。
+
+4、本地端口转发
+vim /etc/apache2/httpd.conf
+在文件尾添加
+<VirtualHost *:80>
+    ProxyPreserveHost On
+    ProxyRequests Off
+    ProxyPass / http://localhost:8080/
+    ProxyPassReverse / http://localhost:8080/
+</VirtualHost>
+
+然后sudo apachectl restart
+
+5、hosts设置
+vim /etc/hosts
+添加
+127.0.0.1 wms.dachuwang.net
+
+6、启动虚拟机
+进入到box目录
+vagrant up
+启动完成后,连接到虚拟机
+vagrant ssh
+
+安装k-vim(可选) 进入~/k-vmi
+sh -x install.sh
+
+mac上使用mysql workbench连接虚拟机数据库，导入自己的项目数据库
+192.168.0.2
+root dachuwang
+别忘记修改项目中的数据库连接
+
+完成以上步骤以后
+在mac中的浏览器打开wms.dachuwang.net即可访问。
+首先会将该DNS解析为127.0.0.1，本地80端口时请求被转发到本地8080端口，8080端口转发给了虚拟机的80端口
+虚拟机的80端口请求会被nginx处理，虚拟机中已经配置了hosts为 wms.dachuwang.net 为127.0.0.1，因此该请求会定位到/data/web/erp目录，也就是你的网站根目  录。
+
+关闭虚拟机
+vagrant halt
+重启
+vagrant reload
+
+更多文档，请看这里
+http://doku.dachuwang.com/doku.php?id=%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E9%85%8D%E7%BD%AElnmp%E7%8E%AF%E5%A2%83
+这里
+https://github.com/MarcelloCai/k-vim
+还有这里
+http://doku.dachuwang.com/doku.php
