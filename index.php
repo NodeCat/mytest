@@ -3,7 +3,7 @@
 phpinfo();
 echo 'nihao';
 if ($i=1) {
-	print 'hello';
+	print 'hello you are welcome !';
 	
 }
 
